@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import * as THREE from 'three'
 import type { BadgeDef } from '../../data/badges'
+import { svgEmblemGeometry } from './emblems'
 
 interface MedallionProps {
   badge: BadgeDef
@@ -290,7 +291,7 @@ function Scene({ badge, earned, reducedMotion, onUnavailable }: MedallionProps &
   const warmMatcap = useMemo(() => makeMatcap(true), [])
   const coolMatcap = useMemo(() => makeMatcap(false), [])
   const discGeometry = useMemo(() => makeDiscGeometry(earned), [earned])
-  const emblemGeometry = useMemo(() => makeEmblemGeometry(badge.id), [badge.id])
+  const emblemGeometry = useMemo(() => svgEmblemGeometry(badge.id) ?? makeEmblemGeometry(badge.id), [badge.id])
   const ribbonGeometry = useMemo(makeRibbonGeometry, [])
   const medalMaterial = useMemo(() => {
     if (!earned) {

@@ -1,4 +1,4 @@
-import { Suspense, lazy, useId, useMemo, useState } from 'react'
+import { Suspense, lazy, useEffect, useId, useMemo, useState } from 'react'
 import { BADGES, type BadgeDef, type BadgeStat } from '../../data/badges'
 import { computeStats } from '../../state/stats'
 import { useAllDrinks, useStore } from '../../state/store'
@@ -119,6 +119,12 @@ export function Badges() {
     [drinks, passport],
   )
   const [selectedBadge, setSelectedBadge] = useState<BadgeDef | null>(null)
+
+  // deep link: /badges?badge=<id> opens that medal (also used for QA)
+  useEffect(() => {
+    const id = new URLSearchParams(location.search).get('badge')
+    if (id) { const b = BADGES.find((x) => x.id === id); if (b) setSelectedBadge(b) }
+  }, [])
 
   const earnedCount = BADGES.filter((badge) => badge.test(badgeStat)).length
   const selectedEarned = selectedBadge ? selectedBadge.test(badgeStat) : false
