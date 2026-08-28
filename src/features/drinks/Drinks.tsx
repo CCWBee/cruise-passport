@@ -58,7 +58,7 @@ export function Drinks() {
 
       <div className="dtoolbar">
         <div className="dcount tnum">{results.length} of {drinks.length} drinks</div>
-        <button className="btn dadd" onClick={() => setShowAdd(true)}><IconPlus size={16} />Add a drink</button>
+        <button className="btn dadd" type="button" aria-haspopup="dialog" onClick={() => setShowAdd(true)}><IconPlus size={16} />Add a drink</button>
       </div>
 
       {results.length === 0 ? (

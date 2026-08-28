@@ -18,15 +18,25 @@ export function Log() {
       <div className="log-days reveal">
         {DAYS.map((iso, i) => {
           const dayDrinks = stats.byDay[iso] || []
+          const dayLabelId = `log-day-${i + 1}`
 
           return (
-            <section className={`log-day glass${dayDrinks.length ? ' has-drinks' : ' empty'}`} key={iso}>
+            <section
+              className={`log-day glass${dayDrinks.length ? ' has-drinks' : ' empty'}`}
+              key={iso}
+              aria-labelledby={dayLabelId}
+            >
               <div className="log-day-head">
                 <div className="log-day-title">
-                  <strong className="t-strong tnum">Day {i + 1}</strong>
+                  <h2 className="t-strong tnum" id={dayLabelId}>Day {i + 1}</h2>
                   <span className="log-date muted tnum">{prettyDay(iso)}</span>
                 </div>
-                <span className="log-count tnum">{dayDrinks.length ? dayDrinks.length : '–'}</span>
+                <span
+                  className="log-count tnum"
+                  aria-label={dayDrinks.length ? `${dayDrinks.length} drink${dayDrinks.length === 1 ? '' : 's'}` : 'No drinks'}
+                >
+                  {dayDrinks.length ? dayDrinks.length : '–'}
+                </span>
               </div>
 
               {dayDrinks.length ? (

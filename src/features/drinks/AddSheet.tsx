@@ -47,35 +47,35 @@ export function AddSheet({ onClose }: { onClose: () => void }) {
     <Sheet onClose={onClose} eyebrow={<div className="sheet-eyebrow eyebrow">Personal passport</div>}>
       <div className="add-title"><IconPlus size={23} /><h2 className="t-title">Add a drink</h2></div>
       <p className="muted t-body add-lead">Add something new or missing from the published menus.</p>
-      <form onSubmit={submit}>
+      <form onSubmit={submit} autoComplete="off">
         <label className="ds-field">
           <span className="eyebrow">Name</span>
-          <input type="text" required value={name} onChange={(event) => setName(event.target.value)} />
+          <input name="name" type="text" required autoFocus value={name} onChange={(event) => setName(event.target.value)} />
         </label>
         <label className="ds-field">
           <span className="eyebrow">Venue</span>
-          <select className="tnum" value={venue} onChange={(event) => setVenue(event.target.value)}>
+          <select name="venue" className="tnum" value={venue} onChange={(event) => setVenue(event.target.value)}>
             {VENUE_KEYS.map((key) => <option key={key} value={key}>{VENUES[key].name} · Deck {VENUES[key].deck}</option>)}
           </select>
         </label>
         <label className="ds-field">
           <span className="eyebrow">Type</span>
-          <select value={category} onChange={(event) => setCategory(event.target.value)}>
+          <select name="type" value={category} onChange={(event) => setCategory(event.target.value)}>
             {CATEGORIES.map((type) => <option key={type} value={type}>{type}</option>)}
           </select>
         </label>
         <label className="ds-field">
           <span className="eyebrow">Spirits</span>
-          <input type="text" value={spirits} onChange={(event) => setSpirits(event.target.value)} placeholder="Gin, liqueur" />
+          <input name="spirits" type="text" value={spirits} onChange={(event) => setSpirits(event.target.value)} placeholder="Gin, liqueur" />
           <small className="add-help muted">Separate more than one with commas.</small>
         </label>
         <label className="ds-field">
           <span className="eyebrow">Ingredients</span>
-          <textarea rows={3} value={ingredients} onChange={(event) => setIngredients(event.target.value)} />
+          <textarea name="ingredients" rows={3} value={ingredients} onChange={(event) => setIngredients(event.target.value)} />
         </label>
         <label className="ds-field">
           <span className="eyebrow">Price</span>
-          <input className="tnum" type="number" min="0" step="0.01" inputMode="decimal" value={price} onChange={(event) => setPrice(event.target.value)} placeholder="Leave blank if unknown" />
+          <input name="price" className="tnum" type="number" min="0" step="0.01" inputMode="decimal" value={price} onChange={(event) => setPrice(event.target.value)} placeholder="Leave blank if unknown" />
         </label>
         <button type="submit" className="btn btn-coral btn-wide add-submit"><IconPlus size={18} />Add it</button>
       </form>
