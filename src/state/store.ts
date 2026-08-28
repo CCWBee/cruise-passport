@@ -1,11 +1,12 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { DRINKS, today, type Drink } from '../data/model'
-import { emptyPassport, type Entry, type Passport } from './stats'
+import { emptyPassport, FRIEND_COLOURS, type Entry, type Passport, type Friend, type Profile, type FriendColour } from './stats'
+import { decodeShare, parseFriend, ShareError } from './share'
 
-// ── social seam: a friend is just another passport with attribution ──
-// Live now: `me`. Friends land via share-code merge; leaderboards read across them.
-export interface Friend { id: string; name: string; colour: string; passport: Passport }
+// re-export the social types/consts that used to live here, for existing call sites
+export { FRIEND_COLOURS }
+export type { Friend, Profile, FriendColour }
 
 export interface Filters {
   venues: string[]
@@ -29,6 +30,7 @@ interface State {
   me: Passport
   custom: Drink[]
   friends: Friend[]
+  profile: Profile
   filters: Filters
   showFilters: boolean
 
@@ -41,6 +43,14 @@ interface State {
   setDate: (id: string, date: string) => void
   toggleVisit: (venueKey: string) => boolean
   addCustom: (d: Drink) => void
+
+  // social
+  toggleRec: (id: string) => void
+  setComment: (id: string, text: string) => void
+  setProfile: (p: Partial<Profile>) => void
+  upsertFriend: (f: Friend) => void
+  removeFriend: (id: string) => void
+  importCode: (code: string) => Promise<{ ok: boolean; name?: string; reason?: string; stale?: boolean }>
 
   // filters
   setFilters: (f: Partial<Filters>) => void
@@ -55,6 +65,7 @@ export const useStore = create<State>()(
       me: emptyPassport(),
       custom: [],
       friends: [],
+      profile: { id: '', name: '', colour: 'aqua' },
       filters: emptyFilters(),
       showFilters: false,
 
@@ -91,6 +102,29 @@ export const useStore = create<State>()(
 
       addCustom: (d) => set((s) => ({ custom: [...s.custom, d] })),
 
+      // ── social (rec/comment ride the existing Entry; friends are merged passports) ──
+      toggleRec: (id) => {
+        const cur = get().me.entries[id] || {}
+        get().patch(id, { rec: cur.rec ? undefined : true })
+      },
+      setComment: (id, text) => get().patch(id, { comment: text.trim().slice(0, 140) || undefined }),
+      setProfile: (p) => set((s) => ({ profile: { ...s.profile, ...p } })),
+      upsertFriend: (f) => set((s) => ({ friends: [...s.friends.filter((x) => x.id !== f.id), f] })),
+      removeFriend: (id) => set((s) => ({ friends: s.friends.filter((x) => x.id !== id) })),
+      importCode: async (code) => {
+        let payload
+        try { payload = await decodeShare(code) }
+        catch (e) { return { ok: false, reason: e instanceof ShareError ? e.message : 'Could not read that code.' } }
+        const me = get().profile
+        if (payload.id && payload.id === me.id) return { ok: false, reason: 'That is your own code.' }
+        const friend = parseFriend(payload)
+        const existing = get().friends.find((f) => f.id === friend.id)
+        if (existing && existing.exportedAt >= friend.exportedAt)
+          return { ok: false, stale: true, name: friend.name, reason: `You already have ${friend.name}'s latest.` }
+        get().upsertFriend(friend)
+        return { ok: true, name: friend.name }
+      },
+
       setFilters: (f) => set((s) => ({ filters: { ...s.filters, ...f } })),
       replaceFilters: (f) => set({ filters: f }),
       setShowFilters: (v) => set({ showFilters: v }),
@@ -98,9 +132,18 @@ export const useStore = create<State>()(
     }),
     {
       name: 'spcc2',
-      version: 1,
+      version: 2,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      migrate: (persisted: any, from: number) => {
+        if (from < 2 && persisted) {
+          persisted.profile ??= { id: '', name: '', colour: 'aqua' }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          persisted.friends = (persisted.friends ?? []).map((f: any) => ({ ...f, exportedAt: f.exportedAt ?? 0 }))
+        }
+        return persisted
+      },
       // persist data only; UI (filters/showFilters) resets each session
-      partialize: (s) => ({ me: s.me, custom: s.custom, friends: s.friends }),
+      partialize: (s) => ({ me: s.me, custom: s.custom, friends: s.friends, profile: s.profile }),
     },
   ),
 )

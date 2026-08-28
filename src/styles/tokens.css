@@ -59,6 +59,10 @@
   /* spacing (8pt) */
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px;
 
+  /* focus ring (one language across all controls) */
+  --ring: color-mix(in oklab, var(--lilac) 90%, var(--ink));
+  --ring-soft: color-mix(in oklab, var(--lilac) 35%, transparent);
+
   /* motion */
   --e-out: cubic-bezier(.22, .9, .32, 1);
   --e-io: cubic-bezier(.4, 0, .2, 1);

@@ -1,0 +1,39 @@
+.sw {
+  --w: 52px; --h: 30px; --pad: 3px; --knob: calc(var(--h) - var(--pad) * 2);
+  --travel: calc(var(--w) - var(--knob) - var(--pad) * 2); --on: var(--mint); --on-hi: var(--mint-soft);
+  position: relative; flex: none; width: var(--w); height: var(--h); border-radius: var(--r-pill);
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+}
+.sw::before { content: ''; position: absolute; inset: -8px; }
+.sw-coral { --on: var(--coral); --on-hi: var(--coral-soft); }
+.sw-sm { --w: 44px; --h: 26px; }
+
+.sw-track {
+  position: absolute; inset: 0; border-radius: var(--r-pill); background: rgba(33, 58, 87, .10);
+  box-shadow: inset 0 2px 3px rgba(33, 58, 87, .20), inset 0 -1px 1px rgba(255, 255, 255, .70),
+    inset 0 0 0 1px rgba(33, 58, 87, .06);
+  transition: background-color var(--t-panel) var(--e-io), box-shadow var(--t-panel) var(--e-io);
+}
+.sw-knob {
+  position: absolute; top: var(--pad); left: var(--pad); width: var(--knob); height: var(--knob);
+  border-radius: 50%; background: linear-gradient(180deg, #fff, #EDF1F5);
+  box-shadow: 0 2px 4px rgba(33, 58, 87, .24), 0 1px 1px rgba(33, 58, 87, .14),
+    inset 0 1px 1px rgba(255, 255, 255, .90), 0 0 0 1px rgba(33, 58, 87, .08);
+  transition: transform var(--t-spring) var(--spring-soft), width var(--t-press) var(--e-out);
+}
+.sw[aria-checked="true"] .sw-track {
+  background: linear-gradient(180deg, var(--on-hi), var(--on));
+  box-shadow: inset 0 2px 3px rgba(9, 46, 20, .30), inset 0 -1px 1px rgba(255, 255, 255, .30),
+    inset 0 0 0 1px rgba(9, 46, 20, .14);
+}
+.sw[aria-checked="true"] .sw-knob { transform: translateX(var(--travel)); }
+.sw:active:not(:disabled) .sw-knob { width: calc(var(--knob) + 3px); }
+.sw:focus-visible { outline: 2.5px solid var(--ring); outline-offset: 3px; border-radius: var(--r-pill); }
+.sw:disabled .sw-track { background: rgba(33, 58, 87, .06); box-shadow: inset 0 0 0 1px var(--ink-line); }
+.sw:disabled .sw-knob { background: #EEF1F4; box-shadow: 0 0 0 1px var(--ink-line); }
+
+.sw-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 44px; }
+.sw-row-label { font-size: 15px; font-weight: 600; color: var(--ink); }
+@media (prefers-reduced-motion: reduce) {
+  .sw-track, .sw-knob { transition: none; }
+}

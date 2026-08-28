@@ -8,5 +8,5 @@
 .chip.on { background: var(--ink); color: #fff; border-color: transparent; box-shadow: none; }
 .chip.on .chip-c { color: rgba(255, 255, 255, .75); }
 .chip.coral.on { background: var(--coral); box-shadow: var(--sh-1); }
-.chip:disabled { opacity: .32; box-shadow: none; background: rgba(255, 255, 255, .35); cursor: default; }
-.chip:disabled .chip-c { opacity: .7; }
+.chip:disabled { background: rgba(255, 255, 255, .35); color: var(--ink-3); box-shadow: none; cursor: default; border-color: var(--ink-line); }
+.chip:disabled .chip-c { color: var(--ink-3); }

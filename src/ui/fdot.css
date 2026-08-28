@@ -1,0 +1,13 @@
+.fdot {
+  inline-size: var(--sz); block-size: var(--sz); border-radius: var(--r-pill);
+  display: grid; place-items: center; flex: none;
+  font-weight: 700; font-size: calc(var(--sz) * .45); font-variant-numeric: tabular-nums;
+  color: color-mix(in oklab, var(--fc) 72%, var(--ink));
+  background: color-mix(in oklab, var(--fc) 24%, transparent);
+  box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--fc) 45%, transparent);
+}
+.fstack { display: flex; }
+.fstack .fdot:not(:first-child) {
+  margin-inline-start: -7px;
+  box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--fc) 45%, transparent), 0 0 0 2px var(--glass-fallback);
+}

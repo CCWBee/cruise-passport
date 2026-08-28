@@ -16,7 +16,7 @@
   border-radius: var(--r-pill); transition: color var(--t-panel);
 }
 .seg-btn.on { color: var(--ink); }
-.seg-btn:disabled { color: var(--ink-3); opacity: .55; }
-.seg-c { font-size: 10px; font-weight: 800; opacity: .55; }
-.seg-btn.on .seg-c { opacity: .8; }
+.seg-btn:disabled { color: var(--ink-3); }
+.seg-c { font-size: 10px; font-weight: 800; color: var(--ink-3); }
+.seg-btn.on .seg-c { color: var(--ink-2); }
 @media (prefers-reduced-motion: reduce) { .seg-thumb { transition: none; } }

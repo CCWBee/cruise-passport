@@ -1,0 +1,22 @@
+.sfield {
+  display: flex; align-items: center; gap: 9px; border-radius: var(--r-pill);
+  padding: 9px 10px 9px 15px; box-shadow: var(--sh-1); color: var(--ink-3);
+  border: 1px solid var(--glass-border);
+  transition: box-shadow .16s var(--e-io), border-color .16s;
+}
+.sfield:focus-within {
+  border-color: var(--lilac);
+  box-shadow: var(--sh-1), 0 0 0 3px var(--ring-soft);
+}
+.sfield-input { flex: 1; min-width: 0; font-size: 16px; font-weight: 600; color: var(--ink); background: none; }
+.sfield-input::placeholder { color: var(--ink-3); font-weight: 500; }
+.sfield-input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.sfield-clear {
+  position: relative; flex: none; display: grid; place-items: center; width: 26px; height: 26px;
+  border-radius: 50%; background: rgba(33, 58, 87, .12); color: var(--ink-2);
+}
+.sfield-clear::before { content: ''; position: absolute; inset: -9px; border-radius: 50%; }
+.sfield-clear:hover { background: rgba(33, 58, 87, .20); }
+@media (prefers-reduced-transparency: reduce) {
+  .sfield { backdrop-filter: none; background: var(--glass-fallback); }
+}

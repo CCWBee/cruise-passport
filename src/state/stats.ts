@@ -7,11 +7,28 @@ export interface Entry {
   tried?: boolean
   date?: string
   rating?: number // 1..5
-  fav?: boolean
-  wish?: boolean
-  again?: boolean
-  notes?: string
+  fav?: boolean // private
+  wish?: boolean // private
+  again?: boolean // private
+  notes?: string // private diary note — NEVER shared
+  // ── social (additive, shared) ──
+  rec?: boolean // "I recommend this"
+  comment?: string // public one-liner, <=140 chars — shared
 }
+
+/** A friend is another passport, merged in by share-code, with attribution. */
+export interface Friend {
+  id: string
+  name: string
+  colour: string // FRIEND_COLOURS key
+  passport: Passport
+  exportedAt: number // ms — from the code we merged; drives skip-if-older
+}
+
+// self-identity + the friend colour palette (here, not store.ts, to avoid a store<->share cycle)
+export interface Profile { id: string; name: string; colour: string }
+export const FRIEND_COLOURS = ['aqua', 'melon', 'mango', 'lime', 'grape', 'pine'] as const
+export type FriendColour = typeof FRIEND_COLOURS[number]
 export interface VenueVisit { visited?: boolean; date?: string }
 export interface Passport {
   entries: Record<string, Entry>
