@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import { Shell } from './Shell'
 import { Home } from '../features/home/Home'
 import { Drinks } from '../features/drinks/Drinks'
@@ -6,6 +6,12 @@ import { Ship } from '../features/ship/Ship'
 import { Stats } from '../features/stats/Stats'
 import { Badges } from '../features/badges/Badges'
 import { Log } from '../features/log/Log'
+import { Wrapped } from '../features/wrapped/Wrapped'
+
+function WrappedRoute() {
+  const navigate = useNavigate()
+  return <Wrapped onClose={() => navigate('/')} />
+}
 
 function Soon({ title }: { title: string }) {
   return (
@@ -31,6 +37,7 @@ export default function App() {
           <Route path="/log" element={<Log />} />
           <Route path="*" element={<Soon title="Not found" />} />
         </Route>
+        <Route path="/wrapped" element={<WrappedRoute />} />
       </Routes>
     </BrowserRouter>
   )

@@ -4,6 +4,7 @@ import { useStore, useAllDrinks } from '../../state/store'
 import { computeStats } from '../../state/stats'
 import { DAYS, START, today, VENUES } from '../../data/model'
 import { useCountUp } from '../../ui/useCountUp'
+import { WrappedTeaser } from '../wrapped/WrappedTeaser'
 import './home.css'
 
 const drinkVenue = (key: string) => VENUES[key]?.name || key
@@ -43,6 +44,8 @@ export function Home() {
           <div className="sea-sub">{s.n} of {s.total}<br />sipped</div>
         </div>
       </div>
+
+      <WrappedTeaser />
 
       <div className="stat-grid glass">
         <Stat value={s.n} label="tried" />

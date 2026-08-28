@@ -1,0 +1,38 @@
+/* Cruise Wrapped — full-screen story player */
+.wr {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; flex-direction: column;
+  background:
+    radial-gradient(120% 80% at 50% 0%, color-mix(in oklab, var(--accent) 30%, var(--cream)), transparent 70%),
+    var(--cream);
+  color: var(--ink);
+}
+.wr-dots { display: flex; gap: 5px; padding: calc(12px + var(--safe-t)) 16px 0; }
+.wr-dot { flex: 1; height: 3px; border-radius: 99px; background: rgba(28, 60, 86, .16); }
+.wr-dot.done { background: color-mix(in oklab, var(--accent) 55%, transparent); }
+.wr-dot.on { background: var(--accent); }
+.wr-close {
+  position: absolute; top: calc(16px + var(--safe-t)); right: 14px; z-index: 3;
+  width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+  background: rgba(255, 255, 255, .55); color: var(--ink-2); border: 1px solid var(--glass-border);
+}
+.wr-stage { flex: 1; display: grid; place-items: center; padding: 24px; touch-action: pan-y; user-select: none; }
+.wr-card { max-width: 460px; text-align: center; animation: wr-in .5s var(--spring-soft) both; }
+@keyframes wr-in { from { opacity: 0; translate: 0 18px; } }
+.wr-eyebrow { font-size: 12.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 20px; }
+.wr-big { font-size: clamp(76px, 27vw, 132px); font-weight: 800; line-height: .88; letter-spacing: -.03em; color: var(--accent); }
+.wr-headline { font-size: clamp(30px, 9vw, 46px); font-weight: 800; letter-spacing: -.02em; line-height: 1.05; white-space: pre-line; margin: 10px 0 0; }
+.wr-value { font-size: 18px; font-weight: 650; color: var(--ink-2); margin-top: 10px; }
+.wr-sub { font-size: 15.5px; color: var(--ink-2); margin: 16px auto 0; max-width: 30ch; line-height: 1.5; }
+.wr-save { margin-top: 30px; }
+.wrapped-3d-slot { height: 210px; margin-top: 8px; } /* the 3D moment mounts here */
+@media (prefers-reduced-motion: reduce) { .wr-card { animation: none; } }
+
+/* Home teaser */
+.wr-teaser {
+  display: block; padding: 15px 16px; margin-bottom: var(--s4);
+  background:
+    linear-gradient(120deg, color-mix(in oklab, var(--coral) 16%, transparent), transparent 60%),
+    var(--glass-film);
+}
+.wr-teaser-title { font-size: 18px; margin: 3px 0 1px; }
