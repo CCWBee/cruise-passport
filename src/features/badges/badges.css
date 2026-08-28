@@ -147,9 +147,11 @@
 }
 
 .medal-emblem {
+  /* centred on the disc circle (cx 40/80, cy 36/88 → 50%, 40.5%), exact at both sizes */
   position: absolute;
-  top: 23px;
-  left: 23px;
+  left: 50%;
+  top: 40.5%;
+  transform: translate(-50%, -50%);
   display: grid;
   place-items: center;
   filter: drop-shadow(0 1px 1px rgba(55, 39, 24, .2));
@@ -189,10 +191,6 @@
   width: 116px;
 }
 
-.medal-disc.is-large .medal-emblem {
-  top: 38px;
-  left: 39px;
-}
 
 .badge-sheet {
   padding: var(--s2) var(--s2) var(--s5);

@@ -1,13 +1,15 @@
 .nav {
+  --nav-px: max(10px, env(safe-area-inset-left));
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
   display: flex; justify-content: space-around;
-  padding: 7px max(10px, env(safe-area-inset-left)) calc(7px + var(--safe-b));
+  padding: 7px var(--nav-px) calc(7px + var(--safe-b));
   border-top: 1px solid var(--glass-border);
   box-shadow: 0 -8px 24px rgba(33, 58, 87, .08);
 }
+/* indicator geometry mirrors the padded button row so the pill sits dead-centre under each icon */
 .nav-ind {
   position: absolute; top: 6px; bottom: calc(6px + var(--safe-b));
-  left: 0; width: calc(100% / 6);
+  left: var(--nav-px); width: calc((100% - 2 * var(--nav-px)) / 6);
   transform: translateX(calc(var(--i, 0) * 100%));
   transition: transform 320ms var(--e-spring);
   pointer-events: none;

@@ -1,4 +1,5 @@
 .drinks { padding-top: var(--s3); }
+.drinks > .sfield { margin-bottom: 12px; } /* breathing room before the filter panel / list */
 
 .dsearch {
   display: flex; align-items: center; gap: 9px;

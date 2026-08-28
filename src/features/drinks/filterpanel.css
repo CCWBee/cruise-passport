@@ -9,7 +9,7 @@
 
 .fquick { display: flex; flex-wrap: wrap; gap: 7px; margin: 14px 0 6px; }
 
-.fgrp { margin-top: 10px; border-radius: var(--r-md); background: rgba(255, 255, 255, .35); }
+.fgrp { margin-top: 10px; border-radius: var(--r-md); background: rgba(255, 255, 255, .35); border: 1px solid var(--ink-line); }
 .fgrp > summary {
   list-style: none; cursor: pointer; padding: 12px 13px;
   display: flex; align-items: center; justify-content: space-between;

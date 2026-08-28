@@ -1,6 +1,6 @@
-// The signature wash: the pop-up washes up onto the screen AS sea-water — a foam wave crest
-// leads its top edge — then the water drains away to leave a clear pane of Liquid Glass.
-// The crest is the forefront of the pane. Plays once; skipped under reduced-motion.
+// The signature wash: a blue-tinted pane of Liquid Glass washes over the sheet, its foam
+// crest leading, then drains downward to reveal the clear glass pane behind. It is ONE moving
+// edge travelling across the pane — a wave, not a flash. Plays once; skipped under reduced-motion.
 import { useEffect, useState } from 'react'
 
 export function SheetWave() {
@@ -9,19 +9,21 @@ export function SheetWave() {
   )
   useEffect(() => {
     if (gone) return
-    const t = setTimeout(() => setGone(true), 1000)
+    const t = setTimeout(() => setGone(true), 1650) // must outlast the CSS sw-drain (1600ms)
     return () => clearTimeout(t)
   }, [gone])
   if (gone) return null
 
   return (
     <div className="sheet-wash" aria-hidden>
-      <div className="sw-water" />
-      <svg className="sw-crest" viewBox="0 0 120 26" preserveAspectRatio="none">
-        <path d="M0,15 C20,5 40,5 60,12 C80,19 100,19 120,10 L120,26 L0,26 Z" fill="var(--sea-hi)" />
-        <path className="sw-foam" d="M0,15 C20,5 40,5 60,12 C80,19 100,19 120,10"
-          fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" />
-      </svg>
+      <div className="sw-wave">
+        <div className="sw-body" />
+        <svg className="sw-crest" viewBox="0 0 120 20" preserveAspectRatio="none">
+          <path className="sw-crest-fill" d="M0,11 C22,3 42,3 62,9 C82,15 102,15 120,7 L120,20 L0,20 Z" />
+          <path className="sw-foam" d="M0,11 C22,3 42,3 62,9 C82,15 102,15 120,7"
+            fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      </div>
     </div>
   )
 }
