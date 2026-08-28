@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# QA artifacts (headless chrome profiles, screenshots)
+.qa/
+# codex/scratch
+codex/
