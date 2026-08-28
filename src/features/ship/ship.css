@@ -39,7 +39,8 @@
 .venue-sheet-title { display: flex; align-items: center; gap: 8px; margin: 5px 0 8px; }
 .venue-sheet-title svg { flex: none; color: var(--coral); }
 .venue-blurb { margin-bottom: 14px; }
-.venue-visit { width: 100%; margin-bottom: 14px; }
+.venue-visit { padding: 8px 16px; margin-bottom: 14px; }
+.venue-visit .sw-row-label { font-weight: 700; }
 .venue-shared {
   display: flex; align-items: flex-start; gap: 10px; padding: 12px 13px; margin-bottom: 14px;
   border-radius: var(--r-md); background: rgba(255, 255, 255, .42); font-size: 13px; font-weight: 600;

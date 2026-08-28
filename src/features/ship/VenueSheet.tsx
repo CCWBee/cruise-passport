@@ -3,8 +3,9 @@ import { VENUES, menuFor } from '../../data/model'
 import { useAllDrinks, useStore } from '../../state/store'
 import { DrinkCard } from '../drinks/DrinkCard'
 import { DrinkSheet } from '../drinks/DrinkSheet'
-import { IconCheck, IconLink, IconPin } from '../../ui/Icon'
+import { IconLink, IconPin } from '../../ui/Icon'
 import { Sheet } from '../../ui/Sheet'
+import { Switch } from '../../ui/Switch'
 import '../drinks/drinks.css'
 
 export function VenueSheet({ venueKey, onClose }: { venueKey: string; onClose: () => void }) {
@@ -34,14 +35,14 @@ export function VenueSheet({ venueKey, onClose }: { venueKey: string; onClose: (
       </div>
       <p className="muted t-body venue-blurb">{venue.blurb}</p>
 
-      <button
-        className={`tg pressable venue-visit${visited ? ' on tg-mint' : ''}`}
-        aria-pressed={visited}
-        onClick={() => toggleVisit(venueKey)}
-      >
-        <IconCheck size={19} filled={visited} />
-        {visited ? 'Visited' : 'Mark as visited'}
-      </button>
+      <div className="venue-visit glass">
+        <Switch
+          checked={visited}
+          onChange={() => toggleVisit(venueKey)}
+          label={visited ? 'Visited' : 'Mark as visited'}
+          labelId="venue-visit-label"
+        />
+      </div>
 
       {venue.shares && (
         <p className="venue-shared muted">

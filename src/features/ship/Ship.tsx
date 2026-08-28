@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { DECKS, VENUES, VENUE_KEYS, menuFor, type Drink } from '../../data/model'
 import { bestRatedBars, useSources } from '../../state/social'
 import { useAllDrinks, useStore } from '../../state/store'
@@ -33,6 +33,11 @@ export function Ship() {
   const entries = useStore((s) => s.me.entries)
   const visits = useStore((s) => s.me.visits)
   const [openVenue, setOpenVenue] = useState<string | null>(null)
+  // deep link: /ship?venue=<key> opens that venue (also used for QA)
+  useEffect(() => {
+    const k = new URLSearchParams(location.search).get('venue')
+    if (k && VENUES[k]) setOpenVenue(k)
+  }, [])
   const top = bestRatedBars(srcs, { minRatings: 2 })[0]?.venueKey
   const decks = useMemo(() => DECKS.slice().reverse().map((deck, index) => {
     const keys = VENUE_KEYS.filter((key) => VENUES[key].deck === deck)
