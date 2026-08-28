@@ -1,0 +1,33 @@
+/* Modern web-platform craft: view transitions, reveal stagger, reward motion.
+   All motion is purposeful (continuity / feedback / reveal) and gated on reduced-motion. */
+
+/* ── route view transitions (cross-fade + a whisper of lift) ── */
+::view-transition-old(root) { animation: vt-out .22s var(--e-io) both; }
+::view-transition-new(root) { animation: vt-in .28s var(--e-out) both; }
+@keyframes vt-out { to { opacity: 0; } }
+@keyframes vt-in { from { opacity: 0; translate: 0 6px; } }
+
+/* ── list reveal: the first rows rise in with a small stagger; the rest just appear ── */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal > * { animation: rise-in .44s var(--spring-soft) both; }
+  .reveal > :nth-child(1) { animation-delay: 0ms; }
+  .reveal > :nth-child(2) { animation-delay: 34ms; }
+  .reveal > :nth-child(3) { animation-delay: 68ms; }
+  .reveal > :nth-child(4) { animation-delay: 102ms; }
+  .reveal > :nth-child(5) { animation-delay: 136ms; }
+  .reveal > :nth-child(6) { animation-delay: 170ms; }
+  .reveal > :nth-child(7) { animation-delay: 204ms; }
+  .reveal > :nth-child(8) { animation-delay: 238ms; }
+  .reveal > :nth-child(n+9) { animation-delay: 260ms; }
+  @keyframes rise-in { from { opacity: 0; translate: 0 10px; scale: .992; } }
+}
+
+/* ── reward: a spring pop (rating, tick, badge mint) ── */
+.pop { animation: pop .34s var(--spring-soft); }
+@keyframes pop { 0% { scale: 1; } 42% { scale: 1.22; } 100% { scale: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+  .reveal > * { animation: none; }
+  .pop { animation: none; }
+}

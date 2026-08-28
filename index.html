@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+    <meta name="theme-color" content="#FFF7EF" />
+    <meta name="description" content="A cocktail passport for the Sun Princess, 3 to 17 October 2026." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Cocktails" />
+    <title>Sun Princess Cocktail Passport</title>
+    <script>
+    /* TEMP dev seed for QA screenshots — gated on ?seed, removed before delivery */
+    (function () {
+      try {
+        if (location.search.indexOf('seed') < 0) return
+        var DAYS = [], d = new Date('2026-10-03T12:00:00'), e = new Date('2026-10-17T12:00:00')
+        while (d <= e) { DAYS.push(d.toISOString().slice(0, 10)); d.setDate(d.getDate() + 1) }
+        var entries = {}, visits = {}
+        function seed(id, day, rating, fav, wish) { entries[id] = { tried: true, date: day }; if (rating) entries[id].rating = rating; if (fav) entries[id].fav = true; if (wish) entries[id].wish = true }
+        for (var i = 0; i < 44; i++) seed('d' + i, DAYS[i % 7], (i % 5) + 1, i % 4 === 0, i % 6 === 0)
+        for (var i = 0; i < 8; i++) seed('w' + i, DAYS[i % 7], (i % 5) + 1, i % 3 === 0, false)
+        for (var i = 0; i < 6; i++) seed('b' + i, DAYS[i % 7], (i % 4) + 1, false, i % 2 === 0)
+        ;['d80', 'd81', 'd90', 'w15', 'b20'].forEach(function (id) { entries[id] = { wish: true } })
+        var VK = ['goodspirits', 'omalleys', 'princesslive', 'bellinis', 'coffeecurrents', 'wheelhouse', 'catch', 'crowngrill', 'butchers', 'spellbound', 'crooners', 'makoto', 'umai', 'sabatinis']
+        VK.forEach(function (k) { visits[k] = { visited: true, date: DAYS[0] } })
+        localStorage.setItem('spcc2', JSON.stringify({ state: { me: { entries: entries, visits: visits }, custom: [], friends: [] }, version: 1 }))
+      } catch (e) {}
+    })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

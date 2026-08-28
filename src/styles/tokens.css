@@ -1,0 +1,100 @@
+/* Liquid Sea Glass — design tokens. Warm dawn-sea ground, Apple Liquid Glass material,
+   rare accent = state. See REVIEW/SPEC.md. */
+:root {
+  /* ground washes (composed on a fixed layer, glow up through glass) */
+  --cream: #FFF7EF;
+  --wash-dawn: #FFE0E7;
+  --wash-sky: #DBEFFB;
+  --wash-foam: #E7FAF2;
+
+  /* ink — secondary/tertiary as ALPHA, never CSS opacity */
+  --ink: #213A57;
+  --ink-2: rgba(33, 58, 87, .66);
+  --ink-3: rgba(33, 58, 87, .44);
+  --ink-line: rgba(33, 58, 87, .10);
+  --on-accent: #fff;
+
+  /* accent = state, kept rare */
+  --coral: #F0637F;
+  --coral-soft: #FF90A6;
+  --coral-deep: #D64E6B;
+  --coral-ink: #C34B67;      /* coral text where small text needs contrast on cream */
+  --gold: #E4A72C;           /* ratings only */
+  --gold-ink: #9C6B00;
+  --mint: #2FB79C;           /* tried only */
+  --mint-soft: #7FDFC9;
+  --mint-ink: #1F7A67;
+  --lilac: #B7A2EE;          /* focus ring only */
+
+  /* sea (hero) — mirror of the GLSL constants */
+  --sea-sky-top: #FFE9D4;
+  --sea-sky-hor: #FFD3B0;
+  --sea-hi: #6FDCC4;         /* brand mint, as water */
+  --sea-lo: #17607A;
+  --sea-sun: #FFE08A;
+
+  /* liquid glass material */
+  --glass-film: rgba(255, 253, 250, .72);       /* content surfaces (static frost) */
+  --glass-film-light: rgba(255, 255, 255, .55); /* live-blur chrome (nav, chips) */
+  --glass-border: rgba(255, 255, 255, .72);
+  --glass-highlight: linear-gradient(to bottom, rgba(255, 255, 255, .5), rgba(255, 255, 255, 0) 42%);
+  --glass-blur: 18px;
+  --glass-blur-strong: 22px;
+  --glass-sat: 150%;
+  --glass-fallback: rgba(255, 253, 250, .93);
+  --scrim: rgba(33, 58, 87, .34);
+
+  /* shadow — NO hard offset. two-stop ambient. */
+  --sh-1: 0 1px 2px rgba(33, 58, 87, .06), 0 4px 12px rgba(33, 58, 87, .07);
+  --sh-2: 0 2px 6px rgba(33, 58, 87, .06), 0 14px 30px rgba(33, 58, 87, .12);
+  --sh-sheet: inset 0 1px 0 var(--glass-border), 0 -18px 50px rgba(33, 58, 87, .22);
+
+  /* radii */
+  --r-xs: 10px; --r-sm: 14px; --r-md: 18px; --r-lg: 22px; --r-xl: 28px; --r-pill: 999px;
+
+  /* spacing (8pt) */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px;
+
+  /* motion */
+  --e-out: cubic-bezier(.22, .9, .32, 1);
+  --e-io: cubic-bezier(.4, 0, .2, 1);
+  --e-spring: cubic-bezier(.34, 1.5, .5, 1);
+  --t-press: 130ms;
+  --t-panel: 220ms;
+  --t-fill: 1100ms;
+
+  /* chrome sizes */
+  --nav-h: 62px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+  --wrap: 720px;
+
+  /* type stack — SF Pro Rounded on iPhone (native Liquid Glass) */
+  --font: ui-rounded, 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Quicksand, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* springs — the motion language */
+  --spring: linear(0, .006, .025 2.8%, .101 6.1%, .539 18.9%, .721 25.3%, .849, .945 38%, .98, 1.007 46%, 1.02, 1.021, 1.013 63%, 1.001, .995, 1); /* overshoot spring */
+  --spring-soft: cubic-bezier(.34, 1.28, .5, 1);
+  --t-spring: 420ms;
+
+  /* fluid hero number */
+  --f-hero: clamp(38px, 11vw, 52px);
+
+  /* subtle film grain — kills gradient banding, reads as premium glass */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+/* wide-gamut accents — richer coral/mint/gold/sea on P3 screens (the iPhone target) */
+@media (color-gamut: p3) {
+  :root {
+    --coral: color(display-p3 .922 .404 .494);
+    --coral-soft: color(display-p3 1 .573 .659);
+    --coral-deep: color(display-p3 .827 .318 .431);
+    --mint: color(display-p3 .204 .714 .612);
+    --mint-soft: color(display-p3 .518 .871 .784);
+    --gold: color(display-p3 .878 .655 .188);
+    --sea-hi: color(display-p3 .451 .863 .78);
+    --sea-lo: color(display-p3 .11 .376 .478);
+    --sea-sun: color(display-p3 1 .878 .553);
+  }
+}

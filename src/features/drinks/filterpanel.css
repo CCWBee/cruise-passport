@@ -1,0 +1,23 @@
+.fpanel { padding: 16px; margin-bottom: 12px; }
+.fhead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.fhead-r { font-size: 14px; }
+.fhead-r b { color: var(--coral-deep); }
+.fclear { font-size: 12.5px; font-weight: 800; color: var(--coral-deep); }
+
+.fseg-label { display: block; margin: 12px 0 6px 2px; }
+.fseg-label:first-of-type { margin-top: 0; }
+
+.fquick { display: flex; flex-wrap: wrap; gap: 7px; margin: 14px 0 6px; }
+
+.fgrp { margin-top: 10px; border-radius: var(--r-md); background: rgba(255, 255, 255, .35); }
+.fgrp > summary {
+  list-style: none; cursor: pointer; padding: 12px 13px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 13.5px; font-weight: 700;
+}
+.fgrp > summary::-webkit-details-marker { display: none; }
+.fsum { font-size: 11.5px; color: var(--ink-3); font-weight: 650; }
+.fgrp[open] .fsum { display: none; }
+.fcloud { display: flex; flex-wrap: wrap; gap: 7px; padding: 2px 13px 13px; }
+.fvdeck-h { font-size: 10.5px; color: var(--ink-3); font-weight: 800; letter-spacing: .05em; margin: 4px 0 0; padding: 0 13px; }
+.fvdeck .fcloud { padding-top: 6px; }

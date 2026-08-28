@@ -1,0 +1,13 @@
+.view {
+  min-height: 100vh;
+  padding-bottom: calc(var(--nav-h) + 24px + var(--safe-b));
+}
+.app-head {
+  padding: calc(12px + var(--safe-t)) 0 8px;
+}
+.app-head-in { display: flex; align-items: center; gap: 8px; }
+.brand { display: inline-flex; color: var(--coral); }
+.brand-name { font-size: 15px; font-weight: 650; letter-spacing: -.01em; color: var(--ink); }
+
+.page { padding-top: var(--s3); }
+.page-lead { margin: 2px 4px var(--s4); }

@@ -1,0 +1,144 @@
+/* reset + ground + type + Liquid Sea Glass primitives */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body, #root { margin: 0; padding: 0; min-height: 100%; }
+html {
+  -webkit-text-size-adjust: 100%;
+  color-scheme: light;
+  accent-color: var(--coral);
+  caret-color: var(--coral);
+}
+#root { min-height: 100dvh; }
+
+body {
+  font-family: var(--font);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.5;
+  background: var(--cream);
+  overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-optical-sizing: auto;
+}
+::selection { background: color-mix(in oklab, var(--coral) 22%, transparent); }
+h1, h2, h3, .t-display, .t-title, .t-h2, .d-name { text-wrap: balance; }
+p { text-wrap: pretty; }
+
+/* thin, quiet scrollbars */
+* { scrollbar-width: thin; scrollbar-color: var(--ink-3) transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--ink-line); border-radius: 99px; border: 2px solid transparent; background-clip: padding-box; }
+
+/* the warm dawn-sea ground — fixed layer, glows up through glass */
+.ground {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1100px 620px at 88% -8%, var(--wash-dawn) 0%, transparent 58%),
+    radial-gradient(880px 560px at -10% 10%, var(--wash-sky) 0%, transparent 56%),
+    radial-gradient(820px 640px at 50% 112%, var(--wash-foam) 0%, transparent 60%),
+    var(--cream);
+}
+/* fine grain over the ground — removes gradient banding, adds tactile depth */
+.ground::after {
+  content: ''; position: absolute; inset: 0;
+  background-image: var(--grain); background-size: 160px 160px;
+  opacity: .035; mix-blend-mode: multiply;
+}
+
+button, input, textarea, select { font-family: inherit; font-size: inherit; color: inherit; }
+button { border: 0; background: none; cursor: pointer; padding: 0; color: inherit; }
+input, textarea { border: 0; outline: none; }
+a { color: inherit; text-decoration: none; }
+
+:focus-visible { outline: 2.5px solid color-mix(in oklab, var(--lilac) 90%, var(--ink)); outline-offset: 2px; border-radius: 10px; }
+
+h1, h2, h3, p { margin: 0; }
+
+.wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 var(--s4); }
+.hide { display: none !important; }
+.center { text-align: center; }
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* ── type roles ── */
+.t-display { font-size: 48px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
+.t-title { font-size: 24px; font-weight: 700; letter-spacing: -.01em; line-height: 1.2; }
+.t-h2 { font-size: 17px; font-weight: 700; letter-spacing: -.01em; }
+.t-body { font-size: 15px; font-weight: 500; }
+.t-strong { font-size: 15px; font-weight: 650; }
+.t-meta { font-size: 11.5px; font-weight: 600; letter-spacing: .02em; color: var(--ink-3); }
+.t-micro { font-size: 10.5px; font-weight: 700; }
+.eyebrow { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+.muted { color: var(--ink-2); }
+
+/* ── Liquid Glass material primitives ── */
+/* content surface: static frost (no live blur — cheap, used on cards/lists).
+   Depth comes from a bright top specular edge + a faint inner floor shadow. */
+.glass {
+  position: relative;
+  background: var(--glass-film);
+  background-image: var(--glass-highlight);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-lg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .65),      /* top specular edge */
+    inset 0 -1px 1px rgba(33, 58, 87, .04),       /* floor */
+    var(--sh-2);
+}
+/* live-blur chrome: reserved for nav, sheet scrim, floating chips — true Liquid Glass */
+.glass-live {
+  background: var(--glass-fallback);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7);
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-live {
+    background: var(--glass-film-light);
+    -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-sat)) brightness(1.06);
+    backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-sat)) brightness(1.06);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass-live { background: var(--glass-fallback); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+
+.card { padding: var(--s4); margin-bottom: var(--s3); }
+
+/* pressable — the liquid-glass squish, on the composited `scale` property with a spring */
+.pressable { transition: scale var(--t-press) var(--e-out); touch-action: manipulation; }
+.pressable:active { scale: .96; }
+@media (hover: hover) { .pressable { transition: scale var(--t-press) var(--e-out), filter .2s ease; } }
+
+/* pill button */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  border-radius: var(--r-pill); padding: 11px 17px; font-size: 13.5px; font-weight: 700;
+  background: var(--glass-film-light); border: 1px solid var(--glass-border); box-shadow: var(--sh-1);
+  transition: transform var(--t-press) var(--e-out);
+}
+.btn:active { transform: scale(.96); }
+.btn-coral { background: var(--coral); color: var(--on-accent); border-color: transparent; box-shadow: var(--sh-1); }
+.btn-mint { background: var(--mint); color: #06342b; border-color: transparent; }
+.btn-wide { width: 100%; }
+
+/* tags (package/status/flavour pills) */
+.tag {
+  font-size: 10.5px; font-weight: 800; padding: 3px 9px; border-radius: var(--r-pill);
+  background: rgba(33, 58, 87, .06); color: var(--ink-2);
+}
+.tag-plus { background: rgba(47, 183, 156, .16); color: var(--mint-ink); }
+.tag-prem { background: rgba(228, 167, 44, .18); color: var(--gold-ink); }
+.tag-over { background: rgba(240, 99, 127, .15); color: var(--coral-ink); }
+.tag-price { background: rgba(33, 58, 87, .06); color: var(--ink-2); }
+
+.mini {
+  display: inline-block; background: var(--glass-film-light); border: 1px solid var(--glass-border);
+  border-radius: var(--r-pill); padding: 6px 11px; font-size: 12px; font-weight: 650;
+  box-shadow: var(--sh-1); margin: 0 6px 6px 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}
