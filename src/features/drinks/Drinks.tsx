@@ -27,6 +27,7 @@ export function Drinks() {
     if (p.has('openf')) setShowFilters(true)
     if (p.get('q')) setQ(p.get('q')!)
     if (p.get('drink')) setOpenId(p.get('drink'))
+    if (p.has('add')) setShowAdd(true)
   }, [setShowFilters])
 
   const { results, counts } = useMemo(
