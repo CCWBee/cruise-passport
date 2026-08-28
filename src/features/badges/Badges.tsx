@@ -4,6 +4,7 @@ import { computeStats } from '../../state/stats'
 import { useAllDrinks, useStore } from '../../state/store'
 import { IconTrophy } from '../../ui/Icon'
 import { Sheet } from '../../ui/Sheet'
+import { EMBLEMS } from './emblems-data'
 import './badges.css'
 
 const Medallion = lazy(() => import('./Medallion'))
@@ -60,7 +61,17 @@ function MedalDisc({ badge, earned, large = false }: MedalDiscProps) {
         <circle className="medal-inner-highlight" cx="40" cy="36" r="26" />
       </svg>
       <span className="medal-emblem">
-        <IconTrophy size={large ? 38 : 27} />
+        {EMBLEMS[badge.id] ? (
+          <svg
+            className="medal-emblem-svg"
+            viewBox="0 0 100 100"
+            width={large ? 48 : 34}
+            height={large ? 48 : 34}
+            dangerouslySetInnerHTML={{ __html: EMBLEMS[badge.id] }}
+          />
+        ) : (
+          <IconTrophy size={large ? 38 : 27} />
+        )}
       </span>
     </div>
   )

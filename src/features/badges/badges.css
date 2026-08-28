@@ -223,3 +223,9 @@
   background: rgba(28, 60, 86, .07);
   color: var(--ink-2);
 }
+
+/* per-badge emblem struck into the disc (2D grid + detail) */
+.medal-emblem-svg { display: block; filter: drop-shadow(0 .5px 0 rgba(255, 255, 255, .45)); }
+.medal-emblem-svg :is(path, circle, polygon, ellipse, rect) { fill: rgba(24, 40, 56, .34); }
+.medal-locked .medal-emblem-svg :is(path, circle, polygon, ellipse, rect),
+.is-locked .medal-emblem-svg :is(path, circle, polygon, ellipse, rect) { fill: rgba(70, 84, 100, .28); }
