@@ -1,0 +1,15 @@
+.add-title { display: flex; align-items: center; gap: 8px; margin: 5px 0 7px; }
+.add-title svg { color: var(--coral); }
+.add-lead { margin-bottom: 4px; }
+.ds-field select {
+  width: 100%; appearance: none; background: #fff;
+  border: 1px solid var(--glass-border); border-radius: var(--r-md);
+  padding: 12px 38px 12px 14px; font-size: 16px; font-weight: 600; color: var(--ink);
+  box-shadow: inset 0 1px 2px rgba(33, 58, 87, .06);
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink-3) 50%), linear-gradient(135deg, var(--ink-3) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+  background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
+}
+.ds-field select:focus-visible { outline: 2.5px solid var(--lilac); }
+.add-help { display: block; margin: 5px 4px 0; font-size: 10.5px; font-weight: 600; }
+.add-submit { margin-top: 20px; }

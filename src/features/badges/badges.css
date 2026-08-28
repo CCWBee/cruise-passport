@@ -1,0 +1,230 @@
+.badges-page {
+  padding-top: var(--s2);
+}
+
+.badges-lead {
+  margin: var(--s1) 0 var(--s5);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--s3);
+}
+
+.badge-card {
+  display: flex;
+  min-height: 216px;
+  flex-direction: column;
+  align-items: center;
+  padding: 18px var(--s3) 15px;
+  text-align: center;
+}
+
+.badge-card.is-locked {
+  background-color: rgba(244, 247, 249, .58);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .68), var(--sh-1);
+}
+
+.badge-name {
+  display: block;
+  margin-top: var(--s3);
+  line-height: 1.2;
+}
+
+.badge-hint {
+  display: block;
+  margin-top: var(--s1);
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+
+.badge-progress {
+  display: block;
+  width: 100%;
+  margin-top: auto;
+  padding-top: var(--s3);
+}
+
+.badge-progress-track {
+  display: block;
+  height: 5px;
+  overflow: hidden;
+  border-radius: var(--r-pill);
+  background: rgba(28, 60, 86, .08);
+  box-shadow: inset 0 1px 2px rgba(28, 60, 86, .14), inset 0 -1px 0 rgba(255, 255, 255, .56);
+}
+
+.badge-progress-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: rgba(28, 60, 86, .28);
+}
+
+.badge-progress-copy {
+  display: block;
+  margin-top: 5px;
+  color: var(--ink-3);
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.medal-disc {
+  position: relative;
+  width: 72px;
+  height: 80px;
+  flex: none;
+  color: rgba(255, 255, 255, .9);
+  filter: drop-shadow(0 6px 7px rgba(28, 60, 86, .18));
+}
+
+.medal-art {
+  display: block;
+  width: 72px;
+  height: auto;
+  overflow: visible;
+}
+
+.medal-stop-bright {
+  stop-color: #c98a4c;
+}
+
+.medal-stop-deep {
+  stop-color: #8a5a2c;
+}
+
+.medal-silver .medal-stop-bright {
+  stop-color: #d7dee6;
+}
+
+.medal-silver .medal-stop-deep {
+  stop-color: #9aa7b4;
+}
+
+.medal-gold .medal-stop-bright {
+  stop-color: color-mix(in oklab, var(--gold) 68%, white);
+}
+
+.medal-gold .medal-stop-deep {
+  stop-color: var(--gold);
+}
+
+.medal-special .medal-stop-bright {
+  stop-color: color-mix(in oklab, var(--fruit-grape) 62%, white);
+}
+
+.medal-special .medal-stop-deep {
+  stop-color: var(--fruit-grape);
+}
+
+.medal-rim {
+  stroke: rgba(255, 255, 255, .54);
+  stroke-width: 2.5;
+}
+
+.medal-face {
+  stroke: rgba(55, 39, 24, .14);
+  stroke-width: 1.4;
+}
+
+.medal-inner-glow {
+  fill: none;
+  stroke: rgba(255, 255, 255, .2);
+  stroke-width: 1;
+}
+
+.medal-ribbons path:first-child {
+  fill: var(--coral);
+}
+
+.medal-ribbons path:last-child {
+  fill: var(--fruit-mango);
+}
+
+.medal-emblem {
+  position: absolute;
+  top: 23px;
+  left: 23px;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 1px 1px rgba(55, 39, 24, .2));
+}
+
+.medal-disc.is-locked {
+  color: rgba(79, 97, 112, .32);
+  filter: drop-shadow(0 3px 6px rgba(28, 60, 86, .08));
+}
+
+.medal-disc.is-locked .medal-stop-bright {
+  stop-color: rgba(234, 239, 243, .9);
+}
+
+.medal-disc.is-locked .medal-stop-deep {
+  stop-color: rgba(164, 177, 188, .58);
+}
+
+.medal-disc.is-locked .medal-rim {
+  stroke: rgba(255, 255, 255, .62);
+}
+
+.medal-disc.is-locked .medal-face {
+  stroke: rgba(85, 103, 118, .1);
+}
+
+.medal-disc.is-locked .medal-specular {
+  opacity: .58;
+}
+
+.medal-disc.is-large {
+  width: 116px;
+  height: 129px;
+}
+
+.medal-disc.is-large .medal-art {
+  width: 116px;
+}
+
+.medal-disc.is-large .medal-emblem {
+  top: 38px;
+  left: 39px;
+}
+
+.badge-sheet {
+  padding: var(--s2) var(--s2) var(--s5);
+}
+
+.medal-mount {
+  display: grid;
+  min-height: 142px;
+  place-items: center;
+  margin-bottom: var(--s2);
+}
+
+.badge-sheet-hint {
+  margin-top: 6px;
+}
+
+.badge-status {
+  display: inline-block;
+  margin-top: var(--s4);
+}
+
+.badge-status.is-earned {
+  background: rgba(35, 192, 138, .16);
+  color: var(--mint-ink);
+}
+
+.badge-status.is-locked {
+  background: rgba(28, 60, 86, .07);
+  color: var(--ink-2);
+}
+
+@media (max-width: 360px) {
+  .badge-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

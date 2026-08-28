@@ -4,7 +4,8 @@ import { facets, nChosen, loosest, GROUP_LABEL } from './facets'
 import { DrinkCard } from './DrinkCard'
 import { FilterPanel } from './FilterPanel'
 import { DrinkSheet } from './DrinkSheet'
-import { IconSearch, IconClose, IconSlider } from '../../ui/Icon'
+import { AddSheet } from './AddSheet'
+import { IconSearch, IconClose, IconSlider, IconPlus } from '../../ui/Icon'
 import './drinks.css'
 
 export function Drinks() {
@@ -16,6 +17,7 @@ export function Drinks() {
   const clear = useStore((s) => s.clearFilters)
   const [q, setQ] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
+  const [showAdd, setShowAdd] = useState(false)
 
   // deep link: /drinks?openf opens the filter panel (also used for QA)
   useEffect(() => {
@@ -54,7 +56,10 @@ export function Drinks() {
 
       {showFilters && <FilterPanel counts={counts} resultN={results.length} constrained={constrained} />}
 
-      <div className="dcount">{results.length} of {drinks.length} drinks</div>
+      <div className="dtoolbar">
+        <div className="dcount tnum">{results.length} of {drinks.length} drinks</div>
+        <button className="btn dadd" onClick={() => setShowAdd(true)}><IconPlus size={16} />Add a drink</button>
+      </div>
 
       {results.length === 0 ? (
         <div className="glass card center dempty">
@@ -71,6 +76,7 @@ export function Drinks() {
       )}
 
       {openId && <DrinkSheet id={openId} onClose={() => setOpenId(null)} onOpen={setOpenId} />}
+      {showAdd && <AddSheet onClose={() => setShowAdd(false)} />}
     </div>
   )
 }

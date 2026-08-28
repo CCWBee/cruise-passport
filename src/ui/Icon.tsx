@@ -97,3 +97,40 @@ export const IconClose = (p: P) => (
 export const IconSlider = (p: P) => (
   <Svg {...p}><path d="M4 8h10M18 8h2M4 16h2M10 16h10" /><circle cx="15" cy="8" r="2.2" /><circle cx="7" cy="16" r="2.2" /></Svg>
 )
+
+export const IconLink = (p: P) => (
+  <Svg {...p}>
+    <path d="M9.2 14.8 7.7 16.3a3.2 3.2 0 0 1-4.5-4.5l3.1-3.1a3.2 3.2 0 0 1 4.5 0" />
+    <path d="m14.8 9.2 1.5-1.5a3.2 3.2 0 1 1 4.5 4.5l-3.1 3.1a3.2 3.2 0 0 1-4.5 0" />
+    <path d="m8.8 15.2 6.4-6.4" />
+  </Svg>
+)
+export const IconMedal = (p: P) => (
+  <Svg {...p}>
+    <path d="m8.2 4 3.8 5 3.8-5M9.2 4H6.5l3 6.2M14.8 4h2.7l-3 6.2" />
+    <circle cx="12" cy="14.3" r="5.2" />
+    <path d="m12 11.7.8 1.7 1.9.2-1.4 1.3.4 1.9-1.7-.9-1.7.9.4-1.9-1.4-1.3 1.9-.2.8-1.7z" />
+  </Svg>
+)
+export const IconPlus = (p: P) => (
+  <Svg {...p}><path d="M12 5v14M5 12h14" /></Svg>
+)
+export const IconPin = (p: P) => (
+  <Svg {...p}>
+    <path d="M19 10.1c0 5-7 10-7 10s-7-5-7-10a7 7 0 1 1 14 0z" />
+    <circle cx="12" cy="10" r="2.3" />
+  </Svg>
+)
+export const IconCalendar = (p: P) => (
+  <Svg {...p}>
+    <rect x="4" y="5.5" width="16" height="14" rx="2" />
+    <path d="M8 3.8v3.4M16 3.8v3.4M7.5 10h9" />
+    <path d="M8 13h.01M12 13h.01M16 13h.01M8 16h.01M12 16h.01" strokeWidth="2.4" />
+  </Svg>
+)
+export const IconTrophy = (p: P) => (
+  <Svg {...p}>
+    <path d="M8 5h8v3.8a4 4 0 0 1-8 0V5zM12 13v4M8.5 20h7M10 17h4" />
+    <path d="M8 7H5v1.2a3 3 0 0 0 3.5 3M16 7h3v1.2a3 3 0 0 1-3.5 3" />
+  </Svg>
+)

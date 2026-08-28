@@ -17,7 +17,9 @@
 .dfbtn:active { transform: scale(.95); }
 .dfbtn.on { background: var(--coral); color: #fff; }
 
-.dcount { font-size: 12px; color: var(--ink-3); font-weight: 700; margin: 2px 0 10px; padding-left: 4px; }
+.dtoolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 2px 0 10px; }
+.dcount { font-size: 12px; color: var(--ink-3); font-weight: 700; padding-left: 4px; }
+.dadd { flex: none; padding: 7px 11px; font-size: 12px; }
 .dlist { display: flex; flex-direction: column; gap: 12px; }
 .dempty { padding: 22px 18px; }
 .dempty-acts { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
