@@ -1,32 +1,43 @@
-# React + TypeScript + Vite
+# Sun Princess Cocktail Passport
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+An offline-first PWA cocktail passport for the *Sun Princess* cruise (3–17 October 2026): browse the
+214 drinks aboard, filter them, tick them off, rate and log them by day, earn 3D award medallions,
+and see your voyage as a *Cruise Wrapped* story. Built in a **"Liquid Sea Glass"** design language —
+Apple Liquid Glass material over a warm beach palette, with a living WebGL sea whose tide-line is your
+completion.
 
-Currently, two official plugins are available:
+**Live demo:** https://ccwbee.github.io/cruise-passport/?seed &nbsp;·&nbsp; the `?seed` loads sample
+data + two friends so every surface is populated. Drop `?seed` to start from an empty passport.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Highlights
 
-## React Compiler
+- **Six surfaces** — a living-sea Home, a faceted Drinks browser (self-excluded live counts,
+  segmented controls), a bow-to-stern Ship deck map, hand-rolled Stats charts, a Badges wall, and a
+  15-day travel-journal Log.
+- **3D award medallions** — react-three-fiber matcap-metal coins, 18 unique embossed emblems, spun
+  and struck; lazy-loaded so they cost nothing until opened.
+- **Cruise Wrapped** — a Spotify-Wrapped-style story of your voyage, built from real data.
+- **Social, woven in** — friends join by an offline share-code merge; their ratings, recommendations
+  and comments surface *in context* (a "recommended by" line, friend-dots, group best-bars), never as
+  a separate tab, and invisible until you add a friend.
+- **Offline-first PWA** — installable, works with no network (it is a cruise, at sea).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Stack
 
-## Expanding the Oxlint configuration
+Vite · React + TypeScript · react-three-fiber / three · Zustand · vite-plugin-pwa. No backend today;
+the social layer is offline share-codes with a pluggable sync seam for a future hosted API.
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## Develop
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev        # http://localhost:5173
+npm run build      # production build (base = /cruise-passport/)
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Deployed to GitHub Pages by the `Deploy to GitHub Pages` Actions workflow on every push to `main`.
+
+## Not wired up yet
+
+Marked in-app with a *Coming soon* tag: drink photos, the Wrapped 3D finale, and the Wrapped
+share-image export. Async group games and a live sync backend are on the roadmap.
