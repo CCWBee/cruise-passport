@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { IconClose } from './Icon'
+import { SheetWave } from './SheetWave'
 import './sheet.css'
 
 export function Sheet({ onClose, children, eyebrow }: { onClose: () => void; children: ReactNode; eyebrow?: ReactNode }) {
@@ -58,6 +59,7 @@ export function Sheet({ onClose, children, eyebrow }: { onClose: () => void; chi
   return createPortal(
     <div className="sheet-bg glass-live" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="sheet" ref={sheetRef} role="dialog" aria-modal>
+        <SheetWave />
         <div className="sheet-grab" aria-hidden />
         <button className="sheet-x pressable" aria-label="Close" onClick={onClose}><IconClose size={16} /></button>
         <div className="sheet-scroll" ref={scrollRef}>

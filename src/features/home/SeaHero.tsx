@@ -12,11 +12,11 @@ uniform float uTime;
 uniform float uLevel;   // 0..1 completion
 uniform float uReduced; // 1.0 = hold a still frame
 
-const vec3 SKY_TOP = vec3(1.00,0.914,0.827);
-const vec3 SKY_HOR = vec3(1.00,0.827,0.690);
-const vec3 SEA_HI  = vec3(0.435,0.863,0.769);
-const vec3 SEA_LO  = vec3(0.090,0.376,0.478);
-const vec3 SUN     = vec3(1.00,0.878,0.541);
+const vec3 SKY_TOP = vec3(0.745,0.890,0.961);
+const vec3 SKY_HOR = vec3(0.918,0.965,0.941);
+const vec3 SEA_HI  = vec3(0.310,0.827,0.776);
+const vec3 SEA_LO  = vec3(0.078,0.424,0.576);
+const vec3 SUN     = vec3(1.000,0.871,0.561);
 
 float hash(vec2 p){ return fract(sin(dot(p,vec2(41.3,289.1)))*43758.5453); }
 float noise(vec2 p){

@@ -2,36 +2,40 @@
    rare accent = state. See REVIEW/SPEC.md. */
 :root {
   /* ground washes (composed on a fixed layer, glow up through glass) */
-  --cream: #FFF7EF;
-  --wash-dawn: #FFE0E7;
-  --wash-sky: #DBEFFB;
-  --wash-foam: #E7FAF2;
+  --cream: #FBF3E2;
+  --wash-dawn: #FFEBCB;
+  --wash-sky: #CDEBF7;
+  --wash-foam: #E1F8F0;
 
   /* ink — secondary/tertiary as ALPHA, never CSS opacity */
-  --ink: #213A57;
-  --ink-2: rgba(33, 58, 87, .66);
-  --ink-3: rgba(33, 58, 87, .44);
-  --ink-line: rgba(33, 58, 87, .10);
+  --ink: #1C3C56;
+  --ink-2: rgba(28,60,86,.66);
+  --ink-3: rgba(28,60,86,.44);
+  --ink-line: rgba(28,60,86,.10);
   --on-accent: #fff;
 
   /* accent = state, kept rare */
-  --coral: #F0637F;
-  --coral-soft: #FF90A6;
-  --coral-deep: #D64E6B;
-  --coral-ink: #C34B67;      /* coral text where small text needs contrast on cream */
-  --gold: #E4A72C;           /* ratings only */
-  --gold-ink: #9C6B00;
-  --mint: #2FB79C;           /* tried only */
-  --mint-soft: #7FDFC9;
-  --mint-ink: #1F7A67;
-  --lilac: #B7A2EE;          /* focus ring only */
+  --coral: #FF5B78;
+  --coral-soft: #FF88A0;
+  --coral-deep: #E23C61;
+  --coral-ink: #D23A5C;      /* coral text where small text needs contrast on cream */
+  --gold: #F6B02E;           /* ratings only */
+  --gold-ink: #965F00;
+  --mint: #23C08A;           /* tried only */
+  --mint-soft: #7FE3BB;
+  --mint-ink: #147C58;
+  --lilac: #9B8CF2;          /* focus ring only */
+  --aqua: #16B5CE;
+  /* tropical fruit burst set (celebration / decorative accents) */
+  --fruit-melon: #FF5B78; --fruit-mango: #FF9F45; --fruit-lime: #59CF6B;
+  --fruit-aqua: #22C0D6; --fruit-grape: #9B8CF2; --fruit-pine: #F6C544;
 
   /* sea (hero) — mirror of the GLSL constants */
-  --sea-sky-top: #FFE9D4;
-  --sea-sky-hor: #FFD3B0;
-  --sea-hi: #6FDCC4;         /* brand mint, as water */
-  --sea-lo: #17607A;
-  --sea-sun: #FFE08A;
+  --sea-sky-top: #BEE3F5;
+  --sea-sky-hor: #EAF6F0;
+  --sea-hi: #4FD3C6;         /* brand mint, as water */
+  --sea-lo: #146C93;
+  --sea-sun: #FFDE8F;
 
   /* liquid glass material */
   --glass-film: rgba(255, 253, 250, .72);       /* content surfaces (static frost) */
@@ -87,14 +91,14 @@
 /* wide-gamut accents — richer coral/mint/gold/sea on P3 screens (the iPhone target) */
 @media (color-gamut: p3) {
   :root {
-    --coral: color(display-p3 .922 .404 .494);
-    --coral-soft: color(display-p3 1 .573 .659);
-    --coral-deep: color(display-p3 .827 .318 .431);
-    --mint: color(display-p3 .204 .714 .612);
-    --mint-soft: color(display-p3 .518 .871 .784);
-    --gold: color(display-p3 .878 .655 .188);
-    --sea-hi: color(display-p3 .451 .863 .78);
-    --sea-lo: color(display-p3 .11 .376 .478);
-    --sea-sun: color(display-p3 1 .878 .553);
+    --coral: color(display-p3 1 .357 .471);
+    --coral-soft: color(display-p3 1 .541 .627);
+    --coral-deep: color(display-p3 .886 .235 .38);
+    --mint: color(display-p3 .137 .753 .541);
+    --mint-soft: color(display-p3 .498 .89 .733);
+    --gold: color(display-p3 .965 .69 .18);
+    --sea-hi: color(display-p3 .31 .827 .776);
+    --sea-lo: color(display-p3 .078 .424 .576);
+    --sea-sun: color(display-p3 1 .871 .561);
   }
 }
