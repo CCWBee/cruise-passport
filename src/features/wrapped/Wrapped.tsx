@@ -13,6 +13,7 @@ import {
   WRAPPED_TOTAL, deriveWrapped, voyageDateRange, wrappedUnlocked,
   type WrappedCard,
 } from './wrappedData'
+import { Soon } from '../../ui/Soon'
 import './wrapped.css'
 
 const SEEN_KEY = 'spcc-wrapped-seen'
@@ -160,7 +161,14 @@ function CardBody({ card }: { card: WrappedCard }) {
         </div>
       )
     case 'moment':
-      return <div className="wrapped-3d-slot" role="img" aria-label="Three-dimensional Wrapped moment placeholder" />
+      return (
+        <div className="wr-content wr-centred">
+          <div className="wrapped-3d-slot" role="img" aria-label="3D finale, coming soon" />
+          <p className="wr-eyebrow">One more thing</p>
+          <h2 className="wr-headline">The tide, in 3D</h2>
+          <p className="wr-sub"><Soon label="3D finale · coming soon" /></p>
+        </div>
+      )
     case 'finale':
       return (
         <div className="wr-content wr-finale">
@@ -179,12 +187,13 @@ function CardBody({ card }: { card: WrappedCard }) {
           </div>
           <button
             type="button"
-            className="btn btn-coral wr-save"
+            className="btn wr-save"
+            disabled
             onPointerDown={(event) => event.stopPropagation()}
-            onClick={(event) => { event.stopPropagation(); return undefined }}
           >
             Save my Wrapped
           </button>
+          <p className="wr-save-note"><Soon label="Shareable image · coming soon" /></p>
         </div>
       )
   }

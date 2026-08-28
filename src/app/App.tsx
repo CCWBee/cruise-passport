@@ -26,7 +26,7 @@ function Soon({ title }: { title: string }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Routes>
         <Route element={<Shell />}>
           <Route path="/" element={<Home />} />

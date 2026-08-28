@@ -2,8 +2,10 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// Liquid Sea Glass PWA — offline-first (installable, works at sea), Vercel-ready.
-export default defineConfig({
+// Liquid Sea Glass PWA. Base is '/cruise-passport/' for the GitHub Pages project site,
+// and '/' for local dev/preview.
+export default defineConfig(({ command }) => ({
+  base: command === 'build' ? '/cruise-passport/' : '/',
   plugins: [
     react(),
     VitePWA({
@@ -14,6 +16,7 @@ export default defineConfig({
         short_name: 'Cocktails',
         description: 'A cocktail passport for the Sun Princess, 3 to 17 October 2026.',
         start_url: '.',
+        scope: '.',
         display: 'standalone',
         orientation: 'portrait',
         theme_color: '#FBF3E2',
@@ -24,4 +27,4 @@ export default defineConfig({
       devOptions: { enabled: false },
     }),
   ],
-})
+}))
