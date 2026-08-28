@@ -1,9 +1,11 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { DAYS, DECKS, VENUES, VENUE_KEYS, menuFor, type Drink } from '../../data/model'
 import { useAllDrinks, useStore } from '../../state/store'
 import { bestRatedBars, useSources } from '../../state/social'
 import { computeStats } from '../../state/stats'
+import { GlassButton } from '../../ui/GlassButton'
 import { IconStar } from '../../ui/Icon'
+import { useCountUp } from '../../ui/useCountUp'
 import { DrinkSheet } from '../drinks/DrinkSheet'
 import './stats.css'
 
@@ -17,6 +19,14 @@ const PALETTE = [
 ]
 
 type BarRow = { label: string; value: number; total?: number }
+
+function useMountCountUp(target: number, ms: number) {
+  const [animatedTarget, setAnimatedTarget] = useState(0)
+
+  useEffect(() => setAnimatedTarget(target), [target])
+
+  return useCountUp(animatedTarget, ms)
+}
 
 function HeadStat({ value, label }: { value: ReactNode; label: string }) {
   return (
@@ -79,6 +89,7 @@ function BarChart({ rows, palette = false, colour = 'var(--sea-hi)', ariaLabel }
                 height="10"
                 rx="5"
                 fill={fill}
+                style={{ '--i': index } as CSSProperties}
               />
             )}
             <text className="stats-bar-value" x="100%" y={centre + 4} textAnchor="end">
@@ -119,6 +130,7 @@ function CategoryDonut({ rows, total }: { rows: [string, number][]; total: numbe
               stroke={PALETTE[index % PALETTE.length]}
               strokeDasharray={`${length} ${circumference - length}`}
               strokeDashoffset={offset}
+              style={{ '--i': index } as CSSProperties}
             />
           )
         })}
@@ -155,6 +167,7 @@ function VoyageChart({ byDay }: { byDay: Record<string, Drink[]> }) {
   const x = (index: number) => left + (index / (DAYS.length - 1)) * (width - left - right)
   const y = (value: number) => top + (1 - value / max) * (height - top - bottom)
   const points = values.map((value, index) => `${x(index)},${y(value)}`).join(' ')
+  const dLine = `M ${values.map((value, index) => `${x(index)} ${y(value)}`).join(' L ')}`
   const area = `${left},${height - bottom} ${points} ${width - right},${height - bottom}`
 
   return (
@@ -174,9 +187,11 @@ function VoyageChart({ byDay }: { byDay: Record<string, Drink[]> }) {
           <stop offset="1" stopColor="var(--sea-lo)" />
         </linearGradient>
       </defs>
-      <polygon points={area} fill="url(#stats-voyage-fill)" />
-      <polyline
-        points={points}
+      <polygon className="stats-voyage-area" points={area} fill="url(#stats-voyage-fill)" />
+      <path
+        className="stats-voyage-line"
+        d={dLine}
+        pathLength={1}
         fill="none"
         stroke="url(#stats-voyage-line)"
         strokeWidth="4"
@@ -211,10 +226,11 @@ function RatingList({ drinks, entries, onOpen }: {
         const rating = entries[drink.id]?.rating || 0
 
         return (
-          <button
-            className="stats-rating-row pressable"
+          <GlassButton
+            className="stats-rating-row"
             key={drink.id}
             type="button"
+            variant="secondary"
             onClick={() => onOpen(drink.id)}
           >
             <span className="stats-rating-copy">
@@ -228,7 +244,7 @@ function RatingList({ drinks, entries, onOpen }: {
                 </span>
               ))}
             </span>
-          </button>
+          </GlassButton>
         )
       })}
     </div>
@@ -243,6 +259,10 @@ export function Stats() {
   const [openId, setOpenId] = useState<string | null>(null)
   const stats = useMemo(() => computeStats(drinks, me), [drinks, me])
   const bars = useMemo(() => bestRatedBars(srcs, { minRatings: 2, barsOnly: true }).slice(0, 6), [srcs])
+  const pctShown = useMountCountUp(stats.pct, 900)
+  const triedShown = Math.round(useMountCountUp(stats.n, 900))
+  const streakShown = Math.round(useMountCountUp(stats.streak, 700))
+  const avgShown = useMountCountUp(stats.avg, 700)
 
   const deckRows = useMemo(() => DECKS.slice().reverse().map((deck) => {
     const deckDrinks = new Map(
@@ -289,12 +309,19 @@ export function Stats() {
   }
 
   return (
-    <div className="wrap page stats-page">
-      <section className="stats-head glass" aria-label="Voyage headline statistics">
-        <HeadStat value={`${stats.pct.toFixed(1)}%`} label="complete" />
-        <HeadStat value={`${stats.n}/${stats.total}`} label="tried" />
-        <HeadStat value={stats.streak} label="day streak" />
-        <HeadStat value={stats.avg ? stats.avg.toFixed(1) : '-'} label="avg rating" />
+    <div className="wrap page stats-page reveal">
+      <section className="stats-hero glass" aria-label="Voyage headline statistics">
+        <div className="stats-hero-main">
+          <div className="stats-hero-figure tnum">
+            {pctShown.toFixed(1)}<small>%</small>
+          </div>
+          <div className="stats-hero-label eyebrow">of the menu tried</div>
+        </div>
+        <div className="stats-hero-row">
+          <HeadStat value={triedShown} label={`of ${stats.total}`} />
+          <HeadStat value={streakShown} label="day streak" />
+          <HeadStat value={stats.avg ? avgShown.toFixed(1) : '-'} label="avg rating" />
+        </div>
       </section>
 
       <ChartCard title="Completion by deck">

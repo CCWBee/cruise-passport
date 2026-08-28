@@ -1,7 +1,10 @@
 import { useState, type FormEvent } from 'react'
 import { CATEGORIES, PLUS, PREM, VENUES, VENUE_KEYS, type Drink } from '../../data/model'
 import { useStore } from '../../state/store'
+import { TextField, TextArea, NumberField } from '../../ui/Field'
+import { GlassButton } from '../../ui/GlassButton'
 import { IconPlus } from '../../ui/Icon'
+import { Select } from '../../ui/Select'
 import { Sheet } from '../../ui/Sheet'
 import './drinksheet.css'
 import './addsheet.css'
@@ -48,36 +51,47 @@ export function AddSheet({ onClose }: { onClose: () => void }) {
       <div className="add-title"><IconPlus size={23} /><h2 className="t-title">Add a drink</h2></div>
       <p className="muted t-body add-lead">Add something new or missing from the published menus.</p>
       <form onSubmit={submit} autoComplete="off">
-        <label className="ds-field">
-          <span className="eyebrow">Name</span>
-          <input name="name" type="text" required autoFocus value={name} onChange={(event) => setName(event.target.value)} />
-        </label>
-        <label className="ds-field">
-          <span className="eyebrow">Venue</span>
-          <select name="venue" className="tnum" value={venue} onChange={(event) => setVenue(event.target.value)}>
-            {VENUE_KEYS.map((key) => <option key={key} value={key}>{VENUES[key].name} · Deck {VENUES[key].deck}</option>)}
-          </select>
-        </label>
-        <label className="ds-field">
-          <span className="eyebrow">Type</span>
-          <select name="type" value={category} onChange={(event) => setCategory(event.target.value)}>
-            {CATEGORIES.map((type) => <option key={type} value={type}>{type}</option>)}
-          </select>
-        </label>
-        <label className="ds-field">
-          <span className="eyebrow">Spirits</span>
-          <input name="spirits" type="text" value={spirits} onChange={(event) => setSpirits(event.target.value)} placeholder="Gin, liqueur" />
-          <small className="add-help muted">Separate more than one with commas.</small>
-        </label>
-        <label className="ds-field">
-          <span className="eyebrow">Ingredients</span>
-          <textarea name="ingredients" rows={3} value={ingredients} onChange={(event) => setIngredients(event.target.value)} />
-        </label>
-        <label className="ds-field">
-          <span className="eyebrow">Price</span>
-          <input name="price" className="tnum" type="number" min="0" step="0.01" inputMode="decimal" value={price} onChange={(event) => setPrice(event.target.value)} placeholder="Leave blank if unknown" />
-        </label>
-        <button type="submit" className="btn btn-coral btn-wide add-submit"><IconPlus size={18} />Add it</button>
+        <TextField id="add-name" label="Name" name="name" required autoFocus value={name} onChange={(event) => setName(event.target.value)} />
+        <div className="field">
+          <span className="field-label eyebrow">Venue</span>
+          <Select
+            value={venue}
+            onChange={setVenue}
+            options={VENUE_KEYS.map((key) => ({ value: key, label: `${VENUES[key].name} · Deck ${VENUES[key].deck}` }))}
+            ariaLabel="Venue"
+          />
+        </div>
+        <div className="field">
+          <span className="field-label eyebrow">Type</span>
+          <Select
+            value={category}
+            onChange={setCategory}
+            options={CATEGORIES.map((type) => ({ value: type, label: type }))}
+            ariaLabel="Type"
+          />
+        </div>
+        <TextField
+          id="add-spirits"
+          label="Spirits"
+          name="spirits"
+          hint="Separate more than one with commas."
+          value={spirits}
+          onChange={(event) => setSpirits(event.target.value)}
+          placeholder="Gin, liqueur"
+        />
+        <TextArea id="add-ing" label="Ingredients" name="ingredients" rows={3} value={ingredients} onChange={(event) => setIngredients(event.target.value)} />
+        <NumberField
+          id="add-price"
+          label="Price"
+          name="price"
+          min="0"
+          step="0.01"
+          inputMode="decimal"
+          value={price}
+          onChange={(event) => setPrice(event.target.value)}
+          placeholder="Leave blank if unknown"
+        />
+        <GlassButton variant="primary" block type="submit" icon={<IconPlus size={18} />} className="add-submit">Add it</GlassButton>
       </form>
     </Sheet>
   )

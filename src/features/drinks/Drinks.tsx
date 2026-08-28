@@ -5,7 +5,9 @@ import { DrinkCard } from './DrinkCard'
 import { FilterPanel } from './FilterPanel'
 import { DrinkSheet } from './DrinkSheet'
 import { AddSheet } from './AddSheet'
-import { IconSearch, IconClose, IconSlider, IconPlus } from '../../ui/Icon'
+import { SearchField } from '../../ui/SearchField'
+import { GlassButton } from '../../ui/GlassButton'
+import { IconSlider, IconPlus } from '../../ui/Icon'
 import './drinks.css'
 
 export function Drinks() {
@@ -37,36 +39,36 @@ export function Drinks() {
 
   return (
     <div className="wrap page drinks">
-      <div className="dsearch glass-live">
-        <IconSearch size={19} />
-        <input
-          value={q} onChange={(e) => setQ(e.target.value)} inputMode="search"
-          placeholder="Drink, ingredient, bar, spirit" aria-label="Search drinks"
-        />
-        {q && <button className="dsearch-x" aria-label="Clear search" onClick={() => setQ('')}><IconClose size={16} /></button>}
-        <button
-          className={'dfbtn' + (chosen > 0 ? ' on' : '')}
-          aria-expanded={showFilters}
-          onClick={() => setShowFilters(!showFilters)}
-        >
-          <IconSlider size={16} />
-          <span className="tnum">{results.length}</span>
-        </button>
-      </div>
+      <SearchField
+        value={q}
+        onChange={setQ}
+        ariaLabel="Search drinks"
+        placeholder="Drink, ingredient, bar, spirit"
+        trailing={(
+          <button
+            className={'dfbtn' + (chosen > 0 ? ' on' : '')}
+            aria-expanded={showFilters}
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <IconSlider size={16} />
+            <span className="tnum">{results.length}</span>
+          </button>
+        )}
+      />
 
       {showFilters && <FilterPanel counts={counts} resultN={results.length} constrained={constrained} />}
 
       <div className="dtoolbar">
         <div className="dcount tnum">{results.length} of {drinks.length} drinks</div>
-        <button className="btn dadd" type="button" aria-haspopup="dialog" onClick={() => setShowAdd(true)}><IconPlus size={16} />Add a drink</button>
+        <GlassButton size="sm" icon={<IconPlus size={16} />} type="button" aria-haspopup="dialog" onClick={() => setShowAdd(true)}>Add a drink</GlassButton>
       </div>
 
       {results.length === 0 ? (
         <div className="glass card center dempty">
           <p className="muted">Nothing matches all of those.</p>
           <div className="dempty-acts">
-            {drop && <button className="btn" onClick={() => clear()}>Drop {GROUP_LABEL[drop.key]} (+{drop.n})</button>}
-            <button className="btn btn-coral" onClick={() => { clear(); setQ('') }}>Reset</button>
+            {drop && <GlassButton onClick={() => clear()}>Drop {GROUP_LABEL[drop.key]} (+{drop.n})</GlassButton>}
+            <GlassButton variant="primary" onClick={() => { clear(); setQ('') }}>Reset</GlassButton>
           </div>
         </div>
       ) : (

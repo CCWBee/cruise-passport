@@ -1,9 +1,11 @@
-import { useMemo, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { SeaHero } from './SeaHero'
 import { useStore, useAllDrinks } from '../../state/store'
 import { computeStats } from '../../state/stats'
 import { DAYS, START, today, VENUES } from '../../data/model'
 import { useCountUp } from '../../ui/useCountUp'
+import { DrinkSheet } from '../drinks/DrinkSheet'
 import { WrappedTeaser } from '../wrapped/WrappedTeaser'
 import { FriendsCard } from './FriendsCard'
 import './home.css'
@@ -27,16 +29,22 @@ function Stat({ value, label }: { value: ReactNode; label: string }) {
   )
 }
 
+function CountStat({ value, label }: { value: number; label: string }) {
+  const shown = useCountUp(value, 600)
+  return <Stat value={Math.round(shown)} label={label} />
+}
+
 export function Home() {
   const drinks = useAllDrinks()
   const me = useStore((s) => s.me)
+  const [openId, setOpenId] = useState<string | null>(null)
   const s = useMemo(() => computeStats(drinks, me), [drinks, me])
   const pct = Math.min(100, s.pct)
   const pctShown = useCountUp(pct)
   const cd = countdown()
 
   return (
-    <div className="wrap page home">
+    <div className="wrap page home reveal">
       <div className="home-hero">
         <SeaHero level={pct / 100} />
         <div className="sea-count">{cd.text}</div>
@@ -49,40 +57,56 @@ export function Home() {
       <WrappedTeaser />
 
       <div className="stat-grid glass">
-        <Stat value={s.n} label="tried" />
-        <Stat value={s.total - s.n} label="to go" />
-        <Stat value={s.streak} label="day streak" />
+        <CountStat value={s.n} label="tried" />
+        <CountStat value={s.total - s.n} label="to go" />
+        <CountStat value={s.streak} label="day streak" />
         <Stat value={`${s.bars}/${s.barsTotal}`} label="bars" />
         <Stat value={`${s.rest}/${s.restTotal}`} label="restaurants" />
         <Stat value={s.avg ? s.avg.toFixed(1) : '–'} label="avg rating" />
       </div>
 
       <div className="two">
-        <div className="glass card">
-          <div className="eyebrow">Top drink</div>
+        <button
+          type="button"
+          className="glass card home-card pressable"
+          disabled={!s.best}
+          onClick={() => s.best && setOpenId(s.best.id)}
+        >
+          <span className="eyebrow">Top drink</span>
           {s.best ? (
             <>
-              <div className="t-strong">{s.best.name}</div>
-              <div className="muted t-body" style={{ fontSize: 13 }}>{'★'.repeat(me.entries[s.best.id]?.rating || 0)} · {drinkVenue(s.best.venue)}</div>
+              <span className="home-card-title t-strong">{s.best.name}</span>
+              <span className="home-card-sub t-meta">
+                <span className="hc-stars" aria-label={`${me.entries[s.best.id]?.rating || 0} out of 5`}>
+                  {'★'.repeat(me.entries[s.best.id]?.rating || 0)}
+                </span>
+                <span>· {drinkVenue(s.best.venue)}</span>
+              </span>
             </>
           ) : (
-            <p className="muted t-body">Rate something and it lands here.</p>
+            <span className="muted t-body">Rate something and it lands here.</span>
           )}
-        </div>
-        <div className="glass card">
-          <div className="eyebrow">Top bar</div>
+        </button>
+        <Link
+          to="/ship"
+          className="glass card home-card pressable"
+          viewTransition
+          aria-label={s.favVenue ? `${drinkVenue(s.favVenue)}, open the ship` : 'Open the ship'}
+        >
+          <span className="eyebrow">Top bar</span>
           {s.favVenue ? (
             <>
-              <div className="t-strong">{drinkVenue(s.favVenue)}</div>
-              <div className="muted t-body" style={{ fontSize: 13 }}>{s.favVenueN} drinks</div>
+              <span className="home-card-title t-strong">{drinkVenue(s.favVenue)}</span>
+              <span className="home-card-sub t-meta">{s.favVenueN} drinks</span>
             </>
           ) : (
-            <p className="muted t-body">Log a drink to start ranking.</p>
+            <span className="muted t-body">Log a drink to start ranking.</span>
           )}
-        </div>
+        </Link>
       </div>
 
       <FriendsCard />
+      {openId && <DrinkSheet id={openId} onClose={() => setOpenId(null)} onOpen={setOpenId} />}
     </div>
   )
 }

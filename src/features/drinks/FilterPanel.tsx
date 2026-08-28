@@ -1,4 +1,5 @@
 import { Chip } from '../../ui/Chip'
+import { GlassButton } from '../../ui/GlassButton'
 import { Segmented, type SegOption } from '../../ui/Segmented'
 import { DECKS, SPIRITS, FLAVOURS, CATEGORIES, VENUES, VENUE_KEYS } from '../../data/model'
 import { useStore } from '../../state/store'
@@ -46,7 +47,7 @@ export function FilterPanel({ counts, resultN, constrained }: { counts: Counts; 
     <div className="fpanel glass card">
       <div className="fhead">
         <div className="fhead-r t-strong"><b className="tnum">{resultN}</b> of 214</div>
-        {nChosen(f) > 0 && <button className="fclear" onClick={clear}>Clear all</button>}
+        {nChosen(f) > 0 && <GlassButton variant="ghost" size="sm" onClick={clear}>Clear all</GlassButton>}
       </div>
 
       <label className="fseg-label eyebrow">Status</label>
