@@ -33,6 +33,7 @@
 .venue-pill.shared { filter: saturate(.86); }
 .venue-name { overflow: hidden; font-size: 12px; font-weight: 700; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
 .venue-meta { display: inline-flex; align-items: center; gap: 3px; flex: none; font-size: 10.5px; font-weight: 800; }
+.venue-top-star { flex: none; color: var(--gold); opacity: .55; }
 .venue-pill.complete .venue-meta { color: #06342b; }
 
 .venue-sheet-title { display: flex; align-items: center; gap: 8px; margin: 5px 0 8px; }

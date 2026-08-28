@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from 'react-router-dom'
 import { Nav } from './Nav'
 import { IconDrinks } from '../ui/Icon'
+import { ToastProvider } from '../ui/Toast'
 import './shell.css'
 
 export function Shell() {
@@ -18,7 +19,9 @@ export function Shell() {
         </header>
       )}
       <main className="view">
-        <Outlet />
+        <ToastProvider>
+          <Outlet />
+        </ToastProvider>
       </main>
       <Nav />
     </>

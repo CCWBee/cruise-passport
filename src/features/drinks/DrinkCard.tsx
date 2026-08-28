@@ -1,6 +1,8 @@
 import { memo } from 'react'
 import { money, pkgOf, VENUES, type Drink } from '../../data/model'
+import { useSources } from '../../state/social'
 import { useStore } from '../../state/store'
+import { FriendDot } from '../../ui/FriendDot'
 import { IconCheck, IconHeart, IconBookmark } from '../../ui/Icon'
 
 function Tags({ d }: { d: Drink }) {
@@ -19,9 +21,11 @@ function Tags({ d }: { d: Drink }) {
 
 export const DrinkCard = memo(function DrinkCard({ d, onOpen }: { d: Drink; onOpen: (id: string) => void }) {
   const e = useStore((s) => s.me.entries[d.id]) || {}
+  const srcs = useSources()
   const toggleTried = useStore((s) => s.toggleTried)
   const toggle = useStore((s) => s.toggle)
   const v = VENUES[d.venue]
+  const fr = srcs.filter((s) => !s.isSelf && s.passport.entries[d.id]?.rating)
 
   return (
     <article className={'dcard glass' + (e.tried ? ' done' : '')}>
@@ -33,7 +37,17 @@ export const DrinkCard = memo(function DrinkCard({ d, onOpen }: { d: Drink; onOp
           </h3>
           {e.rating ? <span className="d-stars" aria-label={`${e.rating} out of 5`}>{'★'.repeat(e.rating)}</span> : null}
         </div>
-        <div className="d-venue t-meta">{v.name} · Deck {v.deck}</div>
+        <div className="d-venue t-meta">
+          <span>{v.name} · Deck {v.deck}</span>
+          {fr.length > 0 && (
+            <span className="d-social">
+              <span className="fstack">
+                {fr.slice(0, 3).map((s) => <FriendDot key={s.id} {...s} size={16} />)}
+              </span>
+              {fr.length > 3 && <span className="muted tnum">+{fr.length - 3}</span>}
+            </span>
+          )}
+        </div>
         <p className="d-ing">{d.ingredients}</p>
       </button>
       <div className="d-foot">

@@ -1,7 +1,8 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import { DECKS, VENUES, VENUE_KEYS, menuFor, type Drink } from '../../data/model'
+import { bestRatedBars, useSources } from '../../state/social'
 import { useAllDrinks, useStore } from '../../state/store'
-import { IconCheck, IconLink } from '../../ui/Icon'
+import { IconCheck, IconLink, IconStar } from '../../ui/Icon'
 import { VenueSheet } from './VenueSheet'
 import './ship.css'
 
@@ -27,9 +28,12 @@ function uniqueMenu(keys: string[], drinks: Drink[]) {
 
 export function Ship() {
   const drinks = useAllDrinks()
+  const friends = useStore((s) => s.friends)
+  const srcs = useSources()
   const entries = useStore((s) => s.me.entries)
   const visits = useStore((s) => s.me.visits)
   const [openVenue, setOpenVenue] = useState<string | null>(null)
+  const top = bestRatedBars(srcs, { minRatings: 2 })[0]?.venueKey
   const decks = useMemo(() => DECKS.slice().reverse().map((deck, index) => {
     const keys = VENUE_KEYS.filter((key) => VENUES[key].deck === deck)
     const menu = uniqueMenu(keys, drinks)
@@ -74,6 +78,7 @@ export function Ship() {
                     <span className="venue-name">{venue.name}</span>
                     <span className="venue-meta tnum">
                       {venue.shares && <IconLink size={13} />}
+                      {friends.length > 0 && key === top && <IconStar className="venue-top-star" size={13} filled />}
                       <span>{tried}/{menu.length}</span>
                       {visits[key]?.visited && <IconCheck size={14} filled />}
                     </span>

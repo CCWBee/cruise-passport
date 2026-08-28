@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { DAYS, DECKS, VENUES, VENUE_KEYS, menuFor, type Drink } from '../../data/model'
 import { useAllDrinks, useStore } from '../../state/store'
+import { bestRatedBars, useSources } from '../../state/social'
 import { computeStats } from '../../state/stats'
 import { IconStar } from '../../ui/Icon'
 import { DrinkSheet } from '../drinks/DrinkSheet'
@@ -237,8 +238,11 @@ function RatingList({ drinks, entries, onOpen }: {
 export function Stats() {
   const drinks = useAllDrinks()
   const me = useStore((state) => state.me)
+  const friends = useStore((state) => state.friends)
+  const srcs = useSources()
   const [openId, setOpenId] = useState<string | null>(null)
   const stats = useMemo(() => computeStats(drinks, me), [drinks, me])
+  const bars = useMemo(() => bestRatedBars(srcs, { minRatings: 2, barsOnly: true }).slice(0, 6), [srcs])
 
   const deckRows = useMemo(() => DECKS.slice().reverse().map((deck) => {
     const deckDrinks = new Map(
@@ -308,6 +312,24 @@ export function Stats() {
       <ChartCard title="Most visited bars">
         <BarChart rows={venues} palette ariaLabel="Most visited bars" />
       </ChartCard>
+
+      {friends.length > 0 && bars.length > 0 && (
+        <ChartCard title="Best rated bars · you and friends">
+          <div className="stats-rating-list">
+            {bars.map((bar) => (
+              <div className="stats-rating-row" key={bar.venueKey}>
+                <span className="stats-rating-copy">
+                  <strong>{bar.name}</strong>
+                  <small>{bar.count} ratings</small>
+                </span>
+                <span className="stats-rating-stars tnum">
+                  <IconStar size={14} filled /> {bar.avg.toFixed(1)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </ChartCard>
+      )}
 
       {spirits.length > 0 && (
         <ChartCard title="Favourite spirit">

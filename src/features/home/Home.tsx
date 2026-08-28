@@ -5,6 +5,7 @@ import { computeStats } from '../../state/stats'
 import { DAYS, START, today, VENUES } from '../../data/model'
 import { useCountUp } from '../../ui/useCountUp'
 import { WrappedTeaser } from '../wrapped/WrappedTeaser'
+import { FriendsCard } from './FriendsCard'
 import './home.css'
 
 const drinkVenue = (key: string) => VENUES[key]?.name || key
@@ -80,6 +81,8 @@ export function Home() {
           )}
         </div>
       </div>
+
+      <FriendsCard />
     </div>
   )
 }

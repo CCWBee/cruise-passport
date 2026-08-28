@@ -21,7 +21,11 @@
 .mt-dots i.on { background: linear-gradient(90deg, var(--coral), var(--gold)); box-shadow: none; }
 .ds-abv { margin-bottom: 4px; }
 
-.ds-rate-label { text-align: center; margin: 18px 0 8px; }
+.ds-rate-row { display: flex; align-items: baseline; justify-content: center; gap: 10px; margin: 18px 0 8px; }
+.ds-rate-label { text-align: center; }
+.ds-group { display: inline-flex; align-items: center; gap: 3px; color: var(--gold-ink); font-size: 12px; font-weight: 700; }
+.ds-group svg { color: var(--gold); }
+.ds-recby { display: flex; align-items: center; justify-content: center; gap: 9px; margin-bottom: 8px; text-align: center; }
 .ds-stars { display: flex; gap: 4px; justify-content: center; }
 .ds-star { color: #DCE3EB; }
 .ds-star.on { color: var(--gold); }
@@ -38,9 +42,12 @@
 .tg-coral { background: var(--coral); }
 .tg-lilac { background: var(--lilac); color: #2a2150; }
 .tg-sky { background: #7CC7F0; color: #06344f; }
+.tg-gold { background: var(--gold); color: var(--gold-ink); }
 
 .ds-field { display: block; margin-top: 14px; }
 .ds-field > span { display: block; margin-bottom: 6px; padding-left: 4px; }
+.ds-note-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.ds-private { font-weight: 600; letter-spacing: 0; text-transform: none; }
 .ds-field input, .ds-field textarea {
   width: 100%; background: #fff; border: 1px solid var(--glass-border); border-radius: var(--r-md);
   padding: 12px 14px; font-size: 16px; font-weight: 600; box-shadow: inset 0 1px 2px rgba(33, 58, 87, .06);
@@ -48,5 +55,16 @@
 }
 .ds-field input:focus-visible, .ds-field textarea:focus-visible { outline: 2.5px solid var(--lilac); }
 
+.ds-friends-label { margin: 18px 0 9px; }
+.ds-friends { display: grid; gap: 12px; }
+.ds-friend-row { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 9px; }
+.ds-friend-copy { min-width: 0; }
+.ds-friend-copy p { margin-top: 2px; overflow-wrap: anywhere; }
+.ds-friend-stars { display: inline-flex; align-items: center; gap: 1px; margin-left: 6px; color: var(--gold); vertical-align: middle; }
+
 .ds-also-label { margin: 18px 0 8px; }
 .ds-also { display: flex; flex-wrap: wrap; }
+
+@media (max-width: 520px) {
+  .ds-note-fields { grid-template-columns: 1fr; gap: 0; }
+}

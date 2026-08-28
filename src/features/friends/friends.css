@@ -1,0 +1,50 @@
+.friends-title { margin-bottom: 2px; }
+
+.fpick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 2px 4px;
+}
+.fpick-dot {
+  --fc: var(--fruit-aqua);
+  inline-size: 34px;
+  block-size: 34px;
+  border-radius: var(--r-pill);
+  background: color-mix(in oklab, var(--fc) 72%, white);
+  box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--fc) 72%, var(--ink));
+}
+.fpick-dot.on {
+  box-shadow:
+    inset 0 0 0 2px color-mix(in oklab, var(--fc) 75%, var(--ink)),
+    0 0 0 3px var(--glass-fallback),
+    0 0 0 5px color-mix(in oklab, var(--fc) 46%, transparent);
+}
+
+.friends-action { margin-top: 14px; }
+.friends-action:disabled { cursor: default; opacity: .45; transform: none; }
+.friends-code .ds-field { margin-top: 12px; }
+.friends-paste { margin-top: 26px; }
+.friends-status { margin-top: 10px; padding-inline: 4px; }
+
+.friends-roster {
+  display: grid;
+  gap: 16px;
+  margin-top: 28px;
+}
+.friend-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+}
+.friend-copy { min-width: 0; }
+.friend-copy strong,
+.friend-copy small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.friend-copy small { margin-top: 1px; font-size: 12px; font-weight: 600; }
+.friend-remove { margin: 0; }

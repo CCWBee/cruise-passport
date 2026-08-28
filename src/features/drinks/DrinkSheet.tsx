@@ -1,10 +1,19 @@
+import { useMemo } from 'react'
 import { Sheet } from '../../ui/Sheet'
 import { DRINK_BY_ID, money, pkgOf, VENUES, START, END, today, type Drink } from '../../data/model'
 import { useStore, useAllDrinks } from '../../state/store'
+import { commentsFor, groupRating, recommendationsFor, useSources } from '../../state/social'
 import { IconStar, IconCheck, IconHeart, IconBookmark, IconCamera } from '../../ui/Icon'
+import { FriendDot } from '../../ui/FriendDot'
 import './drinksheet.css'
 
 const ABV = ['', 'Light, roughly 8 to 12% in the glass', 'Moderate, roughly 12 to 16%', 'Standard, roughly 16 to 22%', 'Strong, roughly 22 to 30%', 'Spirit forward, 30% and up']
+
+function listNames(names: string[]) {
+  if (names.length < 2) return names[0] || ''
+  if (names.length === 2) return `${names[0]} and ${names[1]}`
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
+}
 
 function Meter({ label, n }: { label: string; n: number }) {
   return (
@@ -22,16 +31,22 @@ export function DrinkSheet({ id, onClose, onOpen }: { id: string; onClose: () =>
   const setRating = useStore((s) => s.setRating)
   const toggle = useStore((s) => s.toggle)
   const toggleTried = useStore((s) => s.toggleTried)
+  const toggleRec = useStore((s) => s.toggleRec)
   const setNotes = useStore((s) => s.setNotes)
+  const setComment = useStore((s) => s.setComment)
   const setDate = useStore((s) => s.setDate)
+  const srcs = useSources()
+  const group = useMemo(() => groupRating(id, srcs), [id, srcs])
+  const recs = useMemo(() => recommendationsFor(id, srcs).filter((r) => !r.source.isSelf), [id, srcs])
+  const comments = useMemo(() => commentsFor(id, srcs).filter((c) => !c.source.isSelf), [id, srcs])
   if (!d) return null
   const v = VENUES[d.venue]
   const tier = pkgOf(d)
   const also = all.filter((x) => x.venue === d.venue && x.id !== id).slice(0, 6)
 
-  const Toggle = ({ k, label, Icon, on, tone }: { k: 'tried' | 'fav' | 'wish' | 'again'; label: string; Icon: typeof IconCheck; on: boolean; tone: string }) => (
+  const Toggle = ({ k, label, Icon, on, tone }: { k: 'tried' | 'fav' | 'wish' | 'again' | 'rec'; label: string; Icon: typeof IconCheck; on: boolean; tone: string }) => (
     <button className={'tg pressable' + (on ? ' on tg-' + tone : '')} aria-pressed={on}
-      onClick={() => (k === 'tried' ? toggleTried(id) : toggle(id, k))}>
+      onClick={() => (k === 'tried' ? toggleTried(id) : k === 'rec' ? toggleRec(id) : toggle(id, k))}>
       <Icon size={19} filled={on} /> {label}
     </button>
   )
@@ -60,7 +75,23 @@ export function DrinkSheet({ id, onClose, onOpen }: { id: string; onClose: () =>
       </div>
       <p className="muted t-body ds-abv">{d.strength === 0 ? 'Alcohol free' : ABV[d.strength]}</p>
 
-      <div className="ds-rate-label eyebrow">Your rating</div>
+      <div className="ds-rate-row">
+        <div className="ds-rate-label eyebrow">Your rating</div>
+        {group.count > 1 && (
+          <div className="ds-group tnum">
+            <IconStar size={13} filled /> {group.avg.toFixed(1)}
+            <span className="muted"> · {group.count} aboard</span>
+          </div>
+        )}
+      </div>
+      {recs.length > 0 && (
+        <div className="ds-recby">
+          <span className="fstack">
+            {recs.slice(0, 3).map((r) => <FriendDot key={r.source.id} {...r.source} size={20} />)}
+          </span>
+          <span className="muted t-body">Recommended by {listNames(recs.map((r) => r.source.name))}</span>
+        </div>
+      )}
       <div className="ds-stars">
         {[1, 2, 3, 4, 5].map((n) => (
           <button key={n} className={'ds-star pressable' + (n <= (e.rating || 0) ? ' on' : '')} aria-label={`${n} star${n > 1 ? 's' : ''}`} onClick={() => setRating(id, n)}>
@@ -74,6 +105,7 @@ export function DrinkSheet({ id, onClose, onOpen }: { id: string; onClose: () =>
         <Toggle k="fav" label="Favourite" Icon={IconHeart} on={!!e.fav} tone="coral" />
         <Toggle k="wish" label="Wishlist" Icon={IconBookmark} on={!!e.wish} tone="lilac" />
         <Toggle k="again" label="Order again" Icon={IconCheck} on={!!e.again} tone="sky" />
+        <Toggle k="rec" label="Recommend" Icon={IconStar} on={!!e.rec} tone="gold" />
       </div>
 
       {e.tried && (
@@ -82,10 +114,40 @@ export function DrinkSheet({ id, onClose, onOpen }: { id: string; onClose: () =>
           <input type="date" min={START} max={END} value={e.date || today()} onChange={(ev) => setDate(id, ev.target.value)} />
         </label>
       )}
-      <label className="ds-field">
-        <span className="eyebrow">Notes</span>
-        <textarea rows={3} placeholder="Glass, garnish, who made it, whether it was worth the walk." defaultValue={e.notes || ''} onChange={(ev) => setNotes(id, ev.target.value)} />
-      </label>
+      <div className="ds-note-fields">
+        <label className="ds-field">
+          <span className="eyebrow">Notes <span className="ds-private muted">· Private to you</span></span>
+          <textarea rows={3} placeholder="Glass, garnish, who made it, whether it was worth the walk." defaultValue={e.notes || ''} onChange={(ev) => setNotes(id, ev.target.value)} />
+        </label>
+        <label className="ds-field">
+          <span className="eyebrow">Comment · shared with friends</span>
+          <textarea rows={2} maxLength={140} placeholder="One line others will see." defaultValue={e.comment || ''} onChange={(ev) => setComment(id, ev.target.value)} />
+        </label>
+      </div>
+
+      {comments.length > 0 && (
+        <>
+          <div className="ds-friends-label eyebrow">What friends said</div>
+          <div className="ds-friends">
+            {comments.map((c) => (
+              <div className="ds-friend-row" key={c.source.id}>
+                <FriendDot {...c.source} size={26} />
+                <div className="ds-friend-copy">
+                  <div className="t-strong">
+                    {c.source.name}
+                    {c.rating ? (
+                      <span className="ds-friend-stars muted" aria-label={`${c.rating} star${c.rating > 1 ? 's' : ''}`}>
+                        {Array.from({ length: c.rating }, (_, i) => <IconStar key={i} size={11} filled />)}
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="muted t-body">{c.text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {also.length > 0 && (
         <>
