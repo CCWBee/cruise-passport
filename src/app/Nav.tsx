@@ -21,7 +21,9 @@ export function Nav() {
       <div className="nav-ind" style={{ '--i': active } as CSSProperties} aria-hidden />
       {TABS.map(({ to, label, Icon }, i) => (
         <NavLink key={to} to={to} end={to === '/'} viewTransition className={({ isActive }) => 'nav-btn pressable' + (isActive ? ' on' : '')}>
-          <Icon size={24} filled={i === active} />
+          {/* active state = coral + pill + a heavier stroke. Never switch to fill: the line icons
+              (Stats bars, Drinks stem, Ship mast, Log spine) have no area and would vanish. */}
+          <Icon size={24} strokeWidth={i === active ? 2.5 : 1.8} />
           <span>{label}</span>
         </NavLink>
       ))}

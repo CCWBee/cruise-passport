@@ -13,7 +13,10 @@ export function svgEmblemGeometry(id: string): THREE.ExtrudeGeometry | null {
     for (const p of data.paths) for (const s of SVGLoader.createShapes(p)) shapes.push(s)
     if (!shapes.length) return null
     const geo = new THREE.ExtrudeGeometry(shapes, { depth: 0.06, bevelEnabled: true, bevelSize: 0.014, bevelThickness: 0.014, bevelSegments: 2, curveSegments: 10 })
-    geo.scale(1, -1, 1)
+    // SVG y-axis points down, so flip Y to stand the relief upright. Use a rotation, not
+    // scale(1,-1,1): the mirror has a negative determinant and inverts triangle winding, which
+    // bakes inward-facing normals into computeVertexNormals below (the coin then reads hollow).
+    geo.rotateX(Math.PI)
     geo.computeBoundingBox()
     const bb = geo.boundingBox!
     const scale = 0.92 / Math.max(bb.max.x - bb.min.x, bb.max.y - bb.min.y)

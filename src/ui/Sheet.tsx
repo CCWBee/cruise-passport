@@ -25,7 +25,7 @@ export function Sheet({ onClose, children, eyebrow }: { onClose: () => void; chi
     let y0 = 0, dy = 0, drag = false, t0 = 0
     const down = (e: PointerEvent) => {
       if (scroller.scrollTop > 0) return
-      if ((e.target as HTMLElement).closest('input,textarea,select,button')) return
+      if ((e.target as HTMLElement).closest('input,textarea,select,button,canvas,[data-noswipe]')) return
       drag = true; y0 = e.clientY; t0 = performance.now(); sheet.style.transition = 'none'
     }
     const move = (e: PointerEvent) => {

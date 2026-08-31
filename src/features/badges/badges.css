@@ -225,5 +225,11 @@
 /* per-badge emblem struck into the disc (2D grid + detail) */
 .medal-emblem-svg { display: block; filter: drop-shadow(0 .5px 0 rgba(255, 255, 255, .45)); }
 .medal-emblem-svg :is(path, circle, polygon, ellipse, rect) { fill: rgba(24, 40, 56, .34); }
+/* coloured enamel inlay per tier (mirrors the 3D coin's TIER.inlay) */
+.medal-bronze  .medal-emblem-svg :is(path, circle, polygon, ellipse, rect) { fill: #2FB79C; }
+.medal-silver  .medal-emblem-svg :is(path, circle, polygon, ellipse, rect) { fill: #F0637F; }
+.medal-gold    .medal-emblem-svg :is(path, circle, polygon, ellipse, rect) { fill: #146C93; }
+.medal-special .medal-emblem-svg :is(path, circle, polygon, ellipse, rect) { fill: #F6B02E; }
+/* locked stays a quiet grey — placed last so it wins over the tier colours */
 .medal-locked .medal-emblem-svg :is(path, circle, polygon, ellipse, rect),
 .is-locked .medal-emblem-svg :is(path, circle, polygon, ellipse, rect) { fill: rgba(70, 84, 100, .28); }

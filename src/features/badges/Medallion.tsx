@@ -12,11 +12,13 @@ interface MedallionProps {
 
 type Tier = NonNullable<BadgeDef['tier']>
 
-const TIER: Record<Tier, { tint: string; warm: boolean; ribbon: string }> = {
-  bronze: { tint: '#C98A4C', warm: true, ribbon: '#F0637F' },
-  silver: { tint: '#C7D0D8', warm: false, ribbon: '#2FB79C' },
-  gold: { tint: '#F6B02E', warm: true, ribbon: '#E4A72C' },
-  special: { tint: '#9B8CF2', warm: false, ribbon: '#B7A2EE' },
+// `inlay` is the enamel colour struck into the coin face — chosen to contrast with each coin's
+// metal so the relief reads as coloured inlay as the medal rotates, not just tone-on-tone metal.
+const TIER: Record<Tier, { tint: string; warm: boolean; ribbon: string; inlay: string }> = {
+  bronze: { tint: '#C98A4C', warm: true, ribbon: '#F0637F', inlay: '#2FB79C' },
+  silver: { tint: '#C7D0D8', warm: false, ribbon: '#2FB79C', inlay: '#F0637F' },
+  gold: { tint: '#F6B02E', warm: true, ribbon: '#E4A72C', inlay: '#146C93' },
+  special: { tint: '#9B8CF2', warm: false, ribbon: '#B7A2EE', inlay: '#F6B02E' },
 }
 
 const WEBGL_UNAVAILABLE = new Promise<never>(() => undefined)
@@ -308,6 +310,10 @@ function Scene({ badge, earned, reducedMotion, onUnavailable }: MedallionProps &
       matcap: tier.warm ? warmMatcap : coolMatcap,
     })
   }, [coolMatcap, earned, tier, warmMatcap])
+  const emblemMaterial = useMemo(
+    () => new THREE.MeshMatcapMaterial({ color: new THREE.Color(tier.inlay), matcap: tier.warm ? warmMatcap : coolMatcap }),
+    [tier, warmMatcap, coolMatcap],
+  )
   const ribbonMaterial = useMemo(
     () => new THREE.MeshBasicMaterial({ color: tier.ribbon, side: THREE.DoubleSide }),
     [tier.ribbon],
@@ -317,6 +323,7 @@ function Scene({ badge, earned, reducedMotion, onUnavailable }: MedallionProps &
   useDisposable(discGeometry)
   useDisposable(emblemGeometry)
   useDisposable(medalMaterial)
+  useDisposable(emblemMaterial)
   useDisposable(ribbonGeometry)
   useDisposable(ribbonMaterial)
   useDisposable(warmMatcap)
@@ -364,8 +371,8 @@ function Scene({ badge, earned, reducedMotion, onUnavailable }: MedallionProps &
       <mesh geometry={discGeometry} material={medalMaterial} rotation={[0, Math.PI, 0]} />
       {earned && (
         <>
-          <mesh geometry={emblemGeometry} material={medalMaterial} position={[0, 0, 0.105]} />
-          <mesh geometry={emblemGeometry} material={medalMaterial} position={[0, 0, -0.105]} rotation={[0, Math.PI, 0]} scale={0.72} />
+          <mesh geometry={emblemGeometry} material={emblemMaterial} position={[0, 0, 0.105]} />
+          <mesh geometry={emblemGeometry} material={emblemMaterial} position={[0, 0, -0.105]} rotation={[0, Math.PI, 0]} scale={0.72} />
         </>
       )}
     </group>
