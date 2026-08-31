@@ -25,6 +25,9 @@ jobs:
           node-version: 20
       - run: npm ci
       - run: npm run build
+        env:
+          # Public Worker URL (the offline social-sync mailbox); enables the in-app group sync.
+          VITE_SYNC_URL: https://cruise-sync.charlesbee.workers.dev
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
