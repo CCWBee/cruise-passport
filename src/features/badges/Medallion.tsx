@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import * as THREE from 'three'
 import type { BadgeDef } from '../../data/badges'
-import { svgEmblemGeometry } from './emblems'
+import { svgEmblemShape } from './emblems'
 
 interface MedallionProps {
   badge: BadgeDef
@@ -40,17 +40,13 @@ function canUseWebGL() {
   return webGLSupported
 }
 
-function makeMatcap(warm: boolean) {
+function makeMatcap(base: string, middle: string, shadow: string, rim: string) {
   const size = 256
   const canvas = document.createElement('canvas')
   canvas.width = size
   canvas.height = size
   const context = canvas.getContext('2d')
   if (!context) throw new Error('Canvas2D is unavailable')
-
-  const base = warm ? '#7A5A2E' : '#4A5560'
-  const middle = warm ? '#E9C877' : '#C7D0D8'
-  const shadow = warm ? '#2C1F0E' : '#20262C'
 
   context.fillStyle = base
   context.beginPath()
@@ -72,7 +68,7 @@ function makeMatcap(warm: boolean) {
   context.fillRect(0, 0, size, size)
 
   gradient = context.createRadialGradient(size * 0.72, size * 0.78, 0, size * 0.72, size * 0.78, size * 0.3)
-  gradient.addColorStop(0, warm ? 'rgba(255,220,150,0.6)' : 'rgba(210,225,240,0.6)')
+  gradient.addColorStop(0, rim)
   gradient.addColorStop(1, 'rgba(0,0,0,0)')
   context.fillStyle = gradient
   context.fillRect(0, 0, size, size)
@@ -83,18 +79,28 @@ function makeMatcap(warm: boolean) {
   return texture
 }
 
-function makeDiscGeometry(earned: boolean) {
-  const edge = 0.1
-  const profile = [
-    new THREE.Vector2(0, edge * 0.55),
-    new THREE.Vector2(0.62, edge * 0.62),
-    new THREE.Vector2(0.8, edge * 0.7),
-    new THREE.Vector2(0.88, edge * 0.92),
-    new THREE.Vector2(0.94, edge * 0.8),
-    new THREE.Vector2(0.985, edge * 0.55),
-    new THREE.Vector2(1, 0),
+// A SOLID coin: top surface -> a short vertical rim band -> mirrored bottom surface, closed at both
+// centres. (The old build was two single-sided domes meeting at a knife edge — hollow, so at an angle
+// you saw straight into the culled interior.) The profile is reversed so the lathe winds its normals
+// OUTWARD; without that the exterior faces are back-faces and get culled (the coin reads inside-out).
+function makeDiscGeometry() {
+  const e = 0.1
+  const top = [
+    new THREE.Vector2(0.0, e * 0.55),
+    new THREE.Vector2(0.62, e * 0.62),
+    new THREE.Vector2(0.8, e * 0.7),
+    new THREE.Vector2(0.88, e * 0.92),
+    new THREE.Vector2(0.94, e * 0.8),
+    new THREE.Vector2(0.985, e * 0.55),
+    new THREE.Vector2(1.0, e * 0.3), // rim top
   ]
-  const geometry = new THREE.LatheGeometry(profile, earned ? 96 : 40)
+  const profile: THREE.Vector2[] = [
+    ...top,
+    new THREE.Vector2(1.0, -e * 0.3), // rim bottom (short vertical edge band)
+    ...top.slice(0, -1).reverse().map((p) => new THREE.Vector2(p.x, -p.y)),
+  ]
+  profile.reverse()
+  const geometry = new THREE.LatheGeometry(profile, 72)
   geometry.rotateX(-Math.PI / 2)
   geometry.computeVertexNormals()
   return geometry
@@ -116,16 +122,8 @@ function makeEmblemGeometry(id: string) {
   }
   shape.closePath()
 
-  const geometry = new THREE.ExtrudeGeometry(shape, {
-    depth: 0.065,
-    bevelEnabled: true,
-    bevelSize: 0.018,
-    bevelThickness: 0.016,
-    bevelSegments: 2,
-    curveSegments: 8,
-  })
+  const geometry = new THREE.ShapeGeometry(shape) // flat plate — inlaid, not a raised relief
   geometry.center()
-  geometry.computeVertexNormals()
   return geometry
 }
 
@@ -290,29 +288,32 @@ function Scene({ badge, earned, reducedMotion, onUnavailable }: MedallionProps &
   const rendererDisposal = useRef<{ renderer: THREE.WebGLRenderer; timer: number } | null>(null)
   const { gl } = useThree()
   const tier = TIER[badge.tier ?? 'bronze']
-  const warmMatcap = useMemo(() => makeMatcap(true), [])
-  const coolMatcap = useMemo(() => makeMatcap(false), [])
-  const discGeometry = useMemo(() => makeDiscGeometry(earned), [earned])
-  const emblemGeometry = useMemo(() => svgEmblemGeometry(badge.id) ?? makeEmblemGeometry(badge.id), [badge.id])
+  const warmMatcap = useMemo(() => makeMatcap('#7A5A2E', '#E9C877', '#2C1F0E', 'rgba(255,220,150,0.6)'), [])
+  const coolMatcap = useMemo(() => makeMatcap('#4A5560', '#C7D0D8', '#20262C', 'rgba(210,225,240,0.6)'), [])
+  const lockedMatcap = useMemo(() => makeMatcap('#8A94A0', '#EDF1F5', '#606A76', 'rgba(222,230,238,0.6)'), [])
+  const discGeometry = useMemo(() => makeDiscGeometry(), [])
+  const emblemGeometry = useMemo(() => svgEmblemShape(badge.id) ?? makeEmblemGeometry(badge.id), [badge.id])
   const ribbonGeometry = useMemo(makeRibbonGeometry, [])
   const medalMaterial = useMemo(() => {
-    if (!earned) {
-      return new THREE.MeshMatcapMaterial({
-        color: new THREE.Color('#DCE9EA'),
-        matcap: coolMatcap,
-        opacity: 0.78,
-        transparent: true,
-        depthWrite: false,
-      })
-    }
-    return new THREE.MeshMatcapMaterial({
-      color: new THREE.Color(tier.tint),
-      matcap: tier.warm ? warmMatcap : coolMatcap,
-    })
-  }, [coolMatcap, earned, tier, warmMatcap])
-  const emblemMaterial = useMemo(
-    () => new THREE.MeshMatcapMaterial({ color: new THREE.Color(tier.inlay), matcap: tier.warm ? warmMatcap : coolMatcap }),
-    [tier, warmMatcap, coolMatcap],
+    // locked: fully opaque desaturated grey. The old locked material was transparent with
+    // depthWrite:false, which painted the far shell through the near one — that read as inside-out.
+    if (!earned) return new THREE.MeshMatcapMaterial({ color: new THREE.Color('#EEF2F5'), matcap: lockedMatcap })
+    return new THREE.MeshMatcapMaterial({ color: new THREE.Color(tier.tint), matcap: tier.warm ? warmMatcap : coolMatcap })
+  }, [coolMatcap, lockedMatcap, earned, tier, warmMatcap])
+  // enamel inlay plate: tier colour when earned, quiet grey when locked. Flat plate -> DoubleSide.
+  const enamelMaterial = useMemo(
+    () => new THREE.MeshMatcapMaterial({
+      color: new THREE.Color(earned ? tier.inlay : '#7C8894'),
+      matcap: earned ? (tier.warm ? warmMatcap : coolMatcap) : lockedMatcap,
+      side: THREE.DoubleSide,
+      polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1,
+    }),
+    [earned, tier, warmMatcap, coolMatcap, lockedMatcap],
+  )
+  // dark groove ring behind the enamel — reads as the engraved recess edge
+  const grooveMaterial = useMemo(
+    () => new THREE.MeshBasicMaterial({ color: new THREE.Color(earned ? '#17202B' : '#5A6670'), side: THREE.DoubleSide }),
+    [earned],
   )
   const ribbonMaterial = useMemo(
     () => new THREE.MeshBasicMaterial({ color: tier.ribbon, side: THREE.DoubleSide }),
@@ -320,10 +321,12 @@ function Scene({ badge, earned, reducedMotion, onUnavailable }: MedallionProps &
   )
 
   useDisposable(coolMatcap)
+  useDisposable(lockedMatcap)
   useDisposable(discGeometry)
   useDisposable(emblemGeometry)
   useDisposable(medalMaterial)
-  useDisposable(emblemMaterial)
+  useDisposable(enamelMaterial)
+  useDisposable(grooveMaterial)
   useDisposable(ribbonGeometry)
   useDisposable(ribbonMaterial)
   useDisposable(warmMatcap)
@@ -367,14 +370,15 @@ function Scene({ badge, earned, reducedMotion, onUnavailable }: MedallionProps &
           <mesh geometry={ribbonGeometry} material={ribbonMaterial} position={[0.18, 0, 0]} rotation={[0, 0, 0.12]} />
         </group>
       )}
+      {/* one SOLID coin (the old rotated twin is gone) */}
       <mesh geometry={discGeometry} material={medalMaterial} />
-      <mesh geometry={discGeometry} material={medalMaterial} rotation={[0, Math.PI, 0]} />
-      {earned && (
-        <>
-          <mesh geometry={emblemGeometry} material={emblemMaterial} position={[0, 0, 0.105]} />
-          <mesh geometry={emblemGeometry} material={emblemMaterial} position={[0, 0, -0.105]} rotation={[0, Math.PI, 0]} scale={0.72} />
-        </>
-      )}
+      {/* front inlay: dark groove ring behind, coloured enamel flush in the face. Shown for locked
+          too (grey), so locked coins keep their art. */}
+      <mesh geometry={emblemGeometry} material={grooveMaterial} position={[0, 0, 0.06]} scale={1.06} />
+      <mesh geometry={emblemGeometry} material={enamelMaterial} position={[0, 0, 0.064]} />
+      {/* back inlay */}
+      <mesh geometry={emblemGeometry} material={grooveMaterial} position={[0, 0, -0.06]} rotation={[0, Math.PI, 0]} scale={1.06} />
+      <mesh geometry={emblemGeometry} material={enamelMaterial} position={[0, 0, -0.064]} rotation={[0, Math.PI, 0]} />
     </group>
   )
 }
