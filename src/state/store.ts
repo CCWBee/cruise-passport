@@ -1,12 +1,17 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { DRINKS, today, type Drink } from '../data/model'
-import { emptyPassport, FRIEND_COLOURS, type Entry, type Passport, type Friend, type Profile, type FriendColour } from './stats'
-import { decodeShare, parseFriend, ShareError } from './share'
+import { emptyPassport, FRIEND_COLOURS, type Entry, type Passport, type Friend, type Profile as BaseProfile, type FriendColour } from './stats'
+import { decodeShare, ensureMyId, parseFriend, ShareError, type SharePayload } from './share'
 
 // re-export the social types/consts that used to live here, for existing call sites
 export { FRIEND_COLOURS }
-export type { Friend, Profile, FriendColour }
+export type { Friend, FriendColour }
+
+export interface Profile extends BaseProfile {
+  groupCode: string
+  syncUrl?: string
+}
 
 export interface Filters {
   venues: string[]
@@ -48,8 +53,10 @@ interface State {
   toggleRec: (id: string) => void
   setComment: (id: string, text: string) => void
   setProfile: (p: Partial<Profile>) => void
+  setGroup: (code: string) => void
   upsertFriend: (f: Friend) => void
   removeFriend: (id: string) => void
+  importFriendPayload: (payload: SharePayload) => { ok: boolean; name?: string; reason?: string; stale?: boolean }
   importCode: (code: string) => Promise<{ ok: boolean; name?: string; reason?: string; stale?: boolean }>
 
   // filters
@@ -65,7 +72,7 @@ export const useStore = create<State>()(
       me: emptyPassport(),
       custom: [],
       friends: [],
-      profile: { id: '', name: '', colour: 'aqua' },
+      profile: { id: '', name: '', colour: 'aqua', groupCode: '' },
       filters: emptyFilters(),
       showFilters: false,
 
@@ -109,12 +116,19 @@ export const useStore = create<State>()(
       },
       setComment: (id, text) => get().patch(id, { comment: text.trim().slice(0, 140) || undefined }),
       setProfile: (p) => set((s) => ({ profile: { ...s.profile, ...p } })),
+      setGroup: (code) => set((s) => {
+        const groupCode = code.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64)
+        return {
+          profile: {
+            ...s.profile,
+            id: groupCode && !s.profile.id ? ensureMyId(s.profile) : s.profile.id,
+            groupCode,
+          },
+        }
+      }),
       upsertFriend: (f) => set((s) => ({ friends: [...s.friends.filter((x) => x.id !== f.id), f] })),
       removeFriend: (id) => set((s) => ({ friends: s.friends.filter((x) => x.id !== id) })),
-      importCode: async (code) => {
-        let payload
-        try { payload = await decodeShare(code) }
-        catch (e) { return { ok: false, reason: e instanceof ShareError ? e.message : 'Could not read that code.' } }
+      importFriendPayload: (payload) => {
         const me = get().profile
         if (payload.id && payload.id === me.id) return { ok: false, reason: 'That is your own code.' }
         const friend = parseFriend(payload)
@@ -124,6 +138,12 @@ export const useStore = create<State>()(
         get().upsertFriend(friend)
         return { ok: true, name: friend.name }
       },
+      importCode: async (code) => {
+        let payload
+        try { payload = await decodeShare(code) }
+        catch (e) { return { ok: false, reason: e instanceof ShareError ? e.message : 'Could not read that code.' } }
+        return get().importFriendPayload(payload)
+      },
 
       setFilters: (f) => set((s) => ({ filters: { ...s.filters, ...f } })),
       replaceFilters: (f) => set({ filters: f }),
@@ -132,13 +152,17 @@ export const useStore = create<State>()(
     }),
     {
       name: 'spcc2',
-      version: 2,
+      version: 3,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       migrate: (persisted: any, from: number) => {
         if (from < 2 && persisted) {
           persisted.profile ??= { id: '', name: '', colour: 'aqua' }
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           persisted.friends = (persisted.friends ?? []).map((f: any) => ({ ...f, exportedAt: f.exportedAt ?? 0 }))
+        }
+        if (from < 3 && persisted) {
+          persisted.profile ??= { id: '', name: '', colour: 'aqua' }
+          persisted.profile.groupCode ??= ''
         }
         return persisted
       },

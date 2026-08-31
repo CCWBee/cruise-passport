@@ -23,6 +23,7 @@
 
 .friends-action { margin-top: 14px; }
 .friends-action:disabled { cursor: default; opacity: .45; transform: none; }
+.friends-group { margin-top: 26px; }
 .friends-code .ds-field { margin-top: 12px; }
 .friends-paste { margin-top: 26px; }
 .friends-status { margin-top: 10px; padding-inline: 4px; }

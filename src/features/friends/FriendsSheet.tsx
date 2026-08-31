@@ -1,16 +1,22 @@
 import { useState, type CSSProperties } from 'react'
 import { encodeShare, buildPayload, ensureMyId } from '../../state/share'
 import { FRIEND_COLOURS, useStore } from '../../state/store'
+import { syncNow, useSyncStore } from '../../state/sync'
 import { FriendDot } from '../../ui/FriendDot'
 import { Sheet } from '../../ui/Sheet'
 import '../drinks/drinksheet.css'
 import './friends.css'
 
 export function FriendsSheet({ onClose }: { onClose: () => void }) {
-  const { profile, friends, setProfile, removeFriend, importCode } = useStore()
+  const { profile, friends, setProfile, setGroup, removeFriend, importCode } = useStore()
+  const sync = useSyncStore()
   const [code, setCode] = useState('')
   const [paste, setPaste] = useState('')
   const [status, setStatus] = useState('')
+  const [group, setGroupInput] = useState(profile.groupCode)
+  // The group section only appears once a sync backend is configured (Worker deployed + VITE_SYNC_URL
+  // set, or a per-profile override). Until then the app is offline-only and paste-codes are the path.
+  const syncEnabled = Boolean(import.meta.env.VITE_SYNC_URL || profile.syncUrl)
 
   const updateProfile = (next: { name?: string; colour?: string }) => {
     setProfile(next)
@@ -28,6 +34,23 @@ export function FriendsSheet({ onClose }: { onClose: () => void }) {
     setStatus(result.ok ? `Added ${result.name}.` : (result.reason || 'Could not add that friend.'))
     if (result.ok) setPaste('')
   }
+
+  const saveGroup = () => {
+    setGroup(group)
+    setGroupInput(useStore.getState().profile.groupCode)
+  }
+
+  const syncText = sync.status === 'off'
+    ? 'Sync off'
+    : sync.status === 'held'
+      ? 'Held: will sync when you\u2019re back online'
+      : sync.status === 'syncing'
+        ? 'Syncing\u2026'
+        : sync.status === 'error'
+          ? 'Sync failed. Try again.'
+          : sync.lastSyncedAt
+            ? 'Synced just now'
+            : 'Ready to sync'
 
   return (
     <Sheet onClose={onClose} eyebrow={<div className="sheet-eyebrow eyebrow">Sailing together</div>}>
@@ -60,6 +83,35 @@ export function FriendsSheet({ onClose }: { onClose: () => void }) {
             ))}
           </div>
         </div>
+
+        {syncEnabled && (
+        <div className="friends-group">
+          <label className="ds-field">
+            <span className="eyebrow">Cruise group</span>
+            <input
+              value={group}
+              maxLength={64}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              onChange={(event) => setGroupInput(event.target.value.replace(/[^A-Za-z0-9_-]/g, ''))}
+              placeholder="Group code"
+            />
+          </label>
+          <button type="button" className="btn btn-wide friends-action" onClick={saveGroup}>
+            {profile.groupCode ? (group ? 'Update group' : 'Leave group') : 'Join group'}
+          </button>
+          <p className="muted t-body friends-status" role="status">{syncText}</p>
+          <button
+            type="button"
+            className="btn btn-wide friends-action"
+            onClick={() => { void syncNow() }}
+            disabled={sync.status === 'off' || sync.status === 'syncing'}
+          >
+            Sync now
+          </button>
+        </div>
+        )}
 
         <button type="button" className="btn btn-wide friends-action" onClick={makeMine}>Show my code</button>
         {code && (
