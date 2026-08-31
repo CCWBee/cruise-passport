@@ -31,11 +31,11 @@
   --fruit-aqua: #22C0D6; --fruit-grape: #9B8CF2; --fruit-pine: #F6C544;
 
   /* sea (hero) — mirror of the GLSL constants */
-  --sea-sky-top: #BEE3F5;
-  --sea-sky-hor: #EAF6F0;
-  --sea-hi: #4FD3C6;         /* brand mint, as water */
-  --sea-lo: #146C93;
-  --sea-sun: #FFDE8F;
+  --sea-sky-top: #609CCF;    /* deeper dawn sky (was washed-out) — mirrors SeaHero GLSL */
+  --sea-sky-hor: #BDD9DA;
+  --sea-hi: #28AAA3;         /* brand mint, as water */
+  --sea-lo: #093755;         /* deep sea */
+  --sea-sun: #F6CE79;
 
   /* liquid glass material */
   --glass-film: rgba(255, 253, 250, .72);       /* content surfaces (static frost) */
@@ -101,8 +101,8 @@
     --mint: color(display-p3 .137 .753 .541);
     --mint-soft: color(display-p3 .498 .89 .733);
     --gold: color(display-p3 .965 .69 .18);
-    --sea-hi: color(display-p3 .31 .827 .776);
-    --sea-lo: color(display-p3 .078 .424 .576);
-    --sea-sun: color(display-p3 1 .871 .561);
+    --sea-hi: color(display-p3 .157 .667 .639);
+    --sea-lo: color(display-p3 .035 .216 .333);
+    --sea-sun: color(display-p3 .965 .808 .475);
   }
 }

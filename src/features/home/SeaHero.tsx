@@ -12,11 +12,12 @@ uniform float uTime;
 uniform float uLevel;   // 0..1 completion
 uniform float uReduced; // 1.0 = hold a still frame
 
-const vec3 SKY_TOP = vec3(0.745,0.890,0.961);
-const vec3 SKY_HOR = vec3(0.918,0.965,0.941);
-const vec3 SEA_HI  = vec3(0.310,0.827,0.776);
-const vec3 SEA_LO  = vec3(0.078,0.424,0.576);
-const vec3 SUN     = vec3(1.000,0.871,0.561);
+// deeper, moodier dawn sea (was washed-out / too bright). Mirror of the --sea-* tokens.
+const vec3 SKY_TOP = vec3(0.376,0.612,0.812);
+const vec3 SKY_HOR = vec3(0.741,0.851,0.855);
+const vec3 SEA_HI  = vec3(0.157,0.667,0.639);
+const vec3 SEA_LO  = vec3(0.035,0.216,0.333);
+const vec3 SUN     = vec3(0.965,0.808,0.475);
 
 float hash(vec2 p){ return fract(sin(dot(p,vec2(41.3,289.1)))*43758.5453); }
 float noise(vec2 p){
@@ -35,9 +36,9 @@ void main(){
 
   vec3 col  = mix(SKY_HOR, SKY_TOP, smoothstep(horizon, 1.0, uv.y));
   float sun = smoothstep(0.17, 0.0, length((uv - sunP) * vec2(asp, 1.0)));
-  col += SUN * sun * 0.9;
+  col += SUN * sun * 0.58;
   // soft glow halo around the sun
-  col += SUN * smoothstep(0.42, 0.0, length((uv - sunP) * vec2(asp, 1.0))) * 0.12;
+  col += SUN * smoothstep(0.42, 0.0, length((uv - sunP) * vec2(asp, 1.0))) * 0.07;
 
   float surf = horizon
              + 0.012*sin(uv.x*22.0 + t*0.9)
@@ -50,11 +51,11 @@ void main(){
     float glint = smoothstep(0.12,0.0,abs(uv.x-sunP.x))
                 * smoothstep(0.10,0.0,surf-uv.y)
                 * (0.35 + 0.65*noise(vec2(uv.x*70.0, t*2.2)));
-    water += SUN * glint * 0.55;
+    water += SUN * glint * 0.4;
     col = water;
   }
   // foam on the waterline
-  col += vec3(1.0) * smoothstep(0.004, 0.0, abs(uv.y - surf)) * 0.4;
+  col += vec3(1.0) * smoothstep(0.004, 0.0, abs(uv.y - surf)) * 0.3;
 
   gl_FragColor = vec4(col, 1.0);
 }`
@@ -168,6 +169,14 @@ export function SeaHero({ level }: { level: number }) {
     <div className="sea" ref={wrapRef}>
       <div className="sea-floor" style={cssStyle} aria-hidden />
       <canvas className="sea-canvas" ref={canvasRef} aria-hidden />
+      {/* a liner riding the tide — its waterline is completion, so it rises as you sip through */}
+      <svg className="sea-ship" style={{ top: `${waterTop}%` }} viewBox="0 0 150 52" preserveAspectRatio="xMidYMax meet" aria-hidden>
+        <path className="ship-hull" d="M6 33 H144 L133 47 Q131 49 126 49 H24 Q19 49 17 47 Z" />
+        <path className="ship-deck" d="M31 33 V24 H119 V33 Z M45 24 V17 H105 V24 Z M74 17 V12 H102 V17 Z" />
+        <path className="ship-window" d="M39 27h4v3h-4z M49 27h4v3h-4z M59 27h4v3h-4z M69 27h4v3h-4z M79 27h4v3h-4z M89 27h4v3h-4z M99 27h4v3h-4z" />
+        <path className="ship-funnel" d="M53 17 L56 5 H67 L70 17 Z" />
+        <line className="ship-mast" x1="88" y1="12" x2="88" y2="3" />
+      </svg>
     </div>
   )
 }
