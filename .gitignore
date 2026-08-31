@@ -27,3 +27,9 @@ dist-ssr
 .qa/
 # codex/scratch
 codex/
+
+# Cloudflare Worker local build cache / secrets
+.wrangler/
+worker/.wrangler/
+.dev.vars
+worker/dist/
