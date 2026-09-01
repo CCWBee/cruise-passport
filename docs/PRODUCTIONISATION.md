@@ -1,5 +1,12 @@
 # Productionisation plan
 
+> **Status (Sep 2026):** Lane 1 shipped and live. Lane 2 backend is **live for beta** on Supabase
+> project `qpmrfoglxohmjhjtvkac` (anonymous auth, online friend sync, groups, backup) — verified end
+> to end. Deferred for beta: Google sign-in + cross-device restore, delete-my-data UI, and the
+> Cloudflare Pages move to `cruise.charlesbee.org` (still on GitHub Pages). The EU-region and Google
+> steps below were relaxed on request ("not EU based, just get it working for beta testers").
+
+
 How the Cocktail Passport goes from a single hard-coded GitHub Pages demo to a hosted,
 account-backed, multi-cruise product with a real friend graph. Written to be executed in order,
 shipping value at every step, and never breaking the thing that matters most: it works at sea with
