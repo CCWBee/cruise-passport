@@ -101,6 +101,16 @@ export function groupReach(srcs: Source[]): GroupReach {
   return { total: Object.keys(DRINK_BY_ID).length, triedTogether: all.size, onlyFriends }
 }
 
+/** Drinks nobody in the crew has tried yet — "go discover these together". Signatures first. */
+export function undiscovered(srcs: Source[], limit = 4): Drink[] {
+  const triedByAnyone = new Set<string>()
+  for (const s of srcs) for (const [id, e] of Object.entries(s.passport.entries)) if (e.tried) triedByAnyone.add(id)
+  return Object.values(DRINK_BY_ID)
+    .filter((d) => !triedByAnyone.has(d.id))
+    .sort((a, b) => Number(b.category === 'Signature') - Number(a.category === 'Signature') || Number(b.verified) - Number(a.verified))
+    .slice(0, limit)
+}
+
 export interface FriendPick { drink: Drink; avg: number; by: Source[]; score: number }
 export function recommendedForYou(me: Passport, srcs: Source[], limit = 4): FriendPick[] {
   const friends = srcs.filter((s) => !s.isSelf)

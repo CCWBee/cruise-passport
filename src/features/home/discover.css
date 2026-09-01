@@ -7,6 +7,7 @@
 .disc-reach b { color: var(--ink); font-weight: 700; }
 
 .disc-recs { display: flex; flex-direction: column; gap: 8px; margin-top: 2px; }
+.disc-recs-label { margin: 2px 0 2px; color: var(--ink-3); }
 .disc-rec {
   display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
   padding: 8px 11px; border-radius: var(--r-md);

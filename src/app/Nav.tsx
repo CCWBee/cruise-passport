@@ -1,12 +1,13 @@
 import type { CSSProperties } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { IconHome, IconDrinks, IconShip, IconStats, IconBadges, IconLog } from '../ui/Icon'
+import { IconHome, IconDrinks, IconShip, IconStats, IconBadges, IconLog, IconSocial } from '../ui/Icon'
 import './nav.css'
 
 const TABS = [
   { to: '/', label: 'Home', Icon: IconHome },
   { to: '/drinks', label: 'Drinks', Icon: IconDrinks },
   { to: '/ship', label: 'Ship', Icon: IconShip },
+  { to: '/social', label: 'Social', Icon: IconSocial },
   { to: '/stats', label: 'Stats', Icon: IconStats },
   { to: '/badges', label: 'Badges', Icon: IconBadges },
   { to: '/log', label: 'Log', Icon: IconLog },
@@ -18,7 +19,7 @@ export function Nav() {
 
   return (
     <nav className="nav glass-live" aria-label="Sections">
-      <div className="nav-ind" style={{ '--i': active } as CSSProperties} aria-hidden />
+      <div className="nav-ind" style={{ '--i': active, '--n': TABS.length } as CSSProperties} aria-hidden />
       {TABS.map(({ to, label, Icon }, i) => (
         <NavLink key={to} to={to} end={to === '/'} viewTransition className={({ isActive }) => 'nav-btn pressable' + (isActive ? ' on' : '')}>
           {/* active state = coral + pill + a heavier stroke. Never switch to fill: the line icons

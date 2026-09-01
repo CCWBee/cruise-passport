@@ -54,6 +54,14 @@ export const IconLog = (p: P) => (
     <path d="M12 6.2v12" />
   </Svg>
 )
+export const IconSocial = (p: P) => (
+  <Svg {...p}>
+    <circle cx="9" cy="8" r="3.1" />
+    <path d="M3.6 19.2c.5-3 2.7-4.7 5.4-4.7s4.9 1.7 5.4 4.7" />
+    <path d="M15.4 6.3a2.7 2.7 0 0 1 0 5.2" />
+    <path d="M16.4 14.7c2 .3 3.4 1.7 4 3.6" />
+  </Svg>
+)
 
 export const IconCheck = ({ filled, ...p }: P) =>
   filled ? (

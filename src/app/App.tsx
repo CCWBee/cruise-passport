@@ -3,6 +3,7 @@ import { Shell } from './Shell'
 import { Home } from '../features/home/Home'
 import { Drinks } from '../features/drinks/Drinks'
 import { Ship } from '../features/ship/Ship'
+import { Social } from '../features/social/Social'
 import { Stats } from '../features/stats/Stats'
 import { Badges } from '../features/badges/Badges'
 import { Log } from '../features/log/Log'
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/drinks" element={<Drinks />} />
           <Route path="/ship" element={<Ship />} />
+          <Route path="/social" element={<Social />} />
           <Route path="/stats" element={<Stats />} />
           <Route path="/badges" element={<Badges />} />
           <Route path="/log" element={<Log />} />

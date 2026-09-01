@@ -9,7 +9,7 @@
 /* indicator geometry mirrors the padded button row so the pill sits dead-centre under each icon */
 .nav-ind {
   position: absolute; top: 6px; bottom: calc(6px + var(--safe-b));
-  left: var(--nav-px); width: calc((100% - 2 * var(--nav-px)) / 6);
+  left: var(--nav-px); width: calc((100% - 2 * var(--nav-px)) / var(--n, 6));
   transform: translateX(calc(var(--i, 0) * 100%));
   transition: transform 320ms var(--e-spring);
   pointer-events: none;
@@ -22,10 +22,11 @@
   box-shadow: var(--sh-1);
 }
 .nav-btn {
-  position: relative; z-index: 1; flex: 1;
+  position: relative; z-index: 1; flex: 1; min-width: 0;
   display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 5px 0; font-size: 10px; font-weight: 700; color: var(--ink-3);
+  padding: 5px 0; font-size: 9.5px; font-weight: 700; color: var(--ink-3);
 }
+.nav-btn span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nav-btn svg { transition: transform .2s var(--e-out); }
 .nav-btn.on { color: var(--coral-deep); }
 .nav-btn.on svg { transform: translateY(-1px); }

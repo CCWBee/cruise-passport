@@ -7,8 +7,6 @@ import { DAYS, START, today, VENUES } from '../../data/model'
 import { useCountUp } from '../../ui/useCountUp'
 import { DrinkSheet } from '../drinks/DrinkSheet'
 import { WrappedTeaser } from '../wrapped/WrappedTeaser'
-import { FriendsCard } from './FriendsCard'
-import { DiscoverTogether } from './DiscoverTogether'
 import './home.css'
 
 const drinkVenue = (key: string) => VENUES[key]?.name || key
@@ -106,8 +104,6 @@ export function Home() {
         </Link>
       </div>
 
-      <FriendsCard />
-      <DiscoverTogether onOpen={setOpenId} />
       {openId && <DrinkSheet id={openId} onClose={() => setOpenId(null)} onOpen={setOpenId} />}
     </div>
   )

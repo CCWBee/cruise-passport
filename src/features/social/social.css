@@ -1,0 +1,19 @@
+.social-page { display: flex; flex-direction: column; gap: 12px; padding-top: var(--s3); }
+.social-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.social-head h1 { margin: 0; }
+
+.social-empty { padding: 22px 18px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.social-roster { display: flex; align-items: center; gap: 12px; }
+
+.social-eyebrow { color: var(--coral-ink); }
+.social-sub { margin: 2px 0 10px; }
+.social-picks { display: flex; flex-direction: column; gap: 8px; }
+.social-pick {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; text-align: left;
+  padding: 9px 12px; border-radius: var(--r-md);
+  background: rgba(255, 255, 255, .34); border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7);
+  transition: scale var(--t-press) var(--e-out);
+}
+.social-pick:active { scale: .98; }
+.social-pick-name { line-height: 1.2; }

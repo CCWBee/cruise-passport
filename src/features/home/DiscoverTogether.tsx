@@ -44,6 +44,7 @@ export function DiscoverTogether({ onOpen }: { onOpen: (id: string) => void }) {
 
       {recs.length > 0 && (
         <div className="disc-recs">
+          <div className="eyebrow disc-recs-label">{twin ? `You share taste with ${twin.source.name} · try these` : 'Your crew loved these'}</div>
           {recs.map((p) => (
             <button key={p.drink.id} type="button" className="disc-rec pressable" onClick={() => onOpen(p.drink.id)}>
               <span className="fstack disc-rec-dots">
