@@ -2,21 +2,26 @@
 // together. Invisible-until-a-friend still applies (the page shows an add prompt when alone).
 import { useMemo, useState } from 'react'
 import { VENUES } from '../../data/model'
+import { hasBackend } from '../../state/backend'
 import { useStore } from '../../state/store'
 import { useSources, undiscovered } from '../../state/social'
 import { FriendDot } from '../../ui/FriendDot'
 import { GlassButton } from '../../ui/GlassButton'
 import { DrinkSheet } from '../drinks/DrinkSheet'
 import { FriendsSheet } from '../friends/FriendsSheet'
+import { GroupsSheet } from '../friends/GroupsSheet'
 import { DiscoverTogether } from '../home/DiscoverTogether'
 import './social.css'
 
 export function Social() {
   const friends = useStore((s) => s.friends)
+  const groups = useStore((s) => s.groups)
   const srcs = useSources()
   const [openId, setOpenId] = useState<string | null>(null)
   const [manage, setManage] = useState(false)
+  const [groupsOpen, setGroupsOpen] = useState(false)
   const undisc = useMemo(() => undiscovered(srcs, 4), [srcs])
+  const online = hasBackend()
 
   return (
     <div className="wrap page social-page">
@@ -24,6 +29,21 @@ export function Social() {
         <h1 className="t-title">Sailing together</h1>
         <GlassButton size="sm" onClick={() => setManage(true)}>{friends.length ? 'Manage' : 'Add friends'}</GlassButton>
       </div>
+
+      {online && (
+        <button type="button" className="glass card social-groups pressable" onClick={() => setGroupsOpen(true)}>
+          <div className="social-groups-copy">
+            <div className="eyebrow">Groups</div>
+            <span className="t-strong">
+              {groups.length === 0 ? 'Create or join a group' : groups.length === 1 ? groups[0].name : `${groups.length} groups`}
+            </span>
+            <small className="muted t-meta">
+              {groups.length === 0 ? 'One link, everyone joins' : `${groups.reduce((n, g) => Math.max(n, g.members), 0)} aboard · tap to manage`}
+            </small>
+          </div>
+          <span className="social-groups-go" aria-hidden>›</span>
+        </button>
+      )}
 
       {friends.length === 0 ? (
         <div className="glass card center social-empty">
@@ -62,6 +82,7 @@ export function Social() {
 
       {openId && <DrinkSheet id={openId} onClose={() => setOpenId(null)} onOpen={setOpenId} />}
       {manage && <FriendsSheet onClose={() => setManage(false)} />}
+      {groupsOpen && <GroupsSheet onClose={() => setGroupsOpen(false)} />}
     </div>
   )
 }

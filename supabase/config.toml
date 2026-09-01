@@ -1,0 +1,11 @@
+project_id = "cruise-passport"
+
+[auth]
+site_url = "https://ccwbee.github.io/cruise-passport/"
+additional_redirect_urls = [
+  "http://localhost:5173",
+  "https://ccwbee.github.io",
+  "https://ccwbee.github.io/cruise-passport/",
+  "https://cruise.charlesbee.org",
+]
+enable_anonymous_sign_ins = true

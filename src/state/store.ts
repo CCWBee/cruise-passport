@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { activeCruiseId, setActiveCruise } from '../data/cruises'
 import { DRINKS, today, type Drink } from '../data/model'
+import type { GroupRow } from './backend'
 import { emptyPassport, FRIEND_COLOURS, type Entry, type Passport, type Friend, type Profile as BaseProfile, type FriendColour } from './stats'
 import { decodeShare, ensureMyId, ensureMyCode, parseFriend, ShareError, type SharePayload } from './share'
 
@@ -39,10 +40,12 @@ interface State {
   profile: Profile
   cruiseId: string
   enteredCruise: boolean
+  groups: GroupRow[] // groups I'm in on this cruise (online; refreshed by sync)
   filters: Filters
   showFilters: boolean
 
   enterCruise: (id: string) => void
+  setGroups: (g: GroupRow[]) => void
 
   // entry mutations (self)
   patch: (id: string, o: Partial<Entry>) => void
@@ -81,8 +84,11 @@ export const useStore = create<State>()(
       profile: { id: '', name: '', colour: 'aqua', groupCode: '' },
       cruiseId: activeCruiseId(),
       enteredCruise: false,
+      groups: [],
       filters: emptyFilters(),
       showFilters: false,
+
+      setGroups: (g) => set({ groups: g }),
 
       // Choose (or switch) the active cruise. First entry needs no reload (data already = default);
       // switching cruises re-inits the module-level dataset in model.ts, so it reloads.

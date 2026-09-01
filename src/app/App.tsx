@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import { extractShareCode } from '../state/share'
+import { joinGroupFlow } from '../state/groups'
+import { hasBackend } from '../state/backend'
 import { useStore } from '../state/store'
 import { CruisePicker } from '../features/cruise/CruisePicker'
 import { Shell } from './Shell'
@@ -49,6 +51,30 @@ function AddRoute() {
   )
 }
 
+// Group invite link. /join#INVITE joins the group online, then drops you on Social.
+function JoinRoute() {
+  const navigate = useNavigate()
+  const [msg, setMsg] = useState('Joining the group…')
+  useEffect(() => {
+    const invite = window.location.hash.slice(1) || new URLSearchParams(window.location.search).get('g') || ''
+    if (!invite) { setMsg('That invite link looks incomplete.'); const t = setTimeout(() => navigate('/social'), 1600); return () => clearTimeout(t) }
+    if (!hasBackend()) { setMsg('Groups need an internet connection here. Try again once you are online.'); const t = setTimeout(() => navigate('/social'), 1900); return () => clearTimeout(t) }
+    useStore.getState().ensureIdentity()
+    let alive = true
+    void joinGroupFlow(invite).then((result) => {
+      if (!alive) return
+      setMsg(result ? `Joined ${result.name}. Taking you to your crew…` : 'That invite did not work.')
+      setTimeout(() => navigate('/social'), result ? 1100 : 1700)
+    })
+    return () => { alive = false }
+  }, [navigate])
+  return (
+    <div className="wrap page">
+      <div className="glass card center"><p className="t-body">{msg}</p></div>
+    </div>
+  )
+}
+
 function Soon({ title }: { title: string }) {
   return (
     <div className="wrap page">
@@ -73,6 +99,7 @@ export default function App() {
           <Route path="/ship" element={<Ship />} />
           <Route path="/social" element={<Social />} />
           <Route path="/add" element={<AddRoute />} />
+          <Route path="/join" element={<JoinRoute />} />
           <Route path="/stats" element={<Stats />} />
           <Route path="/badges" element={<Badges />} />
           <Route path="/log" element={<Log />} />

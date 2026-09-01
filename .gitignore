@@ -33,3 +33,11 @@ codex/
 worker/.wrangler/
 .dev.vars
 worker/dist/
+
+# Env: local Supabase keys (publishable key is public-safe, but keep it out of git by convention)
+.env
+.env.*
+!.env.example
+
+# Supabase CLI temp
+supabase/.temp/
