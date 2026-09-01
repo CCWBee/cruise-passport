@@ -1,10 +1,11 @@
 // The signature wash: a WebGL wave of tinted Liquid Glass washes the sheet's content up onto a bare
-// pane, then recedes to the clear glass. The overlay is per-pixel alpha (content shows through the
-// tint), and a feDisplacementMap on the content gives the refraction that settles as the water drains.
-// One-shot on open. Reduced-motion / no-WebGL fall back to content appearing at once (never breaks).
+// pane, then recedes to the clear glass. The overlay is per-pixel alpha, so the content ghosts through
+// the tint (the glassy "underwater" read) with no per-element filter. One-shot on open.
+// Reduced-motion / no-WebGL fall back to content appearing at once (never breaks).
 import { useEffect, useRef, useState } from 'react'
 
 const DURATION = 2400 // ms — one wash-in + recede (the speed Charles settled on)
+const MAX_DPR = 1.5   // the wave is transient + soft; cap resolution so fill-rate stays cheap on mobile
 
 const VERT = `attribute vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }`
 const FRAG = `
@@ -53,11 +54,6 @@ function compile(gl: WebGLRenderingContext, type: number, src: string) {
   return s
 }
 
-function smoothstep01(a: number, b: number, x: number) {
-  const t = Math.min(1, Math.max(0, (x - a) / (b - a)))
-  return t * t * (3 - 2 * t)
-}
-
 export function SheetWave() {
   const reduce = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -68,10 +64,8 @@ export function SheetWave() {
     const cv = canvasRef.current
     const sheet = cv?.parentElement as HTMLElement | null
     if (!cv || !sheet) { setGone(true); return }
-    const scroll = sheet.querySelector('.sheet-scroll') as HTMLElement | null
-    const disp = document.getElementById('spcc-seawarp-disp')
 
-    const gl = cv.getContext('webgl', { alpha: true, premultipliedAlpha: false, antialias: true })
+    const gl = cv.getContext('webgl', { alpha: true, premultipliedAlpha: false, antialias: false })
     if (!gl) { setGone(true); return } // no WebGL -> content simply shows, no wave
 
     const vs = compile(gl, gl.VERTEX_SHADER, VERT)
@@ -91,13 +85,11 @@ export function SheetWave() {
     const uP = gl.getUniformLocation(prog, 'iP')
     const uTime = gl.getUniformLocation(prog, 'iTime')
 
-    if (scroll) scroll.style.filter = 'url(#spcc-seawarp)' // refraction that settles (best-effort)
-
     const t0 = performance.now()
     const draw = (now: number) => {
       const t = (now - t0) / 1000
       const p = Math.min(t / (DURATION / 1000), 1)
-      const dpr = Math.min(devicePixelRatio || 1, 2)
+      const dpr = Math.min(devicePixelRatio || 1, MAX_DPR)
       const w = Math.max(1, Math.round(sheet.clientWidth * dpr))
       const h = Math.max(1, Math.round(sheet.clientHeight * dpr))
       if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h }
@@ -106,43 +98,26 @@ export function SheetWave() {
       gl.uniform1f(uP, p)
       gl.uniform1f(uTime, t)
       gl.drawArrays(gl.TRIANGLES, 0, 3)
-      if (disp) disp.setAttribute('scale', String(20 * (1 - smoothstep01(0.4, 1, p)))) // warp settles as water recedes
       return p
     }
 
     let raf = 0
     const loop = (now: number) => {
-      if (draw(now) >= 1) { finish(); return }
+      if (draw(now) >= 1) { setGone(true); return }
       raf = requestAnimationFrame(loop)
-    }
-    const finish = () => {
-      if (scroll) scroll.style.filter = ''
-      setGone(true)
     }
     draw(performance.now())               // cover immediately, so there is no flash before the first frame
     raf = requestAnimationFrame(loop)
-    // safety net: if rAF ever stalls (e.g. tab backgrounded at open), never leave the pane covering content
-    const safety = window.setTimeout(finish, DURATION + 600)
+    const safety = window.setTimeout(() => setGone(true), DURATION + 600) // never leave the pane over content
 
     return () => {
       cancelAnimationFrame(raf)
       clearTimeout(safety)
-      if (scroll) scroll.style.filter = ''
       // no loseContext(): the canvas is reused across a StrictMode remount, and losing the context
       // poisons the live mount that re-getContext()s the same canvas. It is released on unmount.
     }
   }, [reduce])
 
   if (gone) return null
-  return (
-    <>
-      <canvas ref={canvasRef} className="sheet-wave-gl" aria-hidden />
-      <svg className="sheet-wave-defs" width="0" height="0" aria-hidden focusable="false">
-        <filter id="spcc-seawarp" x="-6%" y="-6%" width="112%" height="112%" colorInterpolationFilters="sRGB">
-          <feTurbulence type="fractalNoise" baseFrequency="0.014 0.022" numOctaves="2" seed="7" result="n" />
-          <feDisplacementMap id="spcc-seawarp-disp" in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-      </svg>
-    </>
-  )
+  return <canvas ref={canvasRef} className="sheet-wave-gl" aria-hidden />
 }
