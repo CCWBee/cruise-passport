@@ -25,9 +25,9 @@
 .dempty { padding: 22px 18px; }
 .dempty-acts { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
 
-/* ── drink card — name-dominant, no glyphs, no dividers ── */
-.dcard { border-radius: var(--r-lg); box-shadow: var(--sh-1); padding: 14px 16px 12px; }
-.dcard.done { background: rgba(47, 183, 156, .07); }   /* tried: a whisper of mint, not a line */
+/* ── drink card — a turquoise sea-glass object (material in base .glass), name-dominant ── */
+.dcard { border-radius: var(--r-lg); padding: 14px 16px 12px; }
+/* tried state = the check + rating, not a bg tint (which muddied the turquoise) */
 .d-open { display: block; width: 100%; text-align: left; }
 .d-line1 { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .d-name { font-size: 17px; font-weight: 650; line-height: 1.25; letter-spacing: -.01em; margin: 0; }
