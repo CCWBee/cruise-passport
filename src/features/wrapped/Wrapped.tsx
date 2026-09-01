@@ -12,9 +12,9 @@ import { IconClose } from '../../ui/Icon'
 import { useCountUp } from '../../ui/useCountUp'
 import {
   WRAPPED_TOTAL, deriveWrapped, voyageDateRange, wrappedUnlocked,
-  type WrappedCard,
+  type WrappedCard, type WrappedFinale,
 } from './wrappedData'
-import { Soon } from '../../ui/Soon'
+import { renderWrappedImage } from './wrappedImage'
 import './wrapped.css'
 
 const SEEN_KEY = 'spcc-wrapped-seen'
@@ -78,6 +78,70 @@ function AnimatedNumber({ value, decimals = 0, suffix = '' }: { value: number; d
   }, [])
   const shown = useCountUp(started ? value : 0, 1100)
   return <span className="tnum">{shown.toFixed(decimals)}{suffix}</span>
+}
+
+// The one export of the story: a poster of the certificate, shared natively where the browser
+// takes files and downloaded where it does not.
+function SaveWrapped({ card }: { card: WrappedFinale }) {
+  const [busy, setBusy] = useState(false)
+  const [status, setStatus] = useState('')
+
+  // Safari only honours a download from an anchor in the document, and revoking the URL in the same
+  // tick can cancel the save, so detach and revoke on the next turn.
+  const download = (blob: Blob) => {
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'cruise-wrapped.png'
+    document.body.append(link)
+    link.click()
+    setTimeout(() => { link.remove(); URL.revokeObjectURL(url) }, 1000)
+    setStatus('Saved.')
+  }
+
+  const save = async () => {
+    if (busy) return
+    setBusy(true)
+    setStatus('')
+    try {
+      const blob = await renderWrappedImage(card)
+      const file = new File([blob], 'cruise-wrapped.png', { type: 'image/png' })
+      if (!navigator.canShare?.({ files: [file] })) { download(blob); return }
+      try {
+        await navigator.share({ files: [file], title: 'Cruise Wrapped' })
+        setStatus('Shared.')
+      } catch (error) {
+        // A dismissed share sheet is not a failure. Anything else (iOS drops the user activation
+        // across the font wait and the canvas encode, and throws NotAllowedError) still has the
+        // picture in hand, so save it rather than reporting nothing at all.
+        if ((error as Error)?.name === 'AbortError') return
+        download(blob)
+      }
+    } catch {
+      setStatus('Could not make the picture.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <>
+      {/* Both ends of the gesture: swallowing only pointerdown would leave the story's pointerup
+          measuring against the previous card's start point, read as a swipe or a dismiss. */}
+      <button
+        type="button"
+        className="btn wr-save"
+        disabled={busy}
+        aria-busy={busy}
+        onPointerDown={(event) => event.stopPropagation()}
+        onPointerUp={(event) => event.stopPropagation()}
+        onClick={(event) => { event.stopPropagation(); void save() }}
+      >
+        {busy ? 'Making your picture…' : 'Save my Wrapped'}
+      </button>
+      <p className="wr-save-note t-meta" role="status">{status || 'Saves a picture you can post.'}</p>
+    </>
+  )
 }
 
 function CardBody({ card }: { card: WrappedCard }) {
@@ -177,15 +241,6 @@ function CardBody({ card }: { card: WrappedCard }) {
           {card.shared.length > 0 && <p className="wr-traits">Both loved · {card.shared.join(' · ')}</p>}
         </div>
       )
-    case 'moment':
-      return (
-        <div className="wr-content wr-centred">
-          <div className="wrapped-3d-slot" role="img" aria-label="3D finale, coming soon" />
-          <p className="wr-eyebrow">One more thing</p>
-          <h2 className="wr-headline">The tide, in 3D</h2>
-          <p className="wr-sub"><Soon label="3D finale · coming soon" /></p>
-        </div>
-      )
     case 'finale':
       return (
         <div className="wr-content wr-finale">
@@ -203,15 +258,7 @@ function CardBody({ card }: { card: WrappedCard }) {
             </div>
             <p className="wr-certificate-date tnum">Sun Princess · {voyageDateRange()}</p>
           </div>
-          <button
-            type="button"
-            className="btn wr-save"
-            disabled
-            onPointerDown={(event) => event.stopPropagation()}
-          >
-            Save my Wrapped
-          </button>
-          <p className="wr-save-note"><Soon label="Shareable image · coming soon" /></p>
+          <SaveWrapped card={card} />
         </div>
       )
   }

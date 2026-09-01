@@ -179,17 +179,6 @@
 .wr-medal span:first-child { rotate: 60deg; }
 .wr-medal span:last-child { rotate: -60deg; }
 
-/* Reserved for the separately supplied R3F moment. */
-.wrapped-3d-slot {
-  position: absolute; inset: calc(var(--safe-t) + 58px) 18px calc(var(--safe-b) + 58px); z-index: 2;
-  overflow: hidden; border: 1px solid var(--glass-border); border-radius: var(--r-xl);
-  background:
-    radial-gradient(circle at 50% 38%, rgba(255, 255, 255, .82), transparent 19%),
-    radial-gradient(circle at 50% 48%, rgba(79, 211, 198, .62), transparent 34%),
-    linear-gradient(180deg, var(--sea-sky-top), var(--cream) 52%, var(--sea-lo));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8), var(--sh-2);
-}
-
 .wr-finale { gap: 20px; }
 .wr-certificate { width: min(100%, 500px); padding: clamp(28px, 7vw, 48px); border-radius: var(--r-xl); }
 .wr-certificate::after {
@@ -207,6 +196,8 @@
 .wr-summary strong { max-width: 62%; text-align: right; font-size: 13px; }
 .wr-certificate-date { margin-top: 28px; color: var(--ink-3); font-size: 11px; font-weight: 700; }
 .wr-save { position: relative; z-index: 6; min-height: 44px; padding-inline: 24px; pointer-events: auto; }
+.wr-save:disabled { opacity: .6; }
+.wr-save-note { margin-top: -8px; }
 
 .wr-hint {
   position: absolute; z-index: 8; right: 18px; bottom: calc(var(--safe-b) + 13px); left: 18px;

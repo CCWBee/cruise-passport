@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cocktail Passport</title>
+    <meta name="robots" content="noindex" />
+    <script>
+    /* The app moved to its own origin. Keep the path after /cruise-passport, the query and the hash,
+       so an old /add#SPP… invite still opens the right screen. Served as both index and 404.
+       Runs before the meta refresh below, which would otherwise drop the path.
+       sw.js beside this file unregisters the old precaching worker, which would otherwise answer
+       these navigations from its cache and never let this page load at all. */
+    (function (l) {
+      var path = l.pathname.replace(/^\/cruise-passport(\/|$)/, '/')
+      var query = l.search
+      /* The retired Pages 404 shim rewrote /add#SPP… to /?/add#SPP…, and the restore script that
+         undid it has gone with the old index. Decode that shape rather than dropping the payload. */
+      if (query.indexOf('?/') === 0) {
+        path = '/' + query.slice(2).split('&').map(function (s) { return s.replace(/~and~/g, '&') }).join('?')
+        query = ''
+      }
+      l.replace('https://cruise.charlesbee.org' + path + query + l.hash)
+    }(window.location))
+    </script>
+    <!-- No-JS fallback: the bare domain, since a meta refresh cannot carry the path or hash. -->
+    <meta http-equiv="refresh" content="0;url=https://cruise.charlesbee.org/" />
+    <style>
+      body { font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 22vh 24px; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <p>The Cocktail Passport has moved to <a href="https://cruise.charlesbee.org/">cruise.charlesbee.org</a>.</p>
+  </body>
+</html>

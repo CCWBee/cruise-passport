@@ -1,11 +1,4 @@
 .sheet-eyebrow { color: var(--coral-ink); margin-bottom: 6px; }
-.ds-hero {
-  height: 150px; border-radius: var(--r-lg); margin-bottom: 15px;
-  background: linear-gradient(135deg, var(--wash-dawn), var(--wash-sky));
-  display: grid; place-items: center; align-content: center; gap: 6px;
-  color: var(--ink-3); box-shadow: var(--sh-1);
-}
-.ds-hero span { font-size: 12px; font-weight: 700; }
 .ds-title { margin-bottom: 10px; }
 .ds-warn {
   display: flex; gap: 8px; background: rgba(228, 167, 44, .14); border-radius: var(--r-sm);

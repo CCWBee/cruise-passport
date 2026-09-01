@@ -3,10 +3,14 @@ import jsQR from 'jsqr'
 
 // Live camera QR reader. Mounts once, streams the rear camera, decodes frames with jsQR, and fires
 // onResult exactly once. Stops on the first hit; cleans up the stream on unmount. No dialogs.
-export function Scanner({ onResult }: { onResult: (text: string) => void }) {
+// A camera fault is reported through onError and renders nothing here: the sheet has to say what to
+// do instead, and the way out belongs next to the message rather than under it.
+export function Scanner({ onResult, onError }: { onResult: (text: string) => void; onError?: (message: string) => void }) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const cbRef = useRef(onResult)
   cbRef.current = onResult
+  const errRef = useRef(onError)
+  errRef.current = onError
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -49,13 +53,13 @@ export function Scanner({ onResult }: { onResult: (text: string) => void }) {
         raf = requestAnimationFrame(tick)
       } catch (e) {
         const name = (e as { name?: string })?.name
-        setError(
-          name === 'NotAllowedError'
-            ? 'Camera permission was declined. You can paste a code instead.'
-            : name === 'NotFoundError'
-              ? 'No camera found. Paste a code instead.'
-              : 'Could not start the camera. Paste a code instead.',
-        )
+        const message = name === 'NotAllowedError'
+          ? 'Camera permission was declined.'
+          : name === 'NotFoundError'
+            ? 'No camera found.'
+            : 'Could not start the camera.'
+        setError(message)
+        errRef.current?.(message)
       }
     })()
 
@@ -68,7 +72,7 @@ export function Scanner({ onResult }: { onResult: (text: string) => void }) {
     }
   }, [])
 
-  if (error) return <p className="muted t-body scan-error" role="status">{error}</p>
+  if (error) return null // reported through onError; the sheet renders it beside a way forward
   return (
     <div className="scan-frame" data-noswipe>
       <video ref={videoRef} className="scan-video" playsInline muted aria-label="Camera preview" />

@@ -1,8 +1,0 @@
-name = "cruise-sync"
-main = "src/index.ts"
-compatibility_date = "2026-08-31"
-
-[[kv_namespaces]]
-binding = "CRUISE_KV"
-id = "9e8b4f1ab0524c718d0267e32d9f98dc"
-# preview_id = "REPLACE_WITH_PREVIEW_KV_ID"

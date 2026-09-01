@@ -1,11 +1,11 @@
 # Productionisation plan
 
-> **Status (Sep 2026):** Lane 1 shipped and live. Lane 2 backend is **live for beta** on Supabase
-> project `qpmrfoglxohmjhjtvkac` (anonymous auth, online friend sync, groups, backup) — verified end
-> to end. **Hosting is live at https://cruise.charlesbee.org** (Cloudflare Pages; GitHub Pages kept as
-> a staging mirror). Deferred for beta: Google sign-in + cross-device restore, delete-my-data UI, and
-> wiring Cloudflare auto-deploy on push (the current Pages deploy is a direct `wrangler pages deploy`
-> upload). The EU-region and Google steps below were relaxed on request.
+> **Status (Sep 2026):** Lane 1 and Lane 2 are both live. The backend is Supabase project
+> `qpmrfoglxohmjhjtvkac` (anonymous auth, online friend sync, groups, backup), verified end to end.
+> **Hosting is live at https://cruise.charlesbee.org** on Cloudflare Pages, deployed by CI on every
+> push to `main`. The rationalisation pass of 1 September ([docs/RATIONALISATION.md](RATIONALISATION.md))
+> retired the Cloudflare Worker transport, GitHub Pages as a host (it redirects now) and the flat
+> friend list. Next milestone: accounts, meaning Google sign-in and cross-device restore.
 
 
 How the Cocktail Passport goes from a single hard-coded GitHub Pages demo to a hosted,
@@ -27,7 +27,7 @@ no internet.
 - **Right-sized.** This is Izzy plus friends on a two-week sailing, not a social network. Capability
   codes, not friend-request/accept ceremony. One Postgres project, a couple of tables, thin RLS.
 
-## Where we are today
+## Where this plan started
 
 - **Host:** GitHub Pages at `ccwbee.github.io/cruise-passport/` (base path `/cruise-passport/`),
   deployed by `.github/workflows/deploy.yml`.

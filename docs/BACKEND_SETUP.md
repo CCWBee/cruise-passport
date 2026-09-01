@@ -21,9 +21,10 @@ OAuth client. Once you do the below and send me the two public values, I wire an
   lets a guest (anonymous) session upgrade to Google without losing their data. It is a separate
   toggle from enabling the provider; if you cannot find it, tell me your dashboard version.
 - **Authentication → URL Configuration**:
-  - Site URL: `https://cruise.charlesbee.org` (or the GH Pages URL until the domain is live).
-  - Additional redirect URLs (add all): `http://localhost:5173`, `https://ccwbee.github.io/cruise-passport/`,
-    `https://cruise.charlesbee.org`. Missing origins are the classic Google-redirect failure.
+  - Site URL: `https://cruise.charlesbee.org`.
+  - Additional redirect URLs (add all): `http://localhost:5173`, `http://localhost:4173`,
+    `https://cruise.charlesbee.org`. Missing origins are the classic Google-redirect failure. The
+    old GitHub Pages address only redirects now and does not need to be listed.
 
 ## 3. Run the schema
 

@@ -2,12 +2,10 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// Liquid Sea Glass PWA. Base is '/cruise-passport/' for the GitHub Pages project site,
-// and '/' for local dev/preview.
-export default defineConfig(({ command }) => ({
-  // Base path: BASE_PATH env wins (Cloudflare Pages sets '/'), else '/cruise-passport/' for the
-  // GitHub Pages project site on build, and '/' for local dev.
-  base: process.env.BASE_PATH ?? (command === 'build' ? '/cruise-passport/' : '/'),
+// Liquid Sea Glass PWA. Hosted on Cloudflare Pages at cruise.charlesbee.org, so one base, '/',
+// in dev and in the build.
+export default defineConfig({
+  base: '/',
   plugins: [
     react(),
     VitePWA({
@@ -43,4 +41,4 @@ export default defineConfig(({ command }) => ({
       devOptions: { enabled: false },
     }),
   ],
-}))
+})

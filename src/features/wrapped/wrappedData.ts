@@ -28,7 +28,6 @@ export type WrappedCard =
       onlyFriends: number
       shared: string[]
     }
-  | { kind: 'moment' }
   | {
       kind: 'finale'
       count: number
@@ -39,6 +38,8 @@ export type WrappedCard =
       medals: number
       crew: { count: number; twinName: string | null } | null
     }
+
+export type WrappedFinale = Extract<WrappedCard, { kind: 'finale' }>
 
 const ARCHETYPES: Record<string, Omit<WrappedArchetype, 'traits'>> = {
   spiritForward: { name: 'Spirit-Forward', blurb: 'You take it strong and unsweetened, and you have opinions.' },
@@ -174,7 +175,6 @@ export function deriveWrapped(drinks: Drink[], passport: Passport, srcs: Source[
   if (medals > 0) cards.push({ kind: 'medals', count: medals, total: BADGES.length })
   const crew = crewCard(passport, srcs)
   if (crew) cards.push(crew)
-  cards.push({ kind: 'moment' })
   cards.push({
     kind: 'finale', count: stats.n, pct, archetype,
     topBar: stats.favVenue ? VENUES[stats.favVenue]?.name || stats.favVenue : null,

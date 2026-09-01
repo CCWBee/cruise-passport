@@ -4,17 +4,41 @@ import { IconClose } from './Icon'
 import { SheetWave } from './SheetWave'
 import './sheet.css'
 
-export function Sheet({ onClose, children, eyebrow }: { onClose: () => void; children: ReactNode; eyebrow?: ReactNode }) {
+// Sheets stack (the scanner opens from the add sheet), and every one of them listens on window, so
+// the top of this tells Escape which sheet it means. Registration is mount-only: a parent re-render
+// must not shuffle the order underneath the sheet the guest is actually looking at.
+const openSheets: symbol[] = []
+
+export function Sheet({ onClose, children, eyebrow, labelledBy }: {
+  onClose: () => void
+  children: ReactNode
+  eyebrow?: ReactNode
+  labelledBy?: string // id of the sheet's own title, so it is announced by name
+}) {
   const sheetRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const closeRef = useRef(onClose)
+  closeRef.current = onClose
 
   useEffect(() => {
+    const me = Symbol('sheet')
+    openSheets.push(me)
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && openSheets[openSheets.length - 1] === me) closeRef.current()
+    }
     window.addEventListener('keydown', onKey)
-    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey) }
-  }, [onClose])
+    // Focus moves in, or a keyboard walks the page behind the backdrop; and back out on close.
+    const previous = document.activeElement as HTMLElement | null
+    sheetRef.current?.focus()
+    return () => {
+      openSheets.splice(openSheets.indexOf(me), 1)
+      if (!openSheets.length) document.body.style.overflow = prev
+      window.removeEventListener('keydown', onKey)
+      previous?.focus?.()
+    }
+  }, [])
 
   // drag-to-dismiss — only engages from the very top of the scroll area
   useEffect(() => {
@@ -58,7 +82,7 @@ export function Sheet({ onClose, children, eyebrow }: { onClose: () => void; chi
 
   return createPortal(
     <div className="sheet-bg glass-live" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="sheet" ref={sheetRef} role="dialog" aria-modal>
+      <div className="sheet" ref={sheetRef} role="dialog" aria-modal tabIndex={-1} aria-labelledby={labelledBy}>
         <SheetWave />
         <div className="sheet-grab" aria-hidden />
         <button className="sheet-x pressable" aria-label="Close" onClick={onClose}><IconClose size={16} /></button>

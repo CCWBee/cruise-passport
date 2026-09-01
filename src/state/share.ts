@@ -1,4 +1,5 @@
-// Offline share codec. A friend's whole passport travels as an SPP-prefixed base64url code.
+// Offline share codec. A passport (or, online, just an identity card) travels as an SPP-prefixed
+// base64url code, usually inside an /add# link.
 // Encoder emits mode A (plain); decoder accepts A and B (deflate) so an older phone never fails
 // to paste a newer sender's code. Pasted codes are untrusted → decode is try/catch + sanitised.
 import { DRINK_BY_ID, START, END } from '../data/model'
@@ -34,12 +35,13 @@ interface PEntry { t?: 1; d?: string; r?: number; rc?: 1; c?: string }
 export interface SharePayload {
   v: 2; id: string; n: string; c: string; ts: number
   k?: string // stable friend code (added additively; older decoders ignore it)
+  cd?: 1 // identity card: name/colour/code only, no entries. The passport arrives via the feed.
   e: Record<string, PEntry>; s: Record<string, 1>
 }
 
 // Crockford base32 minus I,L,O,U so a spoken/typed code has no ambiguous characters.
 const CODE_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ'
-function genCode(): string {
+export function genCode(): string {
   const bytes = new Uint8Array(8)
   if (crypto?.getRandomValues) crypto.getRandomValues(bytes)
   else for (let i = 0; i < 8; i++) bytes[i] = Math.floor(Math.random() * 256)
@@ -92,6 +94,15 @@ export function buildPayload(me: Passport, profile: Profile): SharePayload {
   return out
 }
 
+/** An identity card: who I am, nothing I have drunk. Small enough for a sparse QR at any passport
+ *  size, which the full payload stopped being. The entries follow through the backend feed. */
+export function buildCard(profile: Profile): SharePayload {
+  return {
+    v: 2, id: ensureMyId(profile), n: profile.name || 'A friend', c: profile.colour || 'aqua',
+    ts: Date.now(), k: profile.code || ensureMyCode(profile), cd: 1, e: {}, s: {},
+  }
+}
+
 // Emit mode B (deflate) when the browser supports it and it actually shrinks the payload, so a full
 // passport fits in a QR far more often. Falls back to mode A; every decoder already reads both.
 export async function encodeShare(payload: SharePayload): Promise<string> {
@@ -142,5 +153,9 @@ export function parseFriend(p: SharePayload): Friend {
   const colour = (FRIEND_COLOURS as readonly string[]).includes(p.c) ? p.c : hashColour(p.id)
   const name = (typeof p.n === 'string' ? p.n : '').trim().slice(0, 24) || 'A friend'
   const code = typeof p.k === 'string' && p.k.trim() ? normaliseCode(p.k) : undefined
-  return { id: String(p.id).slice(0, 64), name, colour, code, passport: { entries, visits }, exportedAt: Number(p.ts) || 0 }
+  const friend: Friend = { id: String(p.id).slice(0, 64), name, colour, code, passport: { entries, visits }, exportedAt: Number(p.ts) || 0 }
+  // A card carries identity only, so the person is pending until a real snapshot resolves them.
+  // An ordinary payload that happens to be empty is a real (if blank) passport, not pending.
+  if (p.cd) friend.pending = true
+  return friend
 }

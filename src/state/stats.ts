@@ -16,7 +16,10 @@ export interface Entry {
   comment?: string // public one-liner, <=140 chars — shared
 }
 
-/** A friend is another passport, merged in by share-code, with attribution. */
+/** A friend is another passport, merged in by share-code, with attribution.
+ *  Crew = direct friends (we hold each other's code) + group co-members, one record type, tagged by
+ *  route: `groupOnly` marks someone I only see through a shared group, so leaving the group drops
+ *  them and "Remove" is never offered for them. */
 export interface Friend {
   id: string
   name: string
@@ -24,7 +27,10 @@ export interface Friend {
   code?: string // stable public handle, for online resolve; absent on legacy/paste-only friends
   passport: Passport
   exportedAt: number // ms — from the code we merged; drives skip-if-older
-  pending?: boolean // added by code only (no payload yet); render gracefully until first resolve
+  pending?: boolean // identity only (no passport snapshot yet); render gracefully until first resolve
+  groupOnly?: boolean // true = seen only through a group; absent/false = a direct friend
+  groupIds?: string[] // groups this person shares with me, for the "· Gillams" subline
+  needsEdge?: true // added here but not yet confirmed on the server; cleared by the first direct feed
 }
 
 // self-identity + the friend colour palette (here, not store.ts, to avoid a store<->share cycle)

@@ -3,7 +3,11 @@ import { useMemo } from 'react'
 
 // A QR rendered as one SVG path (dark modules), on a fixed white plate so it scans reliably in
 // either theme. Returns null if the value is too large to encode, so callers can show a fallback.
-export function Qr({ value, size = 220, className }: { value: string; size?: number; className?: string }) {
+// `label` is the only thing that tells a screen reader an add code from a group invite: two QR
+// blocks that render identically, so pass it wherever this is not your own "add me" code.
+export function Qr({ value, size = 220, className, label = 'Scan to add me' }: {
+  value: string; size?: number; className?: string; label?: string
+}) {
   const model = useMemo(() => {
     try {
       const qr = qrcode(0, 'M') // auto version, medium error-correction
@@ -30,7 +34,7 @@ export function Qr({ value, size = 220, className }: { value: string; size?: num
       height={size}
       viewBox={`0 0 ${vb} ${vb}`}
       role="img"
-      aria-label="Scan to add me"
+      aria-label={label}
       shapeRendering="crispEdges"
     >
       <rect width={vb} height={vb} fill="#ffffff" rx={1.5} />

@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom'
 import { extractShareCode } from '../state/share'
 import { joinGroupFlow } from '../state/groups'
 import { hasBackend } from '../state/backend'
+import { CRUISES } from '../data/cruises'
 import { useStore } from '../state/store'
 import { CruisePicker } from '../features/cruise/CruisePicker'
 import { Shell } from './Shell'
 import { Home } from '../features/home/Home'
 import { Drinks } from '../features/drinks/Drinks'
 import { Ship } from '../features/ship/Ship'
-import { Social } from '../features/social/Social'
+import { NameCard, Social } from '../features/social/Social'
 import { Stats } from '../features/stats/Stats'
 import { Badges } from '../features/badges/Badges'
 import { Log } from '../features/log/Log'
@@ -20,11 +21,26 @@ function WrappedRoute() {
   return <Wrapped onClose={() => navigate('/')} />
 }
 
-// Friend invite link. /add#SPP… carries the sender's whole passport in the fragment, so a tap adds
-// them fully offline. (The code-only /add/:code form is reserved for the online resolve in Lane 2.)
+// Friend invite link. /add#SPP… carries the sender's identity card (or, on an offline build, their
+// whole passport) in the fragment, so a tap adds them with no internet either way.
+// Both invite routes report the same way: on success a short line and an automatic hop to the crew;
+// on failure the screen stops, says why, and offers the way on. A two-sentence instruction shown for
+// a second and a half, to the guest least likely to read fast, is not a message at all.
+function InviteScreen({ msg, failed }: { msg: string; failed: boolean }) {
+  return (
+    <div className="wrap page">
+      <div className="glass card center">
+        <p className="t-body" role="status">{msg}</p>
+        {failed && <Link to="/social" className="btn btn-wide" style={{ marginTop: 14 }}>Go to your crew</Link>}
+      </div>
+    </div>
+  )
+}
+
 function AddRoute() {
   const navigate = useNavigate()
   const [msg, setMsg] = useState('Adding your friend…')
+  const [failed, setFailed] = useState(false)
   useEffect(() => {
     const raw = window.location.hash.slice(1) || new URLSearchParams(window.location.search).get('c') || ''
     let decoded = raw
@@ -32,55 +48,72 @@ function AddRoute() {
     const code = extractShareCode(decoded)
     if (!code.startsWith('SPP')) {
       setMsg('That add link looks incomplete. Ask your friend to share it again.')
-      const t = setTimeout(() => navigate('/social'), 1600)
-      return () => clearTimeout(t)
+      setFailed(true)
+      return
     }
     useStore.getState().ensureIdentity()
     let alive = true
     void useStore.getState().importCode(code).then((result) => {
       if (!alive) return
       setMsg(result.ok ? `Added ${result.name}. Taking you to your crew…` : (result.reason || 'Could not read that add link.'))
-      setTimeout(() => navigate('/social'), result.ok ? 1100 : 1700)
+      if (result.ok) setTimeout(() => navigate('/social'), 1100)
+      else setFailed(true)
     })
     return () => { alive = false }
   }, [navigate])
-  return (
-    <div className="wrap page">
-      <div className="glass card center"><p className="t-body">{msg}</p></div>
-    </div>
-  )
+  return <InviteScreen msg={msg} failed={failed} />
 }
 
-// Group invite link. /join#INVITE joins the group online, then drops you on Social.
+// Group invite link. /join#INVITE joins the group online, then drops you on Social. The name comes
+// first: both group RPCs resolve a member through their profile row, so joining before there is a
+// name puts "A friend" in front of everyone already in the group.
 function JoinRoute() {
   const navigate = useNavigate()
+  const named = useStore((s) => Boolean(s.profile.name.trim()))
   const [msg, setMsg] = useState('Joining the group…')
+  const [failed, setFailed] = useState(false)
   useEffect(() => {
+    if (!named) return
     const invite = window.location.hash.slice(1) || new URLSearchParams(window.location.search).get('g') || ''
-    if (!invite) { setMsg('That invite link looks incomplete.'); const t = setTimeout(() => navigate('/social'), 1600); return () => clearTimeout(t) }
-    if (!hasBackend()) { setMsg('Groups need an internet connection here. Try again once you are online.'); const t = setTimeout(() => navigate('/social'), 1900); return () => clearTimeout(t) }
+    if (!invite) { setMsg('That invite link looks incomplete.'); setFailed(true); return }
+    // hasBackend() is a build-time flag, not connectivity: telling someone on full ship Wi-Fi to try
+    // again when they are online would have them retrying all week.
+    if (!hasBackend()) {
+      setMsg('Group invites are not available in this version of the app. Ask your friend to send their own add link instead.')
+      setFailed(true)
+      return
+    }
     useStore.getState().ensureIdentity()
     let alive = true
     void joinGroupFlow(invite).then((result) => {
       if (!alive) return
-      setMsg(result ? `Joined ${result.name}. Taking you to your crew…` : 'That invite did not work.')
-      setTimeout(() => navigate('/social'), result ? 1100 : 1700)
+      // Tapped on the coach with no signal: the invite is held and replayed on the next pull.
+      setMsg(result?.queued ? 'You’ll join as soon as you’re online. Taking you to your crew…'
+        : result ? `Joined ${result.name}. Taking you to your crew…`
+          : 'That invite did not work. Ask for the code again.')
+      if (result) setTimeout(() => navigate('/social'), 1100)
+      else setFailed(true)
     })
     return () => { alive = false }
-  }, [navigate])
-  return (
-    <div className="wrap page">
-      <div className="glass card center"><p className="t-body">{msg}</p></div>
-    </div>
-  )
+  }, [named, navigate])
+  if (!named) {
+    return (
+      <div className="wrap page">
+        <NameCard lead="Tell the group who you are, then we’ll add you." />
+      </div>
+    )
+  }
+  return <InviteScreen msg={msg} failed={failed} />
 }
 
-function Soon({ title }: { title: string }) {
+// Catch-all. Every real screen has a route, so anything landing here is a mistyped or stale link.
+function NotFound() {
   return (
     <div className="wrap page">
       <div className="glass card">
-        <div className="eyebrow">{title}</div>
-        <p className="muted t-body" style={{ marginTop: 6 }}>Being rebuilt in the Liquid Sea Glass pass.</p>
+        <div className="eyebrow">Not found</div>
+        <p className="muted t-body" style={{ marginTop: 6 }}>That link does not go anywhere here.</p>
+        <Link to="/" className="mini pressable" style={{ marginTop: 12 }}>Back to your passport</Link>
       </div>
     </div>
   )
@@ -88,8 +121,9 @@ function Soon({ title }: { title: string }) {
 
 export default function App() {
   const enteredCruise = useStore((s) => s.enteredCruise)
-  // First run: choose a cruise before entering its passport. Existing users are migrated to entered.
-  if (!enteredCruise) return <CruisePicker />
+  // Choosing a voyage is only a question when there is more than one; with a single sailing the
+  // picker is a card in front of every invite link, so it does not render.
+  if (!enteredCruise && CRUISES.length > 1) return <CruisePicker />
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Routes>
@@ -103,7 +137,7 @@ export default function App() {
           <Route path="/stats" element={<Stats />} />
           <Route path="/badges" element={<Badges />} />
           <Route path="/log" element={<Log />} />
-          <Route path="*" element={<Soon title="Not found" />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
         <Route path="/wrapped" element={<WrappedRoute />} />
       </Routes>

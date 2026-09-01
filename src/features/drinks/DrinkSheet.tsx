@@ -3,8 +3,7 @@ import { Sheet } from '../../ui/Sheet'
 import { DRINK_BY_ID, money, pkgOf, VENUES, START, END, today, type Drink } from '../../data/model'
 import { useStore, useAllDrinks } from '../../state/store'
 import { commentsFor, groupRating, recommendationsFor, useSources, type GroupRating } from '../../state/social'
-import { IconStar, IconCheck, IconHeart, IconBookmark, IconCamera } from '../../ui/Icon'
-import { Soon } from '../../ui/Soon'
+import { IconStar, IconCheck, IconHeart, IconBookmark } from '../../ui/Icon'
 import { FriendDot } from '../../ui/FriendDot'
 import './drinksheet.css'
 
@@ -75,7 +74,6 @@ export function DrinkSheet({ id, onClose, onOpen }: { id: string; onClose: () =>
 
   return (
     <Sheet onClose={onClose} eyebrow={<div className="sheet-eyebrow eyebrow">{v.name} · Deck {v.deck} · {d.category}</div>}>
-      <div className="ds-hero"><IconCamera size={26} /><span>Photos</span><Soon label="Coming soon" /></div>
       <h2 className="ds-title t-title">{d.name}</h2>
       {!d.verified && <div className="ds-warn">Named in trip reports but not confirmed on a published menu. Have a look at the bar.</div>}
       <p className="ds-ing t-strong">{d.ingredients}</p>

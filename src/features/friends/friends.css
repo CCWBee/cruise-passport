@@ -23,10 +23,26 @@
 
 .friends-action { margin-top: 14px; }
 .friends-action:disabled { cursor: default; opacity: .45; transform: none; }
-.friends-group { margin-top: 26px; }
-.friends-code .ds-field { margin-top: 12px; }
-.friends-paste { margin-top: 26px; }
+.friends-block { margin-top: 26px; }
 .friends-status { margin-top: 10px; padding-inline: 4px; }
+/* the folded-away paste path: a text button, deliberately the quietest thing on the sheet, but the
+   only route left when the camera is refused, so it still has to be 44px of target */
+.friends-quiet {
+  margin-top: 26px;
+  min-height: 44px;
+  padding: 12px 4px;
+  font-size: 13.5px;
+  font-weight: 650;
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* two-tap confirms live at the foot, well away from the thumb's resting path */
+.friends-danger { margin-top: 34px; }
+.confirm .btn { color: var(--ink-2); }
+.confirm .btn-coral { color: var(--on-accent); }
+.confirm-note { margin-top: 10px; padding-inline: 4px; }
 
 .friends-roster {
   display: grid;
@@ -48,7 +64,9 @@
   white-space: nowrap;
 }
 .friend-copy small { margin-top: 1px; font-size: 12px; font-weight: 600; }
-.friend-remove { margin: 0; }
+/* a two-tap confirm sitting beside a name: it has to be a real target, not a 29px pill */
+.friend-remove { margin: 0; min-height: 44px; padding-inline: 14px; }
+.friends-roster .confirm { display: flex; }
 
 /* ── Add me: a scannable QR + code + link ── */
 .addme {
@@ -71,7 +89,6 @@
   border-radius: 8px;
   background: var(--ink-line);
 }
-.addme-hint { text-align: center; max-width: 32ch; }
 .addme-code { align-self: stretch; margin-top: 2px; }
 .addme-code-row {
   display: flex;
@@ -94,6 +111,17 @@
   margin-top: 6px;
 }
 .addme-actions .btn { margin-top: 0; }
+/* one action, full width: the share button when Copy has taken the slot beside the code */
+.addme-actions-one { grid-template-columns: 1fr; }
+
+/* scoped to these sheets rather than the shared .mini: a 29px pill is too small for a thumb, but
+   .mini is used all over the app and its sizing is not ours to change here */
+.friends-sheet .mini,
+.addme .mini {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
 
 /* ── Scan a friend ── */
 .scan-sheet { display: grid; gap: 8px; }
@@ -118,18 +146,3 @@
 }
 .scan-status { text-align: center; margin-top: 8px; font-weight: 650; color: var(--ink); }
 .scan-error { text-align: center; margin-top: 10px; }
-
-/* ── Groups ── */
-.grp-section { margin-top: 24px; }
-.grp-badge {
-  inline-size: 30px;
-  block-size: 30px;
-  border-radius: var(--r-pill);
-  display: grid;
-  place-items: center;
-  font-weight: 750;
-  font-size: 13px;
-  color: var(--ink);
-  background: color-mix(in oklab, var(--fruit-aqua) 60%, white);
-  box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--fruit-aqua) 60%, var(--ink));
-}

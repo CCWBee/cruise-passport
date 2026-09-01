@@ -34,15 +34,6 @@
     <meta name="twitter:description" content="Tick off all 214 cocktails aboard. Badges, a Cruise Wrapped finale, and what your crew loved." />
     <meta name="twitter:image" content="https://cruise.charlesbee.org/og.png" />
     <script>
-    /* SPA restore for GitHub Pages (pairs with public/404.html). Runs before the app + seed. */
-    (function (l) {
-      if (l.search[1] === '/') {
-        var decoded = l.search.slice(1).split('&').map(function (s) { return s.replace(/~and~/g, '&') }).join('?')
-        window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash)
-      }
-    }(window.location))
-    </script>
-    <script>
     /* Demo seed — gated on ?seed; loads sample data + two friends so the live demo is populated. */
     (function () {
       try {

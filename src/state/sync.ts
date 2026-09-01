@@ -1,14 +1,14 @@
-// Foreground sync. Two transports behind one offline-first envelope; the merge stays the single path
-// (importFriendPayload, shared with QR/paste). Success = a confirmed response, never navigator.onLine.
-//   - backend mode  (Supabase configured): publish profile+passport+backup, pull friend & group feeds.
-//   - worker mode    (legacy Cloudflare group mailbox): PUT/GET /g/:group/:member. Fallback only.
-//   - off            (guest): nothing.
+// Foreground sync. One transport (Supabase) behind an offline-first envelope: publish profile,
+// passport and backup, pull the friend and group feeds, then hand both to applyFeed, which is the
+// single merge path shared with QR and paste. Success = a confirmed response, never navigator.onLine.
+//   - backend (Supabase configured): publish and pull.
+//   - off     (guest): nothing.
 import { create } from 'zustand'
 import {
-  befriend, ensureSession, friendFeed, groupFeed, hasBackend, myGroups,
-  publishBackup, publishPassport, upsertProfile,
+  befriend, ensureSession, friendFeed, groupFeed, hasBackend, joinGroup, myGroups,
+  publishBackup, publishPassport, unfriend, upsertProfile,
 } from './backend'
-import { buildPayload, type SharePayload } from './share'
+import { buildPayload } from './share'
 import { useStore } from './store'
 
 export type SyncStatus = 'off' | 'idle' | 'syncing' | 'held' | 'error'
@@ -24,30 +24,12 @@ let visibleInterval: ReturnType<typeof setInterval> | undefined
 let activeSync: Promise<void> | null = null
 let localRevision = 0
 
-type Mode = 'backend' | 'worker' | 'off'
+type Mode = 'backend' | 'off'
 function mode(): Mode {
-  if (hasBackend()) return 'backend'
-  return workerConfig() ? 'worker' : 'off'
+  return hasBackend() ? 'backend' : 'off'
 }
 
-// ── legacy worker transport (fallback when no Supabase backend is configured) ──
-function workerConfig(): { base: string; group: string; memberId: string } | null {
-  const { profile } = useStore.getState()
-  const base = (profile.syncUrl?.trim() || import.meta.env.VITE_SYNC_URL?.trim() || '').replace(/\/+$/, '')
-  const group = profile.groupCode?.trim() || ''
-  const memberId = profile.id?.trim() || ''
-  if (!base || !group || !memberId) return null
-  if (!/^[A-Za-z0-9_-]{1,64}$/.test(group) || !/^[A-Za-z0-9_-]{1,64}$/.test(memberId)) return null
-  return { base, group, memberId }
-}
-
-async function request(url: string, init?: RequestInit): Promise<Response | null> {
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 8_000)
-  try { return await fetch(url, { ...init, signal: controller.signal }) } catch { return null } finally { clearTimeout(timeout) }
-}
-
-// ── shared scheduling machinery ──
+// ── scheduling machinery ──
 function clearBackoff() { if (backoffTimer) clearTimeout(backoffTimer); backoffTimer = undefined; backoffAttempt = 0 }
 function scheduleBackoff() {
   if (backoffTimer || mode() === 'off') return
@@ -72,61 +54,71 @@ function markPending() {
 async function publishBackend(): Promise<boolean> {
   const s = useStore.getState()
   if (!(await ensureSession())) return false
-  await upsertProfile(s.profile.code || '', s.profile.name || 'A friend', s.profile.colour || 'aqua')
+  // `code` is unique, so a blank one is never worth writing; every real profile has one (the store
+  // stamps it at hydrate). A failed profile write is a failed sync: the feeds are authoritative for
+  // name and colour, so silently reporting success would leave the crew on a stale name for ever.
+  const profileOk = s.profile.code
+    ? await upsertProfile(s.profile.code, s.profile.name || 'A friend', s.profile.colour || 'aqua')
+    : true
   const ok = await publishPassport(s.cruiseId, buildPayload(s.me, s.profile))
   void publishBackup(s.cruiseId, { me: s.me, custom: s.custom, profile: s.profile }) // best-effort
-  return ok
+  return ok && profileOk
 }
+
+/** Replay invites tapped while offline. A code the server rejects outright is dropped rather than
+ *  retried for the rest of the cruise; only a call that did not answer stays queued. */
+async function replayInvites(): Promise<void> {
+  const queued = useStore.getState().pendingInvites
+  if (!queued.length) return
+  const results = await Promise.all(queued.map((code) => joinGroup(code).catch(() => null)))
+  const left = queued.filter((_, i) => results[i] === null)
+  if (left.length === queued.length) return
+  // Anything queued while this was in flight is kept: the snapshot must not overwrite it.
+  const since = useStore.getState().pendingInvites.filter((c) => !queued.includes(c))
+  useStore.getState().setPendingInvites([...left, ...since])
+}
+
+/** Replay removals the server never confirmed. Until one lands, applyFeed ignores that person's row,
+ *  so the queue is what keeps a removal made with no signal from quietly undoing itself. */
+async function replayUnfriends(): Promise<void> {
+  const queued = useStore.getState().pendingUnfriends
+  if (!queued.length) return
+  const results = await Promise.all(queued.map((code) => unfriend(code).catch(() => false)))
+  const left = queued.filter((_, i) => !results[i])
+  if (left.length === queued.length) return
+  const since = useStore.getState().pendingUnfriends.filter((c) => !queued.includes(c))
+  useStore.getState().setPendingUnfriends([...left, ...since])
+}
+
 async function pullBackend(): Promise<boolean> {
   const s = useStore.getState()
   if (!(await ensureSession())) return false
-  // Establish/repair the mutual edge for everyone I've added (idempotent; both directions, so no
-  // accept flow — they see me back on their next pull). Small N on a cruise, so cheap.
-  const codes = [...new Set(s.friends.map((f) => f.code).filter((c): c is string => Boolean(c)))]
+  await Promise.all([replayInvites(), replayUnfriends()])
+  // Ask for the mutual edge only where one is still owed (idempotent; both directions, so no accept
+  // flow: they see me back on their next pull). Blanket-befriending the whole roster would rebuild
+  // the edge the other side has just cut. Group-only people are never befriended, or every
+  // co-member would silently become a permanent friend.
+  const codes = [...new Set(s.friends.filter((f) => !f.groupOnly && f.needsEdge).map((f) => f.code).filter((c): c is string => Boolean(c)))]
   await Promise.all(codes.map((c) => befriend(c)))
   const [friends, coMembers, groups] = await Promise.all([
     friendFeed(s.cruiseId), groupFeed(s.cruiseId), myGroups(s.cruiseId),
   ])
-  const merge = useStore.getState().importFriendPayload
-  for (const row of [...friends, ...coMembers]) if (row?.payload) merge(row.payload)
+  // A call that did not answer is not "you have nobody": hold and retry rather than writing an
+  // empty roster over a good one and calling it a successful sync.
+  if (!friends || !coMembers || !groups) return false
+  useStore.getState().applyFeed(friends, coMembers)
   useStore.getState().setGroups(groups)
   return true
 }
 
-// ── worker transport ──
-async function publishWorker(config: { base: string; group: string; memberId: string }): Promise<boolean> {
-  const s = useStore.getState()
-  const payload = buildPayload(s.me, s.profile)
-  const res = await request(`${config.base}/g/${encodeURIComponent(config.group)}/${encodeURIComponent(config.memberId)}`, {
-    method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ payload }),
-  })
-  return Boolean(res && res.status === 200)
-}
-async function pullWorker(config: { base: string; group: string; memberId: string }): Promise<boolean> {
-  const res = await request(`${config.base}/g/${encodeURIComponent(config.group)}`)
-  if (!res || res.status !== 200) return false
-  try {
-    const data = await res.json() as { members?: Array<{ id: string; payload: SharePayload }> }
-    if (!Array.isArray(data.members)) return false
-    for (const m of data.members) if (m && m.id !== config.memberId && m.payload) useStore.getState().importFriendPayload(m.payload)
-    return true
-  } catch { return false }
-}
-
 async function runSync() {
-  const m = mode()
-  if (m === 'off') { clearBackoff(); useSyncStore.setState({ status: 'off', pending: false }); return }
+  if (mode() === 'off') { clearBackoff(); useSyncStore.setState({ status: 'off', pending: false }); return }
   useSyncStore.setState({ status: 'syncing' })
   const publishedRevision = localRevision
-  let pulled = false, published = true
-  if (m === 'backend') {
-    pulled = await pullBackend()
-    if (useSyncStore.getState().pending) published = await publishBackend()
-  } else {
-    const config = workerConfig()!
-    pulled = await pullWorker(config)
-    if (useSyncStore.getState().pending) published = await publishWorker(config)
-  }
+  // Publish first: `befriend` and both feeds resolve me through my own profiles row, so on a first
+  // run the pull would do nothing at all if the row did not exist yet.
+  const published = useSyncStore.getState().pending ? await publishBackend() : true
+  const pulled = await pullBackend()
   if (!pulled || !published) { holdPending(); return }
   clearBackoff()
   const changedWhilePublishing = localRevision !== publishedRevision
@@ -140,14 +132,22 @@ export function syncNow(): Promise<void> {
   return activeSync
 }
 
-/** Force a pull now (e.g. after creating/joining a group), regardless of pending. */
+/** Force a genuinely fresh pull (e.g. after creating/joining a group). Joining an in-flight sync
+ *  would resolve against a pull that read the server before the group existed, so wait for it and
+ *  then start another: `activeSync` is cleared in its own finally, so this call is a new one. */
 export function refreshNow(): Promise<void> {
-  useSyncStore.setState((s) => ({ pending: s.pending }))
-  return syncNow()
+  return activeSync ? activeSync.then(() => syncNow()) : syncNow()
 }
 
+// Work the server has not seen yet: a friend added by QR, link or paste needs an edge, and a queued
+// invite or removal needs replaying. Counted, not compared by reference, because the pull's own
+// applyFeed rebuilds `friends` every time and would otherwise mark itself pending for ever; and
+// only an increase counts, so clearing the queues does not schedule another round trip.
+const unsent = (s: ReturnType<typeof useStore.getState>): number =>
+  s.friends.reduce((n, f) => n + (f.needsEdge ? 1 : 0), 0) + s.pendingInvites.length + s.pendingUnfriends.length
+
 useStore.subscribe((state, previous) => {
-  if (state.me !== previous.me || state.profile !== previous.profile) markPending()
+  if (state.me !== previous.me || state.profile !== previous.profile || unsent(state) > unsent(previous)) markPending()
 })
 
 function updateVisibleInterval() {

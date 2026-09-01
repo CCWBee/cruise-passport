@@ -1,4 +1,7 @@
-name: Deploy to GitHub Pages
+name: Deploy
+
+# One build, one artefact. Cloudflare Pages (cruise.charlesbee.org) is the host; GitHub Pages
+# keeps the old ccwbee.github.io/cruise-passport address alive as a redirect only.
 
 on:
   push:
@@ -11,35 +14,47 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: deploy
   cancel-in-progress: true
 
 jobs:
-  build:
+  cloudflare:
+    name: Build and deploy to Cloudflare Pages
     runs-on: ubuntu-latest
+    environment:
+      name: cloudflare-pages
+      url: https://cruise.charlesbee.org
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
       - run: npm ci
       - run: npm run build
         env:
-          # Supabase backend (accounts, friend graph, groups, backup). Both are public-safe: the
+          # Supabase backend (anonymous auth, friend graph, groups, backup). Both are public-safe: the
           # publishable key ships in the client bundle and RLS does the protecting. Absent => guest.
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-      - uses: actions/upload-pages-artifact@v3
+      - uses: cloudflare/wrangler-action@v3
         with:
-          path: dist
+          # Token scope: Account · Cloudflare Pages · Edit, nothing else.
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=cruise-passport --branch=main --commit-dirty=true
 
-  deploy:
-    needs: build
+  redirect:
+    name: Publish redirect to GitHub Pages
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: redirect
       - id: deployment
         uses: actions/deploy-pages@v4
