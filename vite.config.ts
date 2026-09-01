@@ -27,8 +27,17 @@ export default defineConfig(({ command }) => ({
           { src: 'pwa-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
-      // og.png is only for crawlers, so keep it out of the runtime precache.
-      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,woff2}'], globIgnores: ['**/og.png'] },
+      workbox: {
+        // Precache the whole shell + every chunk (medallions, scanner) + the dataset, so the app is
+        // fully usable offline once installed. og.png is crawler-only, so keep it out of the cache.
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        globIgnores: ['**/og.png'],
+        // Client routes (/social, /drinks, /add…) are not real files, so serve the app shell for any
+        // navigation the cache does not have — offline deep links then resolve in React Router.
+        navigateFallback: 'index.html',
+        navigateFallbackDenylist: [/^\/api\//],
+        cleanupOutdatedCaches: true,
+      },
       devOptions: { enabled: false },
     }),
   ],
