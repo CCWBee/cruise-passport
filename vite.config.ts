@@ -5,7 +5,9 @@ import { VitePWA } from 'vite-plugin-pwa'
 // Liquid Sea Glass PWA. Base is '/cruise-passport/' for the GitHub Pages project site,
 // and '/' for local dev/preview.
 export default defineConfig(({ command }) => ({
-  base: command === 'build' ? '/cruise-passport/' : '/',
+  // Base path: BASE_PATH env wins (Cloudflare Pages sets '/'), else '/cruise-passport/' for the
+  // GitHub Pages project site on build, and '/' for local dev.
+  base: process.env.BASE_PATH ?? (command === 'build' ? '/cruise-passport/' : '/'),
   plugins: [
     react(),
     VitePWA({
