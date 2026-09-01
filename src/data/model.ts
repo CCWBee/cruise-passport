@@ -1,9 +1,11 @@
-// Domain model built over the verbatim raw data. Ids stay positional (d/w/b + index)
+// Domain model built over the active cruise's dataset. Ids stay positional (d/w/b + index)
 // so old share-codes and imported progress still map onto the same drinks.
-import {
-  VENUES, COCKTAILS, WINES, BEERS, PLUS, PREM, START, END,
-  type VenueRaw,
-} from './raw'
+import { activeCruise } from './cruises'
+import { type VenueRaw } from './raw'
+
+// The active cruise supplies the dataset. Resolved once at module load; switching cruises reloads.
+const DATA = activeCruise().data
+const { VENUES, COCKTAILS, WINES, BEERS, PLUS, PREM, START, END } = DATA
 
 export { VENUES, PLUS, PREM, START, END }
 export type Venue = VenueRaw

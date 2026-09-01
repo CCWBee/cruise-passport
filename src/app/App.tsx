@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import { extractShareCode } from '../state/share'
 import { useStore } from '../state/store'
+import { CruisePicker } from '../features/cruise/CruisePicker'
 import { Shell } from './Shell'
 import { Home } from '../features/home/Home'
 import { Drinks } from '../features/drinks/Drinks'
@@ -60,6 +61,9 @@ function Soon({ title }: { title: string }) {
 }
 
 export default function App() {
+  const enteredCruise = useStore((s) => s.enteredCruise)
+  // First run: choose a cruise before entering its passport. Existing users are migrated to entered.
+  if (!enteredCruise) return <CruisePicker />
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Routes>

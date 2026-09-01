@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { activeCruiseId, setActiveCruise } from '../data/cruises'
 import { DRINKS, today, type Drink } from '../data/model'
 import { emptyPassport, FRIEND_COLOURS, type Entry, type Passport, type Friend, type Profile as BaseProfile, type FriendColour } from './stats'
 import { decodeShare, ensureMyId, ensureMyCode, parseFriend, ShareError, type SharePayload } from './share'
@@ -36,8 +37,12 @@ interface State {
   custom: Drink[]
   friends: Friend[]
   profile: Profile
+  cruiseId: string
+  enteredCruise: boolean
   filters: Filters
   showFilters: boolean
+
+  enterCruise: (id: string) => void
 
   // entry mutations (self)
   patch: (id: string, o: Partial<Entry>) => void
@@ -74,8 +79,19 @@ export const useStore = create<State>()(
       custom: [],
       friends: [],
       profile: { id: '', name: '', colour: 'aqua', groupCode: '' },
+      cruiseId: activeCruiseId(),
+      enteredCruise: false,
       filters: emptyFilters(),
       showFilters: false,
+
+      // Choose (or switch) the active cruise. First entry needs no reload (data already = default);
+      // switching cruises re-inits the module-level dataset in model.ts, so it reloads.
+      enterCruise: (id) => {
+        const changing = id !== get().cruiseId
+        setActiveCruise(id)
+        set({ cruiseId: id, enteredCruise: true })
+        if (changing && typeof location !== 'undefined') location.reload()
+      },
 
       patch: (id, o) => set((s) => {
         const cur = s.me.entries[id] || {}
@@ -160,7 +176,7 @@ export const useStore = create<State>()(
     }),
     {
       name: 'spcc2',
-      version: 4,
+      version: 5,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       migrate: (persisted: any, from: number) => {
         if (from < 2 && persisted) {
@@ -176,10 +192,15 @@ export const useStore = create<State>()(
           // profile.code (the stable public handle) is backfilled by ensureIdentity() at startup.
           persisted.profile ??= { id: '', name: '', colour: 'aqua' }
         }
+        if (from < 5 && persisted) {
+          // Existing users are already mid-cruise, so skip the picker and keep them on this sailing.
+          persisted.cruiseId = persisted.cruiseId || activeCruiseId()
+          persisted.enteredCruise = true
+        }
         return persisted
       },
       // persist data only; UI (filters/showFilters) resets each session
-      partialize: (s) => ({ me: s.me, custom: s.custom, friends: s.friends, profile: s.profile }),
+      partialize: (s) => ({ me: s.me, custom: s.custom, friends: s.friends, profile: s.profile, cruiseId: s.cruiseId, enteredCruise: s.enteredCruise }),
     },
   ),
 )
