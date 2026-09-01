@@ -21,12 +21,15 @@ export interface Friend {
   id: string
   name: string
   colour: string // FRIEND_COLOURS key
+  code?: string // stable public handle, for online resolve; absent on legacy/paste-only friends
   passport: Passport
   exportedAt: number // ms — from the code we merged; drives skip-if-older
+  pending?: boolean // added by code only (no payload yet); render gracefully until first resolve
 }
 
 // self-identity + the friend colour palette (here, not store.ts, to avoid a store<->share cycle)
-export interface Profile { id: string; name: string; colour: string }
+// id = internal uuid stamped on payloads; code = stable human handle others add you by.
+export interface Profile { id: string; name: string; colour: string; code?: string }
 export const FRIEND_COLOURS = ['aqua', 'melon', 'mango', 'lime', 'grape', 'pine'] as const
 export type FriendColour = typeof FRIEND_COLOURS[number]
 export interface VenueVisit { visited?: boolean; date?: string }

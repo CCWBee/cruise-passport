@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { DRINKS, today, type Drink } from '../data/model'
 import { emptyPassport, FRIEND_COLOURS, type Entry, type Passport, type Friend, type Profile as BaseProfile, type FriendColour } from './stats'
-import { decodeShare, ensureMyId, parseFriend, ShareError, type SharePayload } from './share'
+import { decodeShare, ensureMyId, ensureMyCode, parseFriend, ShareError, type SharePayload } from './share'
 
 // re-export the social types/consts that used to live here, for existing call sites
 export { FRIEND_COLOURS }
@@ -50,6 +50,7 @@ interface State {
   addCustom: (d: Drink) => void
 
   // social
+  ensureIdentity: () => void
   toggleRec: (id: string) => void
   setComment: (id: string, text: string) => void
   setProfile: (p: Partial<Profile>) => void
@@ -110,6 +111,13 @@ export const useStore = create<State>()(
       addCustom: (d) => set((s) => ({ custom: [...s.custom, d] })),
 
       // ── social (rec/comment ride the existing Entry; friends are merged passports) ──
+      // Every user (guests included) gets a stable uuid + public code, generated once and persisted.
+      ensureIdentity: () => set((s) => {
+        const id = s.profile.id || ensureMyId(s.profile)
+        const code = s.profile.code || ensureMyCode(s.profile)
+        if (id === s.profile.id && code === s.profile.code) return {}
+        return { profile: { ...s.profile, id, code } }
+      }),
       toggleRec: (id) => {
         const cur = get().me.entries[id] || {}
         get().patch(id, { rec: cur.rec ? undefined : true })
@@ -152,7 +160,7 @@ export const useStore = create<State>()(
     }),
     {
       name: 'spcc2',
-      version: 3,
+      version: 4,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       migrate: (persisted: any, from: number) => {
         if (from < 2 && persisted) {
@@ -164,6 +172,10 @@ export const useStore = create<State>()(
           persisted.profile ??= { id: '', name: '', colour: 'aqua' }
           persisted.profile.groupCode ??= ''
         }
+        if (from < 4 && persisted) {
+          // profile.code (the stable public handle) is backfilled by ensureIdentity() at startup.
+          persisted.profile ??= { id: '', name: '', colour: 'aqua' }
+        }
         return persisted
       },
       // persist data only; UI (filters/showFilters) resets each session
@@ -171,6 +183,10 @@ export const useStore = create<State>()(
     },
   ),
 )
+
+// Give every user a stable identity (uuid + code) as soon as the store hydrates, guests included,
+// so "Add me" and the friend graph always have a handle to show.
+useStore.getState().ensureIdentity()
 
 /** Full drink list = catalogue + any custom drinks the user added. */
 export const allDrinks = (): Drink[] => [...DRINKS, ...useStore.getState().custom]
