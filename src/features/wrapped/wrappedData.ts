@@ -1,6 +1,7 @@
 import { BADGES } from '../../data/badges'
-import { END, START, VENUES, type Drink } from '../../data/model'
+import { DRINK_BY_ID, END, START, VENUES, type Drink } from '../../data/model'
 import { computeStats, type Passport, type Stats } from '../../state/stats'
+import { groupReach, tasteTwin, type Source } from '../../state/social'
 
 export const WRAPPED_TOTAL = 214
 
@@ -19,6 +20,14 @@ export type WrappedCard =
   | { kind: 'decks'; count: number; venues: number; decks: number[] }
   | { kind: 'archetype'; archetype: WrappedArchetype }
   | { kind: 'medals'; count: number; total: number }
+  | {
+      kind: 'crew'
+      count: number
+      twin: { name: string; affinityPct: number } | null
+      triedTogether: number
+      onlyFriends: number
+      shared: string[]
+    }
   | { kind: 'moment' }
   | {
       kind: 'finale'
@@ -28,6 +37,7 @@ export type WrappedCard =
       topBar: string | null
       spirit: string | null
       medals: number
+      crew: { count: number; twinName: string | null } | null
     }
 
 const ARCHETYPES: Record<string, Omit<WrappedArchetype, 'traits'>> = {
@@ -109,7 +119,35 @@ function visitedDecks(stats: Stats, passport: Passport): number[] {
   )).sort((a, b) => a - b)
 }
 
-export function deriveWrapped(drinks: Drink[], passport: Passport): WrappedCard[] {
+// The crew slide: insight, never a ranking. Who you sailed with, your taste twin, what the group
+// found together, and the drinks you and a friend both loved. Null when you sailed alone.
+function crewCard(passport: Passport, srcs: Source[]): Extract<WrappedCard, { kind: 'crew' }> | null {
+  const friends = srcs.filter((s) => !s.isSelf)
+  if (!friends.length) return null
+  const twin = tasteTwin(passport, srcs)
+  const reach = groupReach(srcs)
+  const shared: string[] = []
+  for (const [id, e] of Object.entries(passport.entries)) {
+    if (!((e.rating ?? 0) >= 4 || e.rec)) continue
+    const drink = DRINK_BY_ID[id]
+    if (!drink) continue
+    const alsoLoved = friends.some((f) => {
+      const fe = f.passport.entries[id]
+      return fe && ((fe.rating ?? 0) >= 4 || fe.rec)
+    })
+    if (alsoLoved) shared.push(drink.name)
+  }
+  return {
+    kind: 'crew',
+    count: friends.length,
+    twin: twin ? { name: twin.source.name, affinityPct: Math.round(twin.affinity * 100) } : null,
+    triedTogether: reach.triedTogether,
+    onlyFriends: reach.onlyFriends,
+    shared: shared.slice(0, 3),
+  }
+}
+
+export function deriveWrapped(drinks: Drink[], passport: Passport, srcs: Source[] = []): WrappedCard[] {
   const stats = computeStats(drinks, passport)
   const cards: WrappedCard[] = [{ kind: 'cover', dateRange: voyageDateRange() }]
   const pct = Math.min(100, stats.n / WRAPPED_TOTAL * 100)
@@ -134,11 +172,14 @@ export function deriveWrapped(drinks: Drink[], passport: Passport): WrappedCard[
   if (decks.length) cards.push({ kind: 'decks', count: decks.length, venues: stats.venues, decks })
   if (archetype) cards.push({ kind: 'archetype', archetype })
   if (medals > 0) cards.push({ kind: 'medals', count: medals, total: BADGES.length })
+  const crew = crewCard(passport, srcs)
+  if (crew) cards.push(crew)
   cards.push({ kind: 'moment' })
   cards.push({
     kind: 'finale', count: stats.n, pct, archetype,
     topBar: stats.favVenue ? VENUES[stats.favVenue]?.name || stats.favVenue : null,
     spirit: spirit?.spirit || null, medals,
+    crew: crew ? { count: crew.count, twinName: crew.twin?.name ?? null } : null,
   })
   return cards
 }

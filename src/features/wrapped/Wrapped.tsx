@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import { BADGES } from '../../data/badges'
 import { DECKS } from '../../data/model'
 import { useAllDrinks, useStore } from '../../state/store'
+import { useSources } from '../../state/social'
 import { IconClose } from '../../ui/Icon'
 import { useCountUp } from '../../ui/useCountUp'
 import {
@@ -160,6 +161,22 @@ function CardBody({ card }: { card: WrappedCard }) {
           <p className="wr-of">of <span className="tnum">{card.total}</span> medals earned</p>
         </div>
       )
+    case 'crew':
+      return (
+        <div className="wr-content wr-centred">
+          <p className="wr-eyebrow">Your crew</p>
+          <div className="wr-big"><AnimatedNumber value={card.count} /></div>
+          <p className="wr-of">{card.count === 1 ? 'friend aboard' : 'friends aboard'}</p>
+          {card.twin && (
+            <div className="wr-readout glass"><strong>{card.twin.name}</strong><span>your taste twin · {card.twin.affinityPct}% match</span></div>
+          )}
+          <p className="wr-stat">
+            Together you found <strong><AnimatedNumber value={card.triedTogether} /></strong> of {WRAPPED_TOTAL}
+            {card.onlyFriends > 0 && <> · <strong className="tnum">{card.onlyFriends}</strong> you owe to the crew</>}
+          </p>
+          {card.shared.length > 0 && <p className="wr-traits">Both loved · {card.shared.join(' · ')}</p>}
+        </div>
+      )
     case 'moment':
       return (
         <div className="wr-content wr-centred">
@@ -182,6 +199,7 @@ function CardBody({ card }: { card: WrappedCard }) {
               {card.topBar && <p><span>Top bar</span><strong>{card.topBar}</strong></p>}
               {card.spirit && <p><span>Favourite spirit</span><strong>{card.spirit}</strong></p>}
               {card.medals > 0 && <p><span>Medals</span><strong className="tnum">{card.medals} of {BADGES.length}</strong></p>}
+              {card.crew && <p><span>Sailed with</span><strong>{card.crew.twinName ? `${card.crew.count} · twin ${card.crew.twinName}` : `${card.crew.count}`}</strong></p>}
             </div>
             <p className="wr-certificate-date tnum">Sun Princess · {voyageDateRange()}</p>
           </div>
@@ -208,8 +226,9 @@ export function Wrapped({ onClose, startIndex = 0 }: WrappedProps) {
   const navigate = useNavigate()
   const drinks = useAllDrinks()
   const me = useStore((state) => state.me)
+  const srcs = useSources()
   const unlocked = wrappedUnlocked(drinks, me)
-  const cards = useMemo(() => deriveWrapped(drinks, me), [drinks, me])
+  const cards = useMemo(() => deriveWrapped(drinks, me, srcs), [drinks, me, srcs])
   const reduced = useReducedMotion()
   const [index, setIndex] = useState(() => Math.max(0, Math.min(startIndex, cards.length - 1)))
   const [direction, setDirection] = useState<1 | -1>(1)
