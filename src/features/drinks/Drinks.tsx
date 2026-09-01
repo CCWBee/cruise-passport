@@ -73,7 +73,7 @@ export function Drinks() {
           </div>
         </div>
       ) : (
-        <div className="dlist reveal" key={q + '|' + results.length}>
+        <div className="dlist reveal">
           {results.map((d) => <DrinkCard key={d.id} d={d} onOpen={setOpenId} />)}
         </div>
       )}

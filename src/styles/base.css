@@ -83,12 +83,13 @@ h1, h2, h3, p { margin: 0; }
   background-image: var(--glass-highlight);
   border: 1px solid var(--glass-border);
   border-radius: var(--r-lg);
+  /* kept light on purpose: the drinks list paints ~200 of these, so big-blur multi-layer
+     shadows crash mobile Safari. A crisp top edge + one modest grounding shadow reads as a
+     defined object cheaply. */
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, .88),        /* crisp bright top edge */
-    inset 0 -10px 22px rgba(255, 255, 255, .18),    /* soft inner glass glow */
-    inset 0 -1px 1px rgba(20, 108, 147, .10),       /* faint sea floor */
-    0 2px 6px rgba(20, 90, 120, .10),
-    0 16px 34px rgba(20, 90, 120, .16);             /* grounding lift off the sand */
+    inset 0 1px 0 rgba(255, 255, 255, .85),        /* crisp bright top edge */
+    0 1px 2px rgba(20, 90, 120, .08),
+    0 4px 12px rgba(20, 90, 120, .12);             /* grounding lift off the sand */
 }
 /* live-blur chrome: reserved for nav, sheet scrim, floating chips — true Liquid Glass */
 .glass-live {
