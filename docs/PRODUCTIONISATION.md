@@ -58,9 +58,67 @@ storage. Offline paths (local cache + QR/camera) are unchanged.
 
 ## Workstreams
 
-### A. Identity and the friend graph (client only, no backend needed)
+### A. Identity, friends and groups
 
-The headline feature and the biggest UX win. Ships on current hosting before any Supabase exists.
+The person is the atom. Two independent relationship layers sit on top, because real cruise social
+life has both:
+
+- **Friends (peer, capability).** You meet someone at Crooners, swap codes (link, QR or camera), and
+  now you can see into each other's shared passport. Ad-hoc, unlimited, outside any travelling party.
+  Symmetric once either side is online: adding writes a friend edge so the other side sees you back on
+  their next resolve; offline it is whoever-holds-the-code-sees until sync reconciles it. This is the
+  per-person capability model, and it is **Lane 1** (works with QR/link before any backend).
+- **Groups (container, roster).** You create a group, share **one** invite, and everyone who joins is
+  connected to everyone in it, no pairwise adds. This is the efficient path for a known party (a
+  family, a group of friends sailing together). A group has an owner, an invite code/link, a member
+  roster, and, designed in from day one but not charged for yet, a **plan** and **slots**. Groups need
+  a shared mutable roster, so they are server-backed and land in **Lane 2** (Supabase), but the model
+  is fixed now so the schema and UI are right first time.
+
+**How they compose (this is the "makes sense vs people" part):** the person is the unit of identity;
+friendships and memberships both grant "see into their shared passport", by two routes (holding a code
+vs sharing a group). A person can be in several groups (the family group, plus a "met at trivia"
+group) and still have friends outside all of them. You always see: your group roster(s), and your
+friends. Payment, when it exists, attaches to a **slot/membership**, never to the person globally, so
+one human can sit in a paid group (sponsored) and still keep free friends.
+
+**Paid vs unpaid, forward-looking (no payment built now):**
+- `group.plan: 'free' | 'paid'`. Every group is `free` at launch. `paid` unlocks capacity and, later,
+  extras (bigger roster, a group Wrapped, a custom group emblem).
+- `group.slots`: capacity. Free groups get a **generous** default (around 50, so a family never hits a
+  wall mid-sailing); slots only bind once `paid` is real. A paid group is one where an owner has bought
+  capacity.
+- **Sponsorship** lives on the membership: `membership.sponsored_by` records who paid for that slot.
+  This is what lets "I'll buy the group for all of us" (owner sponsors every slot) and "everyone pays
+  their own" (each self-sponsors) both make sense. Unset now (all free); the field exists so adding
+  Stripe later is additive, not a migration.
+- **Differentiator:** a small "Free group" / "Paid group" marker; feature gates read `plan`. The
+  distinction is real in the data from the start even while everything is free.
+
+**People are one record, with provenance.** A person you know may be both a direct friend and a
+co-member of your group; they must render once, tagged by how you are connected. So the social state
+keys people by code and tracks provenance (`friend` edge, and which `groups`), not a flat friend list.
+This drives removal semantics, which are part of the GDPR erasure story, so they are designed now even
+though groups build in Lane 2:
+- **Remove friend:** delete both edges; online sharing stops each way. (An offline QR payload already
+  received cannot be recalled; stated honestly.)
+- **Leave group / owner removes member:** delete that membership only; a person who is also a direct
+  friend stays a friend. A person with no remaining friend edge and no membership drops off your view.
+The Lane 1 pairwise UI implements the `friend` slice of this, but the person-row component and the
+Social sections are built provenance-ready so groups slot in without reworking the model.
+
+**Link scheme, reserved now so it never reworks:** `/add/<code>` (a friend invite, Lane 1) and
+`/join/<invite>` (a group invite, Lane 2) are both fixed in the router design today. A group join
+attempted offline queues on the same held/pending machinery sync already uses ("You'll join when
+you're back online").
+
+Known **kinks in per-person codes** to handle: before accounts a person is really a device, so the
+same human on two phones looks like two people until they sign in and reconcile to one code; codes are
+provisional until claimed on the server (first claim wins); guard against adding your own code; name is
+mutable but the code never changes. These are documented behaviours, resolved properly by sign-in.
+
+The client-only headline (identity + pairwise friends) is the biggest early UX win and ships on
+current hosting before any Supabase exists.
 
 - **Stable friend code.** Derive a short, human-readable, persistent code per device, e.g.
   `IZZY-4K2P` (optional name prefix + random base32). Stored in `profile.code`, generated once,
@@ -126,12 +184,34 @@ migration (v4/v5) or demo seeding silently breaks.
     updated_at, pk (user_id))`. Code is per person, not per cruise.
   - `passports(user_id uuid, cruise_id text, payload jsonb, updated_at, pk (user_id, cruise_id))`.
   - `backups(user_id uuid, cruise_id text, state jsonb, updated_at, pk (user_id, cruise_id))`, owner-only.
-  - `resolve(codes text[], cruise_id text)` SECURITY DEFINER RPC → `[{code, name, colour, payload,
-    updated_at}]` for those codes on that cruise. Codes are capabilities: having a friend's code
-    authorises reading their shared passport (same trust as handing someone a QR).
-  - **RLS:** upsert only your own rows (`auth.uid() = user_id`) in all three tables; `backups` also
-    reads own only; `profiles`/`passports` reads go only through `resolve` (no blanket table read).
-    Codes carry enough entropy that they cannot be enumerated; **first claim on a code wins**.
+  - `friends(user_id uuid, friend_code text, created_at, pk (user_id, friend_code))`: my friend edges,
+    server-synced so friendship converges to mutual.
+  - `groups(id uuid pk, name text, owner_user_id uuid, plan text default 'free', slots int,
+    invite_code text unique, cruise_id text, created_at)`: the paid/unpaid fields exist from day one,
+    default free.
+  - `memberships(group_id uuid, user_id uuid, role text, sponsored_by text, joined_at,
+    pk (group_id, user_id))`: `role` = owner/member, `sponsored_by` = who paid for the slot (unset now).
+  - **Read authority: codes bootstrap, edges authorise.** A code is only a token to *start* a
+    friendship; it does not by itself grant perpetual read, so there is **no raw `code -> payload`
+    endpoint**. Full payloads are served only to people with a live edge or shared membership, which
+    makes "Remove friend" real: delete the edge and online sharing stops. (A payload already handed
+    over by offline QR is inherently unrevocable; the doc says so honestly rather than pretending.)
+  - **RPCs (SECURITY DEFINER, so they can write the reverse edge and enforce capacity):**
+    - `lookup(code)` → just `{code, name, colour}`, a preview before you add someone. No payload.
+    - `befriend(target_code)` → resolves the code and inserts **both** edges (me↔target), so a
+      one-sided add (I scanned your QR) becomes mutual with no accept flow. **Cruise-agnostic**:
+      friendships are between people and persist across sailings. Edge-gating plus removal makes a
+      leaked code survivable (worst case: someone adds themselves; you remove them and reads stop).
+    - `friend_feed(cruise_id)` → payloads, for this cruise, of everyone I have a live edge to.
+    - `create_group(name, cruise_id)` → new group + owner membership + fresh invite code.
+      `join_group(invite_code)` → inserts my membership if a slot is free; returns the roster.
+    - `group_feed(cruise_id)` → payloads of every co-member across my groups on this cruise.
+  - **RLS:** upsert only your own `profiles`/`passports`/`backups`/`friends` rows; `backups` reads own
+    only; every cross-person read (friends, group co-members) goes through the edge/membership-gated
+    RPCs above, never a blanket table read. Group rows are readable to members; a membership is written
+    only by its owner or `join_group`. Codes carry enough entropy that they cannot be enumerated;
+    **first claim on a code wins**. Note the deliberate asymmetry: friends are cruise-agnostic (people),
+    group membership and every feed are per-cruise (a sailing).
 - **Wire format v3:** stamp the payload with its cruise id (`cr`). `parseFriend` validates against
   `DRINK_BY_ID`/`START`/`END`, which become cruise-scoped in D, so a payload whose `cr` is not the
   active cruise is ignored (defined behaviour, never a crash).
@@ -284,10 +364,9 @@ Delegation follows the model-selection rule: Opus holds architecture, taste and 
 
 ## Decisions needed from Charles
 
-- **D1 — Retire the Cloudflare Worker and go all-Supabase?** Recommend **yes**: the group-code
-  mailbox does not fit a per-person friend graph, and one backend beats two. (You just deployed the
-  Worker, hence flagging it.)
-- **D2 — Subdomain?** Recommend **`cruise.charlesbee.org`**. Alternatives: `drinks.`, `passport.`.
+- **D1 — Retire the Cloudflare Worker and go all-Supabase. CONFIRMED.** The KV mailbox does not fit a
+  per-person + groups model; one backend beats two.
+- **D2 — Subdomain `cruise.charlesbee.org`. CONFIRMED.**
 - **D3 — Keep GitHub Pages as staging, or retire it** once Cloudflare Pages is live? Recommend keep as
   a staging mirror (free, useful for testing before prod).
 - **D4 — Friend model = capability-by-code (no accept flow).** Treated as **confirmed**: your own
@@ -297,8 +376,17 @@ Delegation follows the model-selection rule: Opus holds architecture, taste and 
 ## Nothing-dropped checklist
 
 - [ ] Stable friend code, generated once, migrated for existing users.
+- [ ] Two social layers that compose: peer friends (capability code) + groups (roster); a person can
+      be in groups and have friends outside them.
+- [ ] Friendship converges to mutual online (`befriend` writes the reverse edge; no accept flow).
+- [ ] Reads edge/membership-gated (codes bootstrap, edges authorise); Remove friend truly revokes
+      online sharing; offline QR noted honestly as unrevocable.
+- [ ] People keyed by code with provenance (friend / which groups); removal + leave-group semantics.
+- [ ] Groups: create + one-link join (`create_group`/`join_group`), roster, generous free slot default.
+- [ ] Router reserves `/add/<code>` and `/join/<invite>`; offline group join queues on held/pending.
+- [ ] Paid/unpaid designed in (group.plan/slots, membership.sponsored_by), all free now, no payment UI.
 - [ ] "Add me" panel: code + QR + copy.
-- [ ] Invite link (tap to add, no typing) + optional group invite; typed code is fallback only.
+- [ ] Invite link (tap to add, no typing) + group invite link; typed code is fallback only.
 - [ ] QR emits mode B (deflate) so real payloads fit; camera scan adds a friend fully offline.
 - [ ] Pending roster/feed row for a code-only friend renders gracefully.
 - [ ] Paste-code fallback retained.
