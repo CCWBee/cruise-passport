@@ -4,6 +4,7 @@ import './styles/tokens.css'
 import './styles/base.css'
 import './styles/craft.css'
 import './state/sync' // side-effect: attach sync triggers (launch/online/visibility) at startup, not on first Friends open
+import './ui/avatarSpring' // side-effect: avatar-group hover spring on friend-dot stacks (hover-capable devices)
 import App from './app/App'
 
 createRoot(document.getElementById('root')!).render(
