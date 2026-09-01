@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Sheet } from '../../ui/Sheet'
 import { DRINK_BY_ID, money, pkgOf, VENUES, START, END, today, type Drink } from '../../data/model'
 import { useStore, useAllDrinks } from '../../state/store'
-import { commentsFor, groupRating, recommendationsFor, useSources } from '../../state/social'
+import { commentsFor, groupRating, recommendationsFor, useSources, type GroupRating } from '../../state/social'
 import { IconStar, IconCheck, IconHeart, IconBookmark, IconCamera } from '../../ui/Icon'
 import { Soon } from '../../ui/Soon'
 import { FriendDot } from '../../ui/FriendDot'
@@ -14,6 +14,26 @@ function listNames(names: string[]) {
   if (names.length < 2) return names[0] || ''
   if (names.length === 2) return `${names[0]} and ${names[1]}`
   return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
+}
+
+// A warm, sentiment-safe line about the crew's take. Positive ratings are named; on disagreement
+// it stays directional and never pins a low score to a friend (which could sting on a small cruise).
+function consensusLine(group: GroupRating): string | null {
+  const friendBits = group.bits.filter((b) => !b.source.isSelf)
+  if (!friendBits.length) return null
+  const ratings = group.bits.map((b) => b.rating)
+  const min = Math.min(...ratings), max = Math.max(...ratings)
+  const mine = group.mine
+  const friendWord = friendBits.length === 1 ? friendBits[0].source.name : 'the crew'
+  const high = friendBits.filter((b) => b.rating >= 4)
+  if (max - min >= 2) {
+    return mine != null && mine >= 4 ? `You loved this more than ${friendWord} did` : `Ratings ranged ${min} to ${max} aboard`
+  }
+  if (mine != null && mine >= 4 && high.length) {
+    return friendBits.length === 1 ? `You and ${friendBits[0].source.name} both loved this` : 'You and the crew all loved this'
+  }
+  if (high.length) return `${listNames(high.slice(0, 2).map((b) => b.source.name))} loved this`
+  return null
 }
 
 function Meter({ label, n }: { label: string; n: number }) {
@@ -40,6 +60,7 @@ export function DrinkSheet({ id, onClose, onOpen }: { id: string; onClose: () =>
   const group = useMemo(() => groupRating(id, srcs), [id, srcs])
   const recs = useMemo(() => recommendationsFor(id, srcs).filter((r) => !r.source.isSelf), [id, srcs])
   const comments = useMemo(() => commentsFor(id, srcs).filter((c) => !c.source.isSelf), [id, srcs])
+  const consensus = useMemo(() => consensusLine(group), [group])
   if (!d) return null
   const v = VENUES[d.venue]
   const tier = pkgOf(d)
@@ -85,6 +106,7 @@ export function DrinkSheet({ id, onClose, onOpen }: { id: string; onClose: () =>
           </div>
         )}
       </div>
+      {consensus && <p className="ds-consensus t-body">{consensus}</p>}
       {recs.length > 0 && (
         <div className="ds-recby">
           <span className="fstack">

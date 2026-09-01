@@ -34,8 +34,20 @@
         var VK = ['goodspirits', 'omalleys', 'princesslive', 'bellinis', 'coffeecurrents', 'wheelhouse', 'catch', 'crowngrill', 'butchers', 'spellbound', 'crooners', 'makoto', 'umai', 'sabatinis']
         VK.forEach(function (k) { visits[k] = { visited: true, date: DAYS[0] } })
         var friends = [
-          { id: 'f-sam', name: 'Sam', colour: 'melon', exportedAt: 1756000000000, passport: { entries: { d1: { rating: 5, rec: true, comment: 'The blue one is unreal, get it first' }, d5: { tried: true, rating: 5, rec: true }, d10: { tried: true, rating: 4 }, d20: { rating: 5, comment: 'Worth the queue' }, d2: { rating: 4, rec: true } }, visits: { crooners: { visited: true } } } },
-          { id: 'f-ravi', name: 'Ravi', colour: 'lime', exportedAt: 1756000000000, passport: { entries: { d1: { rating: 4 }, d5: { rating: 5, rec: true, comment: 'Order two, you will want a second' }, d30: { tried: true, rating: 5, rec: true }, d20: { rating: 4 } }, visits: {} } }
+          // Sam = your taste twin: matches your ratings on shared drinks (d3/d4/d8/d9/d14), plus a few
+          // gems you have not tried (d55/d60/d72) so recommendations + discovery show in the demo.
+          { id: 'f-sam', name: 'Sam', colour: 'melon', exportedAt: 1756000000000, passport: { entries: {
+            d4: { tried: true, rating: 5, rec: true, comment: 'The blue one is unreal, get it first' },
+            d9: { tried: true, rating: 5 }, d14: { tried: true, rating: 5, rec: true },
+            d3: { tried: true, rating: 4 }, d8: { tried: true, rating: 4 },
+            d55: { tried: true, rating: 5, rec: true, comment: 'Worth the walk to deck 16' },
+            d60: { tried: true, rating: 5, rec: true }, d72: { tried: true, rating: 4, rec: true }
+          }, visits: { crooners: { visited: true } } } },
+          { id: 'f-ravi', name: 'Ravi', colour: 'lime', exportedAt: 1756000000000, passport: { entries: {
+            d4: { tried: true, rating: 3 }, d9: { tried: true, rating: 4 }, d20: { tried: true, rating: 4 },
+            d30: { tried: true, rating: 5, rec: true, comment: 'Order two, you will want a second' },
+            d101: { tried: true, rating: 5, rec: true }, d66: { tried: true, rating: 4, rec: true }
+          }, visits: {} } }
         ]
         var profile = { id: 'me-self', name: 'You', colour: 'aqua' }
         localStorage.setItem('spcc2', JSON.stringify({ state: { me: { entries: entries, visits: visits }, custom: [], friends: friends, profile: profile }, version: 2 }))

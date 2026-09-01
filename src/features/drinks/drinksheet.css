@@ -25,6 +25,7 @@
 .ds-rate-label { text-align: center; }
 .ds-group { display: inline-flex; align-items: center; gap: 3px; color: var(--gold-ink); font-size: 12px; font-weight: 700; }
 .ds-group svg { color: var(--gold); }
+.ds-consensus { text-align: center; color: var(--mint-ink); font-size: 13px; font-weight: 650; margin: 0 0 10px; }
 .ds-recby { display: flex; align-items: center; justify-content: center; gap: 9px; margin-bottom: 8px; text-align: center; }
 .ds-stars { display: flex; gap: 4px; justify-content: center; }
 .ds-star { color: #DCE3EB; }
