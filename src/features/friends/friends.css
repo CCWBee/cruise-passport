@@ -49,3 +49,72 @@
 }
 .friend-copy small { margin-top: 1px; font-size: 12px; font-weight: 600; }
 .friend-remove { margin: 0; }
+
+/* ── Add me: a scannable QR + code + link ── */
+.addme {
+  margin-top: 22px;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+.addme-qr {
+  padding: 10px;
+  border-radius: var(--r-md);
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(16, 52, 74, .10), 0 10px 24px rgba(16, 52, 74, .16);
+  line-height: 0;
+}
+.addme-qr svg { display: block; border-radius: 8px; }
+.addme-qr-skel {
+  inline-size: 200px;
+  block-size: 200px;
+  border-radius: 8px;
+  background: var(--ink-line);
+}
+.addme-hint { text-align: center; max-width: 32ch; }
+.addme-code { align-self: stretch; margin-top: 2px; }
+.addme-code-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+}
+.addme-code-val {
+  flex: 1;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: .10em;
+  color: var(--ink);
+}
+.addme-actions {
+  align-self: stretch;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 6px;
+}
+.addme-actions .btn { margin-top: 0; }
+
+/* ── Scan a friend ── */
+.scan-sheet { display: grid; gap: 8px; }
+.scan-lead { margin-bottom: 4px; }
+.scan-frame {
+  position: relative;
+  aspect-ratio: 1;
+  width: 100%;
+  max-width: 320px;
+  margin: 6px auto 0;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: #0b1c27;
+}
+.scan-video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.scan-reticle {
+  position: absolute;
+  inset: 15%;
+  border: 2px solid rgba(255, 255, 255, .9);
+  border-radius: 16px;
+  box-shadow: 0 0 0 100vmax rgba(11, 28, 39, .30);
+}
+.scan-status { text-align: center; margin-top: 8px; font-weight: 650; color: var(--ink); }
+.scan-error { text-align: center; margin-top: 10px; }

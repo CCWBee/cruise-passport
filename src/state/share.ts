@@ -57,6 +57,13 @@ export function normaliseCode(raw: string): string {
   return s.length > 4 ? s.slice(0, 4) + '-' + s.slice(4, 8) : s
 }
 
+/** Pull an SPP share code out of scanned/pasted text or an /add#SPP… link. */
+export function extractShareCode(text: string): string {
+  const t = (text || '').trim()
+  const i = t.indexOf(PREFIX)
+  return i >= 0 ? t.slice(i).split(/[\s"'<>]/)[0] : t
+}
+
 const shareable = (e: Entry): PEntry | null => {
   const p: PEntry = {}
   if (e.tried) p.t = 1

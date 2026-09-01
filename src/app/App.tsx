@@ -1,4 +1,7 @@
+import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
+import { extractShareCode } from '../state/share'
+import { useStore } from '../state/store'
 import { Shell } from './Shell'
 import { Home } from '../features/home/Home'
 import { Drinks } from '../features/drinks/Drinks'
@@ -12,6 +15,37 @@ import { Wrapped } from '../features/wrapped/Wrapped'
 function WrappedRoute() {
   const navigate = useNavigate()
   return <Wrapped onClose={() => navigate('/')} />
+}
+
+// Friend invite link. /add#SPP… carries the sender's whole passport in the fragment, so a tap adds
+// them fully offline. (The code-only /add/:code form is reserved for the online resolve in Lane 2.)
+function AddRoute() {
+  const navigate = useNavigate()
+  const [msg, setMsg] = useState('Adding your friend…')
+  useEffect(() => {
+    const raw = window.location.hash.slice(1) || new URLSearchParams(window.location.search).get('c') || ''
+    let decoded = raw
+    try { decoded = decodeURIComponent(raw) } catch { /* keep raw */ }
+    const code = extractShareCode(decoded)
+    if (!code.startsWith('SPP')) {
+      setMsg('That add link looks incomplete. Ask your friend to share it again.')
+      const t = setTimeout(() => navigate('/social'), 1600)
+      return () => clearTimeout(t)
+    }
+    useStore.getState().ensureIdentity()
+    let alive = true
+    void useStore.getState().importCode(code).then((result) => {
+      if (!alive) return
+      setMsg(result.ok ? `Added ${result.name}. Taking you to your crew…` : (result.reason || 'Could not read that add link.'))
+      setTimeout(() => navigate('/social'), result.ok ? 1100 : 1700)
+    })
+    return () => { alive = false }
+  }, [navigate])
+  return (
+    <div className="wrap page">
+      <div className="glass card center"><p className="t-body">{msg}</p></div>
+    </div>
+  )
 }
 
 function Soon({ title }: { title: string }) {
@@ -34,6 +68,7 @@ export default function App() {
           <Route path="/drinks" element={<Drinks />} />
           <Route path="/ship" element={<Ship />} />
           <Route path="/social" element={<Social />} />
+          <Route path="/add" element={<AddRoute />} />
           <Route path="/stats" element={<Stats />} />
           <Route path="/badges" element={<Badges />} />
           <Route path="/log" element={<Log />} />
