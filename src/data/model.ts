@@ -110,6 +110,11 @@ export function voyageDays(): string[] {
 }
 export const DAYS = voyageDays()
 export function today(): string {
+  // ?day=YYYY-MM-DD pins the date, so the aboard states can be rendered before sailing (QA only)
+  if (typeof location !== 'undefined') {
+    const pinned = new URLSearchParams(location.search).get('day')
+    if (pinned && /^\d{4}-\d{2}-\d{2}$/.test(pinned)) return pinned
+  }
   const d = new Date()
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10)
 }

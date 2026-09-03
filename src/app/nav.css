@@ -1,4 +1,6 @@
-/* Five tabs, icon and label. Active is colour alone: no indicator plate, no lift, no heavier stroke. */
+/* Five tabs, icon and label, on a liquid-glass bar: the page scrolls beneath it, the top edge is the
+   specular line. The active tab is coral (the signal a11y relies on) under a see-through glass lens
+   that slides between tabs: film and specular only, no plate, no rule. */
 .nav {
   --nav-px: max(var(--s2), env(safe-area-inset-left));
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
@@ -6,8 +8,21 @@
   padding: var(--s2) var(--nav-px) calc(var(--s2) + var(--safe-b));
   border: 0; border-top: 1px solid var(--line);
 }
+.nav-lens {
+  position: absolute; top: var(--s1); bottom: calc(var(--s1) + var(--safe-b));
+  left: var(--nav-px); width: calc((100% - 2 * var(--nav-px)) / var(--n, 5));
+  transform: translateX(calc(var(--i, 0) * 100%));
+  transition: transform var(--t-panel) var(--e-out);
+  pointer-events: none;
+}
+.nav-lens::before {
+  content: ''; position: absolute; inset: var(--s1) 14%;
+  border-radius: var(--r-control);
+  background: rgba(255, 255, 255, .42);
+  box-shadow: inset 0 1px 0 var(--glass-rim), inset 0 -1px 0 var(--glass-rim-under);
+}
 .nav-btn {
-  position: relative; flex: 1; min-width: 0;
+  position: relative; z-index: 1; flex: 1; min-width: 0;
   display: flex; flex-direction: column; align-items: center; gap: var(--s1);
   min-height: var(--ctl); padding: var(--s1) 0;
   font-size: var(--f-micro); font-weight: 400; color: var(--ink-2);
@@ -15,3 +30,4 @@
 }
 .nav-btn span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nav-btn.on { color: var(--coral-ink); font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .nav-lens { transition: none; } }

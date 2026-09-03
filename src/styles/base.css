@@ -92,20 +92,36 @@ h1, h2, h3, p { margin: 0; }
   border-radius: var(--r-surface);
   box-shadow: none;
 }
-/* live-blur chrome: nav, sheet, hero chips. The only surfaces that blur. */
+/* ── Liquid glass: the material of the chrome layer. It reads as glass because content moves
+   beneath it, so it lives only where that is true: nav, sheet, the hero chips and floating action,
+   the toast, the Wrapped certificate. Never in the content layer, never glass on glass. ── */
 .glass-live {
   background: var(--glass-fallback);
   border: 1px solid var(--line);
+  transform: translateZ(0);
 }
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass-live {
-    background: var(--glass-live-film);
+    background: var(--glass-film);
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
     backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   }
+  .glass-sm { -webkit-backdrop-filter: blur(var(--glass-blur-sm)) saturate(var(--glass-sat)); backdrop-filter: blur(var(--glass-blur-sm)) saturate(var(--glass-sat)); }
+}
+/* the edge: one light from above. A specular line along the top, a faint one along the foot, and a
+   highlight over the top 40%. This is what makes the film read as glass rather than fog. */
+.glass-edge {
+  box-shadow: inset 0 1px 0 var(--glass-rim), inset 0 -1px 0 var(--glass-rim-under);
+  background-image: linear-gradient(to bottom, var(--glass-highlight-film), transparent 40%);
+}
+/* the one primary action on glass: a coral film, white label (5:1 over the sea's lightest band) */
+.glass-coral { background: var(--coral-film); color: var(--on-accent); border-color: rgba(255, 255, 255, .35); }
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-coral { background: var(--coral-film-blur); }
 }
 @media (prefers-reduced-transparency: reduce) {
-  .glass-live { background: var(--glass-fallback); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .glass-live, .glass-sm { background: var(--glass-fallback); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .glass-coral { background: var(--coral-ink); -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 
 .card { padding: var(--s4); margin-bottom: var(--s3); }

@@ -60,14 +60,42 @@ between sections. Whitespace separates ideas; it does not pad every object.
 
 - **Ground.** Cream `#FBF3E2` with two washes no darker than `#F7ECD3`. The film grain stays at 3.5%.
   This is the surface content sits on.
-- **Glass (live blur)** is reserved for chrome that genuinely layers over content: the bottom nav,
-  the sheet, the readout and countdown chips on the sea hero. Nothing else blurs.
+- **Liquid glass is the material of the chrome layer**, and it is meant to be seen. It reads as
+  glass only because content moves beneath it, so it lives exactly where that is true: the bottom
+  nav (the page scrolls under it), the sheet (the page shows through, blurred, behind it), the
+  readout and countdown chips and the floating action on the sea hero (the water moves under
+  them), the toast, and the Wrapped certificate over its drifting backdrop. Nowhere in the content
+  layer, never glass on glass (the glass bible's two hard rules).
+- **The glass recipe** (`.glass-live` plus `.glass-edge` in `base.css`, tuned per role by tokens):
+  a white tint film of 45 to 62% (the film is what keeps text at 4.5:1; buy contrast with film, not
+  by darkening), `blur` 6 to 8px on small controls, 16 to 22px on bars and sheets, `saturate(160%)`,
+  a near-white hairline, one light from the top: a specular top edge (`inset 0 1px 0` white at 75%)
+  and a highlight gradient over the top 40%. A coral-tinted film marks the one primary action on
+  glass. Non-blur fallback and reduced-transparency path always present. The scan allows
+  `backdrop-filter` and the inset edge only in the files that own chrome.
 - **Panel** is a flat surface: `rgba(255,255,255,.55)` over the ground, 1px `--line`, radius 20, no
   shadow, no highlight gradient. Use sparingly (see the container rule).
 - **Row highlight** for tappable rows: none at rest; `rgba(28,60,86,.06)` on press.
 
-There are no floating cards. The two-stop card shadow, the specular top edge and the turquoise film
-are retired.
+There are no floating cards. The two-stop card shadow and the turquoise film on content are retired;
+the specular edge belongs to glass chrome only.
+
+### Sheets
+
+A sheet is the one place content is covered, so it is the most-used glass surface and the gesture
+has to be right:
+
+- **Look.** Glass film 58%, blur 22, the specular edge, the sheet shadow; the scrim behind it is
+  ink at 22% with a 6px blur, so the page is visibly still there. The SheetWave wash is its opening.
+- **Dismiss.** Drag down from the grab bar or the header, or from anywhere when the sheet's own
+  scroller is at its top. The drag must be vertical in intent (more down than across in the first
+  10px) and it follows the finger. It dismisses only past 35% of the sheet's height (never under
+  140px), or on a fast flick (over 1.1px/ms after at least 70px); otherwise it settles back over
+  200ms. Escape and a tap on the scrim also close it.
+- **Nothing else moves.** While a sheet is open the page behind is locked (position-fixed body on
+  iOS, restored on close), the sheet's scroller contains its overscroll so a pull at its top never
+  reaches the page (no pull-to-refresh), `touchmove` is prevented during a drag, and the scroller
+  never scrolls sideways.
 
 ## Colour
 
@@ -136,6 +164,13 @@ the one action that fills it. Anything that waits on the network shows that it i
 failed. Tried, visited, favourite and wishlist read the same way on every screen: a filled glyph in
 the state colour, not a background tint.
 
+**Confirmation.** A completed action the guest cannot otherwise see (a friend added, a group joined,
+a code accepted) is confirmed once, the same way everywhere: the `Confirm` primitive, a glass disc
+with a mint tick that draws in, a one-line label ("Sam added"), and a haptic where the platform
+gives one (`haptic()`: the Vibration API on Android, the switch-toggle trick on iOS Safari, nothing
+the feature depends on). It holds for about a second and clears itself. Actions whose result is
+already visible (tried, rated, favourite) stay silent; the glyph is the confirmation.
+
 ## Copy
 
 House rules apply. In addition: sentence case throughout; ration the middle dot to one per line;
@@ -157,11 +192,30 @@ they are simply not the reason the screen exists.
 
 ### Home
 
-Read: where am I in the voyage and how am I doing. Modules: (1) the sea hero with the percentage
-readout and the day count, the only poster on the app; (2) three facts in one row, plain, no box:
-to go, day streak, bars visited; (3) "Right now": top drink and top bar as two rows; (4) the Wrapped
-row, a single quiet row that appears only when Wrapped is unlocked. Fold: 1 to 3. Nothing on Home
-repeats a number the hero already shows.
+Read: what day is it, where am I, what do I do now. Home is the instrument's front panel, not a
+summary; every module either answers one of those or leads to the screen that does.
+
+1. **The sea hero** (the poster, kept): countdown or day chip top right, the percentage readout
+   bottom left, and bottom right the one primary action on the app, **"Log a drink"**, a
+   coral-tinted glass button floating on the water. It opens Drinks with the search focused, so
+   logging at a bar is two taps from cold.
+2. **Today**, one row on the ground, three facts that change every day: aboard, "Day 3 of 15",
+   drinks today, day streak; before sailing, days to go, drinks tried, bars visited. Never a number
+   the hero shows.
+3. **Last bar** (aboard): one row for the venue of the last drink logged today, with "12 of 44
+   tried here" and the first untried drink there named; it opens that venue's sheet. With nothing
+   logged today it is "Your top bar"; before sailing it is "Where to start", the biggest bar and
+   its count. Never a guess from the clock: a wrong bar labelled as yours breaks "Honest".
+4. **Up next**: the badge nearest to earned as a row with a 3px bar ("2 more gins for Gin
+   Explorer"), the top drink and top bar rows as today, and, when there is a crew, one crew line
+   ("Sam logged 3 today", opening Crew).
+5. The Wrapped row, only when unlocked.
+
+Fold: 1 to 3. The seed data is pre-sailing, so both states are verified by rendering the aboard
+branch with the date pinned (`?day=2026-10-05`, a QA override in `today()`). "Log a drink" is the
+only control with that intent: the Drinks page's catalogue action is "Add a missing drink". Opening
+Drinks from it focuses the search field and shows the ring; the keyboard is the platform's to
+raise, and it will not from a route change on iOS.
 
 ### Drinks
 
@@ -199,6 +253,23 @@ right (dot, name, code); (2) the one coral button, "Add to your crew", full widt
 with" rows; (4) "Groups" rows with "Set up a group" as a text action; (5) "Discover together" rows;
 (6) "Nobody's tried these yet" rows. The name card, when shown, is a panel (a form with its own
 boundary) and the only panel on the screen. Fold: 1 to 3.
+
+**Add to your crew** leads with the route that needs nothing from the other person. The backend
+makes a tapped link mutual (`befriend` writes both edges), so: (1) "Send my link", the one coral
+button, opens the native share sheet, which is also how you hand it to someone standing next to you
+(AirDrop on iPhone, Nearby Share on Android; the web has no contact-tap of its own); its meta line
+says so. (2) Two secondary controls in one row: "Scan their code" (camera) and "Show my code", which
+unfolds the QR and the code inline for the friend whose phone will not take a link. (3) "Join a
+group" as today. (4) "Paste a code instead", quiet. Every success, on either phone, ends in the
+`Confirm` tick: the tapped link lands on a tick with the friend's name and then on Crew; the sender
+sees a toast "Sam added you" on the next pull.
+
+A tapped link (`/add`) asks for the guest's name **before** it befriends, exactly as `/join` does
+(the name card with a lead naming the sender), because a befriend without a name publishes
+"A friend" to the sender's roster; the sixteen "A friend" rows on the live project are this bug.
+The "added you" toast fires only for a direct friend the server introduced (not one this phone
+added itself, which still carries `needsEdge`) and never on a pull whose previous roster was empty
+(first sync, a restore, after delete-my-data), where everyone is new.
 
 ### You
 
@@ -273,7 +344,8 @@ colour, are how that happens again. Read it before any change that renders.
 | `.section`, `.section-head` | `base.css` | a section is a plain `h2.t-h2`, 32px above, 8px to its content, count or meta at the right |
 | `.row` (tappable), `.line` (static), `.row-copy` | `base.css` | every list is rows with hairlines on the ground; never a box per item |
 | `.panel` | `base.css` | the one container, for a bounded interactive module only; never nested |
-| `.glass-live` | `base.css` | live blur: nav, sheet, hero chips. Nothing else |
+| `.glass-live`, `.glass-edge`, `.glass-coral` | `base.css` | liquid glass for chrome: nav, sheet, hero chips and the floating action, toast, Wrapped certificate. Nothing in the content layer |
+| `Confirm`, `haptic()` | `src/ui/Confirm.tsx`, `src/ui/haptic.ts` | the one success confirmation (tick on glass, label, haptic); silent where the result is already visible |
 | `.btn .btn-coral .btn-wide`, `GlassButton` | `base.css`, `src/ui/GlassButton.tsx` | one filled coral control per screen; disabled falls to the plain surface |
 | `.tag`, `.mini` | `base.css` | small outline tags inside a meta line; compact 36px secondary control |
 | `Sheet` + `.sheet-meta` | `src/ui/Sheet.tsx`, `sheet.css` | title then one meta line; no eyebrow; the SheetWave is its opening |

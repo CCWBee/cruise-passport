@@ -6,8 +6,15 @@
 styles/base.css :: radial-gradient(1100px 620px
 styles/base.css :: radial-gradient(900px 560px
 styles/base.css :: radial-gradient(940px 720px
-# live glass is defined once, here, and used by nav, sheet and hero chips
+# liquid glass is defined once, here (film, blur, the specular edge and top highlight, the coral film)
 styles/base.css :: backdrop-filter
+styles/base.css :: inset 0 1px 0 var(--glass-rim)
+styles/base.css :: linear-gradient(to bottom, var(--glass-highlight-film)
+# the nav lens: a see-through film with the specular edge, sliding under the active tab
+app/nav.css :: inset 0 1px 0 var(--glass-rim)
+# the toast is glass: film, blur, edge
+ui/toast.css :: inset 0 1px 0 var(--glass-rim)
+ui/toast.css :: linear-gradient(to bottom, var(--glass-highlight-film)
 # the sheet and the toast layer over content
 ui/sheet.css :: backdrop-filter
 ui/sheet.css :: rgba(255, 253, 250, .86)
@@ -19,6 +26,10 @@ ui/select.css :: calc(var(--r-control) - 4px)
 ui/fdot.css :: inset 0 0 0 1px color-mix
 # the ship bobbing on the sea: one of the three authored motions
 features/home/sea.css :: ship-bob
+# the Wrapped certificate is glass over the drifting backdrop
+features/wrapped/wrapped.css :: backdrop-filter
+features/wrapped/wrapped.css :: inset 0 1px 0 var(--glass-rim)
+features/wrapped/wrapped.css :: linear-gradient(to bottom, var(--glass-highlight-film)
 # the Wrapped backdrop: the story's one ambient gradient and drift
 features/wrapped/wrapped.css :: radial-gradient(circle at 74% 16%
 features/wrapped/wrapped.css :: linear-gradient(160deg

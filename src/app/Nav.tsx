@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { IconHome, IconDrinks, IconShip, IconSocial, IconStats } from '../ui/Icon'
 import './nav.css'
@@ -14,10 +15,12 @@ const TABS = [
 
 export function Nav() {
   const { pathname } = useLocation()
+  const active = Math.max(0, TABS.findIndex((t) => t.match(pathname)))
   return (
-    <nav className="nav glass-live" aria-label="Sections">
-      {TABS.map(({ to, label, Icon, match }) => {
-        const on = match(pathname)
+    <nav className="nav glass-live glass-edge" aria-label="Sections">
+      <div className="nav-lens" style={{ '--i': active, '--n': TABS.length } as CSSProperties} aria-hidden />
+      {TABS.map(({ to, label, Icon }, i) => {
+        const on = i === active
         return (
           <NavLink key={to} to={to} viewTransition className={'nav-btn' + (on ? ' on' : '')} aria-current={on ? 'page' : undefined}>
             <Icon size={24} />
