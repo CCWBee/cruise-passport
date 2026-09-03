@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom'
 import { extractShareCode } from '../state/share'
 import { joinGroupFlow } from '../state/groups'
 import { hasBackend } from '../state/backend'
@@ -15,6 +15,7 @@ import { Stats } from '../features/stats/Stats'
 import { Badges } from '../features/badges/Badges'
 import { Log } from '../features/log/Log'
 import { Wrapped } from '../features/wrapped/Wrapped'
+import { You } from '../features/you/You'
 
 function WrappedRoute() {
   const navigate = useNavigate()
@@ -134,9 +135,10 @@ export default function App() {
           <Route path="/social" element={<Social />} />
           <Route path="/add" element={<AddRoute />} />
           <Route path="/join" element={<JoinRoute />} />
-          <Route path="/stats" element={<Stats />} />
-          <Route path="/badges" element={<Badges />} />
-          <Route path="/log" element={<Log />} />
+          <Route path="/you" element={<Navigate to="/stats" replace />} />
+          <Route path="/stats" element={<You segment="stats"><Stats /></You>} />
+          <Route path="/badges" element={<You segment="badges"><Badges /></You>} />
+          <Route path="/log" element={<You segment="log"><Log /></You>} />
           <Route path="*" element={<NotFound />} />
         </Route>
         <Route path="/wrapped" element={<WrappedRoute />} />

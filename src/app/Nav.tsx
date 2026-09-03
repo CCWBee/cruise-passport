@@ -1,33 +1,30 @@
-import type { CSSProperties } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { IconHome, IconDrinks, IconShip, IconStats, IconBadges, IconLog, IconSocial } from '../ui/Icon'
+import { IconHome, IconDrinks, IconShip, IconSocial, IconStats } from '../ui/Icon'
 import './nav.css'
 
+// Five destinations. Stats, Badges and Log live behind "You" (a segmented control on that page);
+// their routes still resolve, so every old link lands, and any of them lights this tab.
 const TABS = [
-  { to: '/', label: 'Home', Icon: IconHome },
-  { to: '/drinks', label: 'Drinks', Icon: IconDrinks },
-  { to: '/ship', label: 'Ship', Icon: IconShip },
-  { to: '/social', label: 'Social', Icon: IconSocial },
-  { to: '/stats', label: 'Stats', Icon: IconStats },
-  { to: '/badges', label: 'Badges', Icon: IconBadges },
-  { to: '/log', label: 'Log', Icon: IconLog },
+  { to: '/', label: 'Home', Icon: IconHome, match: (p: string) => p === '/' },
+  { to: '/drinks', label: 'Drinks', Icon: IconDrinks, match: (p: string) => p.startsWith('/drinks') },
+  { to: '/ship', label: 'Ship', Icon: IconShip, match: (p: string) => p.startsWith('/ship') },
+  { to: '/social', label: 'Crew', Icon: IconSocial, match: (p: string) => p.startsWith('/social') },
+  { to: '/stats', label: 'You', Icon: IconStats, match: (p: string) => /^\/(you|stats|badges|log)/.test(p) },
 ]
 
 export function Nav() {
   const { pathname } = useLocation()
-  const active = Math.max(0, TABS.findIndex((t) => (t.to === '/' ? pathname === '/' : pathname.startsWith(t.to))))
-
   return (
     <nav className="nav glass-live" aria-label="Sections">
-      <div className="nav-ind" style={{ '--i': active, '--n': TABS.length } as CSSProperties} aria-hidden />
-      {TABS.map(({ to, label, Icon }, i) => (
-        <NavLink key={to} to={to} end={to === '/'} viewTransition className={({ isActive }) => 'nav-btn pressable' + (isActive ? ' on' : '')}>
-          {/* active state = coral + pill + a heavier stroke. Never switch to fill: the line icons
-              (Stats bars, Drinks stem, Ship mast, Log spine) have no area and would vanish. */}
-          <Icon size={24} strokeWidth={i === active ? 2.5 : 1.8} />
-          <span>{label}</span>
-        </NavLink>
-      ))}
+      {TABS.map(({ to, label, Icon, match }) => {
+        const on = match(pathname)
+        return (
+          <NavLink key={to} to={to} viewTransition className={'nav-btn' + (on ? ' on' : '')} aria-current={on ? 'page' : undefined}>
+            <Icon size={24} />
+            <span>{label}</span>
+          </NavLink>
+        )
+      })}
     </nav>
   )
 }

@@ -1,39 +1,32 @@
+/* Switch: a flat track, a solid knob, mint when on (it means visited or tried). */
 .sw {
-  --w: 52px; --h: 30px; --pad: 3px; --knob: calc(var(--h) - var(--pad) * 2);
-  --travel: calc(var(--w) - var(--knob) - var(--pad) * 2); --on: var(--mint); --on-hi: var(--mint-soft);
-  position: relative; flex: none; width: var(--w); height: var(--h); border-radius: var(--r-pill);
+  --w: 52px; --h: 32px; --pad: 3px; --knob: calc(var(--h) - var(--pad) * 2);
+  --travel: calc(var(--w) - var(--knob) - var(--pad) * 2); --on: var(--mint);
+  position: relative; flex: none; width: var(--w); height: var(--h); border-radius: var(--r-tag);
   touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
-.sw::before { content: ''; position: absolute; inset: -8px; }
-.sw-coral { --on: var(--coral); --on-hi: var(--coral-soft); }
-.sw-sm { --w: 44px; --h: 26px; }
+.sw::before { content: ''; position: absolute; inset: -6px; }
+.sw-coral { --on: var(--coral-ink); }
+.sw-sm { --w: 44px; --h: 28px; }
 
 .sw-track {
-  position: absolute; inset: 0; border-radius: var(--r-pill); background: rgba(33, 58, 87, .10);
-  box-shadow: inset 0 2px 3px rgba(33, 58, 87, .20), inset 0 -1px 1px rgba(255, 255, 255, .70),
-    inset 0 0 0 1px rgba(33, 58, 87, .06);
-  transition: background-color var(--t-panel) var(--e-io), box-shadow var(--t-panel) var(--e-io);
+  position: absolute; inset: 0; border-radius: var(--r-tag); background: var(--line);
+  border: 1px solid transparent;
+  transition: background-color var(--t-panel) var(--e-out);
 }
 .sw-knob {
   position: absolute; top: var(--pad); left: var(--pad); width: var(--knob); height: var(--knob);
-  border-radius: 50%; background: linear-gradient(180deg, #fff, #EDF1F5);
-  box-shadow: 0 2px 4px rgba(33, 58, 87, .24), 0 1px 1px rgba(33, 58, 87, .14),
-    inset 0 1px 1px rgba(255, 255, 255, .90), 0 0 0 1px rgba(33, 58, 87, .08);
-  transition: transform var(--t-spring) var(--spring-soft), width var(--t-press) var(--e-out);
+  border-radius: 50%; background: #fff; border: 1px solid var(--line);
+  transition: transform var(--t-panel) var(--e-out);
 }
-.sw[aria-checked="true"] .sw-track {
-  background: linear-gradient(180deg, var(--on-hi), var(--on));
-  box-shadow: inset 0 2px 3px rgba(9, 46, 20, .30), inset 0 -1px 1px rgba(255, 255, 255, .30),
-    inset 0 0 0 1px rgba(9, 46, 20, .14);
-}
-.sw[aria-checked="true"] .sw-knob { transform: translateX(var(--travel)); }
-.sw:active:not(:disabled) .sw-knob { width: calc(var(--knob) + 3px); }
-.sw:focus-visible { outline: 2.5px solid var(--ring); outline-offset: 3px; border-radius: var(--r-pill); }
-.sw:disabled .sw-track { background: rgba(33, 58, 87, .06); box-shadow: inset 0 0 0 1px var(--ink-line); }
-.sw:disabled .sw-knob { background: #EEF1F4; box-shadow: 0 0 0 1px var(--ink-line); }
+.sw[aria-checked="true"] .sw-track { background: var(--on); }
+.sw[aria-checked="true"] .sw-knob { transform: translateX(var(--travel)); border-color: transparent; }
+.sw:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: var(--r-tag); }
+.sw:disabled .sw-track { background: var(--press); }
+.sw:disabled .sw-knob { background: var(--panel-solid); }
 
-.sw-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 44px; }
-.sw-row-label { font-size: 15px; font-weight: 600; color: var(--ink); }
+.sw-row { display: flex; align-items: center; justify-content: space-between; gap: var(--s4); min-height: var(--ctl); }
+.sw-row-label { font-size: var(--f-body); font-weight: 600; color: var(--ink); }
 @media (prefers-reduced-motion: reduce) {
   .sw-track, .sw-knob { transition: none; }
 }

@@ -1,0 +1,4 @@
+.you-head { display: grid; gap: var(--s3); margin-bottom: var(--s5); }
+/* the segments render their own content; they must not re-wrap the page */
+.you > .wrap { padding: 0; }
+.you > .page { padding-top: 0; }

@@ -1,106 +1,120 @@
-/* Liquid Sea Glass — design tokens. Warm dawn-sea ground, Apple Liquid Glass material,
-   rare accent = state. See REVIEW/SPEC.md. */
+/* Design tokens. The system is described in docs/DESIGN.md; every value here is on that list.
+   Old names are kept as aliases so unconverted CSS collapses onto the system rather than breaking. */
 :root {
-  /* ground washes (composed on a fixed layer, glow up through glass) */
+  /* ground */
   --cream: #FBF3E2;
-  --wash-dawn: #FFEBCB;
-  --wash-sky: #CDEBF7;
-  --wash-foam: #E1F8F0;
+  --wash-dawn: #FBEFD9;
+  --wash-sky: #F8EDD8;
+  --wash-sand: #F7ECD3;   /* the darkest the ground gets: every ink alpha below is checked against it */
+  --wash-foam: #F3F0E4;
 
-  /* ink — secondary/tertiary as ALPHA, never CSS opacity */
+  /* ink: three levels, alpha not opacity. ink-3 is for large text, icon glyphs and hairlines only. */
   --ink: #1C3C56;
-  --ink-2: rgba(28,60,86,.66);
-  --ink-3: rgba(28,60,86,.44);
-  --ink-line: rgba(28,60,86,.10);
+  --ink-2: rgba(28, 60, 86, .74);   /* 4.9:1 on the darkest ground */
+  --ink-3: rgba(28, 60, 86, .60);   /* 3.4:1: 18px bold or larger, icons, never body or meta */
+  --line: rgba(28, 60, 86, .12);
+  --ink-line: var(--line);
   --on-accent: #fff;
 
-  /* accent = state, kept rare */
-  --coral: #FF5B78;
-  --coral-soft: #FF88A0;
-  --coral-deep: #E23C61;
-  --coral-ink: #D23A5C;      /* coral text where small text needs contrast on cream */
-  --gold: #F6B02E;           /* ratings only */
-  --gold-ink: #965F00;
-  --mint: #23C08A;           /* tried only */
-  --mint-soft: #7FE3BB;
-  --mint-ink: #147C58;
-  --lilac: #9B8CF2;          /* focus ring only */
-  --aqua: #16B5CE;
-  /* tropical fruit burst set (celebration / decorative accents) */
-  --fruit-melon: #FF5B78; --fruit-mango: #FF9F45; --fruit-lime: #59CF6B;
-  --fruit-aqua: #22C0D6; --fruit-grape: #9B8CF2; --fruit-pine: #F6C544;
+  /* the one accent, three depths with rules */
+  --coral-brand: #FF5B78;  /* the funnel and the wordmark glyph only */
+  --coral: #E23C61;        /* icon or display size only (3.5:1) */
+  --coral-ink: #C72F50;    /* small text, the filled primary button (white on it 5.3:1), active nav */
+  --coral-deep: var(--coral-ink);
+  --coral-soft: rgba(226, 60, 97, .14);
 
-  /* sea (hero) — mirror of the GLSL constants */
-  --sea-sky-top: #609CCF;    /* deeper dawn sky (was washed-out) — mirrors SeaHero GLSL */
+  /* state colours: tried, rating, focus. Nowhere else. */
+  --mint: #147C58;         /* icons, large */
+  --mint-ink: #0F6E4F;     /* small text */
+  --mint-soft: rgba(20, 124, 88, .14);
+  --gold: #B57A00;         /* star glyphs */
+  --gold-ink: #965F00;     /* rating text */
+  --gold-soft: rgba(181, 122, 0, .14);
+  --focus: #6F5BD6;
+  --lilac: var(--focus);
+  --sea-ink: #146E6A;      /* chart fills */
+  --aqua: var(--sea-ink);
+
+  /* a person's identity dot. Not for decks, charts or badges. */
+  --friend-aqua: #22C0D6; --friend-melon: #FF5B78; --friend-mango: #FF9F45;
+  --friend-lime: #59CF6B; --friend-grape: #9B8CF2; --friend-pine: #F6C544;
+  --fruit-aqua: var(--friend-aqua); --fruit-melon: var(--friend-melon); --fruit-mango: var(--friend-mango);
+  --fruit-lime: var(--friend-lime); --fruit-grape: var(--friend-grape); --fruit-pine: var(--friend-pine);
+
+  /* sea (hero): mirror of the GLSL constants. The hero is the poster exception. */
+  --sea-sky-top: #609CCF;
   --sea-sky-hor: #BDD9DA;
-  --sea-hi: #28AAA3;         /* brand mint, as water */
-  --sea-lo: #093755;         /* deep sea */
+  --sea-hi: #28AAA3;
+  --sea-lo: #093755;
   --sea-sun: #F6CE79;
 
-  /* liquid glass material */
-  --glass-film: rgba(200, 238, 232, .74);       /* content cards = pale sea-glass turquoise (own object on sand) */
-  --glass-film-light: rgba(255, 255, 255, .55); /* live-blur chrome (nav, chips) */
-  --glass-border: rgba(255, 255, 255, .78);
-  --glass-highlight: linear-gradient(to bottom, rgba(255, 255, 255, .62), rgba(255, 255, 255, 0) 44%);
-  --glass-blur: 12px;
-  --glass-blur-strong: 14px;
-  --glass-sat: 150%;
-  --glass-fallback: rgba(255, 253, 250, .93);
-  --scrim: rgba(33, 58, 87, .34);
+  /* surfaces */
+  --panel: rgba(255, 255, 255, .55);         /* flat panel over the ground, hairline, no shadow */
+  --panel-solid: #FDFAF2;
+  --press: rgba(28, 60, 86, .06);             /* row press highlight */
+  --glass-live-film: rgba(255, 253, 250, .62); /* live blur chrome: nav, sheet, hero chips */
+  --glass-blur: 14px;
+  --glass-sat: 140%;
+  --glass-fallback: rgba(255, 253, 250, .94);
+  --scrim: rgba(28, 60, 86, .34);
+  /* aliases for unconverted rules: a card is now a panel */
+  --glass-film: var(--panel);
+  --glass-film-light: var(--panel);
+  --glass-border: var(--line);
+  --glass-highlight: none;
+  --glass-blur-strong: var(--glass-blur);
 
-  /* shadow — NO hard offset. two-stop ambient. */
-  --sh-1: 0 1px 2px rgba(33, 58, 87, .06), 0 4px 12px rgba(33, 58, 87, .07);
-  --sh-2: 0 2px 6px rgba(33, 58, 87, .06), 0 14px 30px rgba(33, 58, 87, .12);
-  --sh-sheet: inset 0 1px 0 var(--glass-border), 0 -18px 50px rgba(33, 58, 87, .22);
+  /* shadow: the sheet only. Content casts none. */
+  --sh-sheet: 0 -12px 40px rgba(28, 60, 86, .18);
+  --sh-1: none;
+  --sh-2: none;
 
-  /* radii */
-  --r-xs: 10px; --r-sm: 14px; --r-md: 18px; --r-lg: 22px; --r-xl: 28px; --r-pill: 999px;
+  /* radii: surface, control, tag */
+  --r-surface: 20px; --r-control: 12px; --r-tag: 999px;
+  --r-xs: var(--r-control); --r-sm: var(--r-control); --r-md: var(--r-control);
+  --r-lg: var(--r-surface); --r-xl: var(--r-surface); --r-pill: var(--r-tag);
 
-  /* spacing (8pt) */
-  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px;
+  /* spacing: 4 8 12 16 24 32 */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 32px;
+  --inset: 16px;
+  --ctl: 44px; --ctl-sm: 36px; --row: 48px;
 
-  /* focus ring (one language across all controls) */
-  --ring: color-mix(in oklab, var(--lilac) 90%, var(--ink));
-  --ring-soft: color-mix(in oklab, var(--lilac) 35%, transparent);
+  /* focus ring */
+  --ring: var(--focus);
+  --ring-soft: rgba(111, 91, 214, .3);
 
-  /* motion */
+  /* motion: one easing, three durations */
   --e-out: cubic-bezier(.22, .9, .32, 1);
-  --e-io: cubic-bezier(.4, 0, .2, 1);
-  --e-spring: cubic-bezier(.34, 1.5, .5, 1);
-  --t-press: 130ms;
-  --t-panel: 220ms;
-  --t-fill: 1100ms;
+  --e-io: var(--e-out);
+  --e-spring: var(--e-out);
+  --spring: var(--e-out);
+  --spring-soft: var(--e-out);
+  --t-press: 120ms;
+  --t-panel: 200ms;
+  --t-sheet: 280ms;
+  --t-spring: var(--t-panel);
+  --t-fill: 600ms;
 
   /* chrome sizes */
-  --nav-h: 62px;
+  --nav-h: 60px;
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
   --wrap: 720px;
 
-  /* type stack — SF Pro Rounded on iPhone (native Liquid Glass) */
-  --font: ui-rounded, 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Quicksand, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* type: the platform's rounded or system sans, no webfont */
+  --font: ui-rounded, 'SF Pro Rounded', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --f-display: clamp(40px, 11vw, 52px);
+  --f-title: 22px; --f-heading: 17px; --f-body: 15px; --f-meta: 13px; --f-micro: 12px;
+  --f-hero: var(--f-display);
 
-  /* springs — the motion language */
-  --spring: linear(0, .006, .025 2.8%, .101 6.1%, .539 18.9%, .721 25.3%, .849, .945 38%, .98, 1.007 46%, 1.02, 1.021, 1.013 63%, 1.001, .995, 1); /* overshoot spring */
-  --spring-soft: cubic-bezier(.34, 1.28, .5, 1);
-  --t-spring: 420ms;
-
-  /* fluid hero number */
-  --f-hero: clamp(38px, 11vw, 52px);
-
-  /* subtle film grain — kills gradient banding, reads as premium glass */
+  /* subtle film grain over the ground */
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
 }
 
-/* wide-gamut accents — richer coral/mint/gold/sea on P3 screens (the iPhone target) */
+/* wide-gamut sea and brand mark on P3 screens; the UI accents stay sRGB so their contrast holds */
 @media (color-gamut: p3) {
   :root {
-    --coral: color(display-p3 1 .357 .471);
-    --coral-soft: color(display-p3 1 .541 .627);
-    --coral-deep: color(display-p3 .886 .235 .38);
-    --mint: color(display-p3 .137 .753 .541);
-    --mint-soft: color(display-p3 .498 .89 .733);
-    --gold: color(display-p3 .965 .69 .18);
+    --coral-brand: color(display-p3 1 .357 .471);
     --sea-hi: color(display-p3 .157 .667 .639);
     --sea-lo: color(display-p3 .035 .216 .333);
     --sea-sun: color(display-p3 .965 .808 .475);

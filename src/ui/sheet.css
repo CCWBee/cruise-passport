@@ -2,42 +2,62 @@
   position: fixed; inset: 0; z-index: 70;
   background: var(--scrim);
   display: flex; align-items: flex-end; justify-content: center;
-  animation: sheet-fade .18s ease;
+  animation: sheet-fade 160ms var(--e-out);
+  border: 0;
 }
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .sheet-bg { -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+  .sheet-bg { -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
 }
 @keyframes sheet-fade { from { opacity: 0 } to { opacity: 1 } }
-@keyframes sheet-up { from { transform: translateY(80px); opacity: .3 } to { transform: translateY(0); opacity: 1 } }
+@keyframes sheet-up { from { transform: translateY(48px); opacity: .4 } to { transform: translateY(0); opacity: 1 } }
 
+/* the sheet is the one surface that layers over content: live glass, a shadow, a 20px radius */
 .sheet {
   position: relative; width: 100%; max-width: 560px;
-  max-height: 92vh; max-height: 88svh; /* svh = stable small viewport: the close X + grab stay on-screen on mobile */
-  background: var(--glass-fallback); background-image: var(--glass-highlight);
-  border: 1px solid var(--glass-border);
-  border-top-left-radius: var(--r-xl); border-top-right-radius: var(--r-xl);
+  max-height: 92vh; max-height: 88svh; /* svh: the close X and grab stay on-screen on mobile */
+  background: var(--glass-fallback);
+  border: 1px solid var(--line); border-bottom: 0;
+  border-top-left-radius: var(--r-surface); border-top-right-radius: var(--r-surface);
   box-shadow: var(--sh-sheet);
-  animation: sheet-up .44s var(--e-out);
+  animation: sheet-up var(--t-sheet) var(--e-out);
   display: flex; flex-direction: column; overflow: hidden;
   touch-action: pan-y;
 }
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .sheet {
+    background: rgba(255, 253, 250, .86);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .sheet { background: var(--glass-fallback); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+.sheet:focus-visible { outline: none; }
 
-/* ── signature wash: a WebGL wave overlay (SheetWave.tsx) washes the content up onto a bare pane
-   then recedes, with a feDisplacementMap on the content for the refraction that settles. The canvas
-   sits above the content, alpha-composited so the content shows through the tint, and is removed when
-   the wave finishes. Reduced-motion / no-WebGL: no wave, content shows at once. ── */
+/* ── signature wash: the WebGL wave (SheetWave.tsx) washes the content up onto the pane then
+   recedes. One of the app's three authored motions. Reduced-motion / no-WebGL: content shows at once. ── */
 .sheet-wave-gl {
   position: absolute; inset: 0; z-index: 3; display: block;
   width: 100%; height: 100%; border-radius: inherit; pointer-events: none;
 }
-.sheet-grab { width: 42px; height: 5px; border-radius: 99px; background: rgba(33, 58, 87, .18); margin: 10px auto 4px; flex: none; }
+.sheet-grab { width: 36px; height: 4px; border-radius: var(--r-tag); background: var(--line); margin: var(--s2) auto 0; flex: none; }
 .sheet-x {
-  position: absolute; top: 14px; right: 14px; z-index: 4; width: 32px; height: 32px; border-radius: 50%;
-  display: grid; place-items: center; color: var(--ink-3);
-  background: rgba(255, 255, 255, .7); border: 1px solid var(--glass-border); box-shadow: var(--sh-1);
+  position: absolute; top: var(--s3); right: var(--s3); z-index: 4; width: var(--ctl-sm); height: var(--ctl-sm);
+  border-radius: var(--r-control); display: grid; place-items: center; color: var(--ink-2);
+  background: var(--panel-solid); border: 1px solid var(--line);
 }
 .sheet-scroll {
   flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
-  padding: 6px 18px calc(28px + var(--safe-b));
+  padding: var(--s3) var(--inset) calc(var(--s5) + var(--safe-b));
 }
-@media (prefers-reduced-motion: reduce) { .sheet { animation: none } .sheet-bg { animation: none } }
+/* the sheet's caption line: one meta line under (or, in unconverted sheets, above) the title */
+.sheet-meta, .sheet .sheet-eyebrow, .sheet .eyebrow.sheet-eyebrow {
+  font-size: var(--f-meta); font-weight: 400; line-height: 1.4; color: var(--ink-2);
+  letter-spacing: 0; text-transform: none; margin: 0 0 var(--s1); padding-right: var(--s7);
+}
+.sheet-title { padding-right: var(--s7); }
+@media (prefers-reduced-motion: reduce) {
+  .sheet { animation: sheet-fade 160ms var(--e-out); }
+  .sheet-bg { animation: none; }
+}

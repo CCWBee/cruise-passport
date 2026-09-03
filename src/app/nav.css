@@ -1,35 +1,17 @@
+/* Five tabs, icon and label. Active is colour alone: no indicator plate, no lift, no heavier stroke. */
 .nav {
-  --nav-px: max(10px, env(safe-area-inset-left));
+  --nav-px: max(var(--s2), env(safe-area-inset-left));
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
   display: flex; justify-content: space-around;
-  padding: 7px var(--nav-px) calc(7px + var(--safe-b));
-  border-top: 1px solid var(--glass-border);
-  box-shadow: 0 -8px 24px rgba(33, 58, 87, .08);
-}
-/* indicator geometry mirrors the padded button row so the pill sits dead-centre under each icon */
-.nav-ind {
-  position: absolute; top: 6px; bottom: calc(6px + var(--safe-b));
-  left: var(--nav-px); width: calc((100% - 2 * var(--nav-px)) / var(--n, 6));
-  transform: translateX(calc(var(--i, 0) * 100%));
-  transition: transform 320ms var(--e-spring);
-  pointer-events: none;
-}
-.nav-ind::before {
-  content: ''; position: absolute; inset: 4px 14%;
-  border-radius: var(--r-md);
-  background: rgba(255, 255, 255, .55);
-  border: 1px solid rgba(255, 255, 255, .7);
-  box-shadow: var(--sh-1);
+  padding: var(--s2) var(--nav-px) calc(var(--s2) + var(--safe-b));
+  border: 0; border-top: 1px solid var(--line);
 }
 .nav-btn {
-  position: relative; z-index: 1; flex: 1; min-width: 0;
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 5px 0; font-size: 9.5px; font-weight: 700; color: var(--ink-3);
+  position: relative; flex: 1; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; gap: var(--s1);
+  min-height: var(--ctl); padding: var(--s1) 0;
+  font-size: var(--f-micro); font-weight: 400; color: var(--ink-2);
+  transition: color var(--t-panel) var(--e-out);
 }
 .nav-btn span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nav-btn svg { transition: transform .2s var(--e-out); }
-.nav-btn.on { color: var(--coral-deep); }
-.nav-btn.on svg { transform: translateY(-1px); }
-@media (prefers-reduced-motion: reduce) {
-  .nav-ind { transition: none; }
-}
+.nav-btn.on { color: var(--coral-ink); font-weight: 600; }

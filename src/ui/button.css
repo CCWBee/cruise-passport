@@ -1,43 +1,36 @@
+/* One button. 44px, radius 12, weight 600. The filled coral one appears once per screen. */
 .gbtn {
-  position: relative; isolation: isolate; display: inline-flex; align-items: center; justify-content: center;
-  gap: 7px; border-radius: var(--r-pill); font-weight: 700; line-height: 1; white-space: nowrap;
-  padding: 11px 17px; font-size: 13.5px; min-height: 44px;
-  border: 1px solid var(--glass-border); box-shadow: var(--sh-1);
-  transition: scale var(--t-press) var(--e-out), background-color .18s var(--e-io), box-shadow .18s;
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  gap: var(--s2); border-radius: var(--r-control); font-weight: 600; line-height: 1; white-space: nowrap;
+  padding: 0 var(--s4); font-size: var(--f-body); min-height: var(--ctl);
+  border: 1px solid var(--line);
+  transition: scale var(--t-press) var(--e-out), background-color var(--t-panel) var(--e-out), color var(--t-panel) var(--e-out);
   touch-action: manipulation;
 }
-.gbtn::before {
-  content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: -1;
-  background-image: var(--glass-highlight); pointer-events: none;
-}
-.gbtn:active:not(:disabled) { scale: .96; }
+.gbtn:active:not(:disabled) { scale: .97; }
 
-.gbtn-secondary { background: var(--glass-film-light); color: var(--ink); }
-.gbtn-secondary:hover { box-shadow: var(--sh-2); }
-.gbtn-primary { background: var(--coral); color: var(--on-accent); border-color: transparent; }
-.gbtn-primary:hover { background: var(--coral-deep); }
-.gbtn-mint.gbtn-primary { background: var(--mint); color: #06342b; }
-.gbtn-ghost { background: transparent; border-color: transparent; box-shadow: none; color: var(--ink-2); }
-.gbtn-ghost::before { background-image: none; }
-.gbtn-ghost:hover { background: rgba(33, 58, 87, .06); color: var(--ink); }
+.gbtn-secondary { background: var(--panel-solid); color: var(--ink); }
+.gbtn-primary { background: var(--coral-ink); color: var(--on-accent); border-color: transparent; }
+.gbtn-mint.gbtn-primary { background: var(--mint-ink); color: var(--on-accent); }
+.gbtn-ghost { background: transparent; border-color: transparent; color: var(--ink-2); }
+.gbtn-ghost:active:not(:disabled) { background: var(--press); }
 
-.gbtn-sm { padding: 8px 13px; font-size: 12px; min-height: 36px; }
-.gbtn-lg { padding: 14px 20px; font-size: 15px; min-height: 52px; }
+.gbtn-sm { padding: 0 var(--s3); font-size: var(--f-meta); min-height: var(--ctl-sm); }
+.gbtn-lg { padding: 0 var(--s5); min-height: 52px; }
 .gbtn-block { width: 100%; }
 
-.gbtn:disabled { cursor: default; box-shadow: none; }
-.gbtn-secondary:disabled { background: rgba(255, 255, 255, .35); color: var(--ink-3); }
-.gbtn-primary:disabled { background: rgba(255, 91, 120, .40); color: rgba(255, 255, 255, .70); }
-.gbtn-ghost:disabled { color: var(--ink-3); }
-.gbtn:disabled::before { background-image: none; }
+.gbtn:disabled { cursor: default; }
+.gbtn-secondary:disabled { background: var(--panel); color: var(--ink-2); }
+.gbtn-primary:disabled { background: var(--coral-soft); color: var(--coral-ink); }
+.gbtn-ghost:disabled { color: var(--ink-2); }
 
 .gbtn-spin {
-  width: 15px; height: 15px; flex: none; border-radius: 50%;
-  border: 2px solid currentColor; border-top-color: transparent; animation: gbtn-spin .7s linear infinite;
+  width: 14px; height: 14px; flex: none; border-radius: 50%;
+  border: 2px solid currentColor; border-top-color: transparent; animation: gbtn-spin .8s linear infinite;
 }
 .gbtn.is-loading { cursor: progress; pointer-events: none; }
 @keyframes gbtn-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) {
   .gbtn:active { scale: 1; }
-  .gbtn-spin { animation-duration: 1.4s; }
+  .gbtn-spin { animation-duration: 1.6s; }
 }
