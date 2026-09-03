@@ -169,7 +169,7 @@ export async function renderWrappedImage(card: WrappedFinale): Promise<Blob> {
       setFont(ctx, stack, 400, 30)
       ctx.fillStyle = INK_2
       ctx.textAlign = 'center'
-      ctx.fillText(`drinks tried, ${pct.toFixed(1)}% complete`, centre, top)
+      ctx.fillText(`drinks tried, ${pct.toFixed(0)}% complete`, centre, top)
     },
   })
 

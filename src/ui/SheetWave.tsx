@@ -14,9 +14,11 @@ uniform vec2  iRes;
 uniform float iP;     // 0..1 progress
 uniform float iTime;
 
-const vec3 SEA      = vec3(0.24, 0.82, 0.78);
-const vec3 SEA_DEEP = vec3(0.06, 0.46, 0.60);
-const vec3 PANE     = vec3(0.984, 0.972, 0.945); // bare sheet before content is washed in
+// the sea's own palette (tokens --sea-hi / --sea-lo), so the wash is the water from the hero, not
+// the retired turquoise card film; PANE is the sheet's glass fallback
+const vec3 SEA      = vec3(0.157, 0.667, 0.639);
+const vec3 SEA_DEEP = vec3(0.035, 0.216, 0.333);
+const vec3 PANE     = vec3(1.0, 0.992, 0.980); // bare sheet before content is washed in
 
 void main(){
   vec2 uv = gl_FragCoord.xy / iRes;
@@ -36,7 +38,7 @@ void main(){
   if (uv.y > crestY)   { gl_FragColor = vec4(0.0); return; }        // deposited, above water -> clear
 
   float depth = crestY - uv.y;
-  float tint = 0.5 * smoothstep(0.0, 0.09, depth) * (1.0 - 0.4*smoothstep(0.10, 0.55, depth));
+  float tint = 0.42 * smoothstep(0.0, 0.09, depth) * (1.0 - 0.4*smoothstep(0.10, 0.55, depth));
   vec3 seaCol = mix(SEA, SEA_DEEP, clamp(depth*1.5, 0.0, 1.0));
   float foam = smoothstep(0.016, 0.0, depth);
   float edge = smoothstep(0.026, 0.008, depth) * (1.0 - foam);

@@ -162,7 +162,7 @@ function CardBody({ card }: { card: WrappedCard }) {
           <p className="t-meta">You have tried</p>
           <p className="t-display tnum"><AnimatedNumber value={card.count} /></p>
           <p className="t-meta">of {WRAPPED_TOTAL} drinks</p>
-          <p className="t-meta">{card.pct.toFixed(1)}% of the passport</p>
+          <p className="t-meta">{card.pct.toFixed(0)}% of the passport</p>
         </div>
       )
     case 'topbar':
@@ -240,7 +240,7 @@ function CardBody({ card }: { card: WrappedCard }) {
             <p className="t-meta">Certificate of a voyage</p>
             <h2 className="t-title">Cruise Wrapped</h2>
             <p className="t-display tnum wr-cert-number"><AnimatedNumber value={card.count} /></p>
-            <p className="t-meta">drinks tried, <span className="tnum">{card.pct.toFixed(1)}%</span> complete</p>
+            <p className="t-meta">drinks tried, <span className="tnum">{card.pct.toFixed(0)}%</span> complete</p>
             <div className="wr-summary">
               {certificateRows(card).map((row) => (
                 <p key={row.label}><span className="t-meta">{row.label}</span><strong className="tnum">{row.value}</strong></p>
