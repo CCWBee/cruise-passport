@@ -3,17 +3,17 @@
   min-height: 100dvh;
   display: grid;
   align-items: center;
-  padding: 40px 0 max(40px, env(safe-area-inset-bottom));
+  padding: 32px 0 max(32px, env(safe-area-inset-bottom));
 }
 .cruise-gate-in {
   display: grid;
-  gap: 26px;
+  gap: 24px;
 }
 .cruise-hero { display: grid; gap: 8px; }
 .cruise-hero-title { font-size: clamp(30px, 8vw, 40px); line-height: 1.02; }
 .cruise-hero .muted { max-width: 34ch; }
 
-.cruise-list { display: grid; gap: 14px; }
+.cruise-list { display: grid; gap: 16px; }
 .cruise-card {
   display: flex;
   align-items: center;

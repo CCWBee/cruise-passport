@@ -41,3 +41,7 @@ worker/dist/
 
 # Supabase CLI temp
 supabase/.temp/
+
+# design QA output (screenshots, chrome profiles, montages)
+tools/qa/shots*/
+tools/qa/profile-*/

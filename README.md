@@ -2,9 +2,9 @@
 
 An offline-first PWA cocktail passport for the *Sun Princess* cruise (3–17 October 2026): browse the
 214 drinks aboard, filter them, tick them off, rate and log them by day, earn 3D award medallions,
-and see your voyage as a *Cruise Wrapped* story. Built in a **"Liquid Sea Glass"** design language:
-Apple Liquid Glass material over a warm beach palette, with a living WebGL sea whose tide-line is your
-completion.
+and see your voyage as a *Cruise Wrapped* story. Designed as a pocket logbook for the second-hundredth
+use: content flat on a sand ground, one accent, a living WebGL sea on Home whose tide-line is your
+completion. The design contract is `docs/DESIGN.md`.
 
 **Live:** https://cruise.charlesbee.org &nbsp;·&nbsp; https://cruise.charlesbee.org/?seed loads sample
 data + two friends so every surface is populated. Drop `?seed` to start from an empty passport. The
@@ -43,6 +43,9 @@ Deployed to Cloudflare Pages by GitHub Actions on every push to `main`, which al
 
 ## Docs
 
-`docs/PRODUCTIONISATION.md` is the plan from demo to hosted product. `docs/RATIONALISATION.md` is the
-1 September pass that collapsed the parallel threads to one backend, one origin and one crew roster,
-and records what was cut.
+`docs/DESIGN.md` is the design constitution (thesis, geometry, colour, type, per-screen module order,
+the working process and the registry of primitives); `docs/DESIGN-AUDIT.md` records why the earlier
+look read as sloppy. `npm run design:check` (also run in CI) fails on CSS that leaves the system.
+`tools/qa/` is the screenshot and scan harness. `docs/PRODUCTIONISATION.md` is the plan from demo to
+hosted product. `docs/RATIONALISATION.md` is the 1 September pass that collapsed the parallel threads
+to one backend, one origin and one crew roster, and records what was cut.

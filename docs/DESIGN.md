@@ -225,3 +225,63 @@ modules in rank order with the fold respected, and a scan of its CSS finds: no f
 and none off the scale; no spacing literal off the scale; no radius outside 20/12/999; no
 `box-shadow` on content; no `backdrop-filter` outside nav, sheet and hero chips; no
 `text-transform: uppercase` with tracking; no easing other than `--e-out`; every colour a token.
+
+The tools for this live in `tools/qa/` (see its README): `shot.mjs` renders one screen or sheet,
+`shots.mjs` sweeps them all, `scan.mjs` is the mechanical check, and `npm run design:check` is the
+same scan as a hard gate, run in CI before every build. A genuine exception goes in
+`tools/qa/design-allow.txt` with its reason, never into the scanner.
+
+## Working on this design
+
+This section exists because the app once drifted into the default bundle (see `DESIGN-AUDIT.md`)
+and because features built in isolation, each reaching for its own container, label style and
+colour, are how that happens again. Read it before any change that renders.
+
+### The order of work
+
+1. **Read before you build.** This document; `DESIGN-AUDIT.md` (the thirteen faults, so you recognise
+   them when they come back); the section under Screens for the screen you are on; the registry
+   below. Then read the screen's files and its nearest neighbour (the screen that already does the
+   same job: a list, a sheet, a section head). Grep the codebase for the behaviour and the classes
+   you are about to write. Most "new" is a sibling of something that exists.
+2. **Place it before you draw it.** For a new feature or module, write its five-second read, which
+   screen it belongs on and where it sits in that screen's rank order, and what it displaces or
+   merges with. A feature is not isolated: it reinforces or dilutes what is already on the screen.
+   If it needs a number the hero already shows, it does not show the number again. If it needs a
+   state colour, it uses the one that already means that state.
+3. **Fit the form, then diverge for a reason.** Compose from the registry. A list is `.row`s with
+   hairlines under a `.section-head`; a sheet is `Sheet` with a title and a `.sheet-meta` line; a
+   control is one of `ui/`. Copy how the neighbouring screen does the same job. Depart from it only
+   with a one-line reason written in the CSS comment; if you cannot write the reason, do not depart.
+4. **Mint a primitive properly or not at all.** If the pattern genuinely does not exist: build it
+   once in `src/styles/base.css` or `src/ui/`, add it to the registry below in the same change, and
+   sweep every existing sibling to use it (grep finds them). A second, slightly different version of
+   an existing primitive is the failure this process is for.
+5. **Verify with a render, not by reasoning about the CSS.** `npm run dev`, then `tools/qa/shot.mjs`
+   at 390×844 for the screen and each sheet it opens (settled, `--after 3000`), the full-page shot,
+   `tools/qa/scan.mjs` on the files you touched, `npm run design:check`, `npx tsc -p tsconfig.app.json
+   --noEmit`. Look at the PNGs honestly: rank order, fold, boxes, caps, wrapping, contrast.
+6. **Keep this document true.** A rule that changes changes here first, with the reason, then in the
+   code. A screen section that no longer describes the screen is a bug.
+
+### The registry: what exists, where it lives, the rule
+
+| Primitive | Home | Rule |
+| --- | --- | --- |
+| Tokens (`--ink*`, `--line`, `--coral*`, `--mint*`, `--gold*`, `--sea-ink`, `--s1..6`, `--r-*`, `--f-*`, `--e-out`, `--t-*`) | `src/styles/tokens.css` | every colour, space, radius, size and easing is a token; a literal in feature CSS is a defect |
+| Type roles `.t-display .t-title .t-h2 .t-body .t-strong .t-meta .t-micro .eyebrow` | `src/styles/base.css` | never a local `font-size`; `.eyebrow` is a sentence-case label, not caps |
+| `.section`, `.section-head` | `base.css` | a section is a plain `h2.t-h2`, 32px above, 8px to its content, count or meta at the right |
+| `.row` (tappable), `.line` (static), `.row-copy` | `base.css` | every list is rows with hairlines on the ground; never a box per item |
+| `.panel` | `base.css` | the one container, for a bounded interactive module only; never nested |
+| `.glass-live` | `base.css` | live blur: nav, sheet, hero chips. Nothing else |
+| `.btn .btn-coral .btn-wide`, `GlassButton` | `base.css`, `src/ui/GlassButton.tsx` | one filled coral control per screen; disabled falls to the plain surface |
+| `.tag`, `.mini` | `base.css` | small outline tags inside a meta line; compact 36px secondary control |
+| `Sheet` + `.sheet-meta` | `src/ui/Sheet.tsx`, `sheet.css` | title then one meta line; no eyebrow; the SheetWave is its opening |
+| `Field`, `SearchField`, `Select`, `Switch`, `Segmented`, `Chip`, `Toast`, `FriendDot` | `src/ui/` | the controls; restyle them there, never locally |
+| Icons (`Icon.tsx`: `IconStar`, `IconCheck`, `IconChevron`, ...) | `src/ui/Icon.tsx` | the only icon system; no glyph characters, no emoji; add to the set, do not draw inline |
+| `.sr-only` | `base.css` | visually hidden, still announced |
+| `DrinkCard` | `src/features/drinks/DrinkCard.tsx` | the drink row everywhere a drink is listed (Drinks, venue sheet) |
+| `Medallion` | `src/features/badges/Medallion.tsx` | the badge disc, grid and sheet |
+| `SeaHero`, `SheetWave`, the hero count-up | `src/features/home/`, `src/ui/SheetWave.tsx` | the three authored motions; do not add a fourth without amending Motion above |
+| `You` | `src/features/you/You.tsx` | Stats, Badges and Log render inside it; they carry no page wrapper of their own |
+| Seed data | `index.html` (`?seed`) | how every screen is populated for a render |

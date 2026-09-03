@@ -1,0 +1,25 @@
+# Accepted exceptions for `npm run design:check` (tools/qa/scan.mjs --check).
+# One per line: <file path suffix> :: <substring of the flagged line>   and a reason in a comment above.
+# Every entry is a deliberate exception named in docs/DESIGN.md. Do not add one to make a screen pass.
+
+# the ground: cream with two washes (DESIGN.md, Material)
+styles/base.css :: radial-gradient(1100px 620px
+styles/base.css :: radial-gradient(900px 560px
+styles/base.css :: radial-gradient(940px 720px
+# live glass is defined once, here, and used by nav, sheet and hero chips
+styles/base.css :: backdrop-filter
+# the sheet and the toast layer over content
+ui/sheet.css :: backdrop-filter
+ui/sheet.css :: rgba(255, 253, 250, .86)
+ui/toast.css :: backdrop-filter
+# the segmented thumb and the select option sit 3-4px inside a 12px control
+ui/segmented.css :: calc(var(--r-control) - 3px)
+ui/select.css :: calc(var(--r-control) - 4px)
+# a person's identity dot: an inset ring in their hue, not a drop shadow
+ui/fdot.css :: inset 0 0 0 1px color-mix
+# the ship bobbing on the sea: one of the three authored motions
+features/home/sea.css :: ship-bob
+# the Wrapped backdrop: the story's one ambient gradient and drift
+features/wrapped/wrapped.css :: radial-gradient(circle at 74% 16%
+features/wrapped/wrapped.css :: linear-gradient(160deg
+features/wrapped/wrapped.css :: wr-drift
