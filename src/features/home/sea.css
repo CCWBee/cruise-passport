@@ -1,62 +1,63 @@
+/* The sea hero: the app's one poster. Its palette mirrors the GLSL and is the stated exception.
+   The readout and the countdown are the only live-glass elements on Home. */
 .sea {
   position: relative;
   width: 100%;
-  height: 208px;
-  border-radius: var(--r-lg);
+  height: 280px;
+  border-radius: var(--r-surface);
   overflow: hidden;
-  box-shadow: var(--sh-2);
   isolation: isolate;
+  /* the hull's shadow on the water: an illustration's own shading, not elevation on content */
+  --sea-ship-shadow: color-mix(in srgb, var(--ink) 26%, transparent);
 }
 .sea-floor { position: absolute; inset: 0; z-index: 0; }
 .sea-canvas { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; display: block; }
 .sea-canvas.sea-nogl { display: none; } /* fall back to the CSS sea */
 
-/* a liner on the sea — bottom of the hull tracks the waterline (set inline as `top`) */
+/* a liner on the sea — the bottom of the hull tracks the waterline (set inline as `top`) */
 .sea-ship {
   position: absolute; z-index: 1; left: 56%;
   width: clamp(78px, 25%, 116px); height: auto;
   transform: translateY(-86%);
   pointer-events: none;
-  filter: drop-shadow(0 3px 4px rgba(11, 40, 60, .26));
-  animation: ship-bob 7s ease-in-out infinite;
+  filter: drop-shadow(0 3px 4px var(--sea-ship-shadow));
+  /* the curve lives in the keyframes (a sine), so the timing stays linear and the crest is smooth */
+  animation: ship-bob 7s linear infinite;
 }
-.ship-hull { fill: #10344a; }
-.ship-deck { fill: #FBF6EC; }
-.ship-window { fill: rgba(16, 52, 74, .8); }
-.ship-funnel { fill: var(--coral); }
-.ship-mast { stroke: #10344a; stroke-width: 1.4; stroke-linecap: round; }
+.ship-hull { fill: var(--sea-lo); }
+.ship-deck { fill: var(--cream); }
+.ship-window { fill: var(--ink); fill-opacity: .8; }
+.ship-funnel { fill: var(--coral-brand); }
+.ship-mast { stroke: var(--sea-lo); stroke-width: 1.4; stroke-linecap: round; }
 @keyframes ship-bob {
   0%, 100% { transform: translateY(-86%) rotate(-0.8deg); }
+  12.5%    { transform: translateY(-86.73%) rotate(-0.57deg); }
+  25%      { transform: translateY(-88.5%) rotate(0deg); }
+  37.5%    { transform: translateY(-90.27%) rotate(0.57deg); }
   50%      { transform: translateY(-91%) rotate(0.8deg); }
+  62.5%    { transform: translateY(-90.27%) rotate(0.57deg); }
+  75%      { transform: translateY(-88.5%) rotate(0deg); }
+  87.5%    { transform: translateY(-86.73%) rotate(-0.57deg); }
 }
 @media (prefers-reduced-motion: reduce) {
   .sea-ship { animation: none; transform: translateY(-86%); }
 }
 
-/* readout chip — liquid glass over the shifting sea */
+/* the readout, bottom left: the one display number in the app */
 .sea-readout {
   position: absolute; z-index: 2; left: var(--s4); bottom: var(--s4);
   display: flex; align-items: flex-end; gap: var(--s3);
-  padding: 10px 14px; border-radius: var(--r-md);
-  background: rgba(255, 251, 244, .5); border: 1px solid rgba(255, 255, 255, .6);
-  box-shadow: var(--sh-1);
+  padding: var(--s2) var(--s3); border-radius: var(--r-control);
 }
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .sea-readout { background: rgba(255, 251, 244, .32);
-    -webkit-backdrop-filter: blur(10px) saturate(140%); backdrop-filter: blur(10px) saturate(140%); }
-}
-.sea-pct { font-size: var(--f-hero); font-weight: 800; letter-spacing: -.02em; line-height: .92; color: var(--ink); font-variant-numeric: tabular-nums; }
-.sea-pct small { font-size: 18px; color: var(--coral-deep); font-weight: 800; }
-.sea-sub { font-size: 12.5px; font-weight: 650; color: var(--ink-2); padding-bottom: 4px; }
+.sea-pct { font-size: var(--f-display); font-weight: 700; letter-spacing: -.02em; line-height: 1; color: var(--ink); }
+.sea-pct small { font-size: var(--f-title); font-weight: 600; }
+/* full ink, not --ink-2: this text sits on glass over the sea, not on the ground */
+.sea-sub { font-size: var(--f-meta); font-weight: 400; line-height: 1.4; color: var(--ink); padding-bottom: var(--s1); }
 
-/* countdown chip, top-right on the sea */
+/* the countdown, top right */
 .sea-count {
   position: absolute; z-index: 2; right: var(--s4); top: var(--s4);
-  padding: 6px 12px; border-radius: var(--r-pill); font-size: 12px; font-weight: 700; color: var(--ink);
-  background: rgba(255, 251, 244, .5); border: 1px solid rgba(255, 255, 255, .6); box-shadow: var(--sh-1);
+  padding: var(--s2) var(--s3); border-radius: var(--r-control);
+  font-size: var(--f-meta); line-height: 1.4; color: var(--ink);
 }
-.sea-count b { color: var(--coral-deep); }
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .sea-count { background: rgba(255, 251, 244, .32);
-    -webkit-backdrop-filter: blur(10px) saturate(140%); backdrop-filter: blur(10px) saturate(140%); }
-}
+.sea-count b { font-weight: 600; }

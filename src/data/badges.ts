@@ -1,6 +1,6 @@
 // The 18 achievements. Predicates run over a computed BadgeStat snapshot.
-// Emblems stay emoji (the reward's identity / voice); the medallion renderer
-// turns each into a 3D metallic medal (locked = frosted glass blank).
+// Each badge's face is the drawn emblem in features/badges/emblems-data.ts (the `emoji` field is a
+// legacy key, not rendered); Medallion.tsx strikes it into a tiered coin, locked = a quiet grey disc.
 
 export interface BadgeStat {
   n: number // drinks tried

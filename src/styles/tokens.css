@@ -47,6 +47,7 @@
   --sea-hi: #28AAA3;
   --sea-lo: #093755;
   --sea-sun: #F6CE79;
+  --sea-ship-shadow: rgba(28, 60, 86, .26); /* the hull's shadow on the water, inside the poster */
 
   /* surfaces */
   --panel: rgba(255, 255, 255, .55);         /* flat panel over the ground, hairline, no shadow */

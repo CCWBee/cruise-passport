@@ -1,23 +1,21 @@
-.fpanel { padding: 16px; margin-bottom: 12px; }
-.fhead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-.fhead-r { font-size: 14px; }
-.fhead-r b { color: var(--coral-deep); }
-.fclear { font-size: 12.5px; font-weight: 800; color: var(--coral-deep); }
+/* The filter panel: a form with its own boundary, so it is the one panel on this screen.
+   Nothing inside it is a box: labels, chips and groups separated by hairlines. */
+.fpanel { padding: var(--s4); margin-top: var(--s3); }
+.fhead { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); min-height: var(--ctl); }
 
-.fseg-label { display: block; margin: 12px 0 6px 2px; }
-.fseg-label:first-of-type { margin-top: 0; }
+.f-label { font-size: var(--f-meta); font-weight: 600; color: var(--ink-2); margin: var(--s4) 0 var(--s1); }
+.fquick { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s4); }
 
-.fquick { display: flex; flex-wrap: wrap; gap: 7px; margin: 14px 0 6px; }
-
-.fgrp { margin-top: 10px; border-radius: var(--r-md); background: rgba(255, 255, 255, .35); border: 1px solid var(--ink-line); }
+.fgrp { border-top: 1px solid var(--line); margin-top: var(--s4); }
 .fgrp > summary {
-  list-style: none; cursor: pointer; padding: 12px 13px;
-  display: flex; align-items: center; justify-content: space-between;
-  font-size: 13.5px; font-weight: 700;
+  list-style: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s3);
+  min-height: var(--ctl); font-size: var(--f-body); font-weight: 600; color: var(--ink);
 }
 .fgrp > summary::-webkit-details-marker { display: none; }
-.fsum { font-size: 11.5px; color: var(--ink-3); font-weight: 650; }
+.fsum { font-size: var(--f-meta); font-weight: 400; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fgrp[open] .fsum { display: none; }
-.fcloud { display: flex; flex-wrap: wrap; gap: 7px; padding: 2px 13px 13px; }
-.fvdeck-h { font-size: 10.5px; color: var(--ink-3); font-weight: 800; letter-spacing: .05em; margin: 4px 0 0; padding: 0 13px; }
-.fvdeck .fcloud { padding-top: 6px; }
+
+.fcloud { display: flex; flex-wrap: wrap; gap: var(--s2); padding-bottom: var(--s3); }
+.fvdeck { margin-top: var(--s2); }
+.fvdeck-h { font-size: var(--f-meta); font-weight: 600; color: var(--ink-2); margin-bottom: var(--s2); }

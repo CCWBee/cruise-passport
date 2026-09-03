@@ -12,7 +12,7 @@ export interface SearchFieldProps {
 
 export function SearchField({ value, onChange, ariaLabel, placeholder, trailing }: SearchFieldProps) {
   return (
-    <div className="sfield glass-live">
+    <div className="sfield">
       <span className="sfield-icon" aria-hidden><IconSearch size={19} /></span>
       <input
         className="sfield-input"

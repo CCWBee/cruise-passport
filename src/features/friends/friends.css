@@ -1,148 +1,157 @@
-.friends-title { margin-bottom: 2px; }
+/* The crew sheets: add, group, profile, scan. One container level; the QR block is the only panel.
+   Fields are local to these sheets so they do not inherit the drink sheet's shape. */
 
-.fpick {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 2px 4px;
+.friends-sheet .sheet-meta { margin-bottom: var(--s3); }
+
+/* ── a field: a sentence-case label, then the control ── */
+/* the label carries the name of what it is, not the name of the banned pattern it replaced */
+.f-label { display: block; font-size: var(--f-meta); font-weight: 600; color: var(--ink-2); }
+.f-field { display: block; margin-top: var(--s4); }
+.f-field > span { display: block; margin-bottom: var(--s1); }
+.f-field input,
+.f-field textarea {
+  width: 100%;
+  min-height: var(--ctl);
+  padding: 12px;
+  background: var(--on-accent);
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  font-size: 16px; /* the iOS zoom guard */
+  font-weight: 400;
+  color: var(--ink);
+  resize: vertical;
 }
+
+/* the six identity colours: 44px targets. Every border stays 1px, so the chosen one is marked by a
+   deeper fill, a darker rim and a second rule drawn inside it rather than by a fatter border. */
+.fpick { display: flex; flex-wrap: wrap; gap: var(--s2); }
 .fpick-dot {
-  --fc: var(--fruit-aqua);
-  inline-size: 34px;
-  block-size: 34px;
-  border-radius: var(--r-pill);
-  background: color-mix(in oklab, var(--fc) 72%, white);
-  box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--fc) 72%, var(--ink));
+  --fc: var(--friend-aqua);
+  position: relative;
+  inline-size: var(--ctl);
+  block-size: var(--ctl);
+  border-radius: var(--r-tag);
+  background: color-mix(in oklab, var(--fc) 24%, transparent);
+  border: 1px solid color-mix(in oklab, var(--fc) 45%, transparent);
 }
 .fpick-dot.on {
-  box-shadow:
-    inset 0 0 0 2px color-mix(in oklab, var(--fc) 75%, var(--ink)),
-    0 0 0 3px var(--glass-fallback),
-    0 0 0 5px color-mix(in oklab, var(--fc) 46%, transparent);
+  background: color-mix(in oklab, var(--fc) 34%, transparent);
+  border-color: color-mix(in oklab, var(--fc) 62%, var(--ink));
+}
+.fpick-dot.on::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid color-mix(in oklab, var(--fc) 62%, var(--ink));
+  border-radius: var(--r-tag);
 }
 
-.friends-action { margin-top: 14px; }
-.friends-action:disabled { cursor: default; opacity: .45; transform: none; }
-.friends-block { margin-top: 26px; }
-.friends-status { margin-top: 10px; padding-inline: 4px; }
-/* the folded-away paste path: a text button, deliberately the quietest thing on the sheet, but the
+.friends-block { margin-top: var(--s5); }
+.friends-action { margin-top: var(--s4); }
+.friends-status { margin-top: var(--s3); }
+/* the folded-away paste path: a text action, deliberately the quietest thing on the sheet, but the
    only route left when the camera is refused, so it still has to be 44px of target */
 .friends-quiet {
-  margin-top: 26px;
-  min-height: 44px;
-  padding: 12px 4px;
-  font-size: 13.5px;
-  font-weight: 650;
+  display: block;
+  margin-top: var(--s5);
+  min-height: var(--ctl);
+  font-size: var(--f-meta);
+  font-weight: 600;
   color: var(--ink-2);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
 /* two-tap confirms live at the foot, well away from the thumb's resting path */
-.friends-danger { margin-top: 34px; }
-.confirm .btn { color: var(--ink-2); }
-.confirm .btn-coral { color: var(--on-accent); }
-.confirm-note { margin-top: 10px; padding-inline: 4px; }
+.friends-danger { margin-top: var(--s6); }
+/* at rest a one-way action is the quietest control on the sheet; armed, it turns coral in outline
+   only, which reads on every plate it can sit on and never becomes a second filled accent */
+/* the resting colour is scoped away from the armed one so neither depends on rule order */
+.confirm .btn:not(.armed),
+.confirm .mini:not(.armed) { color: var(--ink-2); }
+.confirm .armed { color: var(--coral-ink); border-color: var(--coral-ink); }
+.confirm-note { margin-top: var(--s2); }
 
-.friends-roster {
-  display: grid;
-  gap: 16px;
-  margin-top: 28px;
-}
-.friend-row {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 11px;
-}
-.friend-copy { min-width: 0; }
-.friend-copy strong,
-.friend-copy small {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.friends-roster { margin-top: var(--s1); }
+/* a roster row is a record rather than a control, so it takes no press tint */
+.friend-row:active { background-color: transparent; }
+/* a two-tap confirm sitting beside a name: a real target, but flat on the ground like the row it
+   belongs to, so the destructive action is not the loudest thing in the list */
+.friends-roster .confirm { display: flex; }
+.friends-roster .friend-remove {
+  flex: none;
+  margin: 0;
+  min-height: var(--ctl);
+  background: none;
+  border: 0;
   white-space: nowrap;
 }
-.friend-copy small { margin-top: 1px; font-size: 12px; font-weight: 600; }
-/* a two-tap confirm sitting beside a name: it has to be a real target, not a 29px pill */
-.friend-remove { margin: 0; min-height: 44px; padding-inline: 14px; }
-.friends-roster .confirm { display: flex; }
 
-/* ── Add me: a scannable QR + code + link ── */
+/* ── the QR block: white, because a code has to read under a camera ── */
 .addme {
-  margin-top: 22px;
+  margin-top: var(--s4);
   display: grid;
-  justify-items: center;
-  gap: 12px;
+  gap: var(--s3);
 }
 .addme-qr {
-  padding: 10px;
-  border-radius: var(--r-md);
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(16, 52, 74, .10), 0 10px 24px rgba(16, 52, 74, .16);
+  justify-self: center;
+  padding: var(--s3);
+  background: var(--on-accent);
   line-height: 0;
 }
-.addme-qr svg { display: block; border-radius: 8px; }
+.addme-qr svg { display: block; }
 .addme-qr-skel {
   inline-size: 200px;
   block-size: 200px;
-  border-radius: 8px;
-  background: var(--ink-line);
+  background: var(--line);
+  border-radius: var(--r-control);
 }
-.addme-code { align-self: stretch; margin-top: 2px; }
+.addme-code { margin-top: var(--s1); }
 .addme-code-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 5px;
+  gap: var(--s3);
+  margin-top: var(--s1);
 }
 .addme-code-val {
   flex: 1;
-  font-size: 20px;
-  font-weight: 750;
-  letter-spacing: .10em;
+  font-size: var(--f-heading);
+  font-weight: 600;
   color: var(--ink);
 }
 .addme-actions {
-  align-self: stretch;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 6px;
+  gap: var(--s2);
 }
-.addme-actions .btn { margin-top: 0; }
 /* one action, full width: the share button when Copy has taken the slot beside the code */
 .addme-actions-one { grid-template-columns: 1fr; }
 
-/* scoped to these sheets rather than the shared .mini: a 29px pill is too small for a thumb, but
-   .mini is used all over the app and its sizing is not ours to change here */
+/* .mini is a 36px control app-wide; beside a code or a name it needs a thumb's target */
 .friends-sheet .mini,
-.addme .mini {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-}
+.addme .mini { min-height: var(--ctl); margin: 0; }
 
 /* ── Scan a friend ── */
-.scan-sheet { display: grid; gap: 8px; }
-.scan-lead { margin-bottom: 4px; }
+.scan-lead { margin-bottom: var(--s3); }
 .scan-frame {
   position: relative;
   aspect-ratio: 1;
   width: 100%;
   max-width: 320px;
-  margin: 6px auto 0;
-  border-radius: var(--r-lg);
+  margin: var(--s4) auto 0;
+  border-radius: var(--r-surface);
   overflow: hidden;
-  background: #0b1c27;
+  background: var(--ink);
 }
 .scan-video { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* the surround dims through an outline rather than a spread shadow, which content may not cast */
 .scan-reticle {
   position: absolute;
   inset: 15%;
-  border: 2px solid rgba(255, 255, 255, .9);
-  border-radius: 16px;
-  box-shadow: 0 0 0 100vmax rgba(11, 28, 39, .30);
+  border: 2px solid var(--on-accent);
+  border-radius: var(--r-control);
+  outline: 100vmax solid var(--scrim);
 }
-.scan-status { text-align: center; margin-top: 8px; font-weight: 650; color: var(--ink); }
-.scan-error { text-align: center; margin-top: 10px; }
+.scan-status { text-align: center; margin-top: var(--s3); font-weight: 600; color: var(--ink); }
+.scan-error { text-align: center; margin-top: var(--s3); }
+.scan-out { margin-top: var(--s3); }

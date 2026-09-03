@@ -5,7 +5,6 @@ import { buildCard, buildPayload, encodeShare } from '../../state/share'
 import { useStore } from '../../state/store'
 import { Qr } from '../../ui/Qr'
 import { Sheet } from '../../ui/Sheet'
-import '../drinks/drinksheet.css'
 import './friends.css'
 
 // The camera scanner pulls in jsQR; load it only when someone opens it, keeping it off first paint.
@@ -73,16 +72,16 @@ export function AddCrewSheet({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <Sheet onClose={onClose} labelledBy="add-crew-title" eyebrow={<div className="sheet-eyebrow eyebrow">Sailing together</div>}>
+    <Sheet onClose={onClose} labelledBy="add-crew-title">
       <div className="friends-sheet">
-        <h2 className="t-title friends-title" id="add-crew-title">Add to your crew</h2>
-        <p className="muted t-body">Let them point a camera at this, or send the link.</p>
+        <h2 className="t-title sheet-title" id="add-crew-title">Add to your crew</h2>
+        <p className="sheet-meta">Let them point a camera at this, or send the link.</p>
 
         <div className="addme" data-noswipe>
-          <div className="addme-qr">{link ? <Qr value={link} size={200} /> : <div className="addme-qr-skel" aria-hidden />}</div>
+          <div className="panel addme-qr">{link ? <Qr value={link} size={200} /> : <div className="addme-qr-skel" aria-hidden />}</div>
           {profile.code && (
             <div className="addme-code">
-              <span className="eyebrow">Your code</span>
+              <span className="f-label">Your code</span>
               <div className="addme-code-row">
                 <code className="tnum addme-code-val">{profile.code}</code>
                 <button type="button" className="mini pressable" onClick={() => copy(profile.code!, 'Code copied')}>Copy</button>
@@ -97,8 +96,8 @@ export function AddCrewSheet({ onClose }: { onClose: () => void }) {
 
         {hasBackend() && (
           <div className="friends-block">
-            <label className="ds-field">
-              <span className="eyebrow">Join a group</span>
+            <label className="f-field">
+              <span className="f-label">Join a group</span>
               <input
                 value={invite}
                 maxLength={64}
@@ -115,8 +114,8 @@ export function AddCrewSheet({ onClose }: { onClose: () => void }) {
 
         {showPaste ? (
           <div className="friends-block">
-            <label className="ds-field">
-              <span className="eyebrow">Their passport code</span>
+            <label className="f-field">
+              <span className="f-label">Their passport code</span>
               <textarea
                 className="tnum"
                 rows={3}
@@ -132,7 +131,7 @@ export function AddCrewSheet({ onClose }: { onClose: () => void }) {
           <button type="button" className="friends-quiet" onClick={() => setShowPaste(true)}>Paste a code instead</button>
         )}
 
-        {status && <p className="muted t-body friends-status" role="status">{status}</p>}
+        {status && <p className="t-meta friends-status" role="status">{status}</p>}
       </div>
 
       {scan && (

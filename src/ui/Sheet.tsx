@@ -9,10 +9,10 @@ import './sheet.css'
 // must not shuffle the order underneath the sheet the guest is actually looking at.
 const openSheets: symbol[] = []
 
-export function Sheet({ onClose, children, eyebrow, labelledBy }: {
+// A sheet opens with its title and one meta line (<p className="sheet-meta">) as the first children.
+export function Sheet({ onClose, children, labelledBy }: {
   onClose: () => void
   children: ReactNode
-  eyebrow?: ReactNode
   labelledBy?: string // id of the sheet's own title, so it is announced by name
 }) {
   const sheetRef = useRef<HTMLDivElement>(null)
@@ -87,7 +87,6 @@ export function Sheet({ onClose, children, eyebrow, labelledBy }: {
         <div className="sheet-grab" aria-hidden />
         <button className="sheet-x pressable" aria-label="Close" onClick={onClose}><IconClose size={16} /></button>
         <div className="sheet-scroll" ref={scrollRef}>
-          {eyebrow}
           {children}
         </div>
       </div>

@@ -1,22 +1,6 @@
-.discover { display: flex; flex-direction: column; gap: 10px; }
-.disc-eyebrow { color: var(--coral-ink); }
-.disc-line { display: flex; align-items: center; gap: 8px; margin: 0; }
-.disc-twin { font-size: 14px; font-weight: 600; }
-.disc-twin b { font-weight: 750; }
-.disc-reach { color: var(--ink-2); }
-.disc-reach b { color: var(--ink); font-weight: 700; }
-
-.disc-recs { display: flex; flex-direction: column; gap: 8px; margin-top: 2px; }
-.disc-recs-label { margin: 2px 0 2px; color: var(--ink-3); }
-.disc-rec {
-  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
-  padding: 8px 11px; border-radius: var(--r-md);
-  background: rgba(255, 255, 255, .34); border: 1px solid var(--glass-border);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7);
-  transition: scale var(--t-press) var(--e-out);
-}
-.disc-rec:active { scale: .98; }
+/* What the crew has found: one line about the closest palate, one line of reach, then rows. */
+.disc-twin { display: flex; align-items: center; gap: var(--s2); margin-top: var(--s1); }
+.disc-twin b { font-weight: 600; }
+.disc-reach { margin-top: var(--s2); margin-bottom: var(--s2); }
+.disc-reach b { color: var(--ink); font-weight: 600; }
 .disc-rec-dots { flex: none; }
-.disc-rec-copy { display: flex; flex-direction: column; min-width: 0; }
-.disc-rec-name { line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.disc-rec-by { font-size: 11.5px; }

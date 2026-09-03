@@ -29,16 +29,16 @@ export function ScanSheet({ onClose, onAdded }: { onClose: () => void; onAdded?:
   }
 
   return (
-    <Sheet onClose={onClose} labelledBy="scan-title" eyebrow={<div className="sheet-eyebrow eyebrow">In person</div>}>
+    <Sheet onClose={onClose} labelledBy="scan-title">
       <div className="scan-sheet">
-        <h2 className="t-title" id="scan-title">Scan a friend</h2>
-        <p className="muted t-body scan-lead">Point your camera at their <strong>Add me</strong> code.</p>
+        <h2 className="t-title sheet-title" id="scan-title">Scan a friend</h2>
+        <p className="sheet-meta scan-lead">Point your camera at the code on their add screen.</p>
         {!scanned && <Scanner onResult={handle} onError={setCamera} />}
         {/* The paste field is on the sheet underneath, which this one covers, so say so and go there. */}
         {camera && (
           <>
-            <p className="muted t-body scan-error" role="status">{camera}</p>
-            <button type="button" className="btn btn-wide" onClick={onClose}>Close and paste a code</button>
+            <p className="t-meta scan-error" role="status">{camera}</p>
+            <button type="button" className="btn btn-wide scan-out" onClick={onClose}>Close and paste a code</button>
           </>
         )}
         {status && <p className="t-body scan-status" role="status">{status}</p>}

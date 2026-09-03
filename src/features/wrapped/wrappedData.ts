@@ -184,6 +184,31 @@ export function deriveWrapped(drinks: Drink[], passport: Passport, srcs: Source[
   return cards
 }
 
+/** "Mai Tai, Negroni and Sidecar": a plain list, so a line never carries more than one middle dot. */
+export function listJoin(values: (string | number)[]): string {
+  const parts = values.map(String)
+  if (parts.length < 2) return parts[0] || ''
+  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
+}
+
+// The certificate's summary, in one place, so the screen and the saved picture cannot drift apart.
+// Sentence-case labels, no middle dots: the poster reads exactly as the card does.
+export function certificateRows(card: WrappedFinale): { label: string; value: string }[] {
+  const rows: { label: string; value: string }[] = []
+  if (card.archetype?.name) rows.push({ label: 'Your taste', value: card.archetype.name })
+  if (card.topBar) rows.push({ label: 'Top bar', value: card.topBar })
+  if (card.spirit) rows.push({ label: 'Favourite spirit', value: card.spirit })
+  if (card.medals > 0) rows.push({ label: 'Medals', value: `${card.medals} of ${BADGES.length}` })
+  if (card.crew) {
+    const people = `${card.crew.count} ${card.crew.count === 1 ? 'friend' : 'friends'}`
+    rows.push({
+      label: 'Sailed with',
+      value: card.crew.twinName ? `${people}, twin ${card.crew.twinName}` : people,
+    })
+  }
+  return rows
+}
+
 export function wrappedUnlocked(drinks: Drink[], passport: Passport, now = Date.now()): boolean {
   return now > new Date(`${END}T23:59:59`).getTime() || computeStats(drinks, passport).n >= 25
 }

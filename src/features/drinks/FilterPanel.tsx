@@ -7,7 +7,7 @@ import type { Filters } from '../../state/store'
 import { nChosen, type Counts } from './facets'
 import './filterpanel.css'
 
-export function FilterPanel({ counts, resultN, constrained }: { counts: Counts; resultN: number; constrained: boolean }) {
+export function FilterPanel({ counts, resultN, total, constrained }: { counts: Counts; resultN: number; total: number; constrained: boolean }) {
   const f = useStore((s) => s.filters)
   const setFilters = useStore((s) => s.setFilters)
   const clear = useStore((s) => s.clearFilters)
@@ -40,21 +40,21 @@ export function FilterPanel({ counts, resultN, constrained }: { counts: Counts; 
   }
 
   const venuesByDeck = (deck: number) => VENUE_KEYS.filter((k) => VENUES[k].deck === deck)
-  const whereSummary = [f.decks.length ? `${f.decks.length} deck${f.decks.length > 1 ? 's' : ''}` : '', f.venues.length ? `${f.venues.length} bar${f.venues.length > 1 ? 's' : ''}` : ''].filter(Boolean).join(' · ') || 'Any'
+  const whereSummary = [f.decks.length ? `${f.decks.length} deck${f.decks.length > 1 ? 's' : ''}` : '', f.venues.length ? `${f.venues.length} bar${f.venues.length > 1 ? 's' : ''}` : ''].filter(Boolean).join(', ') || 'Any'
   const listSummary = (arr: string[]) => (arr.length ? arr.join(', ') : 'Any')
 
   return (
-    <div className="fpanel glass card">
+    <div className="fpanel panel">
       <div className="fhead">
-        <div className="fhead-r t-strong"><b className="tnum">{resultN}</b> of 214</div>
-        {nChosen(f) > 0 && <GlassButton variant="ghost" size="sm" onClick={clear}>Clear all</GlassButton>}
+        <p className="t-strong tnum">{resultN} of {total}</p>
+        {nChosen(f) > 0 && <GlassButton variant="ghost" onClick={clear}>Clear all</GlassButton>}
       </div>
 
-      <label className="fseg-label eyebrow">Status</label>
+      <div className="f-label">Status</div>
       <Segmented ariaLabel="Status" options={statusOpts} value={statusVal}
         onChange={(v) => setFilters({ tried: v === 'yes' ? true : v === 'no' ? false : null })} />
 
-      <label className="fseg-label eyebrow">Package</label>
+      <div className="f-label">Package</div>
       <Segmented ariaLabel="Package" options={pkgOpts} value={f.pkg} onChange={(v) => setFilters({ pkg: v })} />
 
       <div className="fquick">
@@ -68,7 +68,7 @@ export function FilterPanel({ counts, resultN, constrained }: { counts: Counts; 
         <summary><span>Where</span><span className="fsum">{whereSummary}</span></summary>
         <div className="fcloud">
           {DECKS.map((d) => (
-            <Chip key={d} label={d === 15 ? '15/16' : 'Deck ' + d} count={c('decks', d)} on={f.decks.includes(d)} disabled={c('decks', d) === 0} onClick={() => toggleMulti('decks', d)} />
+            <Chip key={d} label={d === 15 ? 'Deck 15/16' : 'Deck ' + d} count={c('decks', d)} on={f.decks.includes(d)} disabled={c('decks', d) === 0} onClick={() => toggleMulti('decks', d)} />
           ))}
         </div>
         {DECKS.map((deck) => {

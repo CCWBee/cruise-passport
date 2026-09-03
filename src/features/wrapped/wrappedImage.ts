@@ -1,17 +1,16 @@
-import { BADGES } from '../../data/badges'
-import { voyageDateRange, type WrappedFinale } from './wrappedData'
+import { certificateRows, voyageDateRange, type WrappedFinale } from './wrappedData'
 
-// The certificate, redrawn as a 1080x1920 poster for the share sheet. A detached canvas cannot
-// resolve CSS custom properties, so the palette below is transcribed from src/styles/tokens.css.
+// The certificate, redrawn as a 1080x1920 poster for the share sheet. It carries the same numbers
+// and the same sentence-case labels as the card on screen. A detached canvas cannot resolve CSS
+// custom properties, so the palette below is transcribed from src/styles/tokens.css.
 const CREAM = '#FBF3E2'
-const DAWN = '#FFEBCB'
-const SKY = '#CDEBF7'
+const DAWN = '#FBEFD9'
+const SKY = '#F8EDD8'
 const INK = '#1C3C56'
-const INK_2 = 'rgba(28, 60, 86, .66)'
-const INK_3 = 'rgba(28, 60, 86, .44)'
+const INK_2 = 'rgba(28, 60, 86, .74)'
+const LINE = 'rgba(28, 60, 86, .12)'
 const SEA_HI = '#28AAA3'
 const SEA_LO = '#093755'
-const CORAL_INK = '#D23A5C'
 
 const W = 1080
 const H = 1920
@@ -40,10 +39,10 @@ function roundRect(ctx: Ctx, x: number, y: number, w: number, h: number, r: numb
   ctx.closePath()
 }
 
-function setFont(ctx: Ctx, stack: string, weight: number, size: number, tracking = 0) {
+// Two weights only, and no tracking: the poster follows the same type rules as the screen.
+function setFont(ctx: Ctx, stack: string, weight: number, size: number) {
   ctx.font = `${weight} ${size}px ${stack}`
-  // Tracking is Chrome/Safari-only; the eyebrow simply loses its spacing elsewhere.
-  if ('letterSpacing' in ctx) ctx.letterSpacing = `${tracking}px`
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '0px'
 }
 
 // Greedy wrap, with a character break for a single word wider than the column.
@@ -74,24 +73,13 @@ function clip(ctx: Ctx, text: string, maxWidth: number): string {
   return `${text.slice(0, cut).trimEnd()}…`
 }
 
+// The ground, the same three washes the app sits on. No glow behind the certificate.
 function paintGround(ctx: Ctx) {
   const ground = ctx.createLinearGradient(0, 0, W * .3, H)
   ground.addColorStop(0, SKY)
-  ground.addColorStop(.44, CREAM)
+  ground.addColorStop(.48, CREAM)
   ground.addColorStop(1, DAWN)
   ctx.fillStyle = ground
-  ctx.fillRect(0, 0, W, H)
-
-  const dawn = ctx.createRadialGradient(W * .74, H * .16, 0, W * .74, H * .16, 620)
-  dawn.addColorStop(0, 'rgba(255, 222, 143, .78)')
-  dawn.addColorStop(1, 'rgba(255, 222, 143, 0)')
-  ctx.fillStyle = dawn
-  ctx.fillRect(0, 0, W, H)
-
-  const glass = ctx.createRadialGradient(W * .1, H * .58, 0, W * .1, H * .58, 560)
-  glass.addColorStop(0, 'rgba(79, 211, 198, .34)')
-  glass.addColorStop(1, 'rgba(79, 211, 198, 0)')
-  ctx.fillStyle = glass
   ctx.fillRect(0, 0, W, H)
 }
 
@@ -137,37 +125,26 @@ export async function renderWrappedImage(card: WrappedFinale): Promise<Blob> {
   const centre = W / 2
   const count = Math.max(0, Math.round(Number(card.count) || 0))
   const pct = Number.isFinite(card.pct) ? Math.max(0, card.pct) : 0
-
-  const rows: { label: string; value: string }[] = []
-  if (card.archetype?.name) rows.push({ label: 'Your taste', value: card.archetype.name })
-  if (card.topBar) rows.push({ label: 'Top bar', value: card.topBar })
-  if (card.spirit) rows.push({ label: 'Favourite spirit', value: card.spirit })
-  if (card.medals > 0) rows.push({ label: 'Medals', value: `${card.medals} of ${BADGES.length}` })
-  if (card.crew) {
-    rows.push({
-      label: 'Sailed with',
-      value: card.crew.twinName ? `${card.crew.count} · twin ${card.crew.twinName}` : `${card.crew.count}`,
-    })
-  }
+  const rows = certificateRows(card)
 
   const blocks: Block[] = []
 
   blocks.push({
-    h: 30,
-    gap: 34,
+    h: 34,
+    gap: 24,
     draw: (top) => {
-      setFont(ctx, stack, 800, 25, 2.6)
+      setFont(ctx, stack, 400, 30)
       ctx.fillStyle = INK_2
       ctx.textAlign = 'center'
-      ctx.fillText('CERTIFICATE OF A VOYAGE', centre, top)
+      ctx.fillText('Certificate of a voyage', centre, top)
     },
   })
 
   blocks.push({
-    h: 92,
-    gap: 34,
+    h: 58,
+    gap: 32,
     draw: (top) => {
-      setFont(ctx, stack, 800, 86)
+      setFont(ctx, stack, 600, 52)
       ctx.fillStyle = INK
       ctx.textAlign = 'center'
       ctx.fillText(clip(ctx, 'Cruise Wrapped', inner), centre, top)
@@ -175,10 +152,10 @@ export async function renderWrappedImage(card: WrappedFinale): Promise<Blob> {
   })
 
   blocks.push({
-    h: 176,
-    gap: 20,
+    h: 130,
+    gap: 16,
     draw: (top) => {
-      setFont(ctx, stack, 800, 192)
+      setFont(ctx, stack, 700, 128)
       ctx.fillStyle = INK
       ctx.textAlign = 'center'
       ctx.fillText(String(count), centre, top)
@@ -186,50 +163,52 @@ export async function renderWrappedImage(card: WrappedFinale): Promise<Blob> {
   })
 
   blocks.push({
-    h: 40,
-    gap: 52,
+    h: 34,
+    gap: 48,
     draw: (top) => {
-      // Drawn in two runs so the percentage carries the one coral accent on the poster.
-      setFont(ctx, stack, 650, 32)
-      ctx.textAlign = 'left'
-      const lead = 'drinks tried · '
-      const tail = `${pct.toFixed(1)}% complete`
-      const x = centre - (ctx.measureText(lead).width + ctx.measureText(tail).width) / 2
+      setFont(ctx, stack, 400, 30)
       ctx.fillStyle = INK_2
-      ctx.fillText(lead, x, top)
-      ctx.fillStyle = CORAL_INK
-      ctx.fillText(tail, x + ctx.measureText(lead).width, top)
+      ctx.textAlign = 'center'
+      ctx.fillText(`drinks tried, ${pct.toFixed(1)}% complete`, centre, top)
     },
   })
 
-  const valueMax = inner * .62
+  const valueMax = inner * .58
   rows.forEach((row, rowIndex) => {
-    setFont(ctx, stack, 700, 32)
+    setFont(ctx, stack, 600, 30)
     const lines = wrap(ctx, row.value, valueMax).slice(0, 2)
-    setFont(ctx, stack, 700, 32)
     if (lines.length === 2) lines[1] = clip(ctx, lines[1], valueMax)
+    const last = rowIndex === rows.length - 1
     blocks.push({
-      h: 34 + (lines.length - 1) * 40,
-      gap: rowIndex === rows.length - 1 ? 54 : 22,
+      h: 34 + (lines.length - 1) * 38,
+      gap: last ? 48 : 32,
       draw: (top) => {
-        setFont(ctx, stack, 800, 22, 1.4)
-        ctx.fillStyle = INK_3
+        if (rowIndex > 0) {
+          ctx.lineWidth = 2
+          ctx.strokeStyle = LINE
+          ctx.beginPath()
+          ctx.moveTo(left, top - 16)
+          ctx.lineTo(left + inner, top - 16)
+          ctx.stroke()
+        }
+        setFont(ctx, stack, 400, 30)
+        ctx.fillStyle = INK_2
         ctx.textAlign = 'left'
-        ctx.fillText(row.label.toUpperCase(), left, top + 6)
-        setFont(ctx, stack, 700, 32)
+        ctx.fillText(row.label, left, top)
+        setFont(ctx, stack, 600, 30)
         ctx.fillStyle = INK
         ctx.textAlign = 'right'
-        lines.forEach((line, i) => ctx.fillText(line, left + inner, top + i * 40))
+        lines.forEach((line, i) => ctx.fillText(line, left + inner, top + i * 38))
       },
     })
   })
 
   blocks.push({
-    h: 28,
+    h: 32,
     gap: 0,
     draw: (top) => {
-      setFont(ctx, stack, 700, 24, 1)
-      ctx.fillStyle = INK_3
+      setFont(ctx, stack, 400, 28)
+      ctx.fillStyle = INK_2
       ctx.textAlign = 'center'
       ctx.fillText(clip(ctx, `Sun Princess · ${voyageDateRange()}`, inner), centre, top)
     },
@@ -239,21 +218,14 @@ export async function renderWrappedImage(card: WrappedFinale): Promise<Blob> {
   const panelH = contentH + PAD * 2
   const panelY = Math.max(120, (SEA_TOP - panelH) / 2)
 
-  ctx.save()
-  ctx.shadowColor = 'rgba(33, 58, 87, .16)'
-  ctx.shadowBlur = 64
-  ctx.shadowOffsetY = 26
-  roundRect(ctx, PANEL_X, panelY, PANEL_W, panelH, 56)
-  ctx.fillStyle = 'rgba(255, 255, 255, .6)'
+  // A flat panel with a hairline, and the inner rule a certificate is allowed. No shadow, no glow.
+  roundRect(ctx, PANEL_X, panelY, PANEL_W, panelH, 40)
+  ctx.fillStyle = 'rgba(255, 255, 255, .55)'
   ctx.fill()
-  ctx.restore()
-
   ctx.lineWidth = 2
-  ctx.strokeStyle = 'rgba(255, 255, 255, .82)'
-  roundRect(ctx, PANEL_X, panelY, PANEL_W, panelH, 56)
+  ctx.strokeStyle = LINE
   ctx.stroke()
-  ctx.strokeStyle = 'rgba(28, 60, 86, .12)'
-  roundRect(ctx, PANEL_X + 22, panelY + 22, PANEL_W - 44, panelH - 44, 38)
+  roundRect(ctx, PANEL_X + 24, panelY + 24, PANEL_W - 48, panelH - 48, 24)
   ctx.stroke()
 
   let y = panelY + PAD
@@ -262,7 +234,7 @@ export async function renderWrappedImage(card: WrappedFinale): Promise<Blob> {
     y += block.h + block.gap
   })
 
-  setFont(ctx, stack, 700, 24, 2)
+  setFont(ctx, stack, 600, 26)
   ctx.fillStyle = 'rgba(255, 255, 255, .82)'
   ctx.textAlign = 'center'
   ctx.fillText('cruise.charlesbee.org', centre, H - 104)

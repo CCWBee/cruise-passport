@@ -30,9 +30,9 @@ function WrappedRoute() {
 function InviteScreen({ msg, failed }: { msg: string; failed: boolean }) {
   return (
     <div className="wrap page">
-      <div className="glass card center">
+      <div className="panel card center">
         <p className="t-body" role="status">{msg}</p>
-        {failed && <Link to="/social" className="btn btn-wide" style={{ marginTop: 14 }}>Go to your crew</Link>}
+        {failed && <Link to="/social" className="btn btn-wide" style={{ marginTop: 16 }}>Go to your crew</Link>}
       </div>
     </div>
   )
@@ -111,11 +111,9 @@ function JoinRoute() {
 function NotFound() {
   return (
     <div className="wrap page">
-      <div className="glass card">
-        <div className="eyebrow">Not found</div>
-        <p className="muted t-body" style={{ marginTop: 6 }}>That link does not go anywhere here.</p>
-        <Link to="/" className="mini pressable" style={{ marginTop: 12 }}>Back to your passport</Link>
-      </div>
+      <h1 className="t-title">Not found</h1>
+      <p className="muted t-body">That link does not go anywhere here.</p>
+      <Link to="/" className="btn" style={{ marginTop: 16 }}>Back to your passport</Link>
     </div>
   )
 }

@@ -1,16 +1,15 @@
-import { useState, type FormEvent } from 'react'
+import { useId, useState, type FormEvent } from 'react'
 import { CATEGORIES, PLUS, PREM, VENUES, VENUE_KEYS, type Drink } from '../../data/model'
 import { useStore } from '../../state/store'
 import { TextField, TextArea, NumberField } from '../../ui/Field'
 import { GlassButton } from '../../ui/GlassButton'
-import { IconPlus } from '../../ui/Icon'
 import { Select } from '../../ui/Select'
 import { Sheet } from '../../ui/Sheet'
-import './drinksheet.css'
 import './addsheet.css'
 
 export function AddSheet({ onClose }: { onClose: () => void }) {
   const addCustom = useStore((s) => s.addCustom)
+  const titleId = useId()
   const [name, setName] = useState('')
   const [venue, setVenue] = useState(VENUE_KEYS[0])
   const [category, setCategory] = useState(CATEGORIES[0] || 'Cocktail')
@@ -47,22 +46,22 @@ export function AddSheet({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <Sheet onClose={onClose} eyebrow={<div className="sheet-eyebrow eyebrow">Personal passport</div>}>
-      <div className="add-title"><IconPlus size={23} /><h2 className="t-title">Add a drink</h2></div>
-      <p className="muted t-body add-lead">Add something new or missing from the published menus.</p>
+    <Sheet onClose={onClose} labelledBy={titleId}>
+      <h2 className="t-title sheet-title" id={titleId}>Add a drink</h2>
+      <p className="sheet-meta">Something new, or missing from the published menus.</p>
       <form onSubmit={submit} autoComplete="off">
         <TextField id="add-name" label="Name" name="name" required autoFocus value={name} onChange={(event) => setName(event.target.value)} />
         <div className="field">
-          <span className="field-label eyebrow">Venue</span>
+          <span className="field-label" id="add-venue-label">Venue</span>
           <Select
             value={venue}
             onChange={setVenue}
-            options={VENUE_KEYS.map((key) => ({ value: key, label: `${VENUES[key].name} · Deck ${VENUES[key].deck}` }))}
+            options={VENUE_KEYS.map((key) => ({ value: key, label: `${VENUES[key].name}, deck ${VENUES[key].deck}` }))}
             ariaLabel="Venue"
           />
         </div>
         <div className="field">
-          <span className="field-label eyebrow">Type</span>
+          <span className="field-label" id="add-type-label">Type</span>
           <Select
             value={category}
             onChange={setCategory}
@@ -91,7 +90,7 @@ export function AddSheet({ onClose }: { onClose: () => void }) {
           onChange={(event) => setPrice(event.target.value)}
           placeholder="Leave blank if unknown"
         />
-        <GlassButton variant="primary" block type="submit" icon={<IconPlus size={18} />} className="add-submit">Add it</GlassButton>
+        <GlassButton variant="primary" block type="submit" className="add-submit">Add it</GlassButton>
       </form>
     </Sheet>
   )

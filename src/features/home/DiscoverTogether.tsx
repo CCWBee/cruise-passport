@@ -24,40 +24,37 @@ export function DiscoverTogether({ onOpen }: { onOpen: (id: string) => void }) {
   const recs = useMemo(() => recommendedForYou(me, srcs, 3), [me, srcs])
 
   if (friends.length === 0) return null
-  const crew = friends.length === 1 ? friends[0].name : 'the crew'
 
   return (
-    <section className="glass card discover">
-      <div className="eyebrow disc-eyebrow">Discover together</div>
+    <section className="section discover">
+      <div className="section-head"><h2 className="t-h2">Discover together</h2></div>
 
       {twin && (
-        <p className="disc-line disc-twin">
-          <FriendDot name={twin.source.name} colour={twin.source.colour} size={22} />
+        <p className="t-body disc-twin">
+          {/* 28 everywhere a person appears: the initial inside a dot is .45 of it, and 24 puts that
+              under the 12px floor */}
+          <FriendDot name={twin.source.name} colour={twin.source.colour} size={28} />
           <span><b>{twin.source.name}</b> shares your taste</span>
         </p>
       )}
 
-      <p className="disc-line disc-reach t-body">
-        Between you, <b className="tnum">{reach.triedTogether}</b> of {reach.total} tried
-        {reach.onlyFriends > 0 && <> · <b className="tnum">{reach.onlyFriends}</b> {crew} found you haven't</>}
+      <p className="t-meta disc-reach">
+        <b className="tnum">{reach.triedTogether}</b> of {reach.total} tried between you
+        {reach.onlyFriends > 0 && <> · <b className="tnum">{reach.onlyFriends}</b> that only they have tried</>}
       </p>
 
-      {recs.length > 0 && (
-        <div className="disc-recs">
-          <div className="eyebrow disc-recs-label">{twin ? `You share taste with ${twin.source.name} · try these` : 'Your crew loved these'}</div>
-          {recs.map((p) => (
-            <button key={p.drink.id} type="button" className="disc-rec pressable" onClick={() => onOpen(p.drink.id)}>
-              <span className="fstack disc-rec-dots">
-                {p.by.slice(0, 2).map((s) => <FriendDot key={s.id} name={s.name} colour={s.colour} size={20} />)}
-              </span>
-              <span className="disc-rec-copy">
-                <span className="disc-rec-name t-strong">{p.drink.name}</span>
-                <span className="disc-rec-by muted">{byPhrase(p)}</span>
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
+      {recs.map((p) => (
+        <button key={p.drink.id} type="button" className="row pressable" onClick={() => onOpen(p.drink.id)}>
+          <span className="fstack disc-rec-dots">
+            {p.by.slice(0, 2).map((s) => <FriendDot key={s.id} name={s.name} colour={s.colour} size={28} />)}
+          </span>
+          <span className="row-copy">
+            {/* the drink is the object of the row, so it reads at the heading size Drinks uses */}
+            <span className="t-h2">{p.drink.name}</span>
+            <span className="t-meta">{byPhrase(p)}</span>
+          </span>
+        </button>
+      ))}
     </section>
   )
 }

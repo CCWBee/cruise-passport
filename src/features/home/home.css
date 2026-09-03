@@ -1,23 +1,21 @@
-.home { padding-top: calc(14px + var(--safe-t)); }
-.home-hero { position: relative; margin-bottom: var(--s4); }
+/* Home: the sea poster, three facts, "Right now", the Wrapped row.
+   Everything below the hero sits flat on the ground: no box, no card, no plate. */
+.home { padding-top: calc(var(--s4) + var(--safe-t)); }
+.home-hero { position: relative; }
 
-/* one panel, six cells separated by whitespace — no per-cell boxes or dividers */
-.stat-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: var(--s5) var(--s2); padding: 18px 12px; margin-bottom: var(--s4);
+/* three facts in one row, on the ground: no container, no dividers */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s3);
+  margin-top: var(--s6);
 }
-.stat { text-align: center; }
-.stat-v { font-size: 21px; font-weight: 700; line-height: 1.1; letter-spacing: -.01em; }
-.stat-l { font-size: 11px; color: var(--ink-3); font-weight: 600; margin-top: 4px; }
+.fact-v { font-size: var(--f-title); font-weight: 600; line-height: 1.2; letter-spacing: -.01em; }
+.fact-l { margin-top: var(--s1); font-size: var(--f-meta); line-height: 1.4; color: var(--ink-2); }
 
-.two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); margin-bottom: var(--s1); }
-.two .card { margin: 0; }
-.two .eyebrow { margin-bottom: 2px; }
-.home-card {
-  display: flex; flex-direction: column; align-items: flex-start; gap: var(--s1);
-  min-height: 88px; text-align: left;
-}
-.home-card:disabled { cursor: default; }
-.home-card-title { letter-spacing: -.01em; }
-.home-card-sub { display: inline-flex; align-items: center; gap: 5px; }
-.hc-stars { color: var(--gold); font-size: 12px; letter-spacing: 1px; line-height: 1; }
+/* "Right now": two rows, hairline between them (from .row + .row).
+   The stars are the drawn icon, so they sit on the meta line as a flex run. */
+.home-stars { display: inline-flex; align-items: center; vertical-align: -2px; color: var(--gold); }
+
+/* the Wrapped row: one quiet row, only when Wrapped is unlocked */
+.wrapped-row { margin-top: var(--s6); color: var(--ink); }

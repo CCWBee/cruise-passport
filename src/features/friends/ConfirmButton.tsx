@@ -24,9 +24,11 @@ export function ConfirmButton({
 
   return (
     <div className="confirm">
+      {/* Armed is a coral outline, never a coral fill: the screen has already spent its one filled
+          accent, and a fill here landed on whatever plate the caller's class carried. */}
       <button
         type="button"
-        className={className + (armed ? ' btn-coral' : '')}
+        className={className + (armed ? ' armed' : '')}
         aria-label={ariaLabel}
         onClick={() => { if (armed) { setArmed(false); onConfirm() } else setArmed(true) }}
       >

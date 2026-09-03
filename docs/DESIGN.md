@@ -178,7 +178,8 @@ Title, one meta line ("Good Spirits at Sea · Deck 7 · Signature"), ingredients
 meta. Then rating (stars, 44px each), then the toggles as one row of compact chips (Tried in mint
 when on; Favourite, Wishlist, Order again, Recommend in ink when on), then date and notes as fields,
 then crew opinions as rows. No eyebrow, no coloured toggle boxes, no gradient meters: sweetness and
-strength are five ink dots.
+strength are five ink dots. The chip row wraps to a second line at 390px (five labelled chips do
+not fit one line); that is the intended shape, not a defect.
 
 ### Ship
 

@@ -1,64 +1,61 @@
-.sheet-eyebrow { color: var(--coral-ink); margin-bottom: 6px; }
-.ds-title { margin-bottom: 10px; }
-.ds-warn {
-  display: flex; gap: 8px; background: rgba(228, 167, 44, .14); border-radius: var(--r-sm);
-  padding: 11px 13px; font-size: 12px; font-weight: 600; color: var(--gold-ink); margin-bottom: 12px;
+/* The drink sheet: a title, one meta line, then plain paragraphs, dots, stars, chips and fields.
+   No eyebrow, no coloured toggle boxes, no gradient meters. */
+.ds-ing { margin-top: var(--s3); }
+.ds-desc { margin-top: var(--s2); }
+.ds-facts { margin-top: var(--s2); }
+.ds-warn { margin-top: var(--s2); }
+.ds-rule { margin: var(--s4) 0; }
+
+/* a sentence-case label above a group of controls */
+.ds-label { font-size: var(--f-meta); font-weight: 600; color: var(--ink-2); }
+
+/* sweetness and strength: five ink dots each */
+.ds-meters { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); }
+.ds-meter { display: grid; gap: var(--s2); }
+.ds-dots { display: flex; gap: var(--s1); }
+/* an off dot keeps a ring in --ink-3 so the denominator of "3 of 5" survives sun glare */
+.ds-dots i { width: 8px; height: 8px; border-radius: var(--r-tag); background: transparent; border: 1px solid var(--ink-3); }
+.ds-dots i.on { background: var(--ink); border-color: var(--ink); }
+.ds-abv { margin-top: var(--s3); }
+
+/* rating */
+.ds-rate-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s3); }
+.ds-group { font-size: var(--f-meta); color: var(--gold-ink); white-space: nowrap; }
+.ds-stars { display: flex; gap: var(--s1); margin-top: var(--s1); }
+.ds-star {
+  width: var(--ctl); height: var(--ctl); display: grid; place-items: center;
+  border-radius: var(--r-control); color: var(--ink-3);
+  transition: color var(--t-panel) var(--e-out), background-color var(--t-press) var(--e-out);
 }
-.ds-ing { margin-bottom: 6px; }
-.ds-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
-
-.ds-meters { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0 6px; }
-.mt-l { margin-bottom: 6px; }
-.mt-dots { display: flex; gap: 4px; }
-.mt-dots i { flex: 1; height: 8px; border-radius: 99px; background: rgba(33, 58, 87, .08); box-shadow: inset 0 1px 1.5px rgba(33, 58, 87, .1); }
-.mt-dots i.on { background: linear-gradient(90deg, var(--coral), var(--gold)); box-shadow: none; }
-.ds-abv { margin-bottom: 4px; }
-
-.ds-rate-row { display: flex; align-items: baseline; justify-content: center; gap: 10px; margin: 18px 0 8px; }
-.ds-rate-label { text-align: center; }
-.ds-group { display: inline-flex; align-items: center; gap: 3px; color: var(--gold-ink); font-size: 12px; font-weight: 700; }
-.ds-group svg { color: var(--gold); }
-.ds-consensus { text-align: center; color: var(--mint-ink); font-size: 13px; font-weight: 650; margin: 0 0 10px; }
-.ds-recby { display: flex; align-items: center; justify-content: center; gap: 9px; margin-bottom: 8px; text-align: center; }
-.ds-stars { display: flex; gap: 4px; justify-content: center; }
-.ds-star { color: #DCE3EB; }
+.ds-star:active { background-color: var(--press); }
 .ds-star.on { color: var(--gold); }
+.ds-consensus { margin-top: var(--s2); }
+.ds-recby { display: flex; align-items: center; gap: var(--s2); margin-top: var(--s2); }
 
-.ds-toggles { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 16px; }
-.tg {
-  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-  background: #fff; border: 1px solid var(--glass-border); border-radius: var(--r-md);
-  padding: 13px; font-size: 13px; font-weight: 700; color: var(--ink);
-  box-shadow: 0 1px 2px rgba(33, 58, 87, .06);
+/* one group of compact chips: tried in mint when on, the rest in ink */
+.ds-chips { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s4); }
+.ds-chip {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  min-height: var(--ctl-sm); padding: 0 var(--s3);
+  border-radius: var(--r-control); border: 1px solid var(--line);
+  background: var(--panel-solid); color: var(--ink);
+  font-size: var(--f-meta); font-weight: 400; line-height: 1; white-space: nowrap;
+  transition: background-color var(--t-panel) var(--e-out), color var(--t-panel) var(--e-out);
 }
-.tg.on { color: #fff; border-color: transparent; box-shadow: inset 0 2px 5px rgba(9, 46, 20, .18); }
-.tg-mint { background: var(--mint); color: #06342b; }
-.tg-coral { background: var(--coral); }
-.tg-lilac { background: var(--lilac); color: #2a2150; }
-.tg-sky { background: #7CC7F0; color: #06344f; }
-.tg-gold { background: var(--gold); color: var(--gold-ink); }
+/* the chip is 36px tall with a 44px hit area */
+.ds-chip::before { content: ''; position: absolute; inset: -4px 0; }
+.ds-chip.on { background: var(--ink); color: #fff; border-color: transparent; }
+.ds-chip.on.ds-chip-mint { background: var(--mint-ink); }
 
-.ds-field { display: block; margin-top: 14px; }
-.ds-field > span { display: block; margin-bottom: 6px; padding-left: 4px; }
-.ds-note-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.ds-private { font-weight: 600; letter-spacing: 0; text-transform: none; }
-.ds-field input, .ds-field textarea {
-  width: 100%; background: #fff; border: 1px solid var(--glass-border); border-radius: var(--r-md);
-  padding: 12px 14px; font-size: 16px; font-weight: 600; box-shadow: inset 0 1px 2px rgba(33, 58, 87, .06);
-  resize: vertical; color: var(--ink);
-}
-.ds-field input:focus-visible, .ds-field textarea:focus-visible { outline: 2.5px solid var(--lilac); }
+/* what the crew said */
+.ds-crew-row { display: flex; align-items: flex-start; gap: var(--s3); padding: var(--s3) 0; }
+.ds-crew-row + .ds-crew-row { border-top: 1px solid var(--line); }
+.ds-crew-copy { min-width: 0; }
+.ds-crew-copy p { margin-top: 2px; overflow-wrap: anywhere; }
+.ds-crew-name { display: inline-flex; align-items: center; gap: var(--s2); }
+.ds-crew-stars { display: inline-flex; align-items: center; color: var(--gold); }
 
-.ds-friends-label { margin: 18px 0 9px; }
-.ds-friends { display: grid; gap: 12px; }
-.ds-friend-row { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 9px; }
-.ds-friend-copy { min-width: 0; }
-.ds-friend-copy p { margin-top: 2px; overflow-wrap: anywhere; }
-.ds-friend-stars { display: inline-flex; align-items: center; gap: 1px; margin-left: 6px; color: var(--gold); vertical-align: middle; }
-
-.ds-also-label { margin: 18px 0 8px; }
+/* the other drinks at this bar: 36px controls, each with a 44px hit area */
 .ds-also { display: flex; flex-wrap: wrap; }
-
-@media (max-width: 520px) {
-  .ds-note-fields { grid-template-columns: 1fr; gap: 0; }
-}
+.ds-also .mini { position: relative; }
+.ds-also .mini::before { content: ''; position: absolute; inset: -4px 0; }

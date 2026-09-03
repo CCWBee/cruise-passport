@@ -1,235 +1,154 @@
-.badges-page {
-  padding-top: var(--s2);
-}
+/* Badges: the second segment of You. Three plain sections on the ground, no card per badge. */
 
-.badges-lead {
-  margin: var(--s1) 0 var(--s5);
-  text-align: center;
-  font-size: 13px;
-  font-weight: 650;
-}
+/* the segment starts under the You header, so the first heading keeps that 24px, not 24 + 32 */
+.badges > .section:first-child { margin-top: 0; }
 
+/* ── Earned: discs with the name beneath ── */
 .badge-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: var(--s3);
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: var(--s4) var(--s3);
 }
 
-.badge-card {
+.badge-medal {
   display: flex;
-  width: 100%;
-  min-height: 216px;
   flex-direction: column;
   align-items: center;
-  padding: 18px var(--s3) 15px;
+  gap: var(--s2);
+  min-width: 0;
   text-align: center;
 }
 
-.badge-card.is-locked {
-  background-color: rgba(244, 247, 249, .58);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .68), var(--sh-1);
-}
-
-.badge-name {
-  display: block;
-  margin-top: var(--s3);
-  line-height: 1.2;
-}
-
-.badge-hint {
-  display: block;
-  margin-top: var(--s1);
-  font-size: 11.5px;
-  line-height: 1.35;
-}
-
-.badge-progress {
-  display: block;
+/* a caption under the disc, and part of a button: one line, clipped. The whole name is on the
+   button's aria-label and is the sheet's title. */
+.badge-medal-name {
   width: 100%;
-  margin-top: auto;
-  padding-top: var(--s3);
-}
-
-.badge-progress-track {
-  display: block;
-  height: 5px;
   overflow: hidden;
-  border-radius: var(--r-pill);
-  background: rgba(28, 60, 86, .08);
-  box-shadow: inset 0 1px 2px rgba(28, 60, 86, .14), inset 0 -1px 0 rgba(255, 255, 255, .56);
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-.badge-progress-fill {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: rgba(28, 60, 86, .28);
+/* the one action that fills the empty grid */
+.badge-empty-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--ctl);
+  font-size: var(--f-body);
+  font-weight: 600;
+  color: var(--coral-ink);
 }
 
-.badge-progress-copy {
-  display: block;
-  margin-top: 5px;
-  color: var(--ink-3);
-  font-size: 10.5px;
-  font-weight: 700;
+/* ── the coin: one flat metal face, a hairline rim, the emblem struck pale into it ──
+   The tier ladder is four steps of ink into the ground's own white. A tier is an ordinal, so it is
+   ink, like every other ordinal in the app: no rating gold enters badge art. The lightest step
+   still measures 4.88:1 against the emblem. The tier is named in the sheet, so the ladder is not
+   the only place the distinction lives. */
+.medal-tier {
+  --metal: color-mix(in oklab, var(--ink) 70%, var(--panel-solid));
+  --emblem: var(--panel-solid);
 }
+
+.medal-silver { --metal: color-mix(in oklab, var(--ink) 80%, var(--panel-solid)); }
+.medal-gold { --metal: color-mix(in oklab, var(--ink) 90%, var(--panel-solid)); }
+.medal-special { --metal: var(--ink); }
 
 .medal-disc {
   position: relative;
-  width: 72px;
-  height: 80px;
+  display: block;
   flex: none;
-  color: rgba(255, 255, 255, .9);
-  filter: drop-shadow(0 6px 7px rgba(28, 60, 86, .18));
+}
+
+/* locked, flat: no metal at all, a hairline ring and the emblem in quiet ink */
+.medal-disc.is-locked {
+  --metal: transparent;
+  --emblem: var(--ink-3);
+}
+
+/* locked, in the sheet: the same quiet reading, but a filled face, because a transparent coin
+   turned edge-on shows its own back. Panel white sits below every earned tier. */
+.medal-stage.is-locked {
+  --metal: var(--panel-solid);
+  --emblem: var(--ink-3);
 }
 
 .medal-art {
   display: block;
-  width: 72px;
-  height: auto;
-  overflow: visible;
-}
-
-.medal-stop-bright {
-  stop-color: #c98a4c;
-}
-
-.medal-stop-deep {
-  stop-color: #8a5a2c;
-}
-
-.medal-silver .medal-stop-bright {
-  stop-color: #d7dee6;
-}
-
-.medal-silver .medal-stop-deep {
-  stop-color: #9aa7b4;
-}
-
-.medal-gold .medal-stop-bright {
-  stop-color: color-mix(in oklab, var(--gold) 68%, white);
-}
-
-.medal-gold .medal-stop-deep {
-  stop-color: var(--gold);
-}
-
-.medal-special .medal-stop-bright {
-  stop-color: color-mix(in oklab, var(--fruit-grape) 62%, white);
-}
-
-.medal-special .medal-stop-deep {
-  stop-color: var(--fruit-grape);
-}
-
-.medal-rim {
-  stroke: rgba(255, 255, 255, .54);
-  stroke-width: 2.5;
+  width: 100%;
+  height: 100%;
 }
 
 .medal-face {
-  stroke: rgba(55, 39, 24, .14);
-  stroke-width: 1.4;
-}
-
-.medal-inner-highlight {
-  fill: none;
-  stroke: rgba(255, 255, 255, .2);
+  fill: var(--metal);
+  stroke: var(--line);
   stroke-width: 1;
 }
 
-.medal-ribbons path:first-child {
-  fill: var(--coral);
-}
-
-.medal-ribbons path:last-child {
-  fill: var(--fruit-mango);
-}
-
 .medal-emblem {
-  /* centred on the disc circle (cx 40/80, cy 36/88 → 50%, 40.5%), exact at both sizes */
   position: absolute;
-  left: 50%;
-  top: 40.5%;
-  transform: translate(-50%, -50%);
+  inset: 0;
   display: grid;
   place-items: center;
-  filter: drop-shadow(0 1px 1px rgba(55, 39, 24, .2));
+  color: var(--emblem);
 }
 
-.medal-disc.is-locked {
-  color: rgba(79, 97, 112, .32);
-  filter: grayscale(1) saturate(0) drop-shadow(0 3px 6px rgba(28, 60, 86, .08));
+.medal-emblem-svg { display: block; }
+.medal-emblem-svg :is(path, circle, polygon, ellipse, rect) { fill: var(--emblem); }
+
+/* ── Close and Locked: rows on the ground ── */
+.badge-row { color: inherit; }
+
+.badge-meter {
+  display: grid;
+  justify-items: end;
+  gap: var(--s1);
+  flex: none;
+  width: 88px;
 }
 
-.medal-disc.is-locked .medal-stop-bright {
-  stop-color: rgba(234, 239, 243, .9);
+.badge-track {
+  display: block;
+  width: 100%;
+  height: 3px;
+  overflow: hidden;
+  border-radius: var(--r-tag);
+  background: var(--line);
 }
 
-.medal-disc.is-locked .medal-stop-deep {
-  stop-color: rgba(164, 177, 188, .58);
+.badge-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--sea-ink);
 }
 
-.medal-disc.is-locked .medal-rim {
-  stroke: rgba(255, 255, 255, .62);
-}
-
-.medal-disc.is-locked .medal-face {
-  stroke: rgba(85, 103, 118, .1);
-}
-
-.medal-disc.is-locked .medal-specular {
-  opacity: .58;
-}
-
-.medal-disc.is-large {
-  width: 116px;
-  height: 129px;
-}
-
-.medal-disc.is-large .medal-art {
-  width: 116px;
-}
-
-
-.badge-sheet {
-  padding: var(--s2) var(--s2) var(--s5);
-}
+/* ── the badge sheet ── */
+.badge-sheet { padding-bottom: var(--s2); }
 
 .medal-mount {
   display: grid;
-  min-height: 142px;
+  min-height: 220px;
   place-items: center;
-  margin-bottom: var(--s2);
+  margin: var(--s4) 0;
 }
 
-.badge-sheet-hint {
-  margin-top: 6px;
+/* the turnable coin. Its colours are read off these two probes, so the WebGL face is the same
+   metal and the same emblem the flat disc uses; nothing about the coin is hand-picked. */
+.medal-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
 }
 
-.badge-status {
-  display: inline-block;
-  margin-top: var(--s4);
+.medal-probe {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
 }
 
-.badge-status.is-earned {
-  background: rgba(35, 192, 138, .16);
-  color: var(--mint-ink);
-}
+.medal-probe-metal { color: var(--metal); }
+.medal-probe-emblem { color: var(--emblem); }
+.medal-probe-ground { color: var(--panel-solid); }
 
-.badge-status.is-locked {
-  background: rgba(28, 60, 86, .07);
-  color: var(--ink-2);
-}
-
-/* per-badge emblem struck into the disc (2D grid + detail) */
-.medal-emblem-svg { display: block; filter: drop-shadow(0 .5px 0 rgba(255, 255, 255, .45)); }
-.medal-emblem-svg :is(path, circle, polygon, ellipse, rect) { fill: rgba(24, 40, 56, .34); }
-/* coloured enamel inlay per tier (mirrors the 3D coin's TIER.inlay) */
-.medal-bronze  .medal-emblem-svg :is(path, circle, polygon, ellipse, rect) { fill: #2FB79C; }
-.medal-silver  .medal-emblem-svg :is(path, circle, polygon, ellipse, rect) { fill: #F0637F; }
-.medal-gold    .medal-emblem-svg :is(path, circle, polygon, ellipse, rect) { fill: #146C93; }
-.medal-special .medal-emblem-svg :is(path, circle, polygon, ellipse, rect) { fill: #F6B02E; }
-/* locked stays a quiet grey — placed last so it wins over the tier colours */
-.medal-locked .medal-emblem-svg :is(path, circle, polygon, ellipse, rect),
-.is-locked .medal-emblem-svg :is(path, circle, polygon, ellipse, rect) { fill: rgba(70, 84, 100, .28); }
+.badge-state { margin-top: var(--s4); }

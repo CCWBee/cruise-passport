@@ -1,298 +1,102 @@
-.stats-page { padding-top: var(--s2); }
+/* Stats: the first segment of You. Three questions as plain headings, answered by rows and
+   hairlines on the ground. No cards, no donut, no chart grow-ins. See docs/DESIGN.md. */
 
-.stats-empty {
-  margin-top: var(--s1);
-  padding: var(--s5) 18px;
-}
+/* You supplies the title and the segmented control; the first heading follows it directly. */
+.stats > .section:first-child { margin-top: 0; }
 
-.stats-hero {
-  padding: 22px 18px 18px;
-  margin-bottom: var(--s4);
-}
+/* a sub-question inside a section: an honest h3, not a label */
+.stats-sub { margin-top: var(--s4); margin-bottom: var(--s2); }
+/* where the h3 is the section's first content, it keeps the heading-to-content gap of 8 */
+.section > h2 + .stats-sub { margin-top: 0; }
 
-.stats-hero-main {
-  margin-bottom: 16px;
-  text-align: center;
-}
+/* the empty state: one sentence and the one action that fills it */
+.stats-empty { display: grid; justify-items: start; gap: var(--s4); }
 
-.stats-hero-figure {
-  color: var(--coral-ink);
-  font-size: var(--f-hero);
-  font-weight: 800;
-  letter-spacing: -.03em;
-  line-height: 1;
-}
+/* ── lists: static rows, so no press tint and no button affordance ── */
+.stats-list { display: flex; flex-direction: column; }
 
-.stats-hero-figure small {
-  margin-left: 2px;
-  font-size: .42em;
-  font-weight: 750;
-}
-
-.stats-hero-label {
-  display: block;
-  margin-top: 7px;
-}
-
-.stats-hero-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  padding-top: 14px;
-}
-
-.stats-head-cell {
-  min-width: 0;
-  text-align: center;
-}
-
-.stats-head-value {
-  display: block;
-  font-size: 21px;
-  line-height: 1.1;
-  letter-spacing: -.02em;
-}
-
-.stats-head-cell span {
-  display: block;
-  margin-top: 5px;
-  color: var(--ink-3);
-  font-size: 10.5px;
-  font-weight: 650;
-}
-
-.stats-chart-card {
-  padding: 18px 16px;
-  margin-bottom: var(--s4);
-}
-
-.stats-chart-card h2 { margin-bottom: var(--s4); }
-
-.stats-bars {
-  display: block;
-  overflow: visible;
-}
-
-.stats-bars text {
-  font-family: var(--font);
-  font-variant-numeric: tabular-nums;
-}
-
-.stats-bar-label {
-  fill: var(--ink-2);
-  font-size: 12px;
-  font-weight: 650;
-}
-
-.stats-bar-value {
-  fill: var(--ink-2);
-  font-size: 11px;
-  font-weight: 750;
-}
-
-.stats-bar-track {
-  fill: rgba(28, 60, 86, .065);
-}
-
-.stats-bar-fill {
-  transform-box: fill-box;
-  transform-origin: left center;
-  animation: stats-bar-grow .66s var(--e-out) both;
-  animation-delay: calc(var(--i) * 55ms);
-}
-
-@keyframes stats-bar-grow {
-  from { transform: scaleX(0); }
-}
-
-.stats-donut-layout {
-  display: grid;
-  grid-template-columns: minmax(128px, 180px) 1fr;
-  align-items: center;
-  gap: 18px;
-}
-
-.stats-donut {
-  display: block;
-  width: 100%;
-  max-width: 180px;
-  margin: auto;
-  overflow: visible;
-}
-
-.stats-donut-bed,
-.stats-donut-segment {
-  fill: none;
-  stroke-width: 15;
-}
-
-.stats-donut-bed { stroke: rgba(28, 60, 86, .06); }
-
-.stats-donut-segment {
-  transform: rotate(-90deg);
-  transform-origin: 56px 56px;
-  animation: stats-donut-sweep .8s var(--e-out) both;
-  animation-delay: calc(var(--i) * 85ms + 120ms);
-}
-
-@keyframes stats-donut-sweep {
-  from { stroke-dasharray: 0 264; }
-}
-
-.stats-donut-total {
-  fill: var(--ink);
-  font: 750 22px var(--font);
-  font-variant-numeric: tabular-nums;
-}
-
-.stats-donut-caption {
-  fill: var(--ink-3);
-  font: 650 9px var(--font);
-  letter-spacing: .05em;
-  text-transform: uppercase;
-}
-
-.stats-legend {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  max-height: 190px;
-  overflow: auto;
-  mask-image: linear-gradient(#000 85%, transparent);
-}
-
-.stats-legend-row {
-  display: grid;
-  grid-template-columns: 8px 1fr auto;
-  align-items: center;
-  gap: 7px;
-  font-size: 11.5px;
-}
-
-.stats-legend-row i {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--r-pill);
-}
-
-.stats-legend-row span {
-  overflow: hidden;
-  color: var(--ink-2);
-  font-weight: 600;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.stats-legend-row strong {
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-}
-
-.stats-voyage-chart {
-  display: block;
-  width: 100%;
-  height: auto;
-  overflow: visible;
-}
-
-.stats-voyage-chart text {
-  fill: var(--ink-3);
-  font: 650 11px var(--font);
-  font-variant-numeric: tabular-nums;
-}
-
-.stats-voyage-area {
-  animation: stats-fade-in .6s var(--e-out) .15s both;
-}
-
-.stats-voyage-line {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: stats-voyage-draw 1.05s var(--e-out) .1s both;
-}
-
-@keyframes stats-voyage-draw {
-  to { stroke-dashoffset: 0; }
-}
-
-@keyframes stats-fade-in {
-  from { opacity: 0; }
-}
-
-.stats-rating-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.stats-rating-row {
+.stats-line {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-  padding: 9px 10px;
-  border-radius: var(--r-md);
-  text-align: left;
+  gap: var(--s3);
+  min-height: var(--row);
+  padding: var(--s2) 0;
 }
 
-.stats-rating-row > .gbtn-label {
+.stats-line + .stats-line { border-top: 1px solid var(--line); }
+
+.stats-line-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stats-line-value { flex: none; }
+
+/* ── completion by deck: label and count, the bar beneath, no track ── */
+.stats-decks { display: flex; flex-direction: column; gap: var(--s3); }
+
+.stats-deck-head {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-  min-width: 0;
+  gap: var(--s3);
+  margin-bottom: var(--s1);
 }
 
-.stats-rating-copy {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
+.stats-deck-bar { height: 6px; }
+
+.stats-deck-bar span {
+  display: block;
+  height: 100%;
+  min-width: 6px;
+  border-radius: var(--r-tag);
+  background: var(--sea-ink);
 }
 
-.stats-rating-copy strong {
-  overflow: hidden;
-  font-size: 13px;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+/* ── rated rows: tappable, they open the drink ── */
+.stats-rated .row-copy > * { display: block; }
 
-.stats-rating-copy small {
-  overflow: hidden;
-  color: var(--ink-3);
-  font-size: 10.5px;
-  font-weight: 600;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+/* base.css rounds a lone .row and squares every .row + .row; keep one list's press tint one shape */
+.stats-list .row:not(:only-child) { border-radius: 0; }
 
-.stats-rating-stars {
-  display: flex;
+/* the rating reads as one unit at the right of the row, as it does on Log */
+.stats-star {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s1);
   flex: none;
-  gap: 1px;
-  color: rgba(28, 60, 86, .15);
+  color: var(--gold-ink);
+  font-size: var(--f-meta);
+  font-weight: 600;
 }
 
-.stats-rating-stars .is-filled { color: var(--gold); }
-
-@media (max-width: 460px) {
-  .stats-donut-layout {
-    grid-template-columns: 132px 1fr;
-    gap: 12px;
-  }
-
-  .stats-bar-label { font-size: 11px; }
+/* ── drinks logged per day: HTML axis labels at a true 12px, the plot stretched between them ── */
+.stats-chart {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--s1) var(--s2);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .stats-bar-fill,
-  .stats-donut-segment,
-  .stats-voyage-area,
-  .stats-voyage-line {
-    animation: none;
-  }
+.stats-chart-y {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: right;
+}
 
-  .stats-voyage-line { stroke-dashoffset: 0; }
+.stats-chart-plot {
+  display: block;
+  width: 100%;
+  height: 96px;
+  overflow: visible;
+  border-bottom: 1px solid var(--line);
+}
+
+.stats-chart-x {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s3);
 }

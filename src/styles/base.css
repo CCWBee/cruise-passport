@@ -110,17 +110,28 @@ h1, h2, h3, p { margin: 0; }
 
 .card { padding: var(--s4); margin-bottom: var(--s3); }
 
-/* a tappable row on the ground: no plate at rest, a press tint, a 48px minimum */
-.row {
+/* a row on the ground: 48px minimum, a hairline between siblings. .row is tappable (press tint);
+   .line is the same shape for read-only lists. The press tint is square inside a list and rounded
+   only when the row stands alone. */
+.row, .line {
   display: flex; align-items: center; gap: var(--s3);
   width: 100%; min-height: var(--row); padding: var(--s2) 0; text-align: left;
+}
+.row {
   border-radius: var(--r-control);
   transition: background-color var(--t-press) var(--e-out);
 }
+.row:not(:only-child) { border-radius: 0; }
 .row:active { background-color: var(--press); }
-.row + .row { border-top: 1px solid var(--line); border-radius: 0; }
+.row + .row, .line + .line, .line + .row, .row + .line { border-top: 1px solid var(--line); }
 .row-copy { display: grid; gap: 2px; min-width: 0; flex: 1; }
 .row-copy > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* visually hidden, still announced */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
 
 /* pressable: feedback, not a spring */
 .pressable { transition: scale var(--t-press) var(--e-out); touch-action: manipulation; }
@@ -138,8 +149,8 @@ h1, h2, h3, p { margin: 0; }
 .btn-coral { background: var(--coral-ink); color: var(--on-accent); border-color: transparent; }
 .btn-mint { background: var(--mint-ink); color: var(--on-accent); border-color: transparent; }
 .btn-wide { width: 100%; }
-.btn:disabled { cursor: default; color: var(--ink-2); background: var(--panel); }
-.btn-coral:disabled { background: var(--coral-soft); color: var(--coral-ink); }
+/* disabled falls back to the plain surface whatever the tone: a tinted coral disabled reads at 4.2:1 */
+.btn:disabled, .btn-coral:disabled, .btn-mint:disabled { cursor: default; color: var(--ink-2); background: var(--panel); border-color: var(--line); }
 
 /* small tags (24px or under): outline only, meta ink. Part of a meta line, not a badge row. */
 .tag {

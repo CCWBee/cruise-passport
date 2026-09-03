@@ -4,14 +4,12 @@ import {
 } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
-import { BADGES } from '../../data/badges'
-import { DECKS } from '../../data/model'
 import { useAllDrinks, useStore } from '../../state/store'
 import { useSources } from '../../state/social'
 import { IconClose } from '../../ui/Icon'
 import { useCountUp } from '../../ui/useCountUp'
 import {
-  WRAPPED_TOTAL, deriveWrapped, voyageDateRange, wrappedUnlocked,
+  WRAPPED_TOTAL, certificateRows, deriveWrapped, listJoin, voyageDateRange, wrappedUnlocked,
   type WrappedCard, type WrappedFinale,
 } from './wrappedData'
 import { renderWrappedImage } from './wrappedImage'
@@ -130,7 +128,7 @@ function SaveWrapped({ card }: { card: WrappedFinale }) {
           measuring against the previous card's start point, read as a swipe or a dismiss. */}
       <button
         type="button"
-        className="btn wr-save"
+        className="btn btn-coral wr-save"
         disabled={busy}
         aria-busy={busy}
         onPointerDown={(event) => event.stopPropagation()}
@@ -144,119 +142,111 @@ function SaveWrapped({ card }: { card: WrappedFinale }) {
   )
 }
 
+// Every card is the same skeleton: a quiet label, one thing that is big (a numeral or a name),
+// then the plain lines that qualify it. No plates, no rings, no medal disc. The count-up belongs to
+// the display numeral and nowhere else: digits twitching inside a 13px sentence cost more legibility
+// than they buy, and a card whose big thing is a name has no numeral to count.
 function CardBody({ card }: { card: WrappedCard }) {
   switch (card.kind) {
     case 'cover':
       return (
         <div className="wr-content wr-cover">
-          <div className="wr-orbit" aria-hidden="true"><span /><span /><span /></div>
-          <p className="wr-eyebrow">A voyage in cocktails</p>
-          <h1>Your Sun Princess,<br />wrapped</h1>
-          <p className="wr-date tnum">{card.dateRange}</p>
+          <h1 className="t-title wr-lead">Your Sun Princess, wrapped</h1>
+          <p className="t-meta">A voyage in cocktails</p>
+          <p className="t-meta tnum">{card.dateRange}</p>
         </div>
       )
     case 'tried':
       return (
-        <div className="wr-content wr-centred">
-          <p className="wr-eyebrow">You have sipped</p>
-          <div className="wr-big"><AnimatedNumber value={card.count} /></div>
-          <p className="wr-of">of {WRAPPED_TOTAL} drinks</p>
-          <div className="wr-readout glass"><strong><AnimatedNumber value={card.pct} decimals={1} suffix="%" /></strong><span>of the passport</span></div>
+        <div className="wr-content">
+          <p className="t-meta">You have tried</p>
+          <p className="t-display tnum"><AnimatedNumber value={card.count} /></p>
+          <p className="t-meta">of {WRAPPED_TOTAL} drinks</p>
+          <p className="t-meta">{card.pct.toFixed(1)}% of the passport</p>
         </div>
       )
     case 'topbar':
       return (
-        <div className="wr-content wr-centred">
-          <p className="wr-eyebrow">Your top bar</p>
-          <h2 className="wr-headline">{card.venue}</h2>
-          <div className="wr-plate glass">Deck <span className="tnum">{card.deck}</span></div>
-          <p className="wr-stat"><strong><AnimatedNumber value={card.count} /></strong> drinks logged here</p>
+        <div className="wr-content">
+          <p className="t-meta">Your top bar</p>
+          <h2 className="t-title wr-lead">{card.venue}</h2>
+          <p className="t-meta tnum">Deck {card.deck}</p>
+          <p className="t-meta">{card.count} drinks logged here</p>
         </div>
       )
     case 'spirit':
       return (
-        <div className="wr-content wr-centred">
-          <p className="wr-eyebrow">Favourite spirit</p>
-          <h2 className="wr-headline wr-reel">{card.spirit}</h2>
-          <p className="wr-stat"><strong><AnimatedNumber value={card.count} /></strong> appearances in your glass</p>
+        <div className="wr-content">
+          <p className="t-meta">Favourite spirit</p>
+          <h2 className="t-title wr-lead">{card.spirit}</h2>
+          <p className="t-meta">{card.count} appearances in your glass</p>
         </div>
       )
     case 'bigday':
       return (
-        <div className="wr-content wr-centred">
-          <p className="wr-eyebrow">Your biggest day</p>
-          <div className="wr-big"><AnimatedNumber value={card.count} /></div>
-          <p className="wr-of">drinks logged</p>
-          <p className="wr-plate glass">{card.date}</p>
+        <div className="wr-content">
+          <p className="t-meta">Your biggest day</p>
+          <p className="t-display tnum"><AnimatedNumber value={card.count} /></p>
+          <p className="t-meta">drinks logged</p>
+          <p className="t-meta">{card.date}</p>
         </div>
       )
     case 'decks':
       return (
-        <div className="wr-content wr-centred">
-          <p className="wr-eyebrow">Decks conquered</p>
-          <div className="wr-ship" aria-hidden="true">
-            <span className="wr-ship-top" />
-            {DECKS.slice().reverse().map((deck) => <span key={deck} className={card.decks.includes(deck) ? 'visited' : ''} />)}
-            <span className="wr-ship-hull" />
-          </div>
-          <div className="wr-pair">
-            <div><strong><AnimatedNumber value={card.count} /></strong><span>decks</span></div>
-            <div><strong><AnimatedNumber value={card.venues} /></strong><span>venues</span></div>
-          </div>
-          <p className="wr-traits tnum">Decks {card.decks.join(' · ')}</p>
+        <div className="wr-content">
+          <p className="t-meta">Decks visited</p>
+          <p className="t-display tnum"><AnimatedNumber value={card.count} /></p>
+          <p className="t-meta">across {card.venues} venues</p>
+          <p className="t-meta tnum">Decks {listJoin(card.decks)}</p>
         </div>
       )
     case 'archetype':
       return (
-        <div className="wr-content wr-centred">
-          <p className="wr-eyebrow">Your cocktail archetype</p>
-          <div className="wr-type-rings" aria-hidden="true"><span /><span /></div>
-          <h2 className="wr-headline wr-archetype-name">{card.archetype.name}</h2>
-          <p className="wr-blurb">{card.archetype.blurb}</p>
-          <p className="wr-traits">{card.archetype.traits.join(' · ')}</p>
+        <div className="wr-content">
+          <p className="t-meta">Your cocktail archetype</p>
+          <h2 className="t-title wr-lead">{card.archetype.name}</h2>
+          <p className="t-body wr-blurb">{card.archetype.blurb}</p>
+          <p className="t-meta">{card.archetype.traits.join(', ')}</p>
         </div>
       )
     case 'medals':
       return (
-        <div className="wr-content wr-centred">
-          <p className="wr-eyebrow">The medal haul</p>
-          <div className="wr-medal" aria-hidden="true"><span /><span /></div>
-          <div className="wr-big"><AnimatedNumber value={card.count} /></div>
-          <p className="wr-of">of <span className="tnum">{card.total}</span> medals earned</p>
+        <div className="wr-content">
+          <p className="t-meta">Medals</p>
+          <p className="t-display tnum"><AnimatedNumber value={card.count} /></p>
+          <p className="t-meta tnum">of {card.total} medals earned</p>
         </div>
       )
     case 'crew':
       return (
-        <div className="wr-content wr-centred">
-          <p className="wr-eyebrow">Your crew</p>
-          <div className="wr-big"><AnimatedNumber value={card.count} /></div>
-          <p className="wr-of">{card.count === 1 ? 'friend aboard' : 'friends aboard'}</p>
-          {card.twin && (
-            <div className="wr-readout glass"><strong>{card.twin.name}</strong><span>your taste twin · {card.twin.affinityPct}% match</span></div>
-          )}
-          <p className="wr-stat">
-            Together you found <strong><AnimatedNumber value={card.triedTogether} /></strong> of {WRAPPED_TOTAL}
-            {card.onlyFriends > 0 && <> · <strong className="tnum">{card.onlyFriends}</strong> you owe to the crew</>}
-          </p>
-          {card.shared.length > 0 && <p className="wr-traits">Both loved · {card.shared.join(' · ')}</p>}
+        <div className="wr-content">
+          <p className="t-meta">Your crew</p>
+          <p className="t-display tnum"><AnimatedNumber value={card.count} /></p>
+          <p className="t-meta">{card.count === 1 ? 'friend aboard' : 'friends aboard'}</p>
+          <div className="wr-facts">
+            {card.twin && <p className="t-meta">Taste twin: {card.twin.name}, {card.twin.affinityPct}% match</p>}
+            <p className="t-meta">Together you found {card.triedTogether} of {WRAPPED_TOTAL}</p>
+            {card.onlyFriends > 0 && (
+              <p className="t-meta tnum">{card.onlyFriends} of those you owe to the crew</p>
+            )}
+            {card.shared.length > 0 && <p className="t-meta">Both loved: {listJoin(card.shared)}</p>}
+          </div>
         </div>
       )
     case 'finale':
       return (
         <div className="wr-content wr-finale">
-          <div className="wr-certificate glass">
-            <p className="wr-eyebrow">Certificate of a voyage</p>
-            <h2>Cruise Wrapped</h2>
-            <div className="wr-finale-number"><AnimatedNumber value={card.count} /></div>
-            <p className="wr-of">drinks tried · <span className="tnum">{card.pct.toFixed(1)}%</span> complete</p>
+          <div className="wr-certificate panel">
+            <p className="t-meta">Certificate of a voyage</p>
+            <h2 className="t-title">Cruise Wrapped</h2>
+            <p className="t-display tnum wr-cert-number"><AnimatedNumber value={card.count} /></p>
+            <p className="t-meta">drinks tried, <span className="tnum">{card.pct.toFixed(1)}%</span> complete</p>
             <div className="wr-summary">
-              {card.archetype && <p><span>Your taste</span><strong>{card.archetype.name}</strong></p>}
-              {card.topBar && <p><span>Top bar</span><strong>{card.topBar}</strong></p>}
-              {card.spirit && <p><span>Favourite spirit</span><strong>{card.spirit}</strong></p>}
-              {card.medals > 0 && <p><span>Medals</span><strong className="tnum">{card.medals} of {BADGES.length}</strong></p>}
-              {card.crew && <p><span>Sailed with</span><strong>{card.crew.twinName ? `${card.crew.count} · twin ${card.crew.twinName}` : `${card.crew.count}`}</strong></p>}
+              {certificateRows(card).map((row) => (
+                <p key={row.label}><span className="t-meta">{row.label}</span><strong className="tnum">{row.value}</strong></p>
+              ))}
             </div>
-            <p className="wr-certificate-date tnum">Sun Princess · {voyageDateRange()}</p>
+            <p className="t-meta tnum">Sun Princess · {voyageDateRange()}</p>
           </div>
           <SaveWrapped card={card} />
         </div>
@@ -387,10 +377,9 @@ export function Wrapped({ onClose, startIndex = 0 }: WrappedProps) {
   if (!unlocked) {
     return createPortal(
       <div className="wr wr-locked" role="dialog" aria-modal="true" aria-label="Cruise Wrapped">
-        <div className="wr-locked-panel glass">
-          <p className="wr-eyebrow">Cruise Wrapped</p>
-          <h1>Your story is still under way</h1>
-          <p>It unlocks when the voyage is complete, or after your twenty-fifth drink.</p>
+        <div className="wr-locked-panel panel">
+          <h1 className="t-title">Your story is still under way</h1>
+          <p className="t-meta">Cruise Wrapped unlocks when the voyage is complete, or after your twenty-fifth drink.</p>
           <button type="button" className="btn btn-coral" onClick={close}>Back to Home</button>
         </div>
       </div>,
@@ -414,9 +403,9 @@ export function Wrapped({ onClose, startIndex = 0 }: WrappedProps) {
       onPointerUp={pointerUp}
       onPointerCancel={pointerEnd}
     >
-      <p id="wr-instructions" className="wr-sr-only">Tap left or right, swipe, or use the arrow keys to move through your story.</p>
+      <p id="wr-instructions" className="sr-only">Tap left or right, swipe, or use the arrow keys to move through your story.</p>
       <div
-        className="wr-dots wr-chrome"
+        className="wr-dots"
         role="progressbar"
         aria-label={`Card ${index + 1} of ${cards.length}`}
         aria-valuemin={1}
@@ -424,13 +413,15 @@ export function Wrapped({ onClose, startIndex = 0 }: WrappedProps) {
         aria-valuenow={index + 1}
       >
         {cards.map((item, itemIndex) => {
-          const fill = itemIndex < index ? 1 : itemIndex === index ? progress : 0
+          // An untimed card (reduced motion, and the finale, which waits for the guest) reads as
+          // complete: the rail must say where you are even when nothing is counting down.
+          const fill = itemIndex < index ? 1 : itemIndex === index ? (reduced || last ? 1 : progress) : 0
           return <span className="wr-dot" key={`${item.kind}-${itemIndex}`}><span style={{ transform: `scaleX(${fill})` }} /></span>
         })}
       </div>
       <button
         type="button"
-        className="wr-close glass-live wr-chrome"
+        className="wr-close"
         aria-label="Close Cruise Wrapped"
         onPointerDown={(event) => event.stopPropagation()}
         onClick={(event) => { event.stopPropagation(); close() }}
@@ -443,8 +434,12 @@ export function Wrapped({ onClose, startIndex = 0 }: WrappedProps) {
           <CardBody card={card} />
         </section>
       </main>
-      <div className="wr-hint wr-chrome" aria-hidden="true">
-        <span>Previous</span><span>{holding ? 'Paused' : `${index + 1} of ${cards.length}`}</span><span>Next</span>
+      {/* Three slots always, so the count keeps its place; the side words appear only where the tap
+          they name actually moves the story. */}
+      <div className="wr-hint" aria-hidden="true">
+        <span>{index > 0 ? 'Previous' : ''}</span>
+        <span>{holding ? 'Paused' : `${index + 1} of ${cards.length}`}</span>
+        <span>{last ? '' : 'Next'}</span>
       </div>
     </div>,
     document.body,

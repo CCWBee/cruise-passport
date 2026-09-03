@@ -15,42 +15,42 @@ export const VENUES: Record<string, VenueRaw> = {
     "name": "Good Spirits at Sea",
     "deck": 7,
     "type": "Bar",
-    "hours": "4pm – late",
+    "hours": "4pm to late",
     "blurb": "Rob Floyd's globe-trotting cocktail room, tucked round the corner from the forward lifts. Nightly show-bar demos: times are in the Patter."
   },
   "omalleys": {
     "name": "O'Malley's Irish Pub",
     "deck": 7,
     "type": "Pub",
-    "hours": "1pm (sea) / 4pm (port) – late",
+    "hours": "1pm (sea) / 4pm (port) to late",
     "blurb": "Proper Dublin-pub energy with live music. Grace O'Malley and Sláinte Irish whiskey, Pantalones tequila, and cocktails on tap by the pitcher."
   },
   "princesslive": {
     "name": "Princess Live!",
     "deck": 7,
     "type": "Lounge",
-    "hours": "4pm – late",
+    "hours": "4pm to late",
     "blurb": "Game shows, trivia, comedy and live music, with a bar running classic cocktails alongside the Love Line."
   },
   "bellinis": {
     "name": "Bellini's Cocktail Bar",
     "deck": 7,
     "type": "Bar",
-    "hours": "7am – late",
+    "hours": "7am to late",
     "blurb": "The main Piazza bar, built around Italian spirits: spritzes, prosecco cocktails and the Tiramisu Collection."
   },
   "coffeecurrents": {
     "name": "Coffee Currents",
     "deck": 7,
     "type": "Café",
-    "hours": "6am – late",
+    "hours": "6am to late",
     "blurb": "Second Piazza coffee shop. Same espresso menu as the International Café but with more seating and ocean views."
   },
   "wheelhouse": {
     "name": "Wheelhouse Bar",
     "deck": 7,
     "type": "Bar",
-    "hours": "4pm – late",
+    "hours": "4pm to late",
     "blurb": "Nautical, quiet, out of the way of the Piazza. Board games behind the bar and two absurd shared 'experiential' pours."
   },
   "catch": {
@@ -89,7 +89,7 @@ export const VENUES: Record<string, VenueRaw> = {
     "name": "Crooners",
     "deck": 8,
     "type": "Bar",
-    "hours": "11am – late",
+    "hours": "11am to late",
     "blurb": "Martini and piano bar under the Sphere window. The deepest cocktail list on board and the best sunset seat."
   },
   "makoto": {
@@ -117,7 +117,7 @@ export const VENUES: Record<string, VenueRaw> = {
     "name": "Wake View Bar",
     "deck": 8,
     "type": "Pool bar",
-    "hours": "10am – 8pm",
+    "hours": "10am to 8pm",
     "blurb": "Aft infinity pool with the wake behind it. Yacht-club drinks list. Get there around 4pm for the seat you want."
   },
   "alfredos": {
@@ -142,7 +142,7 @@ export const VENUES: Record<string, VenueRaw> = {
     "name": "Promenade Bar",
     "deck": 9,
     "type": "Pool bar",
-    "hours": "11am – 6pm",
+    "hours": "11am to 6pm",
     "blurb": "Port and starboard bars on the new outdoor promenade, running the standard menu.",
     "shares": "themix",
     "sharesNote": "Pours the standard bar menu."
@@ -167,7 +167,7 @@ export const VENUES: Record<string, VenueRaw> = {
     "name": "Sea View Bar",
     "deck": 17,
     "type": "Pool bar",
-    "hours": "10am – 6pm",
+    "hours": "10am to 6pm",
     "blurb": "Forward of the Dome, over the bow. Maritime cocktails and the Carajillo coffee collection. Free to all guests."
   },
   "cascade": {
@@ -181,7 +181,7 @@ export const VENUES: Record<string, VenueRaw> = {
     "name": "Lido Bar",
     "deck": 17,
     "type": "Pool bar",
-    "hours": "11am – 10:30pm",
+    "hours": "11am to 10:30pm",
     "blurb": "Walk-up bar serving Lido Eats. Standard menu, no dedicated seating.",
     "shares": "themix",
     "sharesNote": "Pours the standard bar menu."
@@ -190,7 +190,7 @@ export const VENUES: Record<string, VenueRaw> = {
     "name": "THE MIX",
     "deck": 17,
     "type": "Pool bar",
-    "hours": "11am – 6pm",
+    "hours": "11am to 6pm",
     "blurb": "Aft end of the main pool deck, starboard. Standard menu with the mixologists who actually enjoy it."
   },
   "coffeecones": {
@@ -213,7 +213,7 @@ export const VENUES: Record<string, VenueRaw> = {
     "name": "Sun Bar",
     "deck": 18,
     "type": "Pool bar",
-    "hours": "9am – 10pm",
+    "hours": "9am to 10pm",
     "blurb": "Deck 18 sundeck and whirlpools. Starboard side is the outdoor smoking section.",
     "shares": "themix",
     "sharesNote": "Pours the standard bar menu, including the 24k Margarita."
@@ -222,7 +222,7 @@ export const VENUES: Record<string, VenueRaw> = {
     "name": "Sanctuary Club Bar",
     "deck": 18,
     "type": "Pool bar",
-    "hours": "8am – 5pm",
+    "hours": "8am to 5pm",
     "blurb": "Aft adults-only retreat for Sanctuary Collection guests. Own pool, own bar."
   }
 };

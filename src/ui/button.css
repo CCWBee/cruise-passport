@@ -21,7 +21,7 @@
 
 .gbtn:disabled { cursor: default; }
 .gbtn-secondary:disabled { background: var(--panel); color: var(--ink-2); }
-.gbtn-primary:disabled { background: var(--coral-soft); color: var(--coral-ink); }
+.gbtn-primary:disabled { background: var(--panel); color: var(--ink-2); border-color: var(--line); }
 .gbtn-ghost:disabled { color: var(--ink-2); }
 
 .gbtn-spin {

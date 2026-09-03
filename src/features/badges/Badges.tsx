@@ -1,4 +1,5 @@
 import { Suspense, lazy, useEffect, useId, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { BADGES, type BadgeDef, type BadgeStat } from '../../data/badges'
 import { computeStats } from '../../state/stats'
 import { useAllDrinks, useStore } from '../../state/store'
@@ -15,111 +16,52 @@ interface MedalDiscProps {
   large?: boolean
 }
 
+// Bronze, silver and gold are ranks here, not colours: the ladder is four steps of ink, and the
+// rank is said in words in the sheet so the disc is not carrying it alone.
+const TIER_NAME: Record<NonNullable<BadgeDef['tier']>, string> = {
+  bronze: 'Bronze',
+  silver: 'Silver',
+  gold: 'Gold',
+  special: 'Special',
+}
+
+// A coin, not a rosette: one metal face, a 1px hairline rim, the emblem struck pale into it.
 function MedalDisc({ badge, earned, large = false }: MedalDiscProps) {
-  const id = useId().replace(/:/g, '')
   const tier = badge.tier ?? 'bronze'
+  const size = large ? 116 : 72
+  const emblem = EMBLEMS[badge.id]
+  const art = large ? 60 : 42
 
   return (
-    <div
-      className={`medal-disc medal-${tier} ${earned ? 'is-earned' : 'is-locked'}${large ? ' is-large' : ''}`}
+    <span
+      className={`medal-disc medal-tier medal-${tier} ${earned ? 'is-earned' : 'is-locked'}`}
+      style={{ width: size, height: size }}
       aria-hidden="true"
     >
-      <svg className="medal-art" viewBox="0 0 80 88" focusable="false">
-        <defs>
-          <linearGradient id={`${id}-rim`} x1="14" y1="7" x2="66" y2="68" gradientUnits="userSpaceOnUse">
-            <stop className="medal-stop-bright" />
-            <stop className="medal-stop-deep" offset="1" />
-          </linearGradient>
-          <linearGradient id={`${id}-face`} x1="22" y1="11" x2="59" y2="63" gradientUnits="userSpaceOnUse">
-            <stop className="medal-stop-bright" />
-            <stop className="medal-stop-deep" offset="1" />
-          </linearGradient>
-          <linearGradient id={`${id}-shine`} x1="29" y1="9" x2="39" y2="38" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#fff" stopOpacity=".68" />
-            <stop offset="1" stopColor="#fff" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-
-        {earned && (
-          <g className="medal-ribbons">
-            <path d="M25 55h15l-3 31-7-7-9 5z" />
-            <path d="M40 55h15l4 29-9-5-7 7z" />
-          </g>
-        )}
-
-        <circle className="medal-rim" cx="40" cy="36" r="34" fill={`url(#${id}-rim)`} />
-        <circle className="medal-face" cx="40" cy="36" r="29" fill={`url(#${id}-face)`} />
-        <ellipse
-          className="medal-specular"
-          cx="32"
-          cy="20"
-          rx="18"
-          ry="10"
-          fill={`url(#${id}-shine)`}
-          transform="rotate(-17 32 20)"
-        />
-        <circle className="medal-inner-highlight" cx="40" cy="36" r="26" />
+      <svg className="medal-art" viewBox="0 0 64 64" width={size} height={size} focusable="false">
+        <circle className="medal-face" cx="32" cy="32" r="31.5" vectorEffect="non-scaling-stroke" />
       </svg>
       <span className="medal-emblem">
-        {EMBLEMS[badge.id] ? (
+        {emblem ? (
           <svg
             className="medal-emblem-svg"
             viewBox="0 0 100 100"
-            width={large ? 48 : 34}
-            height={large ? 48 : 34}
-            dangerouslySetInnerHTML={{ __html: EMBLEMS[badge.id] }}
+            width={art}
+            height={art}
+            dangerouslySetInnerHTML={{ __html: emblem }}
           />
         ) : (
-          <IconTrophy size={large ? 38 : 27} />
+          <IconTrophy size={large ? 44 : 26} />
         )}
       </span>
-    </div>
+    </span>
   )
 }
 
-interface BadgeCardProps {
-  badge: BadgeDef
-  stat: BadgeStat
-  onOpen: () => void
-}
-
-function BadgeCard({ badge, stat, onOpen }: BadgeCardProps) {
-  const earned = badge.test(stat)
-  const progress = badge.progress?.(stat)
-  const progressPercent = progress
-    ? Math.min(100, Math.max(0, (progress.cur / progress.need) * 100))
-    : 0
-
-  return (
-    <button
-      type="button"
-      className={`badge-card glass pressable ${earned ? 'is-earned' : 'is-locked'}`}
-      onClick={onOpen}
-      aria-label={`${badge.name}, ${earned ? 'earned' : 'locked'}`}
-    >
-      <MedalDisc badge={badge} earned={earned} />
-      <span className="badge-name t-strong">{badge.name}</span>
-      <span className="badge-hint muted">{badge.hint}</span>
-
-      {!earned && progress && (
-        <span className="badge-progress">
-          <span
-            className="badge-progress-track"
-            role="progressbar"
-            aria-label={`${badge.name} progress`}
-            aria-valuemin={0}
-            aria-valuemax={progress.need}
-            aria-valuenow={Math.min(progress.cur, progress.need)}
-          >
-            <span className="badge-progress-fill" style={{ width: `${progressPercent}%` }} />
-          </span>
-          <span className="badge-progress-copy tnum">
-            {progress.cur} of {progress.need}
-          </span>
-        </span>
-      )}
-    </button>
-  )
+function progressOf(badge: BadgeDef, stat: BadgeStat) {
+  const p = badge.progress?.(stat)
+  if (!p || p.need <= 0) return null
+  return { ...p, pct: Math.min(100, Math.max(0, (p.cur / p.need) * 100)) }
 }
 
 export function Badges() {
@@ -130,6 +72,7 @@ export function Badges() {
     [drinks, passport],
   )
   const [selectedBadge, setSelectedBadge] = useState<BadgeDef | null>(null)
+  const titleId = useId()
 
   // deep link: /badges?badge=<id> opens that medal (also used for QA)
   useEffect(() => {
@@ -137,42 +80,132 @@ export function Badges() {
     if (id) { const b = BADGES.find((x) => x.id === id); if (b) setSelectedBadge(b) }
   }, [])
 
-  const earnedCount = BADGES.filter((badge) => badge.test(badgeStat)).length
+  // three groups: what you have, what is within reach, what has not started
+  const { earned, close, locked } = useMemo(() => {
+    const earned: BadgeDef[] = []
+    const close: { badge: BadgeDef; cur: number; need: number; pct: number }[] = []
+    const locked: BadgeDef[] = []
+
+    for (const badge of BADGES) {
+      if (badge.test(badgeStat)) { earned.push(badge); continue }
+      const p = progressOf(badge, badgeStat)
+      if (p && p.cur > 0) close.push({ badge, ...p })
+      else locked.push(badge)
+    }
+    close.sort((a, b) => b.pct - a.pct)
+    return { earned, close, locked }
+  }, [badgeStat])
+
   const selectedEarned = selectedBadge ? selectedBadge.test(badgeStat) : false
+  const selectedProgress = selectedBadge ? progressOf(selectedBadge, badgeStat) : null
 
   return (
-    <div className="wrap page badges-page">
-      <p className="badges-lead muted tnum">
-        {earnedCount} of {BADGES.length} earned
-      </p>
+    <div className="badges">
+      <section className="section">
+        <div className="section-head">
+          <h2 className="t-h2">Earned</h2>
+          <p className="t-meta tnum">{earned.length} of {BADGES.length} earned</p>
+        </div>
 
-      <div className="badge-grid reveal">
-        {BADGES.map((badge) => (
-          <BadgeCard
-            key={badge.id}
-            badge={badge}
-            stat={badgeStat}
-            onOpen={() => setSelectedBadge(badge)}
-          />
-        ))}
-      </div>
+        {earned.length ? (
+          <div className="badge-grid">
+            {earned.map((badge) => (
+              <button
+                key={badge.id}
+                type="button"
+                className="badge-medal pressable"
+                onClick={() => setSelectedBadge(badge)}
+                aria-label={`${badge.name}, earned`}
+              >
+                <MedalDisc badge={badge} earned />
+                <span className="badge-medal-name t-meta">{badge.name}</span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <>
+            <p className="t-meta">Badges arrive as you log drinks.</p>
+            <Link className="badge-empty-action" to="/drinks">Log a drink</Link>
+          </>
+        )}
+      </section>
+
+      {close.length > 0 && (
+        <section className="section">
+          <div className="section-head">
+            <h2 className="t-h2">Close</h2>
+          </div>
+          {close.map(({ badge, cur, need, pct }) => (
+            <button
+              key={badge.id}
+              type="button"
+              className="row badge-row"
+              onClick={() => setSelectedBadge(badge)}
+              aria-label={`${badge.name}, ${cur} of ${need}`}
+            >
+              <span className="row-copy">
+                <span className="t-strong">{badge.name}</span>
+                <span className="t-meta">{badge.hint}</span>
+              </span>
+              <span className="badge-meter">
+                <span
+                  className="badge-track"
+                  role="progressbar"
+                  aria-label={`${badge.name} progress`}
+                  aria-valuemin={0}
+                  aria-valuemax={need}
+                  aria-valuenow={Math.min(cur, need)}
+                >
+                  <span className="badge-fill" style={{ width: `${pct}%` }} />
+                </span>
+                <span className="t-meta tnum">{cur} of {need}</span>
+              </span>
+            </button>
+          ))}
+        </section>
+      )}
+
+      {locked.length > 0 && (
+        <section className="section">
+          <div className="section-head">
+            <h2 className="t-h2">Locked</h2>
+          </div>
+          {locked.map((badge) => (
+            <button
+              key={badge.id}
+              type="button"
+              className="row badge-row"
+              onClick={() => setSelectedBadge(badge)}
+              aria-label={`${badge.name}, locked`}
+            >
+              <span className="row-copy">
+                <span className="t-strong">{badge.name}</span>
+                <span className="t-meta">{badge.hint}</span>
+              </span>
+            </button>
+          ))}
+        </section>
+      )}
 
       {selectedBadge && (
-        <Sheet
-          onClose={() => setSelectedBadge(null)}
-          eyebrow={<div className="eyebrow">Badge collection</div>}
-        >
-          <div className="badge-sheet center">
+        <Sheet onClose={() => setSelectedBadge(null)} labelledBy={titleId}>
+          <div className="badge-sheet">
+            <h2 className="t-title sheet-title" id={titleId}>{selectedBadge.name}</h2>
+            <p className="sheet-meta">{selectedBadge.hint} · {TIER_NAME[selectedBadge.tier ?? 'bronze']} tier</p>
+
             <div className="medal-mount">
               <Suspense fallback={<MedalDisc badge={selectedBadge} earned={selectedEarned} large />}>
                 <Medallion badge={selectedBadge} earned={selectedEarned} />
               </Suspense>
             </div>
-            <h2 className="t-title">{selectedBadge.name}</h2>
-            <p className="badge-sheet-hint muted t-body">{selectedBadge.hint}</p>
-            <span className={`badge-status tag ${selectedEarned ? 'is-earned' : 'is-locked'}`}>
-              {selectedEarned ? 'Earned' : 'Locked'}
-            </span>
+
+            <p className="t-body badge-state">
+              {selectedEarned
+                ? 'Earned'
+                : selectedProgress
+                  ? `Not earned yet: ${selectedProgress.cur} of ${selectedProgress.need}`
+                  : 'Not earned yet'}
+            </p>
           </div>
         </Sheet>
       )}

@@ -1,4 +1,4 @@
-// The Social tab, top to bottom: who you are, how people get in, your groups, the crew, and what the
+// The Social tab, top to bottom: who you are, how people get in, the crew, your groups, and what the
 // crew has found. Crew = direct friends plus group co-members, one roster, tagged by how you got them.
 import { useMemo, useState, type CSSProperties } from 'react'
 import { VENUES } from '../../data/model'
@@ -6,31 +6,32 @@ import { hasBackend } from '../../state/backend'
 import { FRIEND_COLOURS, useStore } from '../../state/store'
 import { useSources, undiscovered } from '../../state/social'
 import { FriendDot } from '../../ui/FriendDot'
-import { GlassButton } from '../../ui/GlassButton'
+import { IconChevron } from '../../ui/Icon'
 import { DrinkSheet } from '../drinks/DrinkSheet'
 import { AddCrewSheet } from '../friends/AddCrewSheet'
 import { ConfirmButton } from '../friends/ConfirmButton'
 import { GroupSheet } from '../friends/GroupSheet'
 import { ProfileSheet } from '../friends/ProfileSheet'
 import { DiscoverTogether } from '../home/DiscoverTogether'
-import '../drinks/drinksheet.css'
 import '../friends/friends.css'
 import './social.css'
 
-// Nothing shared before this is answered would carry a name: everything would read "A friend". On
-// first run this card is the whole screen, so it takes the page's heading rather than sitting a
-// level-two heading above the h1 below it.
+// Nothing shared before this is answered would carry a name: everything would read "A friend". A form
+// with its own boundary, so it is the one panel on the screen.
 export function NameCard({ lead }: { lead?: string }) {
   const profile = useStore((s) => s.profile)
   const setProfile = useStore((s) => s.setProfile)
   const [draft, setDraft] = useState('')
+  // On /join the card is the whole page, so its question is that page's h1. On Crew it sits above
+  // "Your crew", which is the h1 there, so it steps down rather than shipping a second level one.
+  const Heading = lead ? 'h1' : 'h2'
 
   return (
-    <section className="glass card social-name">
-      <h1 className="t-h2">What should your crew call you?</h1>
-      {lead && <p className="muted t-body social-sub">{lead}</p>}
-      <label className="ds-field">
-        <span className="eyebrow">Your name</span>
+    <section className="panel social-name">
+      <Heading className="t-h2">What should your crew call you?</Heading>
+      {lead && <p className="t-meta social-name-lead">{lead}</p>}
+      <label className="f-field">
+        <span className="f-label">Your name</span>
         <input
           value={draft}
           maxLength={24}
@@ -39,8 +40,8 @@ export function NameCard({ lead }: { lead?: string }) {
           onChange={(event) => setDraft(event.target.value)}
         />
       </label>
-      <div className="ds-field">
-        <span className="eyebrow">Your colour</span>
+      <div className="f-field">
+        <span className="f-label">Your colour</span>
         <div className="fpick">
           {FRIEND_COLOURS.map((colour) => (
             <button
@@ -55,18 +56,22 @@ export function NameCard({ lead }: { lead?: string }) {
           ))}
         </div>
       </div>
-      <GlassButton
-        variant="primary"
-        block
-        className="social-name-done"
+      {/* the fill arrives with the name: an empty draft leaves a plain disabled control rather than
+          coral text on a coral wash, which is the one thing on this card nobody could read */}
+      <button
+        type="button"
+        className={'btn btn-wide social-name-done' + (draft.trim() ? ' btn-coral' : '')}
         disabled={!draft.trim()}
         onClick={() => setProfile({ name: draft.trim() })}
       >
         Done
-      </GlassButton>
+      </button>
     </section>
   )
 }
+
+// a row's forward affordance, from the one icon set
+const Chevron = () => <IconChevron className="social-go" />
 
 export function Social() {
   const friends = useStore((s) => s.friends)
@@ -98,58 +103,24 @@ export function Social() {
           aria-haspopup="dialog"
           aria-label="Your details"
         >
-          <FriendDot name={profile.name || '?'} colour={profile.colour} size={26} />
+          <FriendDot name={profile.name || '?'} colour={profile.colour} size={28} />
           <span className="social-me-copy">
-            <strong>{profile.name || 'You'}</strong>
-            {profile.code && <small className="muted tnum">{profile.code}</small>}
+            <span className="t-strong">{profile.name || 'You'}</span>
+            {profile.code && <span className="t-meta tnum">{profile.code}</span>}
           </span>
         </button>
       </div>
 
-      <button type="button" className="glass card social-add pressable" onClick={() => setAddOpen(true)} aria-haspopup="dialog">
-        <span className="social-add-copy">
-          <strong className="t-h2">Add to your crew</strong>
-          <small className="muted t-meta">Send a link, scan a code, or join a group</small>
-        </span>
-        <span className="social-go" aria-hidden>›</span>
+      {/* the one filled control on the screen: until there is a name, that is Done on the card above,
+          because everything shared before it would go out as "A friend" */}
+      <button type="button" className={'btn btn-wide social-add' + (named ? ' btn-coral' : '')} onClick={() => setAddOpen(true)} aria-haspopup="dialog">
+        Add to your crew
       </button>
 
-      {online && (
-        <section className="glass card social-groups" aria-label="Your groups">
-          <div className="eyebrow">Groups</div>
-          {groups.map((g) => (
-            <button type="button" key={g.id} className="social-row pressable" onClick={() => setGroupSheet({ id: g.id })} aria-haspopup="dialog">
-              <span className="social-row-copy">
-                <strong className="t-strong">{g.name}</strong>
-                <small className="muted t-meta">{g.members} aboard{g.role === 'owner' ? ' · you host' : ''}</small>
-              </span>
-              <span className="social-go" aria-hidden>›</span>
-            </button>
-          ))}
-          <button type="button" className="social-row pressable" onClick={() => setGroupSheet({})} aria-haspopup="dialog">
-            <span className="social-row-copy">
-              <strong className="t-strong">Set up a group</strong>
-              <small className="muted t-meta">One link, everyone joins</small>
-            </span>
-            <span className="social-go" aria-hidden>›</span>
-          </button>
-          {/* Handed a code rather than a link, this is where people look. Without it the only field
-              is a level down inside "Add to your crew", and creating a second group is the obvious
-              wrong move. */}
-          <button type="button" className="social-row pressable" onClick={() => setAddOpen(true)} aria-haspopup="dialog">
-            <span className="social-row-copy">
-              <strong className="t-strong">Join a group</strong>
-              <small className="muted t-meta">Enter an invite code or link</small>
-            </span>
-            <span className="social-go" aria-hidden>›</span>
-          </button>
-        </section>
-      )}
-
-      <section className="glass card social-crew" aria-label="Sailing with">
-        <div className="eyebrow">Sailing with</div>
+      <section className="section" aria-label="Sailing with">
+        <div className="section-head"><h2 className="t-h2">Sailing with</h2></div>
         {friends.length === 0 ? (
-          <p className="muted t-body social-sub">Nobody yet. Share my link, or scan a friend.</p>
+          <p className="t-meta social-empty">Nobody yet. Add someone with the button above.</p>
         ) : (
           <div className="friends-roster">
             {friends.map((friend) => {
@@ -160,11 +131,11 @@ export function Social() {
               const state = friend.pending ? 'Waiting to connect' : logged ? `${logged} logged` : 'Nothing logged yet'
               const sub = state + (via ? ` · ${via}` : '')
               return (
-                <div className="friend-row" key={friend.id}>
-                  <FriendDot name={friend.name} colour={friend.colour} size={30} />
-                  <div className="friend-copy">
-                    <strong>{friend.name}</strong>
-                    <small className="muted tnum">{sub}</small>
+                <div className="row friend-row" key={friend.id}>
+                  <FriendDot name={friend.name} colour={friend.colour} size={28} />
+                  <div className="row-copy">
+                    <span className="t-body">{friend.name}</span>
+                    <span className="t-meta tnum">{sub}</span>
                   </div>
                   {/* Cutting both edges is irreversible and the row is a thumb's width from the
                       name, so it takes the same two-tap confirm as every other one-way action. */}
@@ -184,20 +155,44 @@ export function Social() {
         )}
       </section>
 
+      {online && (
+        <section className="section" aria-label="Your groups">
+          <div className="section-head"><h2 className="t-h2">Groups</h2></div>
+          {groups.map((g) => (
+            <button type="button" key={g.id} className="row pressable" onClick={() => setGroupSheet({ id: g.id })} aria-haspopup="dialog">
+              <span className="row-copy">
+                <span className="t-body">{g.name}</span>
+                <span className="t-meta tnum">{g.members} aboard{g.role === 'owner' ? ' · you host' : ''}</span>
+              </span>
+              <Chevron />
+            </button>
+          ))}
+          {/* Joining with a code someone read out lives in the add sheet, beside the other ways in. */}
+          <button type="button" className="row pressable" onClick={() => setGroupSheet({})} aria-haspopup="dialog">
+            <span className="row-copy">
+              <span className="t-body">Set up a group</span>
+              <span className="t-meta">One link, everyone joins</span>
+            </span>
+            <Chevron />
+          </button>
+        </section>
+      )}
+
       <DiscoverTogether onOpen={setOpenId} />
 
       {friends.length > 0 && undisc.length > 0 && (
-        <section className="glass card social-undisc">
-          <div className="eyebrow social-eyebrow">Nobody’s tried these yet</div>
-          <p className="muted t-body social-sub">Go and find them together.</p>
-          <div className="social-picks">
-            {undisc.map((d) => (
-              <button key={d.id} type="button" className="social-pick pressable" onClick={() => setOpenId(d.id)}>
-                <span className="social-pick-name t-strong">{d.name}</span>
-                <span className="social-pick-venue muted t-meta">{VENUES[d.venue]?.name} · Deck {VENUES[d.venue]?.deck}</span>
-              </button>
-            ))}
-          </div>
+        <section className="section">
+          <div className="section-head"><h2 className="t-h2">Nobody has tried these yet</h2></div>
+          {undisc.map((d) => (
+            <button key={d.id} type="button" className="row pressable" onClick={() => setOpenId(d.id)}>
+              {/* a drink name is the object of the row, so it takes the heading role here exactly as
+                  it does on Drinks: the same thing must not read at two sizes across screens */}
+              <span className="row-copy">
+                <span className="t-h2">{d.name}</span>
+                <span className="t-meta">{VENUES[d.venue]?.name} · Deck {VENUES[d.venue]?.deck}</span>
+              </span>
+            </button>
+          ))}
         </section>
       )}
 

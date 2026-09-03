@@ -1,124 +1,27 @@
-.log-page {
-  padding-top: var(--s2);
-}
+/* Log: one section per day on the ground. No day box, no tint. See docs/DESIGN.md. */
 
-.log-lead {
-  margin: 2px 0 var(--s4);
-  text-align: center;
-  font-size: 13px;
-  font-weight: 650;
-}
+/* the segmented control above already sets the gap to the first day */
+.section.log-first { margin-top: 0; }
 
-.log-days {
+/* the collapsed tail of the voyage keeps the gap a day section would have had */
+.log-rest { margin-top: var(--s6); }
+
+/* the day number, its separator and the date sit on one baseline, the count opposite them */
+.log-head {
   display: flex;
-  flex-direction: column;
-  gap: var(--s3);
-}
-
-.log-day {
-  padding: var(--s4);
-  border-radius: var(--r-lg);
-}
-
-.log-day.has-drinks {
-  background-color: color-mix(in srgb, var(--glass-film) 92%, var(--mint-soft));
-}
-
-.log-day.empty {
-  box-shadow: var(--sh-1);
-}
-
-.log-day-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s3);
-}
-
-.log-day-title {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
+  align-items: baseline;
+  gap: var(--s2);
   min-width: 0;
 }
 
-.log-date {
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.log-day.empty .log-day-title {
-  color: var(--ink-2);
-}
-
-.log-day.empty .log-date {
-  color: var(--ink-3);
-}
-
-.log-count {
-  flex: none;
-  color: var(--coral-ink);
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.log-day.empty .log-count {
-  color: var(--ink-3);
-}
-
-.log-drinks {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s1);
-  margin-top: var(--s3);
-}
-
-.log-drink {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s3);
-  width: 100%;
-  padding: var(--s2);
-  border-radius: var(--r-md);
-  text-align: left;
-}
-
-@media (hover: hover) {
-  .log-drink:hover {
-    background: rgba(255, 255, 255, .42);
-  }
-}
-
-.log-drink-copy {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.log-drink-copy strong,
-.log-venue {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.log-drink-copy strong {
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.log-venue {
-  font-size: 10.5px;
-  font-weight: 600;
-}
-
+/* the rating reads as one gold unit at the right of the row */
 .log-rating {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: var(--s1);
   flex: none;
-  color: var(--gold);
-  font-size: 11px;
-  font-weight: 750;
+  color: var(--gold-ink);
+  font-size: var(--f-meta);
+  font-weight: 600;
+  white-space: nowrap;
 }

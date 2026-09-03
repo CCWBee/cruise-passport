@@ -1,26 +1,9 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { DECKS, VENUES, VENUE_KEYS, menuFor, type Drink } from '../../data/model'
-import { bestRatedBars, useSources } from '../../state/social'
 import { useAllDrinks, useStore } from '../../state/store'
-import { IconCheck, IconLink, IconStar } from '../../ui/Icon'
+import { IconCheck } from '../../ui/Icon'
 import { VenueSheet } from './VenueSheet'
 import './ship.css'
-
-const DECK_COLOURS = [
-  'var(--fruit-melon)',
-  'var(--fruit-aqua)',
-  'var(--fruit-mango)',
-  'var(--fruit-grape)',
-  'var(--fruit-lime)',
-  'var(--fruit-pine)',
-]
-
-const DECK_INSETS = ['9%', '4%', '1%', '0%', '2%', '5%']
-
-type DeckStyle = CSSProperties & {
-  '--deck-colour': string
-  '--deck-inset': string
-}
 
 function uniqueMenu(keys: string[], drinks: Drink[]) {
   return Array.from(new Map(keys.flatMap((key) => menuFor(key, drinks)).map((d) => [d.id, d])).values())
@@ -28,8 +11,6 @@ function uniqueMenu(keys: string[], drinks: Drink[]) {
 
 export function Ship() {
   const drinks = useAllDrinks()
-  const friends = useStore((s) => s.friends)
-  const srcs = useSources()
   const entries = useStore((s) => s.me.entries)
   const visits = useStore((s) => s.me.visits)
   const [openVenue, setOpenVenue] = useState<string | null>(null)
@@ -38,59 +19,49 @@ export function Ship() {
     const k = new URLSearchParams(location.search).get('venue')
     if (k && VENUES[k]) setOpenVenue(k)
   }, [])
-  const top = bestRatedBars(srcs, { minRatings: 2 })[0]?.venueKey
-  const decks = useMemo(() => DECKS.slice().reverse().map((deck, index) => {
+  const decks = useMemo(() => DECKS.slice().reverse().map((deck) => {
     const keys = VENUE_KEYS.filter((key) => VENUES[key].deck === deck)
     const menu = uniqueMenu(keys, drinks)
-    return {
-      deck,
-      keys,
-      total: menu.length,
-      done: menu.filter((d) => entries[d.id]?.tried).length,
-      style: {
-        '--deck-colour': DECK_COLOURS[index],
-        '--deck-inset': DECK_INSETS[index],
-      } as DeckStyle,
-    }
+    return { deck, keys, total: menu.length, done: menu.filter((d) => entries[d.id]?.tried).length }
   }), [drinks, entries])
 
   return (
     <div className="wrap page ship-page">
-      <p className="page-lead muted">Bow to stern. Tap a bar to see its list.</p>
-      <div className="ship-stack reveal" aria-label="Venues by deck, highest to lowest">
-        {decks.map(({ deck, keys, total, done, style }) => (
-          <section className="deck-row glass" key={deck} style={style} aria-labelledby={`deck-${deck}`}>
-            <div className="deck-plate">
-              <span className="deck-label eyebrow">Deck</span>
-              <strong className="deck-number tnum" id={`deck-${deck}`}>{deck}</strong>
-              <span className="deck-count tnum" aria-label={`${done} of ${total} drinks tried`}>{done}/{total}</span>
-            </div>
-            <div className="deck-venues">
-              <span className="deck-fill" style={{ width: `${total ? (done / total) * 100 : 0}%` }} aria-hidden />
-              {keys.map((key) => {
-                const venue = VENUES[key]
-                const menu = menuFor(key, drinks)
-                const tried = menu.filter((d) => entries[d.id]?.tried).length
-                const complete = menu.length > 0 && tried === menu.length
-                const state = complete ? ' complete' : tried ? ' partial' : ''
-                return (
-                  <button
-                    key={key}
-                    className={`venue-pill pressable${state}${venue.shares ? ' shared' : ''}`}
-                    onClick={() => setOpenVenue(key)}
-                    aria-label={`${venue.name}, ${tried} of ${menu.length} tried${venue.shares ? ', shared list' : ''}${visits[key]?.visited ? ', visited' : ''}`}
-                  >
-                    <span className="venue-name">{venue.name}</span>
-                    <span className="venue-meta tnum">
-                      {venue.shares && <IconLink size={13} />}
-                      {friends.length > 0 && key === top && <IconStar className="venue-top-star" size={13} filled />}
-                      <span>{tried}/{menu.length}</span>
-                      {visits[key]?.visited && <IconCheck size={14} filled />}
+      <h1 className="t-title">The ship</h1>
+      <p className="page-lead t-meta">Bars and cafés, from the top deck down.</p>
+      <div className="ship-decks" aria-label="Venues by deck, highest to lowest">
+        {decks.map(({ deck, keys, total, done }) => (
+          <section className="section" key={deck} aria-labelledby={`deck-${deck}`}>
+            {/* the deck heading is one plain line, per DESIGN.md: "Deck 17 · 6 of 65". The unit is
+                carried in text a screen reader reads rather than an aria-label on a bare span. */}
+            <h2 className="t-h2 tnum" id={`deck-${deck}`}>
+              Deck {deck} · {done} of {total}<span className="sr-only"> drinks tried</span>
+            </h2>
+            {keys.map((key) => {
+              const venue = VENUES[key]
+              const menu = menuFor(key, drinks)
+              const tried = menu.filter((d) => entries[d.id]?.tried).length
+              const pct = menu.length ? (tried / menu.length) * 100 : 0
+              return (
+                <button
+                  key={key}
+                  className="row venue-row"
+                  onClick={() => setOpenVenue(key)}
+                  aria-label={`${venue.name}, ${tried} of ${menu.length} tried${visits[key]?.visited ? ', visited' : ''}`}
+                >
+                  <span className="row-copy">
+                    <span className="venue-line">
+                      <span className="t-body venue-name">{venue.name}</span>
+                      {visits[key]?.visited && <IconCheck className="venue-visited" size={15} filled />}
                     </span>
-                  </button>
-                )
-              })}
-            </div>
+                    <span className="venue-bar" aria-hidden>
+                      <span style={{ width: `${pct}%` }} />
+                    </span>
+                  </span>
+                  <span className="t-meta tnum venue-count">{tried} of {menu.length}</span>
+                </button>
+              )
+            })}
           </section>
         ))}
       </div>

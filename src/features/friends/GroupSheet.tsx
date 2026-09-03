@@ -6,7 +6,6 @@ import { FriendDot } from '../../ui/FriendDot'
 import { Qr } from '../../ui/Qr'
 import { Sheet } from '../../ui/Sheet'
 import { ConfirmButton } from './ConfirmButton'
-import '../drinks/drinksheet.css'
 import './friends.css'
 
 /** Live connectivity, for the two actions that genuinely cannot work without it. */
@@ -97,23 +96,32 @@ export function GroupSheet({ groupId, onClose }: { groupId?: string; onClose: ()
   }
 
   return (
-    <Sheet onClose={onClose} labelledBy="group-title" eyebrow={<div className="sheet-eyebrow eyebrow">Groups</div>}>
+    <Sheet onClose={onClose} labelledBy="group-title">
       {/* Only the blocks a drag would fight carry data-noswipe: on the whole sheet it kills
           drag-to-dismiss, and the grab handle above then promises something it cannot do. */}
       <div className="friends-sheet">
         {/* Same fallback as createGroupFlow sends, or the heading changes under the guest when the
             pull lands. */}
-        <h2 className="t-title friends-title" id="group-title">{detail ? (group?.name || name.trim() || 'Our group') : 'Set up a group'}</h2>
+        <h2 className="t-title sheet-title" id="group-title">{detail ? (group?.name || name.trim() || 'Our group') : 'Set up a group'}</h2>
+        <p className="sheet-meta">{detail ? `${shown.length} aboard` : 'One link, everyone joins. No codes to swap round the table.'}</p>
 
         {!detail && (
           <>
-            <p className="muted t-body">One link, everyone joins. No codes to swap round the table.</p>
-            <label className="ds-field">
-              <span className="eyebrow">Group name</span>
+            <label className="f-field">
+              <span className="f-label">Group name</span>
               <input value={name} maxLength={40} placeholder="Family, cabin 10842…" onChange={(event) => setName(event.target.value)} />
             </label>
-            <button type="button" className="btn btn-coral btn-wide friends-action" onClick={create} disabled={busy || !online}>{busy ? 'Creating…' : 'Create'}</button>
-            {!online && <p className="muted t-body friends-status">Needs a connection</p>}
+            {/* the name is required, so the primary waits for it rather than making "Our group",
+                and it wears the fill only while it can be pressed: coral on coral reads at 4.2:1 */}
+            <button
+              type="button"
+              className={'btn btn-wide friends-action' + (!busy && online && name.trim() ? ' btn-coral' : '')}
+              onClick={create}
+              disabled={busy || !online || !name.trim()}
+            >
+              {busy ? 'Creating…' : 'Create'}
+            </button>
+            {!online && <p className="t-meta friends-status">Needs a connection</p>}
           </>
         )}
 
@@ -121,9 +129,9 @@ export function GroupSheet({ groupId, onClose }: { groupId?: string; onClose: ()
           <>
             {invite && (
               <div className="addme" data-noswipe>
-                <div className="addme-qr"><Qr value={groupInviteLink(invite)} size={200} label="Scan to join this group" /></div>
+                <div className="panel addme-qr"><Qr value={groupInviteLink(invite)} size={200} label="Scan to join this group" /></div>
                 <div className="addme-code">
-                  <span className="eyebrow">Invite code</span>
+                  <span className="f-label">Invite code</span>
                   {/* Copy sits beside the code, as on the add sheet; sharing is an action, so it
                       goes in the actions row where the add sheet keeps its own. */}
                   <div className="addme-code-row">
@@ -139,11 +147,11 @@ export function GroupSheet({ groupId, onClose }: { groupId?: string; onClose: ()
 
             <div className="friends-roster" role="list" aria-label={`${shown.length} in this group`} data-noswipe>
               {shown.map((member) => (
-                <div className="friend-row" role="listitem" key={member.code || member.name}>
-                  <FriendDot name={member.name} colour={member.colour} size={30} />
-                  <div className="friend-copy">
-                    <strong>{member.name}</strong>
-                    <small className="muted tnum">{member.role === 'owner' ? 'Hosts this group' : 'Aboard'}</small>
+                <div className="row friend-row" role="listitem" key={member.code || member.name}>
+                  <FriendDot name={member.name} colour={member.colour} size={28} />
+                  <div className="row-copy">
+                    <span className="t-body">{member.name}</span>
+                    <span className="t-meta">{member.role === 'owner' ? 'Hosts this group' : 'Aboard'}</span>
                   </div>
                 </div>
               ))}
@@ -171,7 +179,7 @@ export function GroupSheet({ groupId, onClose }: { groupId?: string; onClose: ()
           </>
         )}
 
-        {status && <p className="muted t-body friends-status" role="status">{status}</p>}
+        {status && <p className="t-meta friends-status" role="status">{status}</p>}
       </div>
     </Sheet>
   )

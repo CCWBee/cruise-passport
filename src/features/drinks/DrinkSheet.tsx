@@ -1,9 +1,10 @@
-import { useMemo } from 'react'
+import { useId, useMemo } from 'react'
 import { Sheet } from '../../ui/Sheet'
 import { DRINK_BY_ID, money, pkgOf, VENUES, START, END, today, type Drink } from '../../data/model'
 import { useStore, useAllDrinks } from '../../state/store'
 import { commentsFor, groupRating, recommendationsFor, useSources, type GroupRating } from '../../state/social'
-import { IconStar, IconCheck, IconHeart, IconBookmark } from '../../ui/Icon'
+import { IconStar } from '../../ui/Icon'
+import { TextField, TextArea } from '../../ui/Field'
 import { FriendDot } from '../../ui/FriendDot'
 import './drinksheet.css'
 
@@ -15,33 +16,47 @@ function listNames(names: string[]) {
   return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
 }
 
-// A warm, sentiment-safe line about the crew's take. Positive ratings are named; on disagreement
-// it stays directional and never pins a low score to a friend (which could sting on a small cruise).
+// One factual line about the crew's ratings: who scored it 4 or more, or the range when they
+// disagree. It states the numbers and never pins a low score to a friend by name.
 function consensusLine(group: GroupRating): string | null {
   const friendBits = group.bits.filter((b) => !b.source.isSelf)
   if (!friendBits.length) return null
   const ratings = group.bits.map((b) => b.rating)
   const min = Math.min(...ratings), max = Math.max(...ratings)
   const mine = group.mine
-  const friendWord = friendBits.length === 1 ? friendBits[0].source.name : 'the crew'
   const high = friendBits.filter((b) => b.rating >= 4)
-  if (max - min >= 2) {
-    return mine != null && mine >= 4 ? `You loved this more than ${friendWord} did` : `Ratings ranged ${min} to ${max} aboard`
-  }
+  if (max - min >= 2) return `Ratings ranged ${min} to ${max} aboard`
   if (mine != null && mine >= 4 && high.length) {
-    return friendBits.length === 1 ? `You and ${friendBits[0].source.name} both loved this` : 'You and the crew all loved this'
+    if (friendBits.length === 1) return `You and ${friendBits[0].source.name} both rated this 4 or more`
+    // "all" only when every friend is actually high; otherwise name the ones who were
+    if (high.length === friendBits.length) return 'You and the crew all rated this 4 or more'
+    return `You and ${listNames(high.slice(0, 2).map((b) => b.source.name))} rated this 4 or more`
   }
-  if (high.length) return `${listNames(high.slice(0, 2).map((b) => b.source.name))} loved this`
+  if (high.length) return `${listNames(high.slice(0, 2).map((b) => b.source.name))} rated this 4 or more`
   return null
 }
 
+// Sweetness and strength: five ink dots, no meter, no gradient.
 function Meter({ label, n }: { label: string; n: number }) {
   return (
-    <div className="mt">
-      <div className="mt-l eyebrow">{label}</div>
-      <div className="mt-dots">{[1, 2, 3, 4, 5].map((i) => <i key={i} className={i <= n ? 'on' : ''} />)}</div>
+    <div className="ds-meter">
+      <span className="ds-label">{label}</span>
+      <span className="ds-dots" role="img" aria-label={`${label}, ${n} out of 5`}>
+        {[1, 2, 3, 4, 5].map((i) => <i key={i} className={i <= n ? 'on' : ''} />)}
+      </span>
     </div>
   )
+}
+
+// Package tier and price as one plain phrase, then the flavours. No pills.
+function factsLine(d: Drink): string {
+  const tier = pkgOf(d)
+  const price = d.price === null ? 'Price not published'
+    : tier === 'plus' ? `Plus ${money(d.price)}`
+      : tier === 'prem' ? `Premier ${money(d.price)}`
+        : `${money(d.price)}, ${money(d.extra)} over Premier`
+  const notes = [...d.flavors, ...(d.frozen ? ['Frozen'] : [])].join(', ')
+  return [price, notes].filter(Boolean).join(' · ')
 }
 
 export function DrinkSheet({ id, onClose, onOpen }: { id: string; onClose: () => void; onOpen: (id: string) => void }) {
@@ -56,129 +71,148 @@ export function DrinkSheet({ id, onClose, onOpen }: { id: string; onClose: () =>
   const setComment = useStore((s) => s.setComment)
   const setDate = useStore((s) => s.setDate)
   const srcs = useSources()
+  const titleId = useId()
   const group = useMemo(() => groupRating(id, srcs), [id, srcs])
   const recs = useMemo(() => recommendationsFor(id, srcs).filter((r) => !r.source.isSelf), [id, srcs])
   const comments = useMemo(() => commentsFor(id, srcs).filter((c) => !c.source.isSelf), [id, srcs])
   const consensus = useMemo(() => consensusLine(group), [group])
   if (!d) return null
   const v = VENUES[d.venue]
-  const tier = pkgOf(d)
   const also = all.filter((x) => x.venue === d.venue && x.id !== id).slice(0, 6)
 
-  const Toggle = ({ k, label, Icon, on, tone }: { k: 'tried' | 'fav' | 'wish' | 'again' | 'rec'; label: string; Icon: typeof IconCheck; on: boolean; tone: string }) => (
-    <button className={'tg pressable' + (on ? ' on tg-' + tone : '')} aria-pressed={on}
-      onClick={() => (k === 'tried' ? toggleTried(id) : k === 'rec' ? toggleRec(id) : toggle(id, k))}>
-      <Icon size={19} filled={on} /> {label}
+  const chip = (k: 'tried' | 'fav' | 'wish' | 'again' | 'rec', label: string, on: boolean, mint?: boolean) => (
+    <button
+      key={k}
+      className={'ds-chip' + (on ? ' on' : '') + (mint ? ' ds-chip-mint' : '')}
+      type="button"
+      aria-pressed={on}
+      onClick={() => (k === 'tried' ? toggleTried(id) : k === 'rec' ? toggleRec(id) : toggle(id, k))}
+    >
+      {label}
     </button>
   )
 
   return (
-    <Sheet onClose={onClose} eyebrow={<div className="sheet-eyebrow eyebrow">{v.name} · Deck {v.deck} · {d.category}</div>}>
-      <h2 className="ds-title t-title">{d.name}</h2>
-      {!d.verified && <div className="ds-warn">Named in trip reports but not confirmed on a published menu. Have a look at the bar.</div>}
-      <p className="ds-ing t-strong">{d.ingredients}</p>
-      <p className="muted t-body">{d.desc}</p>
+    <Sheet onClose={onClose} labelledBy={titleId}>
+      <h2 className="t-title sheet-title" id={titleId}>{d.name}</h2>
+      <p className="sheet-meta">{v ? `${v.name} · Deck ${v.deck} · ` : ''}{d.category}</p>
 
-      <div className="ds-tags">
-        {tier === 'plus' && <span className="tag tag-plus">Plus</span>}
-        {tier === 'prem' && <span className="tag tag-prem">Premier</span>}
-        {tier === 'over' && <span className="tag tag-over">+{money(d.extra)}</span>}
-        {d.price !== null && <span className="tag tag-price">{money(d.price)}</span>}
-        {d.price === null && <span className="tag">Price not published</span>}
-        {d.frozen && <span className="tag">Frozen</span>}
-        {d.flavors.map((fl) => <span key={fl} className="tag">{fl}</span>)}
-      </div>
+      <p className="ds-ing t-body">{d.ingredients}</p>
+      <p className="ds-desc t-meta">{d.desc}</p>
+      <p className="ds-facts t-meta">{factsLine(d)}</p>
+      {!d.verified && (
+        <p className="ds-warn t-meta">Named in trip reports but not confirmed on a published menu. Have a look at the bar.</p>
+      )}
 
+      <hr className="hairline ds-rule" />
       <div className="ds-meters">
         <Meter label="Sweetness" n={d.sweet} />
         <Meter label="Strength" n={d.strength} />
       </div>
-      <p className="muted t-body ds-abv">{d.strength === 0 ? 'Alcohol free' : ABV[d.strength]}</p>
+      <p className="ds-abv t-meta">{d.strength === 0 ? 'Alcohol free' : ABV[d.strength]}</p>
 
-      <div className="ds-rate-row">
-        <div className="ds-rate-label eyebrow">Your rating</div>
+      <hr className="hairline ds-rule" />
+      <div className="ds-rate-head">
+        <span className="ds-label">Your rating</span>
         {group.count > 1 && (
-          <div className="ds-group tnum">
-            <IconStar size={13} filled /> {group.avg.toFixed(1)}
-            <span className="muted"> · {group.count} aboard</span>
-          </div>
+          <span className="ds-group tnum">{group.avg.toFixed(1)} average from {group.count} aboard</span>
         )}
       </div>
-      {consensus && <p className="ds-consensus t-body">{consensus}</p>}
-      {recs.length > 0 && (
-        <div className="ds-recby">
-          <span className="fstack">
-            {recs.slice(0, 3).map((r) => <FriendDot key={r.source.id} {...r.source} size={20} />)}
-          </span>
-          <span className="muted t-body">Recommended by {listNames(recs.map((r) => r.source.name))}</span>
-        </div>
-      )}
       <div className="ds-stars">
         {[1, 2, 3, 4, 5].map((n) => (
-          <button key={n} className={'ds-star pressable' + (n <= (e.rating || 0) ? ' on' : '')} aria-label={`${n} star${n > 1 ? 's' : ''}`} onClick={() => setRating(id, n)}>
-            <IconStar size={30} filled={n <= (e.rating || 0)} />
+          <button
+            key={n}
+            className={'ds-star' + (n <= (e.rating || 0) ? ' on' : '')}
+            type="button"
+            aria-label={`${n} star${n > 1 ? 's' : ''}`}
+            onClick={() => setRating(id, n)}
+          >
+            <IconStar size={26} filled={n <= (e.rating || 0)} />
           </button>
         ))}
       </div>
+      {consensus && <p className="ds-consensus t-meta">{consensus}</p>}
+      {recs.length > 0 && (
+        <p className="ds-recby t-meta">
+          <span className="fstack">
+            {recs.slice(0, 3).map((r) => <FriendDot key={r.source.id} {...r.source} size={20} />)}
+          </span>
+          <span>Recommended by {listNames(recs.map((r) => r.source.name))}</span>
+        </p>
+      )}
 
-      <div className="ds-toggles">
-        <Toggle k="tried" label="Tried" Icon={IconCheck} on={!!e.tried} tone="mint" />
-        <Toggle k="fav" label="Favourite" Icon={IconHeart} on={!!e.fav} tone="coral" />
-        <Toggle k="wish" label="Wishlist" Icon={IconBookmark} on={!!e.wish} tone="lilac" />
-        <Toggle k="again" label="Order again" Icon={IconCheck} on={!!e.again} tone="sky" />
-        <Toggle k="rec" label="Recommend" Icon={IconStar} on={!!e.rec} tone="gold" />
+      <div className="ds-chips">
+        {chip('tried', 'Tried', !!e.tried, true)}
+        {chip('fav', 'Favourite', !!e.fav)}
+        {chip('wish', 'Wishlist', !!e.wish)}
+        {chip('again', 'Order again', !!e.again)}
+        {chip('rec', 'Recommend', !!e.rec)}
       </div>
 
       {e.tried && (
-        <label className="ds-field">
-          <span className="eyebrow">Date tried</span>
-          <input type="date" min={START} max={END} value={e.date || today()} onChange={(ev) => setDate(id, ev.target.value)} />
-        </label>
+        <TextField
+          id={`${titleId}-date`}
+          label="Date tried"
+          type="date"
+          min={START}
+          max={END}
+          value={e.date || today()}
+          onChange={(ev) => setDate(id, ev.target.value)}
+        />
       )}
-      <div className="ds-note-fields">
-        <label className="ds-field">
-          <span className="eyebrow">Notes <span className="ds-private muted">· Private to you</span></span>
-          <textarea rows={3} placeholder="Glass, garnish, who made it, whether it was worth the walk." defaultValue={e.notes || ''} onChange={(ev) => setNotes(id, ev.target.value)} />
-        </label>
-        <label className="ds-field">
-          <span className="eyebrow">Comment · shared with friends</span>
-          <textarea rows={2} maxLength={140} placeholder="One line others will see." defaultValue={e.comment || ''} onChange={(ev) => setComment(id, ev.target.value)} />
-        </label>
-      </div>
+      <TextArea
+        id={`${titleId}-notes`}
+        label="Notes"
+        hint="Private to you."
+        rows={3}
+        placeholder="Glass, garnish, who made it, whether it was worth the walk."
+        defaultValue={e.notes || ''}
+        onChange={(ev) => setNotes(id, ev.target.value)}
+      />
+      <TextArea
+        id={`${titleId}-comment`}
+        label="Comment"
+        hint="Shared with your crew."
+        rows={2}
+        maxLength={140}
+        placeholder="One line others will see."
+        defaultValue={e.comment || ''}
+        onChange={(ev) => setComment(id, ev.target.value)}
+      />
 
       {comments.length > 0 && (
-        <>
-          <div className="ds-friends-label eyebrow">What friends said</div>
-          <div className="ds-friends">
+        <section className="section">
+          <div className="section-head"><h3 className="t-h2">What the crew said</h3></div>
+          <div className="ds-crew">
             {comments.map((c) => (
-              <div className="ds-friend-row" key={c.source.id}>
+              <div className="ds-crew-row" key={c.source.id}>
                 <FriendDot {...c.source} size={26} />
-                <div className="ds-friend-copy">
-                  <div className="t-strong">
+                <div className="ds-crew-copy">
+                  <span className="ds-crew-name t-strong">
                     {c.source.name}
                     {c.rating ? (
-                      <span className="ds-friend-stars muted" aria-label={`${c.rating} star${c.rating > 1 ? 's' : ''}`}>
-                        {Array.from({ length: c.rating }, (_, i) => <IconStar key={i} size={11} filled />)}
+                      <span className="ds-crew-stars" aria-label={`${c.rating} star${c.rating > 1 ? 's' : ''}`}>
+                        {Array.from({ length: c.rating }, (_, i) => <IconStar key={i} size={12} filled />)}
                       </span>
                     ) : null}
-                  </div>
-                  <p className="muted t-body">{c.text}</p>
+                  </span>
+                  <p className="t-meta">{c.text}</p>
                 </div>
               </div>
             ))}
           </div>
-        </>
+        </section>
       )}
 
       {also.length > 0 && (
-        <>
-          <div className="ds-also-label eyebrow">Also at {v.name}</div>
+        <section className="section">
+          <div className="section-head"><h3 className="t-h2">Also at {v ? v.name : 'this bar'}</h3></div>
           <div className="ds-also">
             {also.map((x) => (
-              <button key={x.id} className="mini pressable" onClick={() => onOpen(x.id)}>{x.name}</button>
+              <button key={x.id} className="mini pressable" type="button" onClick={() => onOpen(x.id)}>{x.name}</button>
             ))}
           </div>
-        </>
+        </section>
       )}
     </Sheet>
   )

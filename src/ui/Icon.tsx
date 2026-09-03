@@ -123,6 +123,10 @@ export const IconMedal = (p: P) => (
 export const IconPlus = (p: P) => (
   <Svg {...p}><path d="M12 5v14M5 12h14" /></Svg>
 )
+// a row's forward affordance, the only chevron in the set
+export const IconChevron = (p: P) => (
+  <Svg {...p}><path d="m10 6.8 5.2 5.2-5.2 5.2" /></Svg>
+)
 export const IconPin = (p: P) => (
   <Svg {...p}>
     <path d="M19 10.1c0 5-7 10-7 10s-7-5-7-10a7 7 0 1 1 14 0z" />

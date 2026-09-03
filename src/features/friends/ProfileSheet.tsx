@@ -4,7 +4,6 @@ import { FRIEND_COLOURS, useStore } from '../../state/store'
 import { useSyncStore } from '../../state/sync'
 import { Sheet } from '../../ui/Sheet'
 import { ConfirmButton } from './ConfirmButton'
-import '../drinks/drinksheet.css'
 import './friends.css'
 
 // Who you are to the crew: the name and colour that ride on every shared drink, how the sync is
@@ -32,12 +31,13 @@ export function ProfileSheet({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <Sheet onClose={onClose} labelledBy="profile-title" eyebrow={<div className="sheet-eyebrow eyebrow">You</div>}>
+    <Sheet onClose={onClose} labelledBy="profile-title">
       <div className="friends-sheet">
-        <h2 className="t-title friends-title" id="profile-title">Your details</h2>
+        <h2 className="t-title sheet-title" id="profile-title">Your details</h2>
+        <p className="sheet-meta">The name and colour your crew sees on everything you share.</p>
 
-        <label className="ds-field">
-          <span className="eyebrow">Your name</span>
+        <label className="f-field">
+          <span className="f-label">Your name</span>
           <input
             value={profile.name}
             maxLength={24}
@@ -47,8 +47,8 @@ export function ProfileSheet({ onClose }: { onClose: () => void }) {
           />
         </label>
 
-        <div className="ds-field">
-          <span className="eyebrow">Your colour</span>
+        <div className="f-field">
+          <span className="f-label">Your colour</span>
           <div className="fpick">
             {FRIEND_COLOURS.map((colour) => (
               <button
@@ -65,13 +65,13 @@ export function ProfileSheet({ onClose }: { onClose: () => void }) {
         </div>
 
         {profile.code && (
-          <div className="ds-field">
-            <span className="eyebrow">Your code</span>
+          <div className="f-field">
+            <span className="f-label">Your code</span>
             <code className="tnum addme-code-val">{profile.code}</code>
           </div>
         )}
 
-        {syncLine && <p className="muted t-body friends-status" role="status">{syncLine}</p>}
+        {syncLine && <p className="t-meta friends-status" role="status">{syncLine}</p>}
 
         {hasBackend() && (
           <div className="friends-danger">
@@ -82,7 +82,7 @@ export function ProfileSheet({ onClose }: { onClose: () => void }) {
               className="btn btn-wide"
               onConfirm={() => { void erase() }}
             />
-            {status && <p className="muted t-body friends-status" role="status">{status}</p>}
+            {status && <p className="t-meta friends-status" role="status">{status}</p>}
           </div>
         )}
       </div>
