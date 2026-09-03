@@ -87,9 +87,15 @@
   white-space: nowrap;
 }
 
+/* ── the way in: the link first, then the two fallbacks, then the folded-away code ── */
+.addme-send { margin-top: var(--s4); }
+/* the line that says what the share sheet is for; it belongs to the button above it, so it sits
+   close to it and the next group keeps its own 16 */
+.addme-hint { margin-top: var(--s2); }
+
 /* ── the QR block: white, because a code has to read under a camera ── */
 .addme {
-  margin-top: var(--s4);
+  margin-top: var(--s3);
   display: grid;
   gap: var(--s3);
 }
@@ -119,11 +125,17 @@
   font-weight: 600;
   color: var(--ink);
 }
+/* the two secondary routes, side by side: one row, equal halves, and the labels stay on one line at
+   390px (a clickable label that wraps is the tell) */
 .addme-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--s2);
 }
+/* on the add sheet the pair stands on its own (the group sheet keeps its row inside .addme, which
+   brings its own rhythm), and the labels need every pixel of the half-width */
+.friends-sheet > .addme-actions { margin-top: var(--s4); }
+.friends-sheet > .addme-actions .btn { min-width: 0; padding: 0 var(--s3); }
 /* one action, full width: the share button when Copy has taken the slot beside the code */
 .addme-actions-one { grid-template-columns: 1fr; }
 

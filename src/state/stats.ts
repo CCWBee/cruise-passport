@@ -137,3 +137,85 @@ export function computeStats(drinks: Drink[], p: Passport): Stats {
 
 export const voyageDayIndex = (): number => DAYS.indexOf(today())
 export { VENUES }
+
+// ── Home's front panel: pure selectors, appended. Nothing above this line changed. ──
+// These exist so Home reads the same numbers the screens they lead to compute, rather than
+// measuring the same things a second way and disagreeing with them.
+import { BADGES, type BadgeDef } from '../data/badges'
+import { menuFor } from '../data/model'
+
+export interface NextBadge { badge: BadgeDef; cur: number; need: number; pct: number }
+
+/** The badge nearest to earned. The same measure the Badges screen's "Close" list uses: an
+ *  un-earned badge with a progress predicate and something on the board, ranked by percentage. */
+export function nextBadge(stat: BadgeStat): NextBadge | null {
+  let best: NextBadge | null = null
+  for (const badge of BADGES) {
+    if (badge.test(stat)) continue
+    const p = badge.progress?.(stat)
+    if (!p || p.need <= 0 || p.cur <= 0) continue
+    const pct = Math.min(100, Math.max(0, (p.cur / p.need) * 100))
+    if (!best || pct > best.pct) best = { badge, cur: p.cur, need: p.need, pct }
+  }
+  return best
+}
+
+/** Drinks a passport logged on one ISO day, in the order that passport holds them. */
+export function drinksOn(drinks: Drink[], p: Passport, iso: string): Drink[] {
+  const byId: Record<string, Drink> = {}
+  drinks.forEach((d) => { byId[d.id] = d })
+  const out: Drink[] = []
+  for (const id of Object.keys(p.entries)) {
+    const e = p.entries[id]
+    if (e && e.tried && e.date === iso && byId[id]) out.push(byId[id])
+  }
+  return out
+}
+
+/** How many drinks a passport logged on one ISO day. Used for self and for a crew member. */
+export function countOn(p: Passport, iso: string): number {
+  let n = 0
+  for (const id of Object.keys(p.entries)) {
+    const e = p.entries[id]
+    if (e && e.tried && e.date === iso) n++
+  }
+  return n
+}
+
+/** The venue of the last drink logged on a day. An entry carries a date, not a time, so the only
+ *  honest "last" is the last one the passport wrote; nothing here is guessed from the clock. */
+export function lastVenueOn(drinks: Drink[], p: Passport, iso: string): string | null {
+  const list = drinksOn(drinks, p, iso)
+  return list.length ? list[list.length - 1].venue : null
+}
+
+export interface VenueProgress { key: string; total: number; done: number; next: Drink | null }
+
+/** One venue's own list: tried, total, and the first drink on it still untried. */
+export function venueProgress(drinks: Drink[], p: Passport, key: string): VenueProgress {
+  const menu = menuFor(key, drinks)
+  const done = menu.filter((d) => p.entries[d.id]?.tried).length
+  return { key, total: menu.length, done, next: menu.find((d) => !p.entries[d.id]?.tried) || null }
+}
+
+/** The bar with the longest list: where a guest who has logged nothing has the most to find.
+ *  Bars only, so a restaurant never wins it, and own drinks only, so a venue that shares another's
+ *  list is not credited with it twice. */
+export function biggestBar(drinks: Drink[]): string | null {
+  const n: Record<string, number> = {}
+  drinks.forEach((d) => {
+    if (!VENUES[d.venue] || isRestaurant(d.venue)) return
+    n[d.venue] = (n[d.venue] || 0) + 1
+  })
+  const keys = Object.keys(n)
+  if (!keys.length) return null
+  return keys.sort((a, b) => n[b] - n[a] || VENUES[a].name.localeCompare(VENUES[b].name))[0]
+}
+
+/** How many decks carry a venue. The Ship screen's landmarks are its decks, so Home counts them
+ *  off the venue list the way Ship groups them rather than reading the DECKS constant beside it. */
+export function deckCount(): number {
+  const on: Record<number, 1> = {}
+  VENUE_KEYS.forEach((k) => { on[VENUES[k].deck] = 1 })
+  return Object.keys(on).length
+}

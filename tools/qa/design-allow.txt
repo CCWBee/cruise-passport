@@ -12,12 +12,16 @@ styles/base.css :: inset 0 1px 0 var(--glass-rim)
 styles/base.css :: linear-gradient(to bottom, var(--glass-highlight-film)
 # the nav lens: a see-through film with the specular edge, sliding under the active tab
 app/nav.css :: inset 0 1px 0 var(--glass-rim)
+# the Confirm tick floats over content: the sheet's shadow plus the specular edge on its disc and label plate
+ui/confirm.css :: var(--sh-sheet), inset 0 1px 0 var(--glass-rim)
 # the toast is glass: film, blur, edge
 ui/toast.css :: inset 0 1px 0 var(--glass-rim)
 ui/toast.css :: linear-gradient(to bottom, var(--glass-highlight-film)
 # the sheet and the toast layer over content
 ui/sheet.css :: backdrop-filter
-ui/sheet.css :: rgba(255, 253, 250, .86)
+# the sheet is liquid glass: the specular edge and the top-40% highlight
+ui/sheet.css :: inset 0 1px 0 var(--glass-rim)
+ui/sheet.css :: linear-gradient(to bottom, var(--glass-highlight-film)
 ui/toast.css :: backdrop-filter
 # the segmented thumb and the select option sit 3-4px inside a 12px control
 ui/segmented.css :: calc(var(--r-control) - 3px)
@@ -34,3 +38,6 @@ features/wrapped/wrapped.css :: linear-gradient(to bottom, var(--glass-highlight
 features/wrapped/wrapped.css :: radial-gradient(circle at 74% 16%
 features/wrapped/wrapped.css :: linear-gradient(160deg
 features/wrapped/wrapped.css :: wr-drift
+# TEMPORARY. The sheet's film is 88%, not the 58% tokens.css carries: a sheet opens over the sea
+# hero, where 58% leaves 13px --ink-2 at 3.10:1 over --sea-lo. The sheet shadows the token locally
+# until tokens.css and DESIGN.md carry 88%; delete this line with the shadow.

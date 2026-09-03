@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom'
-import { extractShareCode } from '../state/share'
+import { decodeShare, extractShareCode, parseFriend, type SharePayload } from '../state/share'
 import { joinGroupFlow } from '../state/groups'
 import { hasBackend } from '../state/backend'
+import { Confirm } from '../ui/Confirm'
 import { CRUISES } from '../data/cruises'
 import { useStore } from '../state/store'
 import { CruisePicker } from '../features/cruise/CruisePicker'
@@ -38,10 +39,18 @@ function InviteScreen({ msg, failed }: { msg: string; failed: boolean }) {
   )
 }
 
+// The name comes first, exactly as it does on /join: `befriend` writes both edges, so adding before
+// there is a name publishes "A friend" to the sender's roster, and it stays there. The card is
+// decoded before any of that, so the question can say who is asking.
 function AddRoute() {
   const navigate = useNavigate()
+  const named = useStore((s) => Boolean(s.profile.name.trim()))
+  const [payload, setPayload] = useState<SharePayload | null>(null)
+  // it says what is happening until either the tick or a reason replaces it
   const [msg, setMsg] = useState('Adding your friend…')
   const [failed, setFailed] = useState(false)
+  const [added, setAdded] = useState('')
+
   useEffect(() => {
     const raw = window.location.hash.slice(1) || new URLSearchParams(window.location.search).get('c') || ''
     let decoded = raw
@@ -52,17 +61,43 @@ function AddRoute() {
       setFailed(true)
       return
     }
-    useStore.getState().ensureIdentity()
     let alive = true
-    void useStore.getState().importCode(code).then((result) => {
+    void decodeShare(code).then((p) => { if (alive) setPayload(p) }).catch(() => {
       if (!alive) return
-      setMsg(result.ok ? `Added ${result.name}. Taking you to your crew…` : (result.reason || 'Could not read that add link.'))
-      if (result.ok) setTimeout(() => navigate('/social'), 1100)
-      else setFailed(true)
+      setMsg('Could not read that add link.')
+      setFailed(true)
     })
     return () => { alive = false }
-  }, [navigate])
-  return <InviteScreen msg={msg} failed={failed} />
+  }, [])
+
+  // Sanitised through the same parser the roster uses, so a hostile link cannot put anything but a
+  // 24-character name in front of the guest.
+  const from = useMemo(() => (payload ? parseFriend(payload).name : ''), [payload])
+
+  useEffect(() => {
+    if (!payload || !named || added) return
+    useStore.getState().ensureIdentity()
+    const result = useStore.getState().importFriendPayload(payload)
+    if (result.ok) { setMsg(''); setAdded(`${result.name} added`) }
+    else { setMsg(result.reason || 'Could not read that add link.'); setFailed(true) }
+  }, [payload, named, added])
+
+  // A link that never decoded has nothing to ask a name for: say so instead.
+  if (!named && !failed) {
+    return (
+      <div className="wrap page">
+        <NameCard lead={from && from !== 'A friend'
+          ? `${from} is adding you. Tell them who you are, then we’ll add you both.`
+          : 'Tell them who you are, then we’ll add you.'} />
+      </div>
+    )
+  }
+  return (
+    <>
+      {msg ? <InviteScreen msg={msg} failed={failed} /> : <div className="wrap page" />}
+      {added && <Confirm label={added} onDone={() => navigate('/social')} />}
+    </>
+  )
 }
 
 // Group invite link. /join#INVITE joins the group online, then drops you on Social. The name comes
@@ -73,6 +108,7 @@ function JoinRoute() {
   const named = useStore((s) => Boolean(s.profile.name.trim()))
   const [msg, setMsg] = useState('Joining the group…')
   const [failed, setFailed] = useState(false)
+  const [joined, setJoined] = useState('')
   useEffect(() => {
     if (!named) return
     const invite = window.location.hash.slice(1) || new URLSearchParams(window.location.search).get('g') || ''
@@ -88,10 +124,11 @@ function JoinRoute() {
     let alive = true
     void joinGroupFlow(invite).then((result) => {
       if (!alive) return
-      // Tapped on the coach with no signal: the invite is held and replayed on the next pull.
+      // Joined: the tick says so, and takes them on. Tapped on the coach with no signal: the invite
+      // is held and replayed on the next pull, which is a promise about later, not a confirmation.
+      if (result && !result.queued) { setMsg(''); setJoined(`Joined ${result.name}`); return }
       setMsg(result?.queued ? 'You’ll join as soon as you’re online. Taking you to your crew…'
-        : result ? `Joined ${result.name}. Taking you to your crew…`
-          : 'That invite did not work. Ask for the code again.')
+        : 'That invite did not work. Ask for the code again.')
       if (result) setTimeout(() => navigate('/social'), 1100)
       else setFailed(true)
     })
@@ -104,7 +141,12 @@ function JoinRoute() {
       </div>
     )
   }
-  return <InviteScreen msg={msg} failed={failed} />
+  return (
+    <>
+      {msg ? <InviteScreen msg={msg} failed={failed} /> : <div className="wrap page" />}
+      {joined && <Confirm label={joined} onDone={() => navigate('/social')} />}
+    </>
+  )
 }
 
 // Catch-all. Every real screen has a route, so anything landing here is a mistyped or stale link.

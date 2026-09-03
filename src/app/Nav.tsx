@@ -15,10 +15,11 @@ const TABS = [
 
 export function Nav() {
   const { pathname } = useLocation()
-  const active = Math.max(0, TABS.findIndex((t) => t.match(pathname)))
+  // /add, /join and /wrapped are not tabs: nothing lights and the lens hides
+  const active = TABS.findIndex((t) => t.match(pathname))
   return (
     <nav className="nav glass-live glass-edge" aria-label="Sections">
-      <div className="nav-lens" style={{ '--i': active, '--n': TABS.length } as CSSProperties} aria-hidden />
+      <div className="nav-lens" style={{ '--i': Math.max(0, active), '--n': TABS.length } as CSSProperties} hidden={active < 0} aria-hidden />
       {TABS.map(({ to, label, Icon }, i) => {
         const on = i === active
         return (

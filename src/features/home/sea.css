@@ -43,6 +43,20 @@
   .sea-ship { animation: none; transform: translateY(-86%); }
 }
 
+/* The three things floating on the water are the chrome layer: the water moves under them, so
+   they are the app's small liquid glass. Contrast is bought with film, not by darkening the ink,
+   and the two chips need different amounts of it because they sit over different water.
+   The countdown stays over the sky whatever the passport holds, so the thin chip film is plenty:
+   ink on it measures 7.02:1 to 8.84:1 across an empty passport, the seed's 27% and a forced full
+   tide. The readout sits on the tide line and sinks towards --sea-lo as the passport fills, so it
+   takes the sheet's film: ink measures 9.66:1 empty, 5.76:1 at 27% and 5.18:1 at the foot of the
+   line at full tide, and the darkest thing the GLSL can put behind it, pure --sea-lo #093755
+   (below horizon-0.42 the shader clamps where the CSS floor keeps lerping), computes 4.77:1.
+   The chip film would be 3.53:1 there, which is why the two are split. Both films are inside the
+   45 to 62% band in DESIGN.md. */
+.sea-count { --glass-film: var(--glass-film-chip); }
+.sea-readout { --glass-film: var(--glass-film-sheet); }
+
 /* the readout, bottom left: the one display number in the app */
 .sea-readout {
   position: absolute; z-index: 2; left: var(--s4); bottom: var(--s4);
@@ -61,3 +75,19 @@
   font-size: var(--f-meta); line-height: 1.4; color: var(--ink);
 }
 .sea-count b { font-weight: 600; }
+
+/* the one primary action on the app, bottom right: a coral-tinted glass button on the water.
+   The token film (.74) puts white at 4.11:1 where the hero's sky band shows through on an empty
+   passport, so the film is raised to 86% here, still a reference to --coral-ink: white then
+   computes 4.70:1 over that sky #BDD9DA, 5.59:1 over the lightest water band --sea-hi and 6.35:1
+   over --sea-lo, and measures 4.95:1 to 6.33:1 in the render across an empty passport, the seed's
+   27% and a full tide. At 390 it clears the readout by 58px at the seed's 27% and by 27px at the
+   widest the readout ever gets, "100%" over "214 of 214". */
+.sea-log {
+  position: absolute; z-index: 2; right: var(--s4); bottom: var(--s4);
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: var(--ctl); padding: 0 var(--s4); border-radius: var(--r-control);
+  font-size: var(--f-body); font-weight: 600; line-height: 1; white-space: nowrap;
+  --coral-film: color-mix(in srgb, var(--coral-ink) 86%, transparent);
+  --coral-film-blur: color-mix(in srgb, var(--coral-ink) 86%, transparent);
+}

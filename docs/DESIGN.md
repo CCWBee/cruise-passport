@@ -67,8 +67,10 @@ between sections. Whitespace separates ideas; it does not pad every object.
   them), the toast, and the Wrapped certificate over its drifting backdrop. Nowhere in the content
   layer, never glass on glass (the glass bible's two hard rules).
 - **The glass recipe** (`.glass-live` plus `.glass-edge` in `base.css`, tuned per role by tokens):
-  a white tint film of 45 to 62% (the film is what keeps text at 4.5:1; buy contrast with film, not
-  by darkening), `blur` 6 to 8px on small controls, 16 to 22px on bars and sheets, `saturate(160%)`,
+  a white tint film of 45 to 62% for chrome over the ground and the sea (the film is what keeps
+  text at 4.5:1; buy contrast with film, not by darkening), except the sheet, the only glass that
+  covers content of any brightness, whose film is set by contrast at 88% (13px `--ink-2` holds
+  4.5:1 even over black); `blur` 6 to 8px on small controls, 16 to 22px on bars and sheets, `saturate(160%)`,
   a near-white hairline, one light from the top: a specular top edge (`inset 0 1px 0` white at 75%)
   and a highlight gradient over the top 40%. A coral-tinted film marks the one primary action on
   glass. Non-blur fallback and reduced-transparency path always present. The scan allows
@@ -85,8 +87,10 @@ the specular edge belongs to glass chrome only.
 A sheet is the one place content is covered, so it is the most-used glass surface and the gesture
 has to be right:
 
-- **Look.** Glass film 58%, blur 22, the specular edge, the sheet shadow; the scrim behind it is
-  ink at 22% with a 6px blur, so the page is visibly still there. The SheetWave wash is its opening.
+- **Look.** Glass film 88% (a sheet opens over the sea hero and over anything else; only a film this
+  heavy keeps 13px `--ink-2` at 4.5:1 over the water, and the arithmetic sits beside the token), blur
+  22, the specular edge, the sheet shadow; the scrim behind it is ink at 22% with an 8px blur, so the
+  page is visibly still there. The SheetWave wash is its opening.
 - **Dismiss.** Drag down from the grab bar or the header, or from anywhere when the sheet's own
   scroller is at its top. The drag must be vertical in intent (more down than across in the first
   10px) and it follows the finger. It dismisses only past 35% of the sheet's height (never under
@@ -199,9 +203,11 @@ summary; every module either answers one of those or leads to the screen that do
    bottom left, and bottom right the one primary action on the app, **"Log a drink"**, a
    coral-tinted glass button floating on the water. It opens Drinks with the search focused, so
    logging at a bar is two taps from cold.
-2. **Today**, one row on the ground, three facts that change every day: aboard, "Day 3 of 15",
-   drinks today, day streak; before sailing, days to go, drinks tried, bars visited. Never a number
-   the hero shows.
+2. **Today**, one row on the ground, three facts. Aboard, three numbers that move by the day:
+   drinks today, day streak, bars visited. "Day 3 of 15" is not among them; the hero chip already
+   says it. Before sailing there is no day, no streak and nothing logged, and "drinks to go" is only
+   the hero's "58 of 214" turned round, so the row becomes **The ship**: bars, restaurants, decks.
+   Never a number the hero shows, and never a structural zero.
 3. **Last bar** (aboard): one row for the venue of the last drink logged today, with "12 of 44
    tried here" and the first untried drink there named; it opens that venue's sheet. With nothing
    logged today it is "Your top bar"; before sailing it is "Where to start", the biggest bar and
@@ -298,8 +304,9 @@ and none off the scale; no spacing literal off the scale; no radius outside 20/1
 `text-transform: uppercase` with tracking; no easing other than `--e-out`; every colour a token.
 
 The tools for this live in `tools/qa/` (see its README): `shot.mjs` renders one screen or sheet,
-`shots.mjs` sweeps them all, `scan.mjs` is the mechanical check, and `npm run design:check` is the
-same scan as a hard gate, run in CI before every build. A genuine exception goes in
+`shots.mjs` sweeps them all, `scan.mjs` is the mechanical check, `gestures.mjs` drives the sheet's
+gesture contract with real touch events and asserts it, and `npm run design:check` is the same
+scan as a hard gate, run in CI before every build. A genuine exception goes in
 `tools/qa/design-allow.txt` with its reason, never into the scanner.
 
 ## Working on this design
@@ -352,6 +359,7 @@ colour, are how that happens again. Read it before any change that renders.
 | `Field`, `SearchField`, `Select`, `Switch`, `Segmented`, `Chip`, `Toast`, `FriendDot` | `src/ui/` | the controls; restyle them there, never locally |
 | Icons (`Icon.tsx`: `IconStar`, `IconCheck`, `IconChevron`, ...) | `src/ui/Icon.tsx` | the only icon system; no glyph characters, no emoji; add to the set, do not draw inline |
 | `.sr-only` | `base.css` | visually hidden, still announced |
+| `.meter` | `base.css` | the 3px measure beside a count out of a total (venue rows, the Home bar row); Stats' 6px deck bars and the badge rows keep their own shapes |
 | `DrinkCard` | `src/features/drinks/DrinkCard.tsx` | the drink row everywhere a drink is listed (Drinks, venue sheet) |
 | `Medallion` | `src/features/badges/Medallion.tsx` | the badge disc, grid and sheet |
 | `SeaHero`, `SheetWave`, the hero count-up | `src/features/home/`, `src/ui/SheetWave.tsx` | the three authored motions; do not add a fourth without amending Motion above |

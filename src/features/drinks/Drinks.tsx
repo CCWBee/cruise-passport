@@ -29,13 +29,16 @@ export function Drinks() {
   const [openId, setOpenId] = useState<string | null>(null)
   const [showAdd, setShowAdd] = useState(false)
 
-  // deep link: /drinks?openf opens the filter panel (also used for QA)
+  // deep link: /drinks?openf opens the filter panel (also used for QA); ?log=1 is Home's
+  // "Log a drink" arriving, so the search field takes focus and shows its ring. The keyboard is
+  // the platform's to raise and iOS will not raise one from a route change.
   useEffect(() => {
     const p = new URLSearchParams(location.search)
     if (p.has('openf')) setShowFilters(true)
     if (p.get('q')) setQ(p.get('q')!)
     if (p.get('drink')) setOpenId(p.get('drink'))
     if (p.has('add')) setShowAdd(true)
+    if (p.has('log')) document.querySelector<HTMLInputElement>('.dsearch .sfield-input')?.focus()
   }, [setShowFilters])
 
   const { results, counts } = useMemo(
@@ -83,7 +86,7 @@ export function Drinks() {
         <p className="t-meta tnum">
           {results.length === drinks.length ? `${drinks.length} drinks` : `${results.length} of ${drinks.length} drinks`}
         </p>
-        <GlassButton variant="ghost" type="button" aria-haspopup="dialog" onClick={() => setShowAdd(true)}>Add a drink</GlassButton>
+        <GlassButton variant="ghost" type="button" aria-haspopup="dialog" onClick={() => setShowAdd(true)}>Add a missing drink</GlassButton>
       </div>
 
       {results.length === 0 ? (

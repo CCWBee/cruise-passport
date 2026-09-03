@@ -1,37 +1,55 @@
+/* The sheet is the one place content is covered, so it is the app's most-used glass surface:
+   an 88% film, 22px blur, the specular edge, the sheet shadow, over a scrim that leaves the page
+   visibly there. See docs/DESIGN.md, Material > Sheets. */
+
+/* --glass-film-sheet (88%) and --scrim-solid come from tokens.css; the contrast arithmetic sits
+   beside them there. */
 .sheet-bg {
   position: fixed; inset: 0; z-index: 70;
-  background: var(--scrim);
   display: flex; align-items: flex-end; justify-content: center;
   animation: sheet-fade 160ms var(--e-out);
-  border: 0;
+  border: 0; background: transparent;
+  touch-action: none;
+  overscroll-behavior: none;
 }
+/* the scrim: ink at 22% with a light blur, a sibling of the pane rather than its parent so the two
+   glass layers composite side by side instead of one nested inside the other */
+.sheet-scrim { position: absolute; inset: 0; background: var(--scrim); }
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .sheet-bg { -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  .sheet-scrim { -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  /* the same ink, heavy enough to stand in for the blur */
+  .sheet-scrim { background: var(--scrim-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 @keyframes sheet-fade { from { opacity: 0 } to { opacity: 1 } }
 @keyframes sheet-up { from { transform: translateY(48px); opacity: .4 } to { transform: translateY(0); opacity: 1 } }
 
-/* the sheet is the one surface that layers over content: live glass, a shadow, a 20px radius */
+/* the pane: liquid glass. Film, blur and saturate, then one light from above (the specular top
+   line, the faint foot line and the highlight over the top 40%) and the sheet's shadow. The film is
+   heavier than the nav's because a sheet covers content of any brightness, the sea hero included. */
 .sheet {
   position: relative; width: 100%; max-width: 560px;
   max-height: 92vh; max-height: 88svh; /* svh: the close X and grab stay on-screen on mobile */
   background: var(--glass-fallback);
+  background-image: linear-gradient(to bottom, var(--glass-highlight-film), transparent 40%);
   border: 1px solid var(--line); border-bottom: 0;
   border-top-left-radius: var(--r-surface); border-top-right-radius: var(--r-surface);
-  box-shadow: var(--sh-sheet);
+  box-shadow: var(--sh-sheet), inset 0 1px 0 var(--glass-rim), inset 0 -1px 0 var(--glass-rim-under);
   animation: sheet-up var(--t-sheet) var(--e-out);
   display: flex; flex-direction: column; overflow: hidden;
-  touch-action: pan-y;
+  touch-action: none; /* the scroller opts back into pan-y; nothing else here pans */
 }
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .sheet {
-    background: rgba(255, 253, 250, .86);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
-    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    /* background-color, not the shorthand: the highlight gradient above has to survive */
+    background-color: var(--glass-film-sheet);
+    -webkit-backdrop-filter: blur(22px) saturate(var(--glass-sat));
+    backdrop-filter: blur(22px) saturate(var(--glass-sat));
   }
 }
 @media (prefers-reduced-transparency: reduce) {
-  .sheet { background: var(--glass-fallback); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .sheet { background-color: var(--glass-fallback); -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 .sheet:focus-visible { outline: none; }
 
@@ -41,14 +59,22 @@
   position: absolute; inset: 0; z-index: 3; display: block;
   width: 100%; height: 100%; border-radius: inherit; pointer-events: none;
 }
-.sheet-grab { width: 36px; height: 4px; border-radius: var(--r-tag); background: var(--line); margin: var(--s2) auto 0; flex: none; }
+/* the grab zone: the band a drag always starts from, whatever the scroller is doing */
+.sheet-handle { flex: none; padding: var(--s2) 0; touch-action: none; cursor: grab; }
+.sheet-grab { width: 36px; height: 4px; border-radius: var(--r-tag); background: var(--line); margin: 0 auto; }
 .sheet-x {
   position: absolute; top: var(--s3); right: var(--s3); z-index: 4; width: var(--ctl-sm); height: var(--ctl-sm);
   border-radius: var(--r-control); display: grid; place-items: center; color: var(--ink-2);
   background: var(--panel-solid); border: 1px solid var(--line);
 }
+/* a 36px control keeps a 44px hit area (DESIGN.md, Geometry): 4px of invisible reach on every side */
+.sheet-x::after { content: ''; position: absolute; inset: -4px; border-radius: var(--r-control); }
+/* the sheet's own scroller: it pans vertically, it never pans sideways, and it keeps its overscroll
+   to itself so a pull at its top stays in the sheet */
 .sheet-scroll {
-  flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
   padding: var(--s3) var(--inset) calc(var(--s5) + var(--safe-b));
 }
 /* the sheet's caption line: one meta line under (or, in unconverted sheets, above) the title */

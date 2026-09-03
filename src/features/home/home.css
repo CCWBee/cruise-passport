@@ -1,21 +1,21 @@
-/* Home: the sea poster, three facts, "Right now", the Wrapped row.
-   Everything below the hero sits flat on the ground: no box, no card, no plate. */
+/* Home: the instrument's front panel. The sea poster carries the one primary action; below it,
+   three facts, the bar you are standing in, what is next, and Wrapped. Everything under the hero
+   sits flat on the ground: no box, no card, no plate. */
 .home { padding-top: calc(var(--s4) + var(--safe-t)); }
 .home-hero { position: relative; }
 
 /* three facts in one row, on the ground: no container, no dividers */
-.facts {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--s3);
-  margin-top: var(--s6);
-}
+.facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s3); }
 .fact-v { font-size: var(--f-title); font-weight: 600; line-height: 1.2; letter-spacing: -.01em; }
 .fact-l { margin-top: var(--s1); font-size: var(--f-meta); line-height: 1.4; color: var(--ink-2); }
 
-/* "Right now": two rows, hairline between them (from .row + .row).
-   The stars are the drawn icon, so they sit on the meta line as a flex run. */
+/* the stars sit on a meta line as a flex run, so they keep the line's height */
 .home-stars { display: inline-flex; align-items: center; vertical-align: -2px; color: var(--gold); }
+
+/* the badge measure on the "Up next" row: the same 3px ink bar Ship puts under a venue name and
+   Badges puts beside one, under the copy so the row keeps a single measure and the count is not
+   printed twice. It is repeated here rather than shared because the shared primitive would belong
+   in base.css, which this stream does not own (see sharedRequests: mint .meter, sweep the four). */
 
 /* the Wrapped row: one quiet row, only when Wrapped is unlocked */
 .wrapped-row { margin-top: var(--s6); color: var(--ink); }

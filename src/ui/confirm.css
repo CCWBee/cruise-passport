@@ -1,0 +1,57 @@
+/* The Confirm tick (docs/DESIGN.md, States > Confirmation). A glass disc over whatever the guest was
+   looking at, so it is chrome and wears the shared glass classes; the disc also carries the sheet's
+   shadow so it separates from a cream ground (the film alone reads 1.05:1 against it). It never
+   takes a tap: pointer-events stay off so the screen behind is live the moment it fades. */
+.tickc {
+  /* the tick draws over 300ms: long enough to read as drawn, short enough not to be a wait. The
+     three motion durations are for state, not for a one-off stroke, so this one is named here. */
+  --t-draw: 300ms;
+  position: fixed;
+  inset: 0;
+  z-index: 90; /* over the sheet (70) and the toast (80): it is the answer to what they just did */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s3);
+  pointer-events: none;
+  animation: tickc-in var(--t-press) var(--e-out);
+}
+.tickc-leaving { animation: tickc-out var(--t-panel) var(--e-out) forwards; }
+
+.tickc-disc {
+  width: 96px;
+  height: 96px;
+  border-radius: var(--r-tag);
+  display: grid;
+  place-items: center;
+  color: var(--mint);
+  box-shadow: var(--sh-sheet), inset 0 1px 0 var(--glass-rim), inset 0 -1px 0 var(--glass-rim-under);
+  animation: tickc-pop var(--t-press) var(--e-out);
+}
+.tickc-mark { display: block; }
+/* pathLength 1 on the path, so the dash values are fractions and no geometry has to be measured */
+.tickc-mark path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: tickc-draw var(--t-draw) var(--e-out) var(--t-press) forwards;
+}
+/* the label sits on its own small plate of the same glass, so it reads over a dense list too */
+.tickc-label {
+  color: var(--ink);
+  padding: var(--s1) var(--s3);
+  border-radius: var(--r-control);
+  box-shadow: var(--sh-sheet), inset 0 1px 0 var(--glass-rim), inset 0 -1px 0 var(--glass-rim-under);
+}
+
+@keyframes tickc-in { from { opacity: 0; } }
+@keyframes tickc-out { to { opacity: 0; } }
+@keyframes tickc-pop { from { scale: .9; } }
+@keyframes tickc-draw { to { stroke-dashoffset: 0; } }
+
+/* reduced motion: the tick is there, whole, from the first frame, and it still clears itself */
+@media (prefers-reduced-motion: reduce) {
+  .tickc, .tickc-disc { animation: none; }
+  .tickc-mark path { animation: none; stroke-dashoffset: 0; }
+  .tickc-leaving { animation: none; opacity: 0; }
+}

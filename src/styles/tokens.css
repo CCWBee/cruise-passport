@@ -55,7 +55,10 @@
   --press: rgba(28, 60, 86, .06);             /* row press highlight */
   /* liquid glass: the chrome material (nav, sheet, hero chips, floating action, toast, certificate) */
   --glass-film: rgba(255, 253, 250, .55);     /* the tint film that keeps text at 4.5:1 */
-  --glass-film-sheet: rgba(255, 253, 250, .58);
+  /* the sheet covers content of any brightness (the sea hero, a dark photo), so its film is set by
+     contrast, not by the range: at .88, 13px --ink-2 holds 4.51:1 with black behind, 4.60:1 over
+     --sea-lo. At .58 it was 3.10:1. */
+  --glass-film-sheet: rgba(255, 253, 250, .88);
   --glass-film-chip: rgba(255, 253, 250, .46); /* small chips over the sea */
   --glass-rim: rgba(255, 255, 255, .75);       /* the specular top edge: one light, from above */
   --glass-rim-under: rgba(255, 255, 255, .18);
@@ -67,6 +70,7 @@
   --coral-film: rgba(199, 47, 80, .78);        /* the one primary action on glass */
   --coral-film-blur: rgba(199, 47, 80, .74);
   --scrim: rgba(28, 60, 86, .22);
+  --scrim-solid: rgba(28, 60, 86, .5);         /* the scrim under reduced transparency, no blur */
   --glass-live-film: var(--glass-film);
   /* aliases for unconverted rules: a card is now a panel */
   --glass-film: var(--panel);

@@ -14,8 +14,6 @@
 /* progress: a hairline track with an ink fill. The track keeps every row the same measure, so a
    short fill reads as a bar rather than an underline on the name. No transition: this is the same
    measure as .badge-fill and .stats-deck-bar, and none of the three grows in. */
-.venue-bar { display: block; width: 100%; height: 3px; margin-top: var(--s1); border-radius: var(--r-tag); background: var(--line); }
-.venue-bar > span { display: block; height: 100%; border-radius: inherit; background: var(--sea-ink); }
 
 /* ── the venue sheet: title, meta, blurb, the visited switch, progress, then the list ── */
 .venue-blurb { margin-top: var(--s3); }

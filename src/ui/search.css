@@ -7,6 +7,7 @@
   transition: border-color var(--t-panel) var(--e-out);
 }
 .sfield:focus-within { outline-color: var(--focus); }
+.sfield-input:focus-visible { outline: none; } /* the wrapper carries the one ring */
 .sfield-input { flex: 1; min-width: 0; font-size: 16px; font-weight: 400; color: var(--ink); background: none; }
 .sfield-input::placeholder { color: var(--ink-2); }
 .sfield-input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }

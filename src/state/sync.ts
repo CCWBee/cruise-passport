@@ -9,6 +9,7 @@ import {
   publishBackup, publishPassport, unfriend, upsertProfile,
 } from './backend'
 import { buildPayload } from './share'
+import type { Friend } from './stats'
 import { useStore } from './store'
 
 export type SyncStatus = 'off' | 'idle' | 'syncing' | 'held' | 'error'
@@ -106,9 +107,30 @@ async function pullBackend(): Promise<boolean> {
   // A call that did not answer is not "you have nobody": hold and retry rather than writing an
   // empty roster over a good one and calling it a successful sync.
   if (!friends || !coMembers || !groups) return false
+  // Snapshot the roster as it stands at this instant (not `s`, which was read several awaits ago),
+  // so the merge below can tell a friend the server introduced from one this phone asked for.
+  const before = useStore.getState().friends
   useStore.getState().applyFeed(friends, coMembers)
   useStore.getState().setGroups(groups)
+  announceAdded(before, useStore.getState().friends)
   return true
+}
+
+/** "Sam added you". A tapped link is mutual, so the sender is told by the pull that brings the new
+ *  edge back and nothing else: they never saw the tick, because the tap was on the other phone.
+ *  Only a direct friend the server introduced counts — one this phone added still carries needsEdge
+ *  on its old record — and never on a pull whose previous roster was empty (a first sync, a restore,
+ *  a delete-my-data), where everyone is new and the guest would get a screenful. */
+function announceAdded(before: Friend[], after: Friend[]): void {
+  if (!before.length || typeof window === 'undefined') return
+  const was = new Map(before.filter((f) => f.code).map((f) => [f.code!, f]))
+  for (const friend of after) {
+    if (friend.groupOnly || !friend.code) continue
+    const previous = was.get(friend.code)
+    if (previous && !previous.groupOnly) continue // already a direct friend before this pull
+    if (previous?.needsEdge) continue             // this phone asked for the edge; it is not news
+    window.dispatchEvent(new CustomEvent('crew:added', { detail: { name: friend.name } }))
+  }
 }
 
 async function runSync() {

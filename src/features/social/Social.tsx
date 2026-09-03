@@ -5,6 +5,7 @@ import { VENUES } from '../../data/model'
 import { hasBackend } from '../../state/backend'
 import { FRIEND_COLOURS, useStore } from '../../state/store'
 import { useSources, undiscovered } from '../../state/social'
+import { useConfirm } from '../../ui/Confirm'
 import { FriendDot } from '../../ui/FriendDot'
 import { IconChevron } from '../../ui/Icon'
 import { DrinkSheet } from '../drinks/DrinkSheet'
@@ -83,6 +84,9 @@ export function Social() {
   const [profileOpen, setProfileOpen] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
   const [groupSheet, setGroupSheet] = useState<{ id?: string } | null>(null)
+  // The tick lives here, not in the sheet: a sheet that closes on success takes its own confirmation
+  // down with it, and the guest is left looking at a list wondering whether anything happened.
+  const [confirmNode, confirm] = useConfirm()
   const undisc = useMemo(() => undiscovered(srcs, 4), [srcs])
   const online = hasBackend()
   const named = Boolean(profile.name.trim())
@@ -198,8 +202,14 @@ export function Social() {
 
       {openId && <DrinkSheet id={openId} onClose={() => setOpenId(null)} onOpen={setOpenId} />}
       {profileOpen && <ProfileSheet onClose={() => setProfileOpen(false)} />}
-      {addOpen && <AddCrewSheet onClose={() => setAddOpen(false)} />}
+      {addOpen && (
+        <AddCrewSheet
+          onClose={() => setAddOpen(false)}
+          onDone={(label) => { setAddOpen(false); confirm(label) }}
+        />
+      )}
       {groupSheet && <GroupSheet groupId={groupSheet.id} onClose={() => setGroupSheet(null)} />}
+      {confirmNode}
     </div>
   )
 }

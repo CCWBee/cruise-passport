@@ -6,6 +6,9 @@ import { VitePWA } from 'vite-plugin-pwa'
 // in dev and in the build.
 export default defineConfig({
   base: '/',
+  // the QA harness writes screenshots (and once wrote Chrome profiles) under tools/; watching them
+  // reload-stormed the dev server until it died
+  server: { watch: { ignored: ['**/tools/**', '**/dist/**'] } },
   plugins: [
     react(),
     VitePWA({

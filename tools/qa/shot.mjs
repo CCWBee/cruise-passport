@@ -15,7 +15,9 @@ const label = args[0]
 // ("drinks", "social", "home" or "." for the root) and normalised here.
 const rawRoute = args[1]
 if (!label || !rawRoute) { console.error('usage: node shot.mjs <label> <route-without-leading-slash> [--click sel] [--click2 sel] [--full] [--wait ms] [--eval js]'); process.exit(2) }
-const route = (rawRoute === 'home' || rawRoute === '.') ? '/' : '/' + rawRoute.replace(/^([A-Za-z]:)?[\\/]+([^\\/]*[\\/])*/, '')
+const route = (rawRoute === 'home' || rawRoute === '.') ? '/'
+  : rawRoute.startsWith('home?') ? '/' + rawRoute.slice(4)   // home?day=2026-10-05 -> /?day=2026-10-05
+  : '/' + rawRoute.replace(/^([A-Za-z]:)?[\\/]+([^\\/]*[\\/])*/, '')
 const opt = (k) => { const i = args.indexOf(k); return i > -1 ? args[i + 1] : undefined }
 const has = (k) => args.includes(k)
 const BASE = process.env.SHOT_BASE || 'http://127.0.0.1:5173'
@@ -26,7 +28,9 @@ const chrome = await launch({ width: W, height: H })
 try {
   const u = await chrome.user('S')
   await chrome.send('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: 2, mobile: true }, u.sessionId)
-  const url = BASE + route + (route.includes('?') ? '&' : '?') + 'seed'
+  // the seed query goes before any #hash (an /add#CODE link keeps its fragment intact)
+  const [pathPart, hashPart] = route.split('#')
+  const url = BASE + pathPart + (pathPart.includes('?') ? '&' : '?') + 'seed' + (hashPart ? '#' + hashPart : '')
   await u.goto(url); await u.sleep(wait)
   for (const k of ['--click', '--click2']) {
     const sel = opt(k)

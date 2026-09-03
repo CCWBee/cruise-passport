@@ -48,7 +48,7 @@ export function VenueSheet({ venueKey, onClose }: { venueKey: string; onClose: (
       <div className="venue-progress">
         <p className="t-meta tnum">{done} of {menu.length} tried from this list</p>
         <div
-          className="venue-bar"
+          className="meter"
           role="progressbar"
           aria-label="Drinks tried from this list"
           aria-valuemin={0}

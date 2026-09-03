@@ -54,7 +54,7 @@ export function Ship() {
                       <span className="t-body venue-name">{venue.name}</span>
                       {visits[key]?.visited && <IconCheck className="venue-visited" size={15} filled />}
                     </span>
-                    <span className="venue-bar" aria-hidden>
+                    <span className="meter" aria-hidden>
                       <span style={{ width: `${pct}%` }} />
                     </span>
                   </span>

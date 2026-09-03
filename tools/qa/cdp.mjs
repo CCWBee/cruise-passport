@@ -2,6 +2,7 @@
 // driven as a "user". Node 22 (global WebSocket). Kills only the Chrome it spawned.
 import { spawn } from 'node:child_process'
 import { writeFileSync, mkdirSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import path from 'node:path'
 
 const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe'
@@ -13,7 +14,9 @@ mkdirSync(OUT, { recursive: true })
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 export async function launch({ width = 500, height = 900 } = {}) {
-  const profile = path.join(OUT, '..', 'profile-' + Date.now())
+  // the Chrome profile lives in the OS temp dir, never in the repo: vite watches the tree and a
+  // profile's thousands of files reload-storm the dev server
+  const profile = path.join(tmpdir(), 'cruise-qa-profile-' + process.pid + '-' + Date.now())
   const child = spawn(CHROME, [
     '--headless=new', '--no-sandbox', '--hide-scrollbars', '--force-color-profile=srgb',
     `--remote-debugging-port=${PORT}`, `--user-data-dir=${profile}`, `--window-size=${width},${height}`,
