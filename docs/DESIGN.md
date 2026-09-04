@@ -202,7 +202,16 @@ summary; every module either answers one of those or leads to the screen that do
 1. **The sea hero** (the poster, kept): countdown or day chip top right, the percentage readout
    bottom left, and bottom right the one primary action on the app, **"Log a drink"**, a
    coral-tinted glass button floating on the water. It opens Drinks with the search focused, so
-   logging at a bar is two taps from cold.
+   logging at a bar is two taps from cold. The sea is alive in two honest ways: **the sky follows
+   the real clock** (dawn, day, golden hour, dusk, night palettes in the shader and the CSS
+   fallback, so the app at breakfast and the app at midnight look like breakfast and midnight), and
+   **the chips are refractive liquid glass**: inside the sea shader, the readout and countdown
+   rectangles bend the water beneath them with a lensed edge and a specular, the one place in the
+   app a GPU refraction earns its cost (the taste bar's "hero moment" exception). The HTML text sits
+   on top; when WebGL is absent the chips fall back to the CSS glass and nothing is lost.
+   A greeting sits above the hero as the screen's first line, only when the guest has a name:
+   "Evening, Isabel" with the day or the countdown as its meta, so the screen says who and when
+   before it says what.
 2. **Today**, one row on the ground, three facts. Aboard, three numbers that move by the day:
    drinks today, day streak, bars visited. "Day 3 of 15" is not among them; the hero chip already
    says it. Before sailing there is no day, no streak and nothing logged, and "drinks to go" is only
@@ -212,10 +221,17 @@ summary; every module either answers one of those or leads to the screen that do
    tried here" and the first untried drink there named; it opens that venue's sheet. With nothing
    logged today it is "Your top bar"; before sailing it is "Where to start", the biggest bar and
    its count. Never a guess from the clock: a wrong bar labelled as yours breaks "Honest".
-4. **Up next**: the badge nearest to earned as a row with a 3px bar ("2 more gins for Gin
-   Explorer"), the top drink and top bar rows as today, and, when there is a crew, one crew line
-   ("Sam logged 3 today", opening Crew).
-5. The Wrapped row, only when unlocked.
+4. **A new medal**, when one has been earned since the guest last looked: the 3D coin (the
+   Medallion, spinning once on entry, then still) with "New medal · Gin Explorer" and its hint,
+   tapping to the badge sheet. It is the app's reward moment and the one place Home may be
+   spectacular; it shows once per medal (a seen-set in the store) and then folds back into Up next.
+5. **Up next**: the badge nearest to earned as a row with a 3px bar ("2 more gins for Gin
+   Explorer"), the top drink and top bar rows as today, and, when there is a crew, one line per
+   crew member who logged today, "Sam · 3 today, mostly Crooners · synced 20 min ago" (entries carry
+   a date, not a time, so the venue is where most of today's drinks were, and the time is their
+   passport's `exportedAt`, which is honest as "last synced"), opening Crew. Where the family is,
+   as far as the data can say, without asking.
+6. The Wrapped row, only when unlocked.
 
 Fold: 1 to 3. The seed data is pre-sailing, so both states are verified by rendering the aboard
 branch with the date pinned (`?day=2026-10-05`, a QA override in `today()`). "Log a drink" is the
@@ -260,15 +276,20 @@ with" rows; (4) "Groups" rows with "Set up a group" as a text action; (5) "Disco
 (6) "Nobody's tried these yet" rows. The name card, when shown, is a panel (a form with its own
 boundary) and the only panel on the screen. Fold: 1 to 3.
 
-**Add to your crew** leads with the route that needs nothing from the other person. The backend
-makes a tapped link mutual (`befriend` writes both edges), so: (1) "Send my link", the one coral
-button, opens the native share sheet, which is also how you hand it to someone standing next to you
-(AirDrop on iPhone, Nearby Share on Android; the web has no contact-tap of its own); its meta line
-says so. (2) Two secondary controls in one row: "Scan their code" (camera) and "Show my code", which
-unfolds the QR and the code inline for the friend whose phone will not take a link. (3) "Join a
-group" as today. (4) "Paste a code instead", quiet. Every success, on either phone, ends in the
-`Confirm` tick: the tapped link lands on a tick with the friend's name and then on Crew; the sender
-sees a toast "Sam added you" on the next pull.
+**Add to your crew** is server-first: the backend can find a person and make the friendship mutual
+in one call (`find_profiles` then `befriend`, which writes both edges), so the phone-to-phone routes
+are the fallback, not the front door. (1) **Find them**: one field, "Their name or code", searching
+the server as you type (two characters on, whole-word prefixes, eight results, never yourself):
+each match is a `.row` with their dot, name and code, and a 44px "Add" at the right; Add lands on
+the `Confirm` tick and the row joins "Sailing with". A full code pasted or typed matches exactly.
+Offline, the field says so and the link route takes over. (2) **Or send your link**, a secondary
+button opening the native share sheet, which is also the nearby route (AirDrop on iPhone, Nearby
+Share on Android; the web has no contact-tap of its own); its meta line says so. (3) One row of two
+quiet controls, "Scan their code" and "Show my code" (the QR and code unfold inline). (4) "Join a
+group" as today. Every success, on either phone, ends in the `Confirm` tick; the other side gets a
+toast "Sam added you" on the next pull. The privacy trade is stated in `0003_find_profiles.sql`:
+anyone in the app can find anyone who has set a name, and nothing beyond name, colour and code is
+returned.
 
 A tapped link (`/add`) asks for the guest's name **before** it befriends, exactly as `/join` does
 (the name card with a lead naming the sender), because a befriend without a name publishes
@@ -360,6 +381,10 @@ colour, are how that happens again. Read it before any change that renders.
 | Icons (`Icon.tsx`: `IconStar`, `IconCheck`, `IconChevron`, ...) | `src/ui/Icon.tsx` | the only icon system; no glyph characters, no emoji; add to the set, do not draw inline |
 | `.sr-only` | `base.css` | visually hidden, still announced |
 | `.meter` | `base.css` | the 3px measure beside a count out of a total (venue rows, the Home bar row); Stats' 6px deck bars and the badge rows keep their own shapes |
+| `dayPart()`, `greetingWord()` | `src/state/stats.ts` | the six parts of the day and the greeting word; the sea's sky palette and Home's greeting both key off them, never off their own boundaries |
+| `nowHour()`, `today()` | `src/data/model.ts` | the clock, with `?hour=` and `?day=` QA overrides |
+| `seenMedals`, `markMedalsSeen()` | `src/state/store.ts` (persist v8) | which badges' "new medal" moment Home has shown; seeded on upgrade with what was already earned |
+| `SeaHero` (`level`, `hour`, `chips`) | `src/features/home/SeaHero.tsx` | the sea; the sky follows `hour`, the shader lenses the water under the `chips` rectangles |
 | `DrinkCard` | `src/features/drinks/DrinkCard.tsx` | the drink row everywhere a drink is listed (Drinks, venue sheet) |
 | `Medallion` | `src/features/badges/Medallion.tsx` | the badge disc, grid and sheet |
 | `SeaHero`, `SheetWave`, the hero count-up | `src/features/home/`, `src/ui/SheetWave.tsx` | the three authored motions; do not add a fourth without amending Motion above |

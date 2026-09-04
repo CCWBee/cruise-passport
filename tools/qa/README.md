@@ -26,4 +26,6 @@ npm run design:check                          # what CI will run
 Output goes to `tools/qa/shots/` (gitignored; `SHOTS_DIR=name` picks another folder). Screenshots
 are headless Chrome with `--disable-gpu`, so the sea hero shows its CSS fallback and WebGL surfaces
 need a real device for a final look; everything else is what a phone renders. `?seed` is appended to
-every URL so the screens are populated; it is the demo block in `index.html`.
+every URL so the screens are populated; it is the demo block in `index.html`. `?day=YYYY-MM-DD`
+pins the date (the aboard states) and `?hour=N` pins the hour (the sky and the greeting), both read
+in `src/data/model.ts`. `CDP_GPU=1` keeps WebGL on so the live sea renders.

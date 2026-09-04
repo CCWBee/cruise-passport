@@ -219,3 +219,23 @@ export function deckCount(): number {
   VENUE_KEYS.forEach((k) => { on[VENUES[k].deck] = 1 })
   return Object.keys(on).length
 }
+
+// ── time of day: one set of boundaries for the sky palette and the greeting, so they agree ──
+export type DayPart = 'dawn' | 'morning' | 'afternoon' | 'golden' | 'dusk' | 'night'
+/** Six parts of the day from a local hour. The sea shader keys its palette off these and the Home
+ *  greeting keys its word off them; change the boundaries here and both follow. */
+export function dayPart(hour: number): DayPart {
+  if (hour < 5) return 'night'
+  if (hour < 7) return 'dawn'
+  if (hour < 12) return 'morning'
+  if (hour < 17) return 'afternoon'
+  if (hour < 19) return 'golden'
+  if (hour < 21) return 'dusk'
+  return 'night'
+}
+/** The word before the name in the Home greeting. Dry: nobody says "Night, Isabel". */
+export function greetingWord(part: DayPart): string {
+  if (part === 'dawn' || part === 'morning') return 'Morning'
+  if (part === 'afternoon') return 'Afternoon'
+  return 'Evening'
+}

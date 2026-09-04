@@ -118,6 +118,15 @@ export function today(): string {
   const d = new Date()
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10)
 }
+/** The local hour, 0..23. ?hour=N pins it (QA only) so the sky and the greeting can be rendered at
+ *  any time of day; pairs with ?day=. */
+export function nowHour(): number {
+  if (typeof location !== 'undefined') {
+    const pinned = Number(new URLSearchParams(location.search).get('hour'))
+    if (Number.isInteger(pinned) && pinned >= 0 && pinned <= 23) return pinned
+  }
+  return new Date().getHours()
+}
 export function prettyDay(iso: string): string {
   return new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
 }

@@ -2,8 +2,9 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { activeCruiseId, CRUISES, setActiveCruise } from '../data/cruises'
 import { DRINKS, today, type Drink } from '../data/model'
+import { BADGES } from '../data/badges'
 import { hasBackend, unfriend, type FeedRow, type GroupRow } from './backend'
-import { emptyPassport, FRIEND_COLOURS, type Entry, type Passport, type Friend, type Profile, type FriendColour } from './stats'
+import { computeStats, emptyPassport, FRIEND_COLOURS, type Entry, type Passport, type Friend, type Profile, type FriendColour } from './stats'
 import { decodeShare, ensureMyId, ensureMyCode, genCode, normaliseCode, parseFriend, ShareError, type SharePayload } from './share'
 
 // re-export the social types/consts that used to live here, for existing call sites
@@ -38,11 +39,13 @@ interface State {
   groups: GroupRow[] // groups I'm in on this cruise (online; refreshed by sync, persisted so Social renders offline)
   pendingInvites: string[] // join codes tapped offline; replayed on the next successful pull
   pendingUnfriends: string[] // removals the server has not confirmed; replayed, and their feed rows ignored
+  seenMedals: string[] // badge ids whose "new medal" moment Home has already shown
   filters: Filters
   showFilters: boolean
 
   enterCruise: (id: string) => void
   setGroups: (g: GroupRow[]) => void
+  markMedalsSeen: (ids: string[]) => void
   queueInvite: (code: string) => void
   setPendingInvites: (codes: string[]) => void
   setPendingUnfriends: (codes: string[]) => void
@@ -141,10 +144,15 @@ export const useStore = create<State>()(
       groups: [],
       pendingInvites: [],
       pendingUnfriends: [],
+      seenMedals: [],
       filters: emptyFilters(),
       showFilters: false,
 
       setGroups: (g) => set({ groups: g }),
+      markMedalsSeen: (ids) => set((s) => {
+        const add = ids.filter((id) => !s.seenMedals.includes(id))
+        return add.length ? { seenMedals: [...s.seenMedals, ...add] } : {}
+      }),
       queueInvite: (code) => set((s) => (s.pendingInvites.includes(code) ? {} : { pendingInvites: [...s.pendingInvites, code] })),
       setPendingInvites: (codes) => set({ pendingInvites: codes }),
       setPendingUnfriends: (codes) => set({ pendingUnfriends: codes }),
@@ -339,7 +347,7 @@ export const useStore = create<State>()(
     }),
     {
       name: 'spcc2',
-      version: 7,
+      version: 8,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       migrate: (persisted: any, from: number) => {
         if (from < 2 && persisted) {
@@ -373,13 +381,22 @@ export const useStore = create<State>()(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           persisted.friends = (persisted.friends ?? []).map((f: any) => (f.groupOnly || !f.code ? f : { ...f, needsEdge: true }))
         }
+        if (from < 8 && persisted) {
+          // Home now shows a "new medal" moment once per badge. Seed the seen-set with everything
+          // already earned, so an existing passport does not get a coin for each old medal at once.
+          try {
+            const drinks: Drink[] = [...DRINKS, ...(persisted.custom ?? [])]
+            const stat = computeStats(drinks, persisted.me ?? emptyPassport()).badgeStat
+            persisted.seenMedals = BADGES.filter((b) => b.test(stat)).map((b) => b.id)
+          } catch { persisted.seenMedals = [] }
+        }
         return persisted
       },
       // persist data only; UI (filters/showFilters) resets each session
       partialize: (s) => ({
         me: s.me, custom: s.custom, friends: s.friends, profile: s.profile,
         cruiseId: s.cruiseId, enteredCruise: s.enteredCruise, groups: s.groups,
-        pendingInvites: s.pendingInvites, pendingUnfriends: s.pendingUnfriends,
+        pendingInvites: s.pendingInvites, pendingUnfriends: s.pendingUnfriends, seenMedals: s.seenMedals,
       }),
     },
   ),

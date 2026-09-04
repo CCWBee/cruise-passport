@@ -2,7 +2,7 @@
 // Day one: low sea, wide dawn sky. Last drink: the tide meets the sun. Area-honest by
 // construction. One live effect, hard-gated for battery. CSS-gradient sea sits behind so it is
 // never black; reduced-motion / no-GL show a correct still sea.
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type RefObject } from 'react'
 import './sea.css'
 
 const FRAG = `
@@ -69,7 +69,17 @@ function compile(gl: WebGLRenderingContext, type: number, src: string) {
   return sh
 }
 
-export function SeaHero({ level }: { level: number }) {
+export interface SeaHeroProps {
+  level: number
+  /** the hour (0..23) the sky palette follows; see dayPart() in state/stats.ts */
+  hour?: number
+  /** the DOM chips floating on the sea (readout, countdown): the shader lenses the water under
+   *  their rectangles; the chips themselves stay HTML so the CSS-glass fallback holds */
+  chips?: RefObject<HTMLElement | null>[]
+}
+
+// hour and chips are accepted now so Home can wire them; the shader takes them up in its own pass
+export function SeaHero({ level }: SeaHeroProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
   const targetRef = useRef(level)
