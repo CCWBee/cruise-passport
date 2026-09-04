@@ -69,6 +69,8 @@
   --glass-fallback: rgba(255, 253, 250, .94);
   --coral-film: rgba(199, 47, 80, .78);        /* the one primary action on glass */
   --coral-film-blur: rgba(199, 47, 80, .74);
+  --mint-film: rgba(20, 124, 88, .86);         /* filled-green glass: the success tick */
+  --mint-film-blur: rgba(20, 124, 88, .82);
   --scrim: rgba(28, 60, 86, .22);
   --scrim-solid: rgba(28, 60, 86, .5);         /* the scrim under reduced transparency, no blur */
   --glass-live-film: var(--glass-film);

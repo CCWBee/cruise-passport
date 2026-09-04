@@ -169,8 +169,8 @@ failed. Tried, visited, favourite and wishlist read the same way on every screen
 the state colour, not a background tint.
 
 **Confirmation.** A completed action the guest cannot otherwise see (a friend added, a group joined,
-a code accepted) is confirmed once, the same way everywhere: the `Confirm` primitive, a glass disc
-with a mint tick that draws in, a one-line label ("Sam added"), and a haptic where the platform
+a code accepted) is confirmed once, the same way everywhere: the `Confirm` primitive, a filled-green
+liquid-glass disc (`.glass-mint`) with a white tick that draws in, a one-line label ("Sam added"), and a haptic where the platform
 gives one (`haptic()`: the Vibration API on Android, the switch-toggle trick on iOS Safari, nothing
 the feature depends on). It holds for about a second and clears itself. Actions whose result is
 already visible (tried, rated, favourite) stay silent; the glyph is the confirmation.

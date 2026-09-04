@@ -3,14 +3,14 @@ import { createPortal } from 'react-dom'
 import { haptic } from './haptic'
 import './confirm.css'
 
-// The one success confirmation (docs/DESIGN.md, States > Confirmation): a glass disc, a mint tick
-// that draws in, one line naming what happened, and a haptic where there is one. It is for an action
-// the guest cannot otherwise see landing — a friend added, a group joined. Anything whose result is
-// already on screen (tried, rated, favourite) stays silent.
+// The one success confirmation (docs/DESIGN.md, States > Confirmation): a filled-green liquid-glass
+// disc, a white tick that draws in, one line naming what happened, and a haptic where there is one.
+// It is for an action the guest cannot otherwise see landing — a friend added, a group joined.
+// Anything whose result is already on screen (tried, rated, favourite) stays silent.
 //
 // The tick is drawn here rather than taken from Icon.tsx because it is an animation, not an icon: the
 // path is stroked on over 300ms and needs its own geometry (a 40px box, a 3px stroke) to read at arm's
-// length. Everything else on the disc comes from the shared glass classes.
+// length. The green film and the white mark come from .glass-mint; the rest from the shared glass classes.
 
 const HOLD_MS = 1100
 const FADE_MS = 200
@@ -41,7 +41,7 @@ export function Confirm({ label, onDone }: { label: string; onDone?: () => void 
   return createPortal(
     <div className={'tickc' + (leaving ? ' tickc-leaving' : '')}>
       <span className="sr-only" role="status">{announce}</span>
-      <span className="tickc-disc glass-live glass-sm glass-edge" aria-hidden>
+      <span className="tickc-disc glass-live glass-sm glass-edge glass-mint" aria-hidden>
         <svg className="tickc-mark" width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden>
           <path
             d="M9.5 20.6 16.6 27.6 30.5 12.8"

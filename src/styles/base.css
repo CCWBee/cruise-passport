@@ -114,14 +114,18 @@ h1, h2, h3, p { margin: 0; }
   box-shadow: inset 0 1px 0 var(--glass-rim), inset 0 -1px 0 var(--glass-rim-under);
   background-image: linear-gradient(to bottom, var(--glass-highlight-film), transparent 40%);
 }
-/* the one primary action on glass: a coral film, white label (5:1 over the sea's lightest band) */
+/* tinted glass: a coral film for the one primary action, a green film for the success tick. Both
+   carry a white mark; the film is opaque enough that white clears its threshold over any backdrop. */
 .glass-coral { background-color: var(--coral-film); color: var(--on-accent); border-color: rgba(255, 255, 255, .35); }
+.glass-mint { background-color: var(--mint-film); color: var(--on-accent); border-color: rgba(255, 255, 255, .35); }
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass-coral { background-color: var(--coral-film-blur); }
+  .glass-mint { background-color: var(--mint-film-blur); }
 }
 @media (prefers-reduced-transparency: reduce) {
   .glass-live, .glass-sm { background: var(--glass-fallback); -webkit-backdrop-filter: none; backdrop-filter: none; }
   .glass-coral { background: var(--coral-ink); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .glass-mint { background: var(--mint-ink); -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 
 .card { padding: var(--s4); margin-bottom: var(--s3); }

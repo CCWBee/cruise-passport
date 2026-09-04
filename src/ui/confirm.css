@@ -19,18 +19,20 @@
 }
 .tickc-leaving { animation: tickc-out var(--t-panel) var(--e-out) forwards; }
 
+/* a disc of filled-green liquid glass (the .glass-mint film sets the green and the white mark);
+   the sheet shadow lifts it off the ground, the specular edge and highlight read it as glass */
 .tickc-disc {
   width: 96px;
   height: 96px;
   border-radius: var(--r-tag);
   display: grid;
   place-items: center;
-  color: var(--mint);
   box-shadow: var(--sh-sheet), inset 0 1px 0 var(--glass-rim), inset 0 -1px 0 var(--glass-rim-under);
   animation: tickc-pop var(--t-press) var(--e-out);
 }
 .tickc-mark { display: block; }
-/* pathLength 1 on the path, so the dash values are fractions and no geometry has to be measured */
+/* pathLength 1 on the path, so the dash values are fractions and no geometry has to be measured.
+   The mark is white (from .glass-mint's colour), drawn on over 300ms. */
 .tickc-mark path {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
