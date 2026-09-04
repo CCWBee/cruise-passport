@@ -14,6 +14,8 @@ export interface FeedRow {
   updatedAt: number
   groupIds?: string[] // group feed only: the groups on this cruise I share with them
 }
+/** What find_profiles returns: the same three public fields lookup() gives, never a payload. */
+export interface FoundProfile { code: string; name: string; colour: string }
 export interface GroupRow { id: string; name: string; plan: string; slots: number; invite: string; role: string; members: number }
 export interface MemberRow { code: string; name: string; colour: string; role: string; joinedAt: number }
 
@@ -76,6 +78,21 @@ export async function befriend(code: string): Promise<boolean> {
   if (!client || !(await ensureSession())) return false
   const { error } = await client.rpc('befriend', { p_code: code })
   return !error
+}
+
+/** Find people by name (whole-word prefixes, two characters on) or by an exact code, hyphen optional.
+ *  Named profiles only, never the caller, eight at most (supabase/migrations/0003_find_profiles.sql).
+ *  null = the call did not answer, which the sheet shows as no connection; [] = nobody matched. The
+ *  two are different answers, as with the feeds, and the caller must not read one as the other. */
+export async function findProfiles(q: string): Promise<FoundProfile[] | null> {
+  const client = await sb()
+  if (!client || !(await ensureSession())) return null
+  const { data, error } = await client.rpc('find_profiles', { p_q: q })
+  if (error || !Array.isArray(data)) return null
+  return data.map((r) => {
+    const row = r as { code: string; name: string; colour: string }
+    return { code: row.code, name: row.name, colour: row.colour }
+  })
 }
 
 /** Cut both edges, so "Remove" really revokes rather than letting them return on the next pull. */

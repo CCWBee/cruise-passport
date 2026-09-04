@@ -8,6 +8,7 @@ import {
   befriend, ensureSession, friendFeed, groupFeed, hasBackend, joinGroup, myGroups,
   publishBackup, publishPassport, unfriend, upsertProfile,
 } from './backend'
+import { qaNoSync } from '../data/model'
 import { buildPayload } from './share'
 import type { Friend } from './stats'
 import { useStore } from './store'
@@ -26,8 +27,9 @@ let activeSync: Promise<void> | null = null
 let localRevision = 0
 
 type Mode = 'backend' | 'off'
+// ?nosync (QA) keeps a headless run off the backend: see qaNoSync() in data/model.ts
 function mode(): Mode {
-  return hasBackend() ? 'backend' : 'off'
+  return hasBackend() && !qaNoSync() ? 'backend' : 'off'
 }
 
 // ── scheduling machinery ──

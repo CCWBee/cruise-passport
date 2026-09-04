@@ -8,6 +8,25 @@ import { svgEmblemShape } from './emblems'
 interface MedallionProps {
   badge: BadgeDef
   earned: boolean
+  /** One full turn on entry, then still. Home's new-medal moment sets it; the sheet does not, so a
+   *  coin opened for the tenth time does not perform. Ignored under reduced motion. */
+  intro?: boolean
+}
+
+const INTRO_MS = 1200
+// var(--e-out), cubic-bezier(.22,.9,.32,1), solved here so the one intro turn rides the app's single
+// easing curve. Bisection on x, then the y polynomial: twenty steps is well inside a pixel.
+function eOut(t: number): number {
+  const cx = 3 * 0.22, bx = 3 * (0.32 - 0.22) - cx, ax = 1 - cx - bx
+  const cy = 3 * 0.9, by = 3 * (1 - 0.9) - cy, ay = 1 - cy - by
+  let lo = 0, hi = 1, u = t
+  for (let i = 0; i < 20; i += 1) {
+    const x = ((ax * u + bx) * u + cx) * u
+    if (x < t) lo = u
+    else hi = u
+    u = (lo + hi) / 2
+  }
+  return ((ay * u + by) * u + cy) * u
 }
 
 interface Tone {
@@ -172,7 +191,7 @@ function useDisposable(resource: { dispose: () => void }) {
   }, [resource])
 }
 
-function useMedallionSpin(group: RefObject<THREE.Group | null>, reducedMotion: boolean) {
+function useMedallionSpin(group: RefObject<THREE.Group | null>, reducedMotion: boolean, intro = false) {
   const { gl, invalidate } = useThree()
   const state = useRef({
     dragging: false,
@@ -184,6 +203,9 @@ function useMedallionSpin(group: RefObject<THREE.Group | null>, reducedMotion: b
     rotationY: -0.35,
     velocityX: 0,
     velocityY: 0,
+    introStart: 0,
+    introTurn: 0,
+    introDone: false,
   })
 
   useEffect(() => {
@@ -262,7 +284,24 @@ function useMedallionSpin(group: RefObject<THREE.Group | null>, reducedMotion: b
     const medal = group.current
     if (!medal) return
     const spin = state.current
-    let moving = spin.dragging
+
+    // One turn on entry, easing to a stop on the rest pose: the offset starts a full circle ahead
+    // and decays to nothing, so the coin lands exactly where a still coin sits. Timed off the clock
+    // rather than accumulated deltas, because on a demand loop the first delta after a pause is the
+    // whole pause. A drag takes over at once, and reduced motion never starts it.
+    let turning = false
+    if (intro && !spin.introDone) {
+      if (reducedMotion || spin.dragging) { spin.introDone = true; spin.introTurn = 0 }
+      else {
+        if (!spin.introStart) spin.introStart = performance.now()
+        const t = Math.min(1, (performance.now() - spin.introStart) / INTRO_MS)
+        spin.introTurn = (1 - eOut(t)) * Math.PI * 2
+        if (t >= 1) { spin.introDone = true; spin.introTurn = 0 }
+        turning = !spin.introDone
+      }
+    }
+
+    let moving = spin.dragging || turning
 
     if (!spin.dragging && !reducedMotion) {
       const inertia = Math.abs(spin.velocityX) > 0.012 || Math.abs(spin.velocityY) > 0.012
@@ -280,12 +319,12 @@ function useMedallionSpin(group: RefObject<THREE.Group | null>, reducedMotion: b
       spin.rotationX = THREE.MathUtils.clamp(spin.rotationX, -0.8, 0.8)
     }
 
-    medal.rotation.set(spin.rotationX, spin.rotationY, 0)
+    medal.rotation.set(spin.rotationX, spin.rotationY + spin.introTurn, 0)
     if (moving && !document.hidden) invalidate()
   })
 }
 
-function Scene({ badge, tone, reducedMotion, onUnavailable }: { badge: BadgeDef; tone: Tone; reducedMotion: boolean; onUnavailable: () => void }) {
+function Scene({ badge, tone, reducedMotion, intro, onUnavailable }: { badge: BadgeDef; tone: Tone; reducedMotion: boolean; intro?: boolean; onUnavailable: () => void }) {
   const group = useRef<THREE.Group>(null)
   const rendererDisposal = useRef<{ renderer: THREE.WebGLRenderer; timer: number } | null>(null)
   const { gl } = useThree()
@@ -314,7 +353,7 @@ function Scene({ badge, tone, reducedMotion, onUnavailable }: { badge: BadgeDef;
   useDisposable(medalMaterial)
   useDisposable(inlayMaterial)
 
-  useMedallionSpin(group, reducedMotion)
+  useMedallionSpin(group, reducedMotion, intro)
 
   useEffect(() => {
     const canvas = gl.domElement
@@ -356,7 +395,7 @@ function Scene({ badge, tone, reducedMotion, onUnavailable }: { badge: BadgeDef;
   )
 }
 
-export default function Medallion({ badge, earned }: MedallionProps) {
+export default function Medallion({ badge, earned, intro }: MedallionProps) {
   const reducedMotion = useReducedMotion()
   const [available, setAvailable] = useState(canUseWebGL)
   const [tone, setTone] = useState<Tone | null>(null)
@@ -394,7 +433,7 @@ export default function Medallion({ badge, earned }: MedallionProps) {
           camera={{ fov: 27, position: [0, 0, 6] }}
           style={{ width: 220, height: 220, maxWidth: '100%', touchAction: 'none', cursor: 'grab' }}
         >
-          <Scene badge={badge} tone={tone} reducedMotion={reducedMotion} onUnavailable={markUnavailable} />
+          <Scene badge={badge} tone={tone} reducedMotion={reducedMotion} intro={intro} onUnavailable={markUnavailable} />
         </Canvas>
       )}
     </div>

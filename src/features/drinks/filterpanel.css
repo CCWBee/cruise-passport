@@ -3,7 +3,8 @@
 .fpanel { padding: var(--s4); margin-top: var(--s3); }
 .fhead { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); min-height: var(--ctl); }
 
-.f-label { font-size: var(--f-meta); font-weight: 600; color: var(--ink-2); margin: var(--s4) 0 var(--s1); }
+/* .f-label itself is base.css's; the panel only spaces its labels down from the group above */
+.fpanel .f-label { margin-top: var(--s4); }
 .fquick { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s4); }
 
 .fgrp { border-top: 1px solid var(--line); margin-top: var(--s4); }

@@ -14,7 +14,7 @@
 .sea-canvas { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; display: block; }
 .sea-canvas.sea-nogl { display: none; } /* fall back to the CSS sea */
 
-/* a liner on the sea — the bottom of the hull tracks the waterline (set inline as `top`) */
+/* a liner on the sea: the bottom of the hull tracks the waterline (set inline as `top`) */
 .sea-ship {
   position: absolute; z-index: 1; left: 56%;
   width: clamp(78px, 25%, 116px); height: auto;
@@ -24,11 +24,14 @@
   /* the curve lives in the keyframes (a sine), so the timing stays linear and the crest is smooth */
   animation: ship-bob 7s linear infinite;
 }
-.ship-hull { fill: var(--sea-lo); }
+/* the hull takes its colour from the sky palette (--sea-hull, set inline beside the other --sea-*
+   properties): it is that palette's --sea-lo by day, so nothing changes, and a slate at dusk and
+   night, where a hull the colour of the water would disappear into it */
+.ship-hull { fill: var(--sea-hull, var(--sea-lo)); }
 .ship-deck { fill: var(--cream); }
 .ship-window { fill: var(--ink); fill-opacity: .8; }
 .ship-funnel { fill: var(--coral-brand); }
-.ship-mast { stroke: var(--sea-lo); stroke-width: 1.4; stroke-linecap: round; }
+.ship-mast { stroke: var(--sea-hull, var(--sea-lo)); stroke-width: 1.4; stroke-linecap: round; }
 @keyframes ship-bob {
   0%, 100% { transform: translateY(-86%) rotate(-0.8deg); }
   12.5%    { transform: translateY(-86.73%) rotate(-0.57deg); }
@@ -46,16 +49,42 @@
 /* The three things floating on the water are the chrome layer: the water moves under them, so
    they are the app's small liquid glass. Contrast is bought with film, not by darkening the ink,
    and the two chips need different amounts of it because they sit over different water.
-   The countdown stays over the sky whatever the passport holds, so the thin chip film is plenty:
-   ink on it measures 7.02:1 to 8.84:1 across an empty passport, the seed's 27% and a forced full
-   tide. The readout sits on the tide line and sinks towards --sea-lo as the passport fills, so it
-   takes the sheet's film: ink measures 9.66:1 empty, 5.76:1 at 27% and 5.18:1 at the foot of the
-   line at full tide, and the darkest thing the GLSL can put behind it, pure --sea-lo #093755
-   (below horizon-0.42 the shader clamps where the CSS floor keeps lerping), computes 4.77:1.
-   The chip film would be 3.53:1 there, which is why the two are split. Both films are inside the
-   45 to 62% band in DESIGN.md. */
+   These are the films with no shader behind them. The countdown stays over the sky whatever the
+   passport holds, so the chip film carries it by day (7.02:1 at 08:00, 6.02:1 at 13:00, the
+   thinnest hour); the dark palettes raise it below. The readout sits on the tide line and sinks
+   towards --sea-lo as the passport fills, so it takes the sheet's film: ink measures 9.37:1 at the
+   seed's 27% and the darkest thing the CSS floor can put behind it, pure --sea-lo #093755,
+   computes 4.77:1. The chip film would be 3.53:1 there, which is why the two are split. */
 .sea-count { --glass-film: var(--glass-film-chip); }
 .sea-readout { --glass-film: var(--glass-film-sheet); }
+
+/* With WebGL the shader lenses and films the water inside the same two rectangles, so the DOM film
+   comes down: film and lens hold the text together and the water is visible through the glass
+   again. SeaHero adds the class when the program links; without it the films above stand and the
+   fallback is unchanged. Two films in series, so the film DESIGN.md Material's band has to measure
+   is the combined one, 1-(1-shader)(1-DOM): the countdown carries 47% at afternoon and 69% at
+   night, the readout 62% and 78%.
+   Measured at 390x844 on the seed passport, --ink against the darkest pixel of each run with the
+   text hidden, at 06, 08, 13, 18 and 22 hours: the readout's 13px "58 of 214" 6.93 / 7.03 / 6.82 /
+   6.97 / 7.40:1, the display number 6.60 / 6.54 / 6.43 / 6.58 / 7.25:1, the countdown 7.93 / 7.32 /
+   6.05 / 7.56 / 5.68:1. Gates are 4.5:1 and 3:1. The darkest water the shader can put behind the
+   readout is a full tide over --sea-lo, which computes 5.29:1 (afternoon, the deepest of the six)
+   to 6.97:1 (night). */
+.sea-readout.sea-gl { --glass-film: color-mix(in srgb, var(--glass-film-sheet) 57%, transparent); }
+.sea-count.sea-gl { --glass-film: color-mix(in srgb, var(--glass-film-chip) 65%, transparent); }
+
+/* Without WebGL there is no shader film, and at dusk and at night the countdown sits on a sky
+   darker than the ground the 46% chip film was measured against: --ink over the night sky computes
+   3.27:1, under the gate. So on the dark palettes, and only where the shader is absent, the film
+   climbs towards the sheet's 88%, the film the sheet's own arithmetic set for glass over content
+   of any brightness. SeaHero publishes the mix as
+   --sea-film off the same number that drives the shader's film, so it follows the sky rather than
+   stepping at a palette boundary, and it is re-derived every minute, so a session that runs into
+   the night gets the film the night needs. With it, the countdown measures 7.77 / 7.02 / 6.02 /
+   7.28 / 8.84:1 at 06, 08, 13, 18 and 22 hours, and the readout 9.44 / 9.55 / 9.57 / 9.48 / 8.95:1. */
+.sea-count:not(.sea-gl) {
+  --glass-film: color-mix(in srgb, var(--glass-film-sheet) var(--sea-film, 0%), var(--glass-film-chip));
+}
 
 /* the readout, bottom left: the one display number in the app */
 .sea-readout {

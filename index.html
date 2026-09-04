@@ -64,7 +64,9 @@
             d101: { tried: true, rating: 5, rec: true }, d66: { tried: true, rating: 4, rec: true }
           }, visits: {} } }
         ]
-        var profile = { id: 'me-self', name: 'You', colour: 'aqua' }
+        // Sam and Ravi's entries carry dates too, so Home's crew lines and Log have something to say
+        friends.forEach(function (f, fi) { var i = 0; for (var id in f.passport.entries) { if (f.passport.entries[id].tried) f.passport.entries[id].date = DAYS[(i++ + fi) % 5] } })
+        var profile = { id: 'me-self', name: 'Alex', colour: 'aqua' }
         localStorage.setItem('spcc2', JSON.stringify({ state: { me: { entries: entries, visits: visits }, custom: [], friends: friends, profile: profile }, version: 2 }))
       } catch (e) {}
     })()

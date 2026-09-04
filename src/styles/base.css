@@ -195,5 +195,11 @@ h1, h2, h3, p { margin: 0; }
   background: var(--panel-solid); border: 1px solid var(--line);
   font-size: var(--f-meta); font-weight: 600; color: var(--ink); margin: 0 var(--s2) var(--s2) 0;
 }
+.mini:disabled { color: var(--ink-2); background: var(--panel); cursor: default; }
+
+/* a field group: a sentence-case label at meta size, then its control. The one field label in the
+   app; feature files must not declare their own. */
+.f-field { display: block; margin-top: var(--s4); }
+.f-label { display: block; font-size: var(--f-meta); font-weight: 600; color: var(--ink-2); margin-bottom: var(--s1); }
 
 /* the reduced-motion contract is per effect, in each file; there is no global kill */

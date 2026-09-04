@@ -239,3 +239,84 @@ export function greetingWord(part: DayPart): string {
   if (part === 'afternoon') return 'Afternoon'
   return 'Evening'
 }
+
+// ── Home's greeting, medal moment and crew lines: pure selectors, appended ──
+
+/** The name to greet by: the first word of the profile name, empty when there is none. With no
+ *  name there is no greeting at all, so the hero stays the screen's first line. */
+export function firstName(name: string): string {
+  return name.trim().split(/\s+/)[0] || ''
+}
+
+/** Badges earned but never shown as a "new medal" moment, in the order BADGES declares them. */
+export function newMedals(stat: BadgeStat, seen: string[]): BadgeDef[] {
+  return BADGES.filter((b) => b.test(stat) && !seen.includes(b.id))
+}
+
+// A tier is an ordinal, so "the best of these" is the highest rank; within one rank the later badge
+// in BADGES is the harder one (the list runs easiest first), which is why the fold keeps the last.
+const TIER_RANK: Record<NonNullable<BadgeDef['tier']>, number> = { bronze: 0, silver: 1, gold: 2, special: 3 }
+/** The one medal a batch is announced by: the highest tier, and the hardest inside that tier. */
+export function topMedal(list: BadgeDef[]): BadgeDef | null {
+  if (!list.length) return null
+  return list.reduce((best, b) => (TIER_RANK[b.tier ?? 'bronze'] >= TIER_RANK[best.tier ?? 'bronze'] ? b : best))
+}
+
+export interface CrewDay {
+  id: string
+  name: string
+  colour: string
+  n: number
+  /** the venue where more than half of today's drinks were logged, and whether every one of them
+   *  was there. Null on a day spread evenly across bars: a plurality is not a majority, and
+   *  "mostly" said of one drink in three would be a guess dressed as a fact. */
+  venue: string | null
+  onlyVenue: boolean
+  /** when that passport was last exported to us; 0 = never (an identity with no snapshot yet) */
+  syncedAt: number
+}
+
+/** One line per crew member who logged today. An entry carries a date, not a time, so this counts
+ *  the day and names where most of it happened; nothing is inferred about where anyone is now.
+ *  "Most" is a strict majority, not the top of a sort: three drinks at three bars have no "mostly",
+ *  so the venue is dropped and the line is just the count.
+ *  Nobody logged today means an empty list, and Home renders no filler for it. */
+export function crewToday(
+  drinks: Drink[],
+  people: { id: string; name: string; colour: string; passport: Passport; isSelf: boolean }[],
+  syncedAt: Record<string, number>,
+  iso: string,
+): CrewDay[] {
+  return people
+    .filter((p) => !p.isSelf)
+    .map((p) => {
+      const list = drinksOn(drinks, p.passport, iso)
+      const byVenue: Record<string, number> = {}
+      list.forEach((d) => { byVenue[d.venue] = (byVenue[d.venue] || 0) + 1 })
+      const keys = Object.keys(byVenue).sort(
+        (a, b) => byVenue[b] - byVenue[a] || (VENUES[a]?.name || a).localeCompare(VENUES[b]?.name || b),
+      )
+      // the venue only when more than half of the day was there; a plurality of one is not "mostly"
+      const top: string | undefined = keys[0]
+      const majority = top !== undefined && byVenue[top] > list.length / 2
+      return {
+        id: p.id, name: p.name, colour: p.colour, n: list.length,
+        venue: majority ? top : null, onlyVenue: keys.length === 1,
+        syncedAt: syncedAt[p.id] || 0,
+      }
+    })
+    .filter((x) => x.n > 0)
+    .sort((a, b) => b.n - a.n || a.name.localeCompare(b.name))
+}
+
+/** How long ago a passport reached this phone, in words. The unit grows with the gap so a friend who
+ *  synced in August is not reported as "9000 h ago". */
+export function syncedAgo(at: number, now: number = Date.now()): string {
+  const mins = Math.floor((now - at) / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins} min ago`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours} h ago`
+  const days = Math.floor(hours / 24)
+  return `${days} day${days === 1 ? '' : 's'} ago`
+}

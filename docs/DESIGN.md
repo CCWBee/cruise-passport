@@ -67,10 +67,12 @@ between sections. Whitespace separates ideas; it does not pad every object.
   them), the toast, and the Wrapped certificate over its drifting backdrop. Nowhere in the content
   layer, never glass on glass (the glass bible's two hard rules).
 - **The glass recipe** (`.glass-live` plus `.glass-edge` in `base.css`, tuned per role by tokens):
-  a white tint film of 45 to 62% for chrome over the ground and the sea (the film is what keeps
-  text at 4.5:1; buy contrast with film, not by darkening), except the sheet, the only glass that
-  covers content of any brightness, whose film is set by contrast at 88% (13px `--ink-2` holds
-  4.5:1 even over black); `blur` 6 to 8px on small controls, 16 to 22px on bars and sheets, `saturate(160%)`,
+  the film is a contrast obligation, not a fixed number: whatever white tint holds the text on it at
+  4.5:1 against the darkest backdrop that surface can have (buy contrast with film, never by
+  darkening the ink). Over the cream ground and the day sea that is 45 to 62%; the sheet, which
+  covers content of any brightness, sits at 88%; the sea chips, whose backdrop follows the clock,
+  carry a film the hero sets by the hour (lighter by day with the shader's own lens film beneath
+  them, heavier at night without it). `blur` 6 to 8px on small controls, 16 to 22px on bars and sheets, `saturate(160%)`,
   a near-white hairline, one light from the top: a specular top edge (`inset 0 1px 0` white at 75%)
   and a highlight gradient over the top 40%. A coral-tinted film marks the one primary action on
   glass. Non-blur fallback and reduced-transparency path always present. The scan allows
@@ -154,8 +156,10 @@ The nav uses icon plus label at all times.
 
 ## Motion
 
-Three authored moments and nothing else moves on its own: the ship bobbing on the sea, the SheetWave
-wash when a sheet opens, the hero count-up on first paint. Everything else is feedback: press
+Four authored moments and nothing else moves on its own: the ship bobbing on the sea (the sea itself,
+with its sky following the clock, is the app's one live effect), the SheetWave wash when a sheet
+opens, the hero count-up on first paint, and the new-medal coin's single turn on Home (one rotation,
+then still). Everything else is feedback: press
 scale `.97` over 120ms, state colour over 200ms, sheet rise over 280ms. One easing, `--e-out`.
 No overshoot or spring curves on UI state, no reveal stagger on every screen, no chart grow-ins,
 no endless pulses. Under `prefers-reduced-motion` each effect has its own fallback that keeps the
@@ -280,8 +284,10 @@ boundary) and the only panel on the screen. Fold: 1 to 3.
 in one call (`find_profiles` then `befriend`, which writes both edges), so the phone-to-phone routes
 are the fallback, not the front door. (1) **Find them**: one field, "Their name or code", searching
 the server as you type (two characters on, whole-word prefixes, eight results, never yourself):
-each match is a `.row` with their dot, name and code, and a 44px "Add" at the right; Add lands on
-the `Confirm` tick and the row joins "Sailing with". A full code pasted or typed matches exactly.
+each match is a `.row` with their dot, name and code, and a 44px "Add" at the right (someone
+already held reads "In your crew" with no Add); Add lands on the `Confirm` tick and the row joins
+"Sailing with", holding the row-highlight tint for about four seconds so the name on the tick can
+be found in the list. A full code pasted or typed matches exactly.
 Offline, the field says so and the link route takes over. (2) **Or send your link**, a secondary
 button opening the native share sheet, which is also the nearby route (AirDrop on iPhone, Nearby
 Share on Android; the web has no contact-tap of its own); its meta line says so. (3) One row of two

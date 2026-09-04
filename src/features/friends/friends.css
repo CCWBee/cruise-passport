@@ -3,11 +3,7 @@
 
 .friends-sheet .sheet-meta { margin-bottom: var(--s3); }
 
-/* ── a field: a sentence-case label, then the control ── */
-/* the label carries the name of what it is, not the name of the banned pattern it replaced */
-.f-label { display: block; font-size: var(--f-meta); font-weight: 600; color: var(--ink-2); }
-.f-field { display: block; margin-top: var(--s4); }
-.f-field > span { display: block; margin-bottom: var(--s1); }
+/* ── a field: .f-field / .f-label come from base.css; only the controls are styled here ── */
 .f-field input,
 .f-field textarea {
   width: 100%;
@@ -73,8 +69,16 @@
 .confirm-note { margin-top: var(--s2); }
 
 .friends-roster { margin-top: var(--s1); }
-/* a roster row is a record rather than a control, so it takes no press tint */
+/* a roster row is a record rather than a control, so it takes no press tint. It does carry the
+   state transition, because a row that has just been added holds the tint and then lets it go. */
+.friend-row { transition: background-color var(--t-panel) var(--e-out); }
 .friend-row:active { background-color: transparent; }
+/* the person added a moment ago, so a roster of a dozen names does not have to be re-read to find
+   them. Feedback in the state duration, not a fourth authored motion: the tint arrives with the row
+   and fades out by itself a few seconds later. */
+/* scoped to the row's own class so it outranks .friend-row:active above: pressing the row that has
+   just been added must not clear the mark that says which row it is */
+.friend-row.friend-row-new { background-color: var(--press); }
 /* a two-tap confirm sitting beside a name: a real target, but flat on the ground like the row it
    belongs to, so the destructive action is not the loudest thing in the list */
 .friends-roster .confirm { display: flex; }
@@ -87,7 +91,32 @@
   white-space: nowrap;
 }
 
-/* ── the way in: the link first, then the two fallbacks, then the folded-away code ── */
+/* ── the way in: the search first (the server can find a person), then the link, then the two quiet
+   fallbacks, then the folded-away code ── */
+/* the find block is a group of its own between the sheet's meta line and the link, so it takes 24
+   above; the seam below it is carried by the link button, because a button is inline-flex and its
+   margin would not collapse with one here (24 and 16 would read as 40) */
+.addme-find { margin-top: var(--s5); }
+.addme-find + .addme-send { margin-top: var(--s5); }
+/* a heading sits 8 above its content (DESIGN.md, Geometry). Two 16s reach this seam: the field's own
+   margin, and a second global .f-label declared by the drinks filter panel (filterpanel.css) whose
+   16 collapses out through the label. Both are given up inside the find block, so the seam is the
+   section head's 8, as it is under every other heading in the app. */
+.addme-find > .f-field,
+.addme-find > .f-field > .f-label { margin-top: 0; }
+/* the results sit under a field rather than under a heading, so they need more air than a roster
+   directly beneath its own section head */
+.addme-found { margin-top: var(--s3); }
+/* both live at the right of a found row and must not wrap or be squeezed by a long name */
+.addme-add,
+.addme-held { flex: none; white-space: nowrap; }
+/* .mini has no disabled state in base.css and this is the only place one is needed: while a newer
+   query is in flight these rows answer the last one, so their Add drops to the secondary ink and
+   stops taking taps until the answer on screen is the current one */
+.addme-add:disabled { color: var(--ink-2); }
+/* the answers a search gives: waiting, nobody, no connection. One line each, never stacked. */
+.addme-note { margin-top: var(--s3); }
+
 .addme-send { margin-top: var(--s4); }
 /* the line that says what the share sheet is for; it belongs to the button above it, so it sits
    close to it and the next group keeps its own 16 */

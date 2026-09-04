@@ -1,6 +1,6 @@
 // The Social tab, top to bottom: who you are, how people get in, the crew, your groups, and what the
 // crew has found. Crew = direct friends plus group co-members, one roster, tagged by how you got them.
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { VENUES } from '../../data/model'
 import { hasBackend } from '../../state/backend'
 import { FRIEND_COLOURS, useStore } from '../../state/store'
@@ -87,6 +87,17 @@ export function Social() {
   // The tick lives here, not in the sheet: a sheet that closes on success takes its own confirmation
   // down with it, and the guest is left looking at a list wondering whether anything happened.
   const [confirmNode, confirm] = useConfirm()
+  // The tick names who was added but not where they landed, and a new row arrives in name order
+  // rather than at the end. Marking the row holds the answer for a few seconds. Kept by code, not by
+  // id: the pull that follows replaces the placeholder "c:CODE" with their real one.
+  const [justAdded, setJustAdded] = useState('')
+  const newTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const markNew = (code: string) => {
+    setJustAdded(code)
+    if (newTimer.current) clearTimeout(newTimer.current)
+    newTimer.current = setTimeout(() => setJustAdded(''), 4000)
+  }
+  useEffect(() => () => { if (newTimer.current) clearTimeout(newTimer.current) }, [])
   const undisc = useMemo(() => undiscovered(srcs, 4), [srcs])
   const online = hasBackend()
   const named = Boolean(profile.name.trim())
@@ -135,7 +146,7 @@ export function Social() {
               const state = friend.pending ? 'Waiting to connect' : logged ? `${logged} logged` : 'Nothing logged yet'
               const sub = state + (via ? ` · ${via}` : '')
               return (
-                <div className="row friend-row" key={friend.id}>
+                <div className={'row friend-row' + (friend.code && friend.code === justAdded ? ' friend-row-new' : '')} key={friend.id}>
                   <FriendDot name={friend.name} colour={friend.colour} size={28} />
                   <div className="row-copy">
                     <span className="t-body">{friend.name}</span>
@@ -205,7 +216,7 @@ export function Social() {
       {addOpen && (
         <AddCrewSheet
           onClose={() => setAddOpen(false)}
-          onDone={(label) => { setAddOpen(false); confirm(label) }}
+          onDone={(label, code) => { setAddOpen(false); confirm(label); if (code) markNew(code) }}
         />
       )}
       {groupSheet && <GroupSheet groupId={groupSheet.id} onClose={() => setGroupSheet(null)} />}

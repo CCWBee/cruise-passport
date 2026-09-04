@@ -4,6 +4,10 @@
 .home { padding-top: calc(var(--s4) + var(--safe-t)); }
 .home-hero { position: relative; }
 
+/* the greeting: the screen's first line when there is a name. The title and its meta sit as one
+   block, the way a sheet's title and caption do, then 16 to the hero. */
+.home-greet { margin-bottom: var(--s4); }
+
 /* three facts in one row, on the ground: no container, no dividers */
 .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s3); }
 .fact-v { font-size: var(--f-title); font-weight: 600; line-height: 1.2; letter-spacing: -.01em; }
@@ -12,10 +16,26 @@
 /* the stars sit on a meta line as a flex run, so they keep the line's height */
 .home-stars { display: inline-flex; align-items: center; vertical-align: -2px; color: var(--gold); }
 
-/* the badge measure on the "Up next" row: the same 3px ink bar Ship puts under a venue name and
-   Badges puts beside one, under the copy so the row keeps a single measure and the count is not
-   printed twice. It is repeated here rather than shared because the shared primitive would belong
-   in base.css, which this stream does not own (see sharedRequests: mint .meter, sweep the four). */
+/* ── the new medal: the coin beside the line that names it ──
+   The coin is the same Medallion the badge sheet turns, at row scale, with the flat disc the
+   Badges grid draws beneath it while three.js loads and in place of it where there is no WebGL.
+   The slot keeps its size either way, so the row never jumps under the guest's thumb: at fov 27
+   from 6 units the turned coin reads about 66px inside the 96px stage, so the 72px flat disc it
+   replaces is the same apparent coin. The coin takes no pointer events: the row is one target, and
+   a tap opens the badge rather than spinning a coin that is turned in the sheet the tap leads to. */
+.home-coin {
+  flex: none;
+  width: 96px; height: 96px;
+  display: grid; place-items: center;
+  pointer-events: none;
+}
+/* The Medallion's canvas carries an inline 220px, sized for the badge sheet, and this stream does
+   not own that file. Scaling it with a transform is not the way out: the canvas measures itself
+   with getBoundingClientRect, so a scaled stage is measured after the scale and the coin comes out
+   twice as small again. The slot overrides the size instead, so the drawing buffer is the slot's.
+   Standing request: an optional `size` on Medallion retires these two rules. */
+.home-coin .medal-stage,
+.home-coin .medal-stage > div { width: 96px !important; height: 96px !important; }
 
 /* the Wrapped row: one quiet row, only when Wrapped is unlocked */
 .wrapped-row { margin-top: var(--s6); color: var(--ink); }

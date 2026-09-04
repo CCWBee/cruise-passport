@@ -122,10 +122,18 @@ export function today(): string {
  *  any time of day; pairs with ?day=. */
 export function nowHour(): number {
   if (typeof location !== 'undefined') {
-    const pinned = Number(new URLSearchParams(location.search).get('hour'))
-    if (Number.isInteger(pinned) && pinned >= 0 && pinned <= 23) return pinned
+    // digits only: an absent param is null, and Number(null) is 0, which once pinned every real
+    // session to midnight
+    const raw = new URLSearchParams(location.search).get('hour')
+    if (raw && /^\d{1,2}$/.test(raw) && Number(raw) <= 23) return Number(raw)
   }
   return new Date().getHours()
+}
+/** ?nosync (QA only) keeps a headless run off the backend entirely: no anonymous sign-in, no
+ *  publish, no pull. The live project rate-limits anonymous sign-ins per IP, and every seeded
+ *  screenshot used to spend one. */
+export function qaNoSync(): boolean {
+  return typeof location !== 'undefined' && new URLSearchParams(location.search).has('nosync')
 }
 export function prettyDay(iso: string): string {
   return new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })

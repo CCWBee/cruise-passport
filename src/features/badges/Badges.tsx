@@ -26,7 +26,7 @@ const TIER_NAME: Record<NonNullable<BadgeDef['tier']>, string> = {
 }
 
 // A coin, not a rosette: one metal face, a 1px hairline rim, the emblem struck pale into it.
-function MedalDisc({ badge, earned, large = false }: MedalDiscProps) {
+export function MedalDisc({ badge, earned, large = false }: MedalDiscProps) {
   const tier = badge.tier ?? 'bronze'
   const size = large ? 116 : 72
   const emblem = EMBLEMS[badge.id]
