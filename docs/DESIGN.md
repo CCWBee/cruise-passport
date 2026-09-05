@@ -221,24 +221,33 @@ summary; every module either answers one of those or leads to the screen that do
    says it. Before sailing there is no day, no streak and nothing logged, and "drinks to go" is only
    the hero's "58 of 214" turned round, so the row becomes **The ship**: bars, restaurants, decks.
    Never a number the hero shows, and never a structural zero.
-3. **Last bar** (aboard): one row for the venue of the last drink logged today, with "12 of 44
+3. **For you**, a horizontal shelf of up to six drinks to try next, each an independently opened,
+   swipe-snapped card (the one boxed thing in the content layer, earning its boundary as an
+   interactive unit). It sits here, above Last bar, because "what should I drink next" is the
+   forward question the guest opens Home to answer; Last bar answers the narrower "where am I". Each
+   card names the drink and, in the accent, the honest basis for the pick: a crew member whose
+   palate matches yours who loved it ("Sam matches your taste" / "Loved by Sam and Ravi", from
+   `pickedForYou` over `recommendedForYou`), or the spirit you rate highest ("Because you love
+   whiskey", three-plus of your own fives). It renders only when there is a real personal basis, so
+   it is absent for a fresh guest with no ratings and no crew: never a generic "you might like".
+4. **Last bar** (aboard): one row for the venue of the last drink logged today, with "12 of 44
    tried here" and the first untried drink there named; it opens that venue's sheet. With nothing
    logged today it is "Your top bar"; before sailing it is "Where to start", the biggest bar and
    its count. Never a guess from the clock: a wrong bar labelled as yours breaks "Honest".
-4. **A new medal**, when one has been earned since the guest last looked: the 3D coin (the
+5. **A new medal**, when one has been earned since the guest last looked: the 3D coin (the
    Medallion, spinning once on entry, then still) with "New medal · Gin Explorer" and its hint,
    tapping to the badge sheet. It is the app's reward moment and the one place Home may be
    spectacular; it shows once per medal (a seen-set in the store) and then folds back into Up next.
-5. **Up next**: the badge nearest to earned as a row with a 3px bar ("2 more gins for Gin
+6. **Up next**: the badge nearest to earned as a row with a 3px bar ("2 more gins for Gin
    Explorer"), the top drink and top bar rows as today, and, when there is a crew, one line per
    crew member who logged today, "Sam · 3 today, mostly Crooners · synced 20 min ago" (entries carry
    a date, not a time, so the venue is where most of today's drinks were, and the time is their
    passport's `exportedAt`, which is honest as "last synced"), opening Crew. Where the family is,
    as far as the data can say, without asking.
-6. The Wrapped row, only when unlocked.
+7. The Wrapped row, only when unlocked.
 
-Fold: 1 to 3. The seed data is pre-sailing, so both states are verified by rendering the aboard
-branch with the date pinned (`?day=2026-10-05`, a QA override in `today()`). "Log a drink" is the
+Fold: the greeting, the hero and Today. The seed data is pre-sailing, so both states are verified by
+rendering the aboard branch with the date pinned (`?day=2026-10-05`, a QA override in `today()`). "Log a drink" is the
 only control with that intent: the Drinks page's catalogue action is "Add a missing drink". Opening
 Drinks from it focuses the search field and shows the ring; the keyboard is the platform's to
 raise, and it will not from a route change on iOS.
@@ -391,6 +400,7 @@ colour, are how that happens again. Read it before any change that renders.
 | `nowHour()`, `today()` | `src/data/model.ts` | the clock, with `?hour=` and `?day=` QA overrides |
 | `seenMedals`, `markMedalsSeen()` | `src/state/store.ts` (persist v8) | which badges' "new medal" moment Home has shown; seeded on upgrade with what was already earned |
 | `SeaHero` (`level`, `hour`, `chips`) | `src/features/home/SeaHero.tsx` | the sea; the sky follows `hour`, the shader lenses the water under the `chips` rectangles |
+| `pickedForYou()` | `src/state/social.ts` | the "For you" shelf: honest picks (taste-matched crew, or your top spirit); empty when there is no personal basis |
 | `DrinkCard` | `src/features/drinks/DrinkCard.tsx` | the drink row everywhere a drink is listed (Drinks, venue sheet) |
 | `Medallion` | `src/features/badges/Medallion.tsx` | the badge disc, grid and sheet |
 | `SeaHero`, `SheetWave`, the hero count-up | `src/features/home/`, `src/ui/SheetWave.tsx` | the three authored motions; do not add a fourth without amending Motion above |

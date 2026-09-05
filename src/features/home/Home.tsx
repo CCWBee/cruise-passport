@@ -233,7 +233,12 @@ export function Home() {
           <ul className="rec-rail" role="list">
             {picks.map((p) => (
               <li key={p.drink.id} className="rec-card">
-                <button type="button" className="rec-open pressable" onClick={() => setOpenId(p.drink.id)}>
+                <button
+                  type="button"
+                  className="rec-open pressable"
+                  onClick={() => setOpenId(p.drink.id)}
+                  aria-label={`${p.drink.name}, ${drinkVenue(p.drink.venue)}. ${p.reason}`}
+                >
                   <span className="rec-reason">{p.reason}</span>
                   <span className="rec-name t-strong">{p.drink.name}</span>
                   <span className="rec-meta t-meta">{drinkVenue(p.drink.venue)} · {p.drink.spirits[0] || p.drink.category}</span>

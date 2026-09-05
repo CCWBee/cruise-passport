@@ -117,7 +117,10 @@ export function recommendedForYou(me: Passport, srcs: Source[], limit = 4): Frie
   const aff = new Map(tasteAffinity(me, srcs).map((a) => [a.source.id, a]))
   const picks: FriendPick[] = []
   for (const [id, d] of Object.entries(DRINK_BY_ID)) {
-    if (me.entries[id]?.tried) continue
+    // "rated but not ticked tried" still counts as had: a drink you have scored is not one to
+    // recommend back to you (the two flags are set independently in the sheet)
+    const mine = me.entries[id]
+    if (mine?.tried || mine?.rating) continue
     const bits = friends.map((s) => ({ s, e: s.passport.entries[id] }))
       .filter((x) => x.e?.rec || (x.e?.rating ?? 0) >= 4)
     if (!bits.length) continue
@@ -141,13 +144,18 @@ export interface TastePick { drink: Drink; reason: string; kind: 'crew' | 'taste
 export function pickedForYou(me: Passport, srcs: Source[], limit = 6): TastePick[] {
   const used = new Set<string>()
 
+  const named = (s: Source) => s.name && s.name !== 'A friend'
   const twin = tasteTwin(me, srcs)
+  const twinNamed = twin && named(twin.source) ? twin : null
   const crew: TastePick[] = []
   for (const fp of recommendedForYou(me, srcs, 8)) {
     if (used.has(fp.drink.id)) continue
-    const names = fp.by.map((s) => s.name)
-    const reason = twin && fp.by.some((s) => s.id === twin.source.id)
-      ? `${twin.source.name} matches your taste`
+    // only the vouchers who have a name: "A friend loved it" is the generic line the shelf exists
+    // to avoid, so a pick that could only be phrased that way is dropped
+    const names = fp.by.filter(named).map((s) => s.name)
+    if (!names.length) continue
+    const reason = twinNamed && fp.by.some((s) => s.id === twinNamed.source.id)
+      ? `${twinNamed.source.name} matches your taste`
       : names.length === 1 ? `${names[0]} loved it`
         : `Loved by ${names.slice(0, 2).join(' and ')}`
     crew.push({ drink: fp.drink, reason, kind: 'crew' })
@@ -165,7 +173,7 @@ export function pickedForYou(me: Passport, srcs: Source[], limit = 6): TastePick
   const taste: TastePick[] = []
   if (topSpirit) {
     const cands = Object.values(DRINK_BY_ID)
-      .filter((d) => !me.entries[d.id]?.tried && !used.has(d.id) && d.spirits.includes(topSpirit))
+      .filter((d) => !me.entries[d.id]?.tried && !me.entries[d.id]?.rating && !used.has(d.id) && d.spirits.includes(topSpirit))
       .sort((a, b) => Number(b.category === 'Signature') - Number(a.category === 'Signature') || Number(b.verified) - Number(a.verified) || a.id.localeCompare(b.id))
     for (const d of cands.slice(0, 3)) {
       taste.push({ drink: d, reason: `Because you love ${topSpirit.toLowerCase()}`, kind: 'taste' })

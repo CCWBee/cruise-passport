@@ -50,15 +50,15 @@
 }
 .rec-rail::-webkit-scrollbar { display: none; }
 .rec-card { flex: 0 0 72%; scroll-snap-align: start; }
+/* the press feedback is .pressable (base.css); this only carries the card's shape and layout */
 .rec-open {
   display: flex; flex-direction: column; gap: var(--s1); width: 100%; height: 100%;
   padding: var(--s4); text-align: left;
   background: var(--panel-solid); border: 1px solid var(--line); border-radius: var(--r-surface);
-  transition: scale var(--t-press) var(--e-out);
 }
-.rec-open:active { scale: .98; }
-/* the reason, in the accent: the one warm mark on the shelf, and the honest basis for the pick */
-.rec-reason { font-size: var(--f-meta); font-weight: 600; color: var(--coral-ink); }
+/* the reason, in the accent: the one warm mark on the shelf, and the honest basis for the pick.
+   One line: clickable text never wraps (a long "Loved by A and B" clips rather than growing). */
+.rec-reason { font-size: var(--f-meta); font-weight: 600; color: var(--coral-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rec-name { line-height: 1.25; }
 .rec-meta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
