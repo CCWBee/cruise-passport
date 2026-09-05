@@ -34,7 +34,9 @@
   background: var(--glass-fallback);
   background-image: linear-gradient(to bottom, var(--glass-highlight-film), transparent 40%);
   border: 1px solid var(--line); border-bottom: 0;
-  border-top-left-radius: var(--r-surface); border-top-right-radius: var(--r-surface);
+  /* rounded top, square bottom: the sheet meets the screen edge (and any browser toolbar) flush.
+     Stated as one shorthand so the global :focus-visible radius cannot round the bottom corners. */
+  border-radius: var(--r-surface) var(--r-surface) 0 0;
   box-shadow: var(--sh-sheet), inset 0 1px 0 var(--glass-rim), inset 0 -1px 0 var(--glass-rim-under);
   animation: sheet-up var(--t-sheet) var(--e-out);
   display: flex; flex-direction: column; overflow: hidden;
@@ -51,7 +53,9 @@
 @media (prefers-reduced-transparency: reduce) {
   .sheet { background-color: var(--glass-fallback); -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
-.sheet:focus-visible { outline: none; }
+/* the sheet is focused on open; the global :focus-visible would drop its outline (already none here)
+   and round all four corners to --r-control, notching the bottom against the screen edge. Hold both. */
+.sheet:focus-visible { outline: none; border-radius: var(--r-surface) var(--r-surface) 0 0; }
 
 /* ── signature wash: the WebGL wave (SheetWave.tsx) washes the content up onto the pane then
    recedes. One of the app's three authored motions. Reduced-motion / no-WebGL: content shows at once. ── */

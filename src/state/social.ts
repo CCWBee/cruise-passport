@@ -131,3 +131,53 @@ export function recommendedForYou(me: Passport, srcs: Source[], limit = 4): Frie
   }
   return picks.sort((a, b) => b.score - a.score || b.by.length - a.by.length || b.avg - a.avg).slice(0, limit)
 }
+
+// ── picked for you: a short, honest shelf of drinks to try next, each with the reason it is here ──
+// Two bases, both true or the pick is not made: a crew member whose palate matches yours loved it
+// (collaborative, affinity-weighted, reusing recommendedForYou), and your own most-loved spirit (a
+// drink in the spirit you rate highest, when you have rated at least three of them four or more).
+// Never a generic "you might like": the shelf renders only when there is a real personal basis.
+export interface TastePick { drink: Drink; reason: string; kind: 'crew' | 'taste' }
+export function pickedForYou(me: Passport, srcs: Source[], limit = 6): TastePick[] {
+  const used = new Set<string>()
+
+  const twin = tasteTwin(me, srcs)
+  const crew: TastePick[] = []
+  for (const fp of recommendedForYou(me, srcs, 8)) {
+    if (used.has(fp.drink.id)) continue
+    const names = fp.by.map((s) => s.name)
+    const reason = twin && fp.by.some((s) => s.id === twin.source.id)
+      ? `${twin.source.name} matches your taste`
+      : names.length === 1 ? `${names[0]} loved it`
+        : `Loved by ${names.slice(0, 2).join(' and ')}`
+    crew.push({ drink: fp.drink, reason, kind: 'crew' })
+    used.add(fp.drink.id)
+  }
+
+  const love: Record<string, number> = {}
+  for (const [id, e] of Object.entries(me.entries)) {
+    if ((e.rating ?? 0) < 4) continue
+    const d = DRINK_BY_ID[id]
+    if (!d) continue
+    for (const sp of d.spirits) if (sp !== 'Wine' && sp !== 'Beer') love[sp] = (love[sp] || 0) + 1
+  }
+  const topSpirit = Object.entries(love).filter(([, n]) => n >= 3).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0]
+  const taste: TastePick[] = []
+  if (topSpirit) {
+    const cands = Object.values(DRINK_BY_ID)
+      .filter((d) => !me.entries[d.id]?.tried && !used.has(d.id) && d.spirits.includes(topSpirit))
+      .sort((a, b) => Number(b.category === 'Signature') - Number(a.category === 'Signature') || Number(b.verified) - Number(a.verified) || a.id.localeCompare(b.id))
+    for (const d of cands.slice(0, 3)) {
+      taste.push({ drink: d, reason: `Because you love ${topSpirit.toLowerCase()}`, kind: 'taste' })
+      used.add(d.id)
+    }
+  }
+
+  // interleave, crew first each round: a person's vouch is the stronger signal, but both show
+  const out: TastePick[] = []
+  for (let i = 0; i < Math.max(crew.length, taste.length) && out.length < limit; i += 1) {
+    if (crew[i]) out.push(crew[i])
+    if (taste[i] && out.length < limit) out.push(taste[i])
+  }
+  return out
+}

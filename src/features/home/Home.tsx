@@ -7,7 +7,7 @@ import {
   dayPart, greetingWord, firstName, newMedals, topMedal, crewToday, syncedAgo,
   type NextBadge,
 } from '../../state/stats'
-import { useSources } from '../../state/social'
+import { useSources, pickedForYou } from '../../state/social'
 import { DAYS, START, today, nowHour, VENUES } from '../../data/model'
 import { useCountUp } from '../../ui/useCountUp'
 import { FriendDot } from '../../ui/FriendDot'
@@ -155,6 +155,10 @@ export function Home() {
   }, [friends])
   const crew = useMemo(() => crewToday(drinks, srcs, syncedAt, day), [drinks, srcs, syncedAt, day])
 
+  // ── for you: a short shelf of drinks to try next, each with an honest reason (a matched friend
+  // loved it, or it is in the spirit you rate highest). Renders only when there is a real basis.
+  const picks = useMemo(() => pickedForYou(me, srcs), [me, srcs])
+
   // the top drink: a row either way. With a rating it opens the sheet; empty, it goes to the
   // list that fills it, so the empty state ships the one action that ends it.
   const topDrink = (
@@ -220,6 +224,25 @@ export function Home() {
           )}
         </div>
       </section>
+
+      {picks.length > 0 && (
+        <section className="section">
+          <div className="section-head"><h2 className="t-h2">For you</h2></div>
+          {/* a shelf you swipe: each card is an independently opened unit, so it earns its boundary.
+              The reason line, in the accent, is the honest basis: a matched friend, or your palate. */}
+          <ul className="rec-rail" role="list">
+            {picks.map((p) => (
+              <li key={p.drink.id} className="rec-card">
+                <button type="button" className="rec-open pressable" onClick={() => setOpenId(p.drink.id)}>
+                  <span className="rec-reason">{p.reason}</span>
+                  <span className="rec-name t-strong">{p.drink.name}</span>
+                  <span className="rec-meta t-meta">{drinkVenue(p.drink.venue)} · {p.drink.spirits[0] || p.drink.category}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {bar && (
         <section className="section">
