@@ -10,7 +10,7 @@
 import type { Drink } from '../data/model'
 import type { Entry, Passport, Profile, VenueVisit } from './stats'
 
-/** What publishBackup writes (sync.ts 67), read back. */
+/** What publishBackend writes through publishBackup (sync.ts), read back. */
 export interface BackupState { me: Passport; custom: Drink[]; profile: Profile }
 export interface RestoreOpts { untouched: boolean; canonicalCode?: string }
 export interface RestoreResult { me: Passport; custom: Drink[]; profile: Profile; adopted: number; codeChanged: boolean }
@@ -94,8 +94,8 @@ function readProfile(raw: unknown): Profile {
 }
 
 /** The row is untrusted JSON that an older build may have written. The store's own migrate chain
- *  shows what that means: migration 6 (store.ts 367 to 375) strips `profile.groupCode` and
- *  `profile.syncUrl`, and a backup written before it still carries them. So the value is rebuilt
+ *  shows what that means: migration 6 (the `delete persisted.profile.groupCode` step in store.ts)
+ *  strips `groupCode` and `syncUrl`, and a backup written before it still carries them. So it is rebuilt
  *  field by field, anything unrecognised is dropped, and anything that is not an object with both
  *  `me.entries` and `me.visits` is no backup at all, which the caller reports as 'empty'. */
 export function readBackup(raw: unknown): BackupState | null {
@@ -121,7 +121,13 @@ export function readBackup(raw: unknown): BackupState | null {
  *  undated one, and a tie (or neither dated) goes to the phone in the guest's hand. Then the union,
  *  which is what makes the merge safe: every field the winner defines wins, every field only the
  *  loser defines is kept (a note, a comment, a rating), and `tried` on either side is never untried,
- *  so no drink logged on either phone is lost. */
+ *  so no drink logged on either phone is lost.
+ *
+ *  The cost of that union, and it is deliberate: a rating or a note the guest cleared on this phone
+ *  can come back. `store.patch` deletes a key set to `undefined`, so clearing a rating or emptying a
+ *  note removes the field rather than tombstoning it, and the union keeps whatever the backup still
+ *  holds even where this phone is the later side. Nothing is ever lost, which is the property the
+ *  merge is chosen for; a clear is not a fact the data can carry without a per-field clock. */
 export function mergeEntry(local: Entry, remote: Entry): Entry {
   // An absent date sorts before every real one, so this is the whole rule in one comparison: the
   // later date wins, a dated entry beats an undated one, and equal (or both absent) leaves local.

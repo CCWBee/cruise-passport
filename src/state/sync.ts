@@ -56,7 +56,7 @@ function mode(): Mode {
 }
 
 // ── QA overrides ──
-// ?qa=account:saved,restore:done,restored:58,sync:held,signedin:1 — comma-separated key:value pairs,
+// ?qa=account:saved,restore:done,restored:58,sync:held,signedin:1. Comma-separated key:value pairs,
 // parsed once. The same family as ?day= and ?hour= in data/model.ts, and it changes nothing for a
 // real session. Values off the lists below are ignored rather than trusted.
 const ACCOUNTS: readonly string[] = ['off', 'guest', 'saved']
@@ -233,8 +233,9 @@ async function runSync() {
   // Restore reads the server before anything of ours is published over it. restoreNow calls nothing
   // that leads back here, so this can never wait on itself.
   await booting
-  // "It will try again" has to be true rather than a permanently shut gate: the backoff at 37 to 42
-  // is what re-enters runSync, so a failed restore gets one more go before this round gives up.
+  // "It will try again" has to be true rather than a permanently shut gate: the backoff in
+  // scheduleBackoff() is what re-enters runSync, so a failed restore gets one more go before this
+  // round gives up.
   if (useSyncStore.getState().restore === 'failed') {
     await restoreNow()
     if (useSyncStore.getState().restore === 'failed') { holdPending(); return }

@@ -351,8 +351,9 @@ export const useStore = create<State>()(
           if (add.length) seenMedals = [...seenMedals, ...add]
         } catch { /* the passport is still restored; at worst Home shows a coin it need not have */ }
         // My code has changed to the one the account already used, so every direct friend needs its
-        // edge made again under it. befriend writes both directions and is idempotent, so the next
-        // pull rebuilds the crew (sync.ts 104) and they simply see me under a different code.
+        // edge made again under it. befriend writes both directions and is idempotent, so the
+        // needsEdge loop in pullBackend (sync.ts) rebuilds the crew on the next pull and they simply
+        // see me under a different code.
         const friends = r.codeChanged
           ? s.friends.map((f): Friend => (f.groupOnly || !f.code ? f : { ...f, needsEdge: true }))
           : s.friends
