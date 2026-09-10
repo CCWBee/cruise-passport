@@ -101,8 +101,9 @@ test('custom drinks union by id, this phone first', () => {
 })
 
 test('two rows under one id are one drink, whichever side carries them', () => {
-  // A backup written by an older build can hold the same id twice. The id decides and the first row
-  // stands, or allDrinks() would list one custom drink twice and the badge pass would count it twice.
+  // The backup is untrusted JSON and nothing upstream promises its ids are distinct. The id decides
+  // and the first row stands, or allDrinks() would list one custom drink twice and the badge pass
+  // would count it twice.
   const withinRemote = mergeCustom([], [drink('c9', 'A'), drink('c9', 'B')])
   assert.deepEqual(withinRemote.map((d) => d.id), ['c9'])
   assert.equal(withinRemote[0].name, 'A')

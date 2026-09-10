@@ -106,10 +106,10 @@ export function readBackup(raw: unknown): BackupState | null {
   for (const [id, v] of Object.entries(me.entries)) entries[id] = readEntry(v)
   const visits: Record<string, VenueVisit> = {}
   for (const [key, v] of Object.entries(me.visits)) visits[key] = readVisit(v)
-  // Deduped here as well as in the merge, because this is the sanitiser: a caller that takes the
-  // backup wholesale never goes through mergeCustom's local side, and two rows under one id would
-  // reach allDrinks() either way. mergeCustom against an empty local list is that same first-seen
-  // rule, so there is one implementation of it rather than two that can drift.
+  // Deduped here as well as in the merge, because this is the sanitiser and its job is to hand back
+  // a value the rest of the app can trust: two rows under one id would reach allDrinks() through any
+  // caller that does not merge. mergeCustom against an empty local list is that same first-seen rule,
+  // so there is one implementation of it rather than two that can drift.
   const custom = mergeCustom([], Array.isArray(raw.custom)
     ? raw.custom.map(readDrink).filter((d): d is Drink => d !== null)
     : [])
@@ -170,9 +170,11 @@ export function mergeVisits(local: Record<string, VenueVisit>, remote: Record<st
 /** Union by id, this phone's list first. A custom drink is a thing the guest wrote, so neither side
  *  is edited: the id decides and the first row carrying it stands, local before remote and, within
  *  either list, in the order it arrived. The set grows as the loop runs rather than being fixed from
- *  `local` up front, because a backup written by an older build can carry the same id twice; letting
- *  both through would put two Drink rows under one id into allDrinks(), which the Drinks list and the
- *  badge pass both read. */
+ *  `local` up front, because the remote side is untrusted JSON off the server and nothing upstream
+ *  promises its ids are distinct: two rows under one id would put two Drink entries under that id
+ *  into allDrinks(), which the Drinks list and the badge pass both read. No build has ever written
+ *  such a row (AddSheet has always minted `'c' + Date.now()`, and it is the only minter), so this
+ *  guards the contract rather than a known bug. */
 export function mergeCustom(local: Drink[], remote: Drink[]): Drink[] {
   const have = new Set<string>()
   const out: Drink[] = []
