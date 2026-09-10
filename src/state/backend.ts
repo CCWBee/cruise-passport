@@ -114,6 +114,23 @@ export async function publishBackup(cruiseId: string, state: unknown): Promise<b
   return !error
 }
 
+/** 'none' = there is no backup row, so there is nothing to bring back and publishing over it is
+ *  safe; null = the call did not answer, and then we must not write a possibly empty passport over a
+ *  backup we could not read. The two lead to opposite actions, which is why they are told apart at
+ *  all, exactly as joinGroup tells 'invalid' from null below.
+ *  The user is resolved with currentUserId() and not ensureSession(): ensureSession **creates** an
+ *  anonymous user, so a restore that used it would mint a user, defeat ?nosync, and then read an
+ *  empty row belonging to a stranger it had just invented. */
+export async function fetchBackup(cruiseId: string): Promise<{ state: unknown; updatedAt: number } | 'none' | null> {
+  const client = await sb()
+  const uid = await currentUserId()
+  if (!client || !uid) return null
+  const { data, error } = await client.from('backups').select('state, updated_at').eq('user_id', uid).eq('cruise_id', cruiseId).maybeSingle()
+  if (error) return null
+  if (!data) return 'none'
+  return { state: data.state, updatedAt: new Date(data.updated_at).getTime() }
+}
+
 export async function befriend(code: string): Promise<boolean> {
   const client = await sb()
   if (!client || !(await ensureSession())) return false
