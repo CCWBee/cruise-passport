@@ -103,6 +103,12 @@ try {
   })()`).then(JSON.parse)
 
   // ── the drink sheet ──────────────────────────────────────────────────────────────────────────
+  // A cold Vite server pre-bundles and keeps compiling in the background after the load event,
+  // which both times out the load wait and skews the flick timings. Warm the route the run starts
+  // on, then give the server a moment to go quiet.
+  await u.goto(`${BASE}/drinks?nosync`).catch(() => {})
+  await u.sleep(2500)
+
   await open('drinks', '.dcard .d-open')
   let s = await state()
   if (!s.present) throw new Error('the drink sheet did not open')

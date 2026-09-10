@@ -34,10 +34,26 @@
     <meta name="twitter:description" content="Tick off all 214 cocktails aboard. Badges, a Cruise Wrapped finale, and what your crew loved." />
     <meta name="twitter:image" content="https://cruise.charlesbee.org/og.png" />
     <script>
-    /* Demo seed — gated on ?seed; loads sample data + two friends so the live demo is populated. */
+    /* Demo seed. Two rules: it needs an exact `?seed` parameter, not the substring, and a production
+       build only ever seeds a passport nobody has touched. Touched means any drink, any venue, any
+       friend, any group, any custom drink or a profile name, so a shared link cannot wipe a real
+       user, including one who has joined and named themselves but not yet logged a drink. The dev
+       server still overwrites unconditionally, which is what tools/qa relies on. */
     (function () {
       try {
-        if (location.search.indexOf('seed') < 0) return
+        var q = new URLSearchParams(location.search)
+        if (!q.has('seed')) return
+        var DEV = '%MODE%' !== 'production'
+        if (!DEV) {
+          try {
+            var st = JSON.parse(localStorage.getItem('spcc2') || 'null')
+            st = st && st.state
+            var n = function (o) { return o ? Object.keys(o).length : 0 }
+            if (st && (n(st.me && st.me.entries) || n(st.me && st.me.visits) ||
+                (st.friends || []).length || (st.groups || []).length ||
+                (st.custom || []).length || (st.profile && st.profile.name))) return
+          } catch (e) {}
+        }
         var DAYS = [], d = new Date('2026-10-03T12:00:00'), e = new Date('2026-10-17T12:00:00')
         while (d <= e) { DAYS.push(d.toISOString().slice(0, 10)); d.setDate(d.getDate() + 1) }
         var entries = {}, visits = {}

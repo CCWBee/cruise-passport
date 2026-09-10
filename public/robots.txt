@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /add
+Disallow: /join
+
+Sitemap: https://cruise.charlesbee.org/sitemap.xml

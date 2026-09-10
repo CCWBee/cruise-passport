@@ -60,5 +60,5 @@ the same account, mirrors your passport to `backups` for cross-device restore, a
 friend + group sync (create/join a group by link, add friends by code/QR/link) on top of the existing
 offline paths. Nothing is charged; `plan`/`slots`/`sponsored_by` exist for a future paid tier.
 
-Guest limitation, stated plainly (also shown in-app before sign-in): an anonymous user who loses their
+Guest limitation, stated plainly: an anonymous user who loses their
 device cache is unrecoverable, friend code included. Signing in is what makes progress durable.

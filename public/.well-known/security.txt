@@ -1,0 +1,4 @@
+Contact: mailto:641charlesbee@gmail.com
+Expires: 2027-09-05T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://cruise.charlesbee.org/.well-known/security.txt

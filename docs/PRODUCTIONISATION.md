@@ -263,17 +263,14 @@ everywhere. Generalising means the active cruise supplies them.
 
 - New **Cloudflare Pages** project building the repo (`npm run build`, output `dist`).
 - **Base path becomes `/`** (root of a subdomain) instead of `/cruise-passport/`. Router basename is
-  already `BASE_URL`; make the Vite base env-driven so GH Pages (staging) and Pages (prod) both work.
+  already `BASE_URL`.
 - **Custom domain:** `cruise.charlesbee.org` (decision D2). charlesbee.org is already on Cloudflare, so
   this is adding a subdomain + Pages custom domain, no new domain purchased.
 - **Update absolute URLs:** `og:url`, `og:image`, `twitter:image`, canonical → the new host. (A comment
   in `index.html` already flags these.)
-- **SPA fallback trap.** `public/404.html` is the GitHub Pages deep-link hack. Cloudflare Pages does
-  the opposite: with no `404.html` it falls back to `index.html` (correct for an SPA), but a present
-  `404.html` disables that fallback and prod deep links break. So the build **includes** `404.html`
-  for the GH Pages target and **excludes** it for the Pages target. (Verify against current CF Pages
-  docs when we get here.)
-- **GitHub Pages** stays as a staging mirror or is retired (decision D3).
+- **SPA fallback. Done 1 Sep:** base is `/` and `public/_redirects` is the SPA fallback; the
+  env-driven Vite base and the GitHub Pages deep-link fallback page were both removed.
+- **GitHub Pages.** Retired as a host on 1 Sep and kept only as a redirector (decision D3).
 - **Landing page:** a light hero at `/` (brand, one line, "Open your passport" → cruise picker). Not a
   heavy marketing site. Guest can go straight in.
 
@@ -329,7 +326,7 @@ publish GDPR DPAs).
      `linkIdentity`; it is separate from enabling the provider, so check the toggle name in the
      current dashboard).
    - Under **Auth → URL configuration**, set the Site URL and add **every** app origin to the redirect
-     allow-list: `http://localhost:5173`, the GH Pages staging URL, and `https://cruise.charlesbee.org`.
+     allow-list: `http://localhost:5173`, `http://localhost:4173` and `https://cruise.charlesbee.org`.
      Missing origins are the classic Google-redirect failure (hit this on Bobble).
    - Send me the **project URL** and the **anon/publishable key** (both public-safe). I supply the SQL
      migration for you to paste into the SQL editor.
@@ -375,43 +372,48 @@ Delegation follows the model-selection rule: Opus holds architecture, taste and 
 - **D1 — Retire the Cloudflare Worker and go all-Supabase. CONFIRMED.** The KV mailbox does not fit a
   per-person + groups model; one backend beats two.
 - **D2 — Subdomain `cruise.charlesbee.org`. CONFIRMED.**
-- **D3 — Keep GitHub Pages as staging, or retire it** once Cloudflare Pages is live? Recommend keep as
-  a staging mirror (free, useful for testing before prod).
+- **D3 — GitHub Pages as staging, or retired?** Decided 1 Sep: retired as host, kept as redirector
+  (see [RATIONALISATION.md](RATIONALISATION.md)).
 - **D4 — Friend model = capability-by-code (no accept flow).** Treated as **confirmed**: your own
   message (stable code, add-me menu, QR, camera, appear in the feed) describes exactly this, with no
   request/accept ceremony.
 
 ## Nothing-dropped checklist
 
-- [ ] Stable friend code, generated once, migrated for existing users.
-- [ ] Two social layers that compose: peer friends (capability code) + groups (roster); a person can
+Ticked on 5 September against the code and [RATIONALISATION.md](RATIONALISATION.md). What is left
+unticked is the whole of the outstanding work: accounts (Google sign-in with data-preserving
+linking, and the redirect allow-list that goes with it), the restore merge path, offline verified
+on a real device, the in-app privacy note, and the guest-mode limitation surfaced in the app.
+
+- [x] Stable friend code, generated once, migrated for existing users.
+- [x] Two social layers that compose: peer friends (capability code) + groups (roster); a person can
       be in groups and have friends outside them.
-- [ ] Friendship converges to mutual online (`befriend` writes the reverse edge; no accept flow).
-- [ ] Reads edge/membership-gated (codes bootstrap, edges authorise); Remove friend truly revokes
+- [x] Friendship converges to mutual online (`befriend` writes the reverse edge; no accept flow).
+- [x] Reads edge/membership-gated (codes bootstrap, edges authorise); Remove friend truly revokes
       online sharing; offline QR noted honestly as unrevocable.
-- [ ] People keyed by code with provenance (friend / which groups); removal + leave-group semantics.
-- [ ] Groups: create + one-link join (`create_group`/`join_group`), roster, generous free slot default.
-- [ ] Router reserves `/add/<code>` and `/join/<invite>`; offline group join queues on held/pending.
-- [ ] Paid/unpaid designed in (group.plan/slots, membership.sponsored_by), all free now, no payment UI.
-- [ ] "Add me" panel: code + QR + copy.
-- [ ] Invite link (tap to add, no typing) + group invite link; typed code is fallback only.
-- [ ] QR emits mode B (deflate) so real payloads fit; camera scan adds a friend fully offline.
-- [ ] Pending roster/feed row for a code-only friend renders gracefully.
-- [ ] Paste-code fallback retained.
-- [ ] Two payloads: lossy social SPP + full owner-only backup. Restore never loses fav/wish/notes/custom.
+- [x] People keyed by code with provenance (friend / which groups); removal + leave-group semantics.
+- [x] Groups: create + one-link join (`create_group`/`join_group`), roster, generous free slot default.
+- [x] Router reserves `/add/<code>` and `/join/<invite>`; offline group join queues on held/pending.
+- [x] Paid/unpaid designed in (group.plan/slots, membership.sponsored_by), all free now, no payment UI.
+- [x] "Add me" panel: code + QR + copy.
+- [x] Invite link (tap to add, no typing) + group invite link; typed code is fallback only.
+- [x] QR emits mode B (deflate) so real payloads fit; camera scan adds a friend fully offline.
+- [x] Pending roster/feed row for a code-only friend renders gracefully.
+- [x] Paste-code fallback retained.
+- [x] Two payloads: lossy social SPP + full owner-only backup. Restore never loses fav/wish/notes/custom.
 - [ ] Restore is a defined self-only merge path (adopt canonical code, newer-wins), not an ad-hoc one.
 - [ ] Anonymous auth (invisible) + optional Google sign-in with data-preserving link (manual linking on).
-- [ ] Auth redirect allow-list covers localhost + staging + prod origins.
-- [ ] Cruise-scoped schema + v3 wire format (`cr`) from day one; off-cruise payloads ignored, never crash.
-- [ ] RLS: write-own, read-by-code; codes un-enumerable; first-claim-wins.
-- [ ] Sync reworked onto Supabase; offline envelope unchanged; Worker retired; KV deleted.
-- [ ] Cruise registry + picker; passport keyed by cruise; store migration; `?seed` version bumped in lockstep.
-- [ ] Cloudflare Pages + `cruise.charlesbee.org`; base path `/`; OG/canonical URLs updated; 404.html excluded for Pages.
+- [ ] Auth redirect allow-list covers `http://localhost:5173`, `http://localhost:4173` and `https://cruise.charlesbee.org`.
+- [x] Cruise-scoped schema (`cruise_id` on passports, backups, groups and both feeds). The share payload stayed at `v: 2` and carries no cruise tag; unknown fields are ignored, never fatal.
+- [x] RLS: write-own, read-by-code; codes un-enumerable; first-claim-wins.
+- [x] Sync reworked onto Supabase; offline envelope unchanged; Worker retired; KV deleted.
+- [x] Cruise registry + picker; passport keyed by cruise; store migration; `?seed` version bumped in lockstep.
+- [x] Cloudflare Pages + `cruise.charlesbee.org`; base path `/`; OG/canonical URLs updated; no deep-link fallback page, so the Pages SPA fallback works.
 - [ ] PWA precache + network-first feed + offline fallback, verified on a real offline render.
-- [ ] Wrapped social slide.
+- [x] Wrapped social slide.
 - [ ] Data protection: EU region, minimisation, consent + in-app privacy note, delete-my-data (erasure), no third-party tracking.
 - [ ] Guest-mode limitation surfaced as an honest choice (lose cache = unrecoverable without sign-in).
-- [ ] Login stays optional throughout; no hard gate.
-- [ ] Keys only in `.env`/Pages/Actions, never in context-loaded docs.
-- [ ] Isabel's repo untouched; Bobble's Supabase untouched.
+- [x] Login stays optional throughout; no hard gate.
+- [x] Keys only in `.env`/Pages/Actions, never in context-loaded docs.
+- [x] Isabel's repo untouched; Bobble's Supabase untouched.
 ```

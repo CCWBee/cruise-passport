@@ -34,6 +34,8 @@ jobs:
       # The design guard: fails the deploy on any CSS value off the system in docs/DESIGN.md that is
       # not an accepted exception in tools/qa/design-allow.txt.
       - run: npm run design:check
+      # 0 errors required; warnings do not fail
+      - run: npm run lint
       - run: npm run build
         env:
           # Supabase backend (anonymous auth, friend graph, groups, backup). Both are public-safe: the

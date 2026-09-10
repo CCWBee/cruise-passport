@@ -40,7 +40,7 @@ export async function launch({ width = 500, height = 900 } = {}) {
     else if (msg.method) listeners.forEach((l) => l(msg))
   }
   const send = (method, params = {}, sessionId) => new Promise((res, rej) => { const m = ++id; pending.set(m, { res, rej }); ws.send(JSON.stringify({ id: m, method, params, sessionId })) })
-  const waitFor = (method, sessionId, timeout = 15000) => new Promise((res, rej) => {
+  const waitFor = (method, sessionId, timeout = 60000) => new Promise((res, rej) => {
     const t = setTimeout(() => { listeners.splice(listeners.indexOf(l), 1); rej(new Error('timeout ' + method)) }, timeout)
     const l = (msg) => { if (msg.method === method && (!sessionId || msg.sessionId === sessionId)) { clearTimeout(t); listeners.splice(listeners.indexOf(l), 1); res(msg.params) } }
     listeners.push(l)

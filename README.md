@@ -7,14 +7,17 @@ use: content flat on a sand ground, one accent, a living WebGL sea on Home whose
 completion. The design contract is `docs/DESIGN.md`.
 
 **Live:** https://cruise.charlesbee.org &nbsp;·&nbsp; https://cruise.charlesbee.org/?seed loads sample
-data + two friends so every surface is populated. Drop `?seed` to start from an empty passport. The
-old `ccwbee.github.io/cruise-passport` address is a redirector now, nothing more.
+data + two friends so every surface is populated. It only seeds a passport nobody has touched: if you
+have logged a drink, been to a venue, added a friend or a group, or set your name, the link leaves
+your passport alone. Drop `?seed` to start from an empty passport. The old
+`ccwbee.github.io/cruise-passport` address is a redirector now, nothing more.
 
 ## Highlights
 
-- **Six surfaces:** a living-sea Home, a faceted Drinks browser (self-excluded live counts,
-  segmented controls), a bow-to-stern Ship deck map, hand-rolled Stats charts, a Badges wall, and a
-  15-day travel-journal Log.
+- **Five tabs:** a living-sea Home, a faceted Drinks browser (self-excluded live counts, segmented
+  controls), a bow-to-stern Ship deck map, Crew (friends and groups), and You, which holds the
+  hand-rolled Stats charts, the Badges wall and the 15-day travel-journal Log behind a segmented
+  control.
 - **3D award medallions:** react-three-fiber matcap-metal coins, 18 unique embossed emblems, spun
   and struck; lazy-loaded so they cost nothing until opened.
 - **Cruise Wrapped:** a Spotify-Wrapped-style story of your voyage, built from real data, ending in a
