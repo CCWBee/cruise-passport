@@ -92,6 +92,31 @@ h1, h2, h3, p { margin: 0; }
   border-radius: var(--r-surface);
   box-shadow: none;
 }
+/* the white plate under any Qr: a code has to read under a camera, so the plate is white whatever
+   the ground beneath it is. It comes after .panel, so a `panel qr-plate` reads white, not the
+   panel's translucent film. */
+.qr-plate {
+  justify-self: center;
+  padding: var(--s3);
+  background: var(--on-accent);
+  line-height: 0;
+}
+.qr-plate svg { display: block; }
+/* Qr returns null for a value it cannot encode, and a parent cannot see a child return null, so the
+   plate hides itself here rather than leaving an empty white box on any of its three call sites. */
+.qr-plate:empty { display: none; }
+/* the quietest text action on a screen: a way on that must not compete with the screen's own
+   answer, but is still the only route for whoever needs it, so it stays 44px of target */
+.quiet-action {
+  display: block;
+  margin-top: var(--s5);
+  min-height: var(--ctl);
+  font-size: var(--f-meta);
+  font-weight: 600;
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 /* ── Liquid glass: the material of the chrome layer. It reads as glass because content moves
    beneath it, so it lives only where that is true: nav, sheet, the hero chips and floating action,
    the toast, the Wrapped certificate. Never in the content layer, never glass on glass. ── */
