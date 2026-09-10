@@ -4,9 +4,10 @@ import { decodeShare, extractShareCode, parseFriend, type SharePayload } from '.
 import { joinGroupFlow } from '../state/groups'
 import { hasBackend } from '../state/backend'
 import { Confirm } from '../ui/Confirm'
-import { qaFirstOpen } from '../data/model'
+import { qaFirstOpen, qaLanding } from '../data/model'
 import { useStore } from '../state/store'
 import { Entry } from '../features/cruise/Entry'
+import { Landing, isDesktopVisitor } from '../features/landing/Landing'
 import { Shell } from './Shell'
 import { Home } from '../features/home/Home'
 import { Drinks } from '../features/drinks/Drinks'
@@ -22,6 +23,22 @@ function WrappedRoute() {
   const navigate = useNavigate()
   return <Wrapped onClose={() => navigate('/')} />
 }
+
+// /get, reached by somebody who has already entered: the gates did not fire, so the way on is back
+// into the passport rather than on to the entry screen. The label is a prop for that reason, not a
+// store read: at the gate the seed has already marked the store entered, so a component reading the
+// store there would print "Open your passport" on a button that opens the entry screen.
+function GetRoute() {
+  const navigate = useNavigate()
+  return <Landing onContinue={() => navigate('/')} continueLabel="Open your passport" />
+}
+
+// Somebody typing the address off a card produces /get/ as often as /get, so both tests compare a
+// trailing-slash-trimmed path against the base.
+const path = () => location.pathname.replace(/\/$/, '')
+const base = () => import.meta.env.BASE_URL.replace(/\/$/, '')
+const atRoot = () => path() === base()
+const atGet = () => path() === base() + '/get'
 
 // Friend invite link. /add#SPP… carries the sender's identity card (or, on an offline build, their
 // whole passport) in the fragment, so a tap adds them with no internet either way.
@@ -165,6 +182,21 @@ export default function App() {
   // ?entry (QA) renders the screen once over a seeded store, and Done clears it, so the click-through
   // can be exercised too. The useState sits above the early return, so hook order is unconditional.
   const [forced, setForced] = useState(() => qaFirstOpen())
+  const [skipLanding, setSkipLanding] = useState(false)
+  // The way on rewrites the address before it stands the gate down, keeping the query string so
+  // ?nosync and the rest survive: without it the entry screen would appear and then the router would
+  // mount /get and show the landing a second time.
+  const onLandingContinue = () => {
+    if (atGet()) history.replaceState(null, '', import.meta.env.BASE_URL + location.search)
+    setSkipLanding(true)
+  }
+  // A desktop visitor cannot use a one-handed phone logbook on the machine in front of them, so at /
+  // and at /get they get the install path instead of the entry screen. The path test is not optional:
+  // this gate sits in front of every route, and a desktop visitor tapping an /add link must reach
+  // AddRoute. /get is claimed here as well because the entry gate below has no path test, so without
+  // it the first-time desktop visitor who follows the address off a card meets a name and a colour.
+  if ((!enteredCruise || qaLanding()) && !skipLanding && (atRoot() || atGet()) && isDesktopVisitor())
+    return <Landing onContinue={onLandingContinue} continueLabel="Open it in this browser instead" />
   // What decides the first screen is `enteredCruise`, not the number of sailings: consent has to
   // precede the first befriend or join_group, so a tapped invite link on a cold phone sees this
   // first. The URL is not touched, so after Done the router mounts on the original path with its
@@ -187,6 +219,8 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Route>
         <Route path="/wrapped" element={<WrappedRoute />} />
+        {/* outside Shell, as /wrapped is: the landing carries its own masthead and has no nav */}
+        <Route path="/get" element={<GetRoute />} />
       </Routes>
     </BrowserRouter>
   )
