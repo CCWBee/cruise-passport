@@ -24,13 +24,26 @@ architecture in `docs/specs/2026-09-10-product-brief.md`.
 - Pass A done 10 September (run `wf_a90270f3-7d1`): six commits `b42483a`..`7414857` on `product`;
   review verdict pass, five minor harness findings folded into pass C's step 0. `tools/qa/update.mjs`
   prints three PASS lines and fails on the old `main.tsx` (negative control run).
-- In flight: pass C (sign-in and restore), build → gate review → fix, one stream, on `product`,
-  launched 10 September from `7414857`. Resume:
-  `Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-pass-c-signin-restore-wf_d78557ca-8a2.js", resumeFromRunId: "wf_d78557ca-8a2" })`.
-  Journal: `...\E--claude-projects\10468e48-0258-48b8-84c7-deaaceda11ba\subagents\workflows\wf_d78557ca-8a2\journal.jsonl`.
-  Its live-backend launch-order check creates anonymous users named Alex (one per builder run, one
-  per reviewer run); purge them the same day under the `CLAUDE.md` rule.
-  Order after C: B, then E, then BYO, each its own run, never two in one working tree.
+- Pass C done 10 September (run `wf_d78557ca-8a2`): fourteen build commits `dd1a9fa`..`9ff1563`,
+  review verdict fail (two blockers: an em dash in a new `sync.ts` comment; `mergeCustom` kept
+  duplicate ids), four fix commits, HEAD `39676d1`, all gates green (17 tests, tsc, design:check,
+  lint 28/0). Live launch-order proven: the backups select precedes the first upsert. Not
+  exercisable here: Google, `linkIdentity`, the `fresh` path, a genuinely missing backup. Residual
+  one-line fixes left to the defaults: `restoreNow` snapshots state before its awaits; the
+  return-leg restore has no manual trigger. The fix commits carry two co-author lines (Opus 5
+  wrote them; the session line is Fable), which is accurate.
+- Anonymous QA users created on the live backend on 10 September, all profile name Alex, zero
+  edges and zero memberships, nine in total: two from the sellability shots (about 11:00), builder
+  codes QR9Y-NYC3 and QAZ9-2TPD (12:43, 12:46), reviewer codes HCBC-6FT7 and PZQ5-W9FN plus one
+  uncaptured at about 13:07 (13:03 to 13:07), fixer codes 3QJT-1FC5 and BDHC-KF9X (13:20, 13:22).
+  Purge under the `CLAUDE.md` rule; never blanket-purge. Pass B's hand check adds one more.
+- In flight: pass B (entry and first open), build → gate review → fix, one stream, on `product`,
+  launched 10 September from `39676d1`. Resume:
+  `Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-pass-b-entry-first-open-wf_ad2def83-9b8.js", resumeFromRunId: "wf_ad2def83-9b8" })`.
+  Journal: `...\E--claude-projects\10468e48-0258-48b8-84c7-deaaceda11ba\subagents\workflows\wf_ad2def83-9b8\journal.jsonl`.
+  Its hand check creates one anonymous Alex user per builder and reviewer run and deletes it through
+  Delete my data in the same run (the auth row remains; the uid is in the run's report).
+  Order after B: E, then BYO (gated on Charles's two rulings), each its own run.
 - Rulings and copy still Charles's, per spec: C: what a "fresh" sign-in erases (spec deletes the
   guest's own profile, passport and backup rows and leaves memberships), and whether a lost
   `sessionStorage` trigger should have a manual restore. B: the privacy contact address
