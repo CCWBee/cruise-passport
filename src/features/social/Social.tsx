@@ -1,9 +1,9 @@
 // The Social tab, top to bottom: who you are, how people get in, the crew, your groups, and what the
 // crew has found. Crew = direct friends plus group co-members, one roster, tagged by how you got them.
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { VENUES } from '../../data/model'
 import { hasBackend } from '../../state/backend'
-import { FRIEND_COLOURS, useStore } from '../../state/store'
+import { useStore } from '../../state/store'
 import { useSources, undiscovered } from '../../state/social'
 import { useConfirm } from '../../ui/Confirm'
 import { FriendDot } from '../../ui/FriendDot'
@@ -14,13 +14,13 @@ import { ConfirmButton } from '../friends/ConfirmButton'
 import { GroupSheet } from '../friends/GroupSheet'
 import { ProfileSheet } from '../friends/ProfileSheet'
 import { DiscoverTogether } from '../home/DiscoverTogether'
+import { NameFields } from './NameFields'
 import '../friends/friends.css'
 import './social.css'
 
 // Nothing shared before this is answered would carry a name: everything would read "A friend". A form
 // with its own boundary, so it is the one panel on the screen.
 export function NameCard({ lead }: { lead?: string }) {
-  const profile = useStore((s) => s.profile)
   const setProfile = useStore((s) => s.setProfile)
   const [draft, setDraft] = useState('')
   // On /join the card is the whole page, so its question is that page's h1. On Crew it sits above
@@ -31,32 +31,7 @@ export function NameCard({ lead }: { lead?: string }) {
     <section className="panel social-name">
       <Heading className="t-h2">What should your crew call you?</Heading>
       {lead && <p className="t-meta social-name-lead">{lead}</p>}
-      <label className="f-field">
-        <span className="f-label">Your name</span>
-        <input
-          value={draft}
-          maxLength={24}
-          autoComplete="name"
-          placeholder="Your name"
-          onChange={(event) => setDraft(event.target.value)}
-        />
-      </label>
-      <div className="f-field">
-        <span className="f-label">Your colour</span>
-        <div className="fpick">
-          {FRIEND_COLOURS.map((colour) => (
-            <button
-              type="button"
-              key={colour}
-              className={'fpick-dot pressable' + (profile.colour === colour ? ' on' : '')}
-              style={{ '--fc': `var(--fruit-${colour})` } as CSSProperties}
-              aria-label={`Use ${colour}`}
-              aria-pressed={profile.colour === colour}
-              onClick={() => setProfile({ colour })}
-            />
-          ))}
-        </div>
-      </div>
+      <NameFields draft={draft} onDraft={setDraft} />
       {/* the fill arrives with the name: an empty draft leaves a plain disabled control rather than
           coral text on a coral wash, which is the one thing on this card nobody could read */}
       <button
