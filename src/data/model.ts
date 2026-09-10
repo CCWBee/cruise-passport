@@ -135,6 +135,15 @@ export function nowHour(): number {
 export function qaNoSync(): boolean {
   return typeof location !== 'undefined' && new URLSearchParams(location.search).has('nosync')
 }
+/** ?landing=desktop|phone (QA only) pins which branch of the landing screen renders. `desktop` also
+ *  forces the root gate open, because shot.mjs always appends ?seed and a seeded store has already
+ *  migrated to entered, so the gate could never be reached otherwise. `phone` forces nothing: it
+ *  only pins the branch off, which is what makes it the negative control. Anything else is ignored. */
+export function qaLanding(): 'desktop' | 'phone' | null {
+  if (typeof location === 'undefined') return null
+  const raw = new URLSearchParams(location.search).get('landing')
+  return raw === 'desktop' || raw === 'phone' ? raw : null
+}
 /** ?entry (QA only) renders the first-open screen once whatever the store says, so it can be shot
  *  from a seeded dev server: index.html seeds at version 2, so the store always migrates through the
  *  step that marks it entered. It does not gate sync, which reads enteredCruise rather than this, so
