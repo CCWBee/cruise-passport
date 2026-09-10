@@ -129,7 +129,7 @@ export function GroupSheet({ groupId, onClose }: { groupId?: string; onClose: ()
           <>
             {invite && (
               <div className="addme" data-noswipe>
-                <div className="panel addme-qr"><Qr value={groupInviteLink(invite)} size={200} label="Scan to join this group" /></div>
+                <div className="panel qr-plate"><Qr value={groupInviteLink(invite)} size={200} label="Scan to join this group" /></div>
                 <div className="addme-code">
                   <span className="f-label">Invite code</span>
                   {/* Copy sits beside the code, as on the add sheet; sharing is an action, so it

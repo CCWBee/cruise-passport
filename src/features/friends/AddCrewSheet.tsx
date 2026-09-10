@@ -237,7 +237,7 @@ export function AddCrewSheet({ onClose, onDone }: {
 
         {showCode && (
           <div className="addme" data-noswipe>
-            <div className="panel addme-qr">{link ? <Qr value={link} size={200} /> : <div className="addme-qr-skel" aria-hidden />}</div>
+            <div className="panel qr-plate">{link ? <Qr value={link} size={200} /> : <div className="addme-qr-skel" aria-hidden />}</div>
             {profile.code && (
               <div className="addme-code">
                 <span className="f-label">Your code</span>
@@ -286,7 +286,7 @@ export function AddCrewSheet({ onClose, onDone }: {
             <button type="button" className="btn btn-wide friends-action" onClick={add} disabled={!paste.trim()}>Add</button>
           </div>
         ) : (
-          <button type="button" className="friends-quiet" onClick={() => setShowPaste(true)}>Paste a code instead</button>
+          <button type="button" className="quiet-action" onClick={() => setShowPaste(true)}>Paste a code instead</button>
         )}
 
         {status && <p className="t-meta friends-status" role="status">{status}</p>}

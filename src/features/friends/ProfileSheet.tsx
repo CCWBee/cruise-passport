@@ -130,7 +130,7 @@ export function ProfileSheet({ onClose }: { onClose: () => void }) {
                     className="btn btn-wide friends-action"
                     onConfirm={() => { void startSignIn('fresh') }}
                   />
-                  <button type="button" className="friends-quiet" onClick={keepAsGuest}>Or keep using this phone’s passport as a guest.</button>
+                  <button type="button" className="quiet-action" onClick={keepAsGuest}>Or keep using this phone’s passport as a guest.</button>
                 </>
               ) : sync.account === 'saved' ? (
                 <p className="t-body">Kept with Google. Sign in on any phone and this passport comes back.</p>
