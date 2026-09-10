@@ -241,6 +241,72 @@ Nothing has left the phone when this renders, and nothing does until Done: `sync
 transport on `enteredCruise`. That is what makes the consent line true rather than a description of
 something that already happened.
 
+### Landing
+
+Read: what this is, how to get it on my phone, what it costs. It is Entry's desktop twin, and it sits
+here for that reason: those two are the screens a cold visitor meets. A laptop is the wrong instrument
+for a one-handed phone logbook, so a desktop visitor is given the app on the phone in their pocket
+rather than a screen asking for a name and a colour. It renders outside `Shell`, so it carries its own
+ground and its own masthead and has no nav, and it renders in two places: the gate at `/`, immediately
+above Entry's, and the route `/get`, mounted outside `Shell` as `/wrapped` is. `isDesktopVisitor()`
+decides which branch paints, on `(min-width: 900px) and (hover: hover) and (pointer: fine)`: three
+conditions together, because a phone in landscape can exceed 900px and a tablet with a trackpad
+genuinely is a desktop visitor for this purpose.
+
+Desktop branch, in rank order:
+
+1. **Masthead** (chrome). The same component every other screen carries, pinned to the top of the
+   viewport rather than part of the centred block.
+2. **Title and lead.** `h1.t-title`, then one `p.muted.t-body`: Entry's "what this is" sentence
+   character for character, so the two screens a cold visitor can land on answer that question
+   identically.
+3. **The code**, the dominant element and the reason the screen exists. A `.section` holding
+   `h2.t-h2` inside a `.section-head`, one `p.t-meta`, then the `.qr-plate` with a 200px `Qr`, then
+   the address as `p.t-meta.tnum.landing-addr` beneath it. Sibling: the add sheet's plate. The value
+   is `location.origin` plus the base, so it is always the address in front of the visitor; the line
+   beneath is the display form of the same value, and it is real selectable text, so there is a route
+   to the app whether the code draws or not. Nothing else on the screen is boxed.
+4. **Add it to your home screen.** A `.section` holding the heading, then two static `.line` rows
+   taking their single hairline from `base.css`, one per platform, then one `p.t-meta.landing-note`.
+   Each row is `div.line > div.landing-step`, `.t-strong` then `.t-meta`; `.line` and not `.row`,
+   because an instruction is not a control. Inside the installed app the rows and the line beneath
+   become one `p.t-body`, "It is already on your home screen", and the heading stays, so the screen
+   keeps its shape.
+5. **The price slot**, one `p.t-meta`, rendered only when `PRICE_LINE` is set. It is `null` today, so
+   the branch renders five modules and this position is reserved. It sits below the steps because
+   price is the last thing a visitor needs and the first thing that would cheapen the screen if it
+   led.
+6. **The way on**, one `.quiet-action`. Its label is a prop, not a store read: the gate passes "Open
+   it in this browser instead", `/get` passes "Open your passport".
+
+Phone branch: module 3 is absent, because a code of the address the phone is already on tells it
+nothing. Masthead, title and lead, the install steps, the price slot, the way on, which is four
+rendered modules while the slot is empty.
+
+The masthead is row 1 of the page grid and the centred block is row 2, with 32 above and below as
+`.entry` has. Inside the block: 8 from the title to its lead; 32 above each of the two headed modules,
+which comes from `.section`'s own margin and not from a grid gap, so the section rhythm is the app's
+one rhythm; 8 from a `.section-head` to its content; 12 between the meta line, the plate and the
+address; 12 from the install rows to the line beneath them; 24 above the price line and 24 above the
+way on. Radius 20 on the plate, from `.panel`, and nothing else boxed; control height 44 on the way
+on. No new token, no shadow and no `backdrop-filter`. The plate's `--on-accent` overrides `.panel`'s
+film on source order, because a code has to read under a camera on any ground. There is no
+`--coral-ink` anywhere on the screen: the budget is one filled control per screen and this screen has
+none, because its primary action happens on a different device.
+
+Fold, desktop, at **1280×800**: modules 1 to 3, the plate included, ending at about 502. The install
+steps and the way on sit below it on a short window, and that is the intended shape rather than a
+defect: the code is the reason the screen exists and the steps are what you read after you have
+scanned it. The whole screen is about 816, so it runs past an 800px window, which is why the shot
+asserts the plate against the fold and not a document height. 390×844 is not a viewport this branch
+can be seen at, since `(min-width: 900px)` excludes it; it is shot there only to prove nothing
+overflows when it is squeezed. Fold, phone, at **390×844**: all four rendered modules, about 470 of
+844, nothing below the fold.
+
+Nothing on this screen collects, sends or stores anything, so it carries no consent line and no
+privacy row: the way on leads to Entry, which asks properly. It makes no network request either, so
+there is no offline state to write and none may be added.
+
 ### Home
 
 Read: what day is it, where am I, what do I do now. Home is the instrument's front panel, not a
@@ -433,9 +499,11 @@ colour, are how that happens again. Read it before any change that renders.
 | `.section`, `.section-head` | `base.css` | a section is a plain `h2.t-h2`, 32px above, 8px to its content, count or meta at the right |
 | `.row` (tappable), `.line` (static), `.row-copy` | `base.css` | every list is rows with hairlines on the ground; never a box per item |
 | `.panel` | `base.css` | the one container, for a bounded interactive module only; never nested |
+| `.qr-plate` | `base.css` | the white plate under any `Qr`, because a code has to read under a camera whatever the ground is: the add sheet, the group sheet and the landing. It hides itself when empty, which is how `Qr` returning null for a value it cannot encode is caught at every call site at once |
 | `.glass-live`, `.glass-edge`, `.glass-coral` | `base.css` | liquid glass for chrome: nav, sheet, hero chips and the floating action, toast, Wrapped certificate. Nothing in the content layer |
 | `Confirm`, `haptic()` | `src/ui/Confirm.tsx`, `src/ui/haptic.ts` | the one success confirmation (tick on glass, label, haptic); silent where the result is already visible |
 | `.btn .btn-coral .btn-wide`, `GlassButton` | `base.css`, `src/ui/GlassButton.tsx` | one filled coral control per screen; disabled falls to the plain surface |
+| `.quiet-action` | `base.css` | the quietest text action on a screen: a block, 44px of target, meta size at weight 600 in `--ink-2`, underlined, 24 above. Swept from `.friends-quiet`; the paste path and the guest line on Your details, and the landing's way on |
 | `.tag`, `.mini` | `base.css` | small outline tags inside a meta line; compact 36px secondary control |
 | `Sheet` + `.sheet-meta` | `src/ui/Sheet.tsx`, `sheet.css` | title then one meta line; no eyebrow; the SheetWave is its opening |
 | `Field`, `SearchField`, `Select`, `Switch`, `Segmented`, `Chip`, `Toast`, `FriendDot` | `src/ui/` | the controls; restyle them there, never locally |
@@ -443,8 +511,9 @@ colour, are how that happens again. Read it before any change that renders.
 | `.sr-only` | `base.css` | visually hidden, still announced |
 | `.meter` | `base.css` | the 3px measure beside a count out of a total (venue rows, the Home bar row); Stats' 6px deck bars and the badge rows keep their own shapes |
 | `dayPart()`, `greetingWord()` | `src/state/stats.ts` | the six parts of the day and the greeting word; the sea's sky palette and Home's greeting both key off them, never off their own boundaries |
-| `nowHour()`, `today()`, `qaFirstOpen()` | `src/data/model.ts` | the clock, with `?hour=` and `?day=` QA overrides; `?entry` forces the first-open screen over any store, and does not gate sync |
-| `Masthead` | `src/app/Masthead.tsx` | the app's name above every screen, `Shell`'s and the entry screen's alike. Chrome: never part of a screen's rank order |
+| `nowHour()`, `today()`, `qaFirstOpen()`, `qaLanding()` | `src/data/model.ts` | the clock, with `?hour=` and `?day=` QA overrides; `?entry` forces the first-open screen over any store, and does not gate sync; `?landing=desktop\|phone` pins the landing's branch, and `desktop` also forces the root gate open, since `?seed` has always migrated the store to entered |
+| `Masthead` | `src/app/Masthead.tsx` | the app's name above every screen, `Shell`'s, the entry screen's and the landing's alike. Chrome: never part of a screen's rank order |
+| `Landing`, `isDesktopVisitor()` | `src/features/landing/Landing.tsx` | the desktop install path: what this is, the code of the live address, the two steps to a home screen, and the price slot when there is one. `isDesktopVisitor()` is the width-plus-pointer test that decides it, and it is the only reader of the media query; the way on's label is a prop, because the caller knows which path it is on |
 | `NameFields` | `src/features/social/NameFields.tsx` | the name and colour pair wherever it is asked for (`NameCard`, the entry screen). It imports `friends/friends.css`, which owns `.f-field input`, `.fpick` and `.fpick-dot`. `ProfileSheet` keeps its own copy on purpose: it writes to the store on every keystroke with no draft, so it has nothing to hand `draft` and `onDraft`. A fourth site gets an uncontrolled mode on `NameFields`, never a fourth copy |
 | `PrivacySheet`, `PRIVACY_SUBTITLE`, `GUEST_HONESTY` | `src/features/privacy/PrivacySheet.tsx` | the privacy note, one text, opened by the same `.privacy-open` row from the entry screen and from Your details; `GUEST_HONESTY` is the one wording of what a guest stands to lose |
 | `seenMedals`, `markMedalsSeen()` | `src/state/store.ts` (persist v8) | which badges' "new medal" moment Home has shown; seeded on upgrade with what was already earned |
