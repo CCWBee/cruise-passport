@@ -53,12 +53,19 @@ Accepted exceptions live in `tools/qa/design-allow.txt` with their reasons.
   the check.
 - **Backend:** Supabase project `qpmrfoglxohmjhjtvkac`, separate from every other project's. Guest
   first; login stays optional. Migrations in `supabase/migrations/`.
+- **First open:** `enteredCruise` (persist v9) decides the first screen, not the number of sailings,
+  and `src/features/cruise/Entry.tsx` is what sets it. Until it is true `sync.ts`'s `mode()` is
+  `'off'`, so a cold first open signs in to nothing and writes nothing: the consent line on that
+  screen would be false otherwise. `tools/qa/first-open.mjs` is the check, and it is the one thing
+  `shot.mjs` cannot see, because it always appends `?seed` and a seeded store is already entered.
 - **Seed:** `?seed` loads sample data and two friends from the inline block in `index.html`. It needs
   the exact `?seed` parameter, not the substring, and a production build only seeds a passport nobody
   has touched: any entry, visit, friend, group, custom drink or profile name and it returns without
   writing, so a shared link cannot wipe a real user, including one who has joined and named
   themselves but not yet logged a drink. The dev server still overwrites unconditionally, which is
-  what `tools/qa` relies on. The seed profile is named Alex. QA runs against the live backend create
+  what `tools/qa` relies on. `?entry` (`qaFirstOpen()`, `src/data/model.ts`) forces the first-open
+  screen over any store, so it can be shot from a seeded server; it does not gate sync, so pass
+  `&nosync` with it. The seed profile is named Alex. QA runs against the live backend create
   anonymous users; purge only anonymous sessions created that day with profile name Alex and zero
   edges or memberships. Real users have existed since 3 September, so never blanket-purge. Pass
   `?seed&nosync` to keep a headless run off the backend entirely.
@@ -75,6 +82,12 @@ Accepted exceptions live in `tools/qa/design-allow.txt` with their reasons.
   the button says "Sign-in is not available yet" rather than failing silently. There is no sign-out
   control on purpose: signing out drops to no session and the next `ensureSession()` mints a fresh
   anonymous user, which orphans every edge. Google itself has never been exercised end to end here.
+  The server no longer stores the literal `A friend`: `publishBackend` writes `profile.name` as it
+  stands, so `profiles.name`, the column `find_profiles` and both feeds read, is never fabricated,
+  and an unnamed guest is not findable rather than findable under an invented name. The sixteen old
+  rows are overwritten with an empty name the next time each of those users syncs. The four
+  client-side display fallbacks are unchanged, and `share.ts` still puts the literal in
+  `passports.payload.n`, which no SQL reads.
 - **`?qa=` overrides** (QA only, `src/state/sync.ts`, the same family as `?seed`, `?nosync`, `?day=`
   and `?hour=`): `?qa=account:saved,restore:done,restored:58,sync:held` puts any sign-in or restore
   state on screen, and any of those four freezes the sync so nothing overwrites the state before the

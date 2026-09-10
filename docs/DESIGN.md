@@ -198,10 +198,52 @@ Each screen has a five-second read, its modules in rank order, and what must be 
 390×844 with the nav in place (about 740px of content). Modules below the fold are still present;
 they are simply not the reason the screen exists.
 
+### Entry
+
+Read: which sailing, who am I, what does this do with my data. The first open asks those three once
+and then never asks again; `enteredCruise` is the record that it did. It renders outside `Shell`, so
+it carries its own ground and its own masthead and has no nav.
+
+0. **The ground**, the same `<div className="ground" aria-hidden />` `Shell` renders. Not a module:
+   without it the screen falls back to flat `--cream` from `body` and loses the two washes and the
+   grain. The screen itself is a `<main className="entry">`, so it has one landmark, as `main.view`
+   does everywhere else.
+1. **Masthead** (chrome). The same component every other screen carries, pinned to the top of the
+   viewport rather than part of the centred block.
+2. **The sailing.** `h1.t-title` with the ship, then one `p.t-meta` line: line, middle dot, dates.
+   Sibling: a sheet's title and its one meta line. With more than one sailing in the registry the h1
+   becomes "Choose your sailing" and `Select` answers it under a "Your sailing" label; that branch
+   cannot render while `CRUISES` has one entry.
+3. **Name and colour.** `NameFields` inside `div.entry-fields`. On the ground, not in a `.panel`: the
+   sibling is `ProfileSheet`, whose identical pair sits flat on the sheet. `NameCard` keeps its panel
+   on Crew because it sits among other content there; here the form is the screen, and a box around
+   the only thing present is the fourth banned tell.
+4. **What this is**, one `p.t-body`.
+5. **The consent line**, one `p.t-meta`, then the privacy note as `button.row.pressable.privacy-open`
+   with a two-line `.row-copy` and no chevron (sibling: Home's Up next rows). It sits in its own
+   wrapper, so `.row:not(:only-child)` leaves an isolated row at radius 12. The identical row is in
+   `ProfileSheet`, so the note is reached the same way from both.
+6. **Done**, `button.btn.btn-wide.btn-coral.pressable.entry-done`: the screen's one filled accent.
+
+24 between every one of modules 2 to 6, one rule with no exception; 8 from a heading to its content;
+16 between the two fields. No new token, no new radius, no shadow and no `backdrop-filter`, because
+the entry screen is not chrome and carries no glass.
+
+**The screen must not scroll, and the shot is the only check that counts.** At 390×844 headless it
+measures 844 of 844 with the consent line running to six lines, so a consent line that grows past six
+does not hold and the copy has to come down instead.
+
+Nothing has left the phone when this renders, and nothing does until Done: `sync.ts` gates its whole
+transport on `enteredCruise`. That is what makes the consent line true rather than a description of
+something that already happened.
+
 ### Home
 
 Read: what day is it, where am I, what do I do now. Home is the instrument's front panel, not a
-summary; every module either answers one of those or leads to the screen that does.
+summary; every module either answers one of those or leads to the screen that does. The masthead sits
+above it as chrome, as it does on every other screen, so a visitor arriving cold on the landing
+screen is told what the app is; the rank order is unchanged by it, and the greeting is still Home's
+first content line.
 
 1. **The sea hero** (the poster, kept): countdown or day chip top right, the percentage readout
    bottom left, and bottom right the one primary action on the app, **"Log a drink"**, a
@@ -397,7 +439,10 @@ colour, are how that happens again. Read it before any change that renders.
 | `.sr-only` | `base.css` | visually hidden, still announced |
 | `.meter` | `base.css` | the 3px measure beside a count out of a total (venue rows, the Home bar row); Stats' 6px deck bars and the badge rows keep their own shapes |
 | `dayPart()`, `greetingWord()` | `src/state/stats.ts` | the six parts of the day and the greeting word; the sea's sky palette and Home's greeting both key off them, never off their own boundaries |
-| `nowHour()`, `today()` | `src/data/model.ts` | the clock, with `?hour=` and `?day=` QA overrides |
+| `nowHour()`, `today()`, `qaFirstOpen()` | `src/data/model.ts` | the clock, with `?hour=` and `?day=` QA overrides; `?entry` forces the first-open screen over any store, and does not gate sync |
+| `Masthead` | `src/app/Masthead.tsx` | the app's name above every screen, `Shell`'s and the entry screen's alike. Chrome: never part of a screen's rank order |
+| `NameFields` | `src/features/social/NameFields.tsx` | the name and colour pair wherever it is asked for (`NameCard`, the entry screen). It imports `friends/friends.css`, which owns `.f-field input`, `.fpick` and `.fpick-dot` |
+| `PrivacySheet`, `PRIVACY_SUBTITLE`, `GUEST_HONESTY` | `src/features/privacy/PrivacySheet.tsx` | the privacy note, one text, opened by the same `.privacy-open` row from the entry screen and from Your details; `GUEST_HONESTY` is the one wording of what a guest stands to lose |
 | `seenMedals`, `markMedalsSeen()` | `src/state/store.ts` (persist v8) | which badges' "new medal" moment Home has shown; seeded on upgrade with what was already earned |
 | `SeaHero` (`level`, `hour`, `chips`) | `src/features/home/SeaHero.tsx` | the sea; the sky follows `hour`, the shader lenses the water under the `chips` rectangles |
 | `pickedForYou()` | `src/state/social.ts` | the "For you" shelf: honest picks (taste-matched crew, or your top spirit); empty when there is no personal basis |

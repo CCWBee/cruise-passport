@@ -12,6 +12,7 @@ and how the next change should be.
 | `gestures.mjs` | The sheet's gesture contract (`docs/DESIGN.md`, Sheets) driven with real touch events through CDP against the running dev server: a lazy short drag settles back, a long drag or a fast flick dismisses, a drag on a scrolled sheet scrolls, a sideways drag does nothing, the page never scrolls sideways. Prints PASS/FAIL per case and exits 1 on any failure. Run it after touching `src/ui/Sheet.tsx`. |
 | `update.mjs` | The simulated deploy: copies `dist/` into two trees, renames the shell chunk in the second, serves one on `127.0.0.1:4180` and swaps to the other without navigating the page. Asserts that the page reloads itself onto the new shell, and that it holds that reload while a sheet is open with the form intact. Needs `npm run build` first. Prints PASS/FAIL per case and exits 1 on any failure. Run it after touching `src/main.tsx` or the PWA options in `vite.config.ts`. |
 | `scan.mjs <css or dir> ...` / `scan.mjs --check src` | The mechanical scan against `docs/DESIGN.md`: sizes, weights, spacing, radii, shadows, blur, caps, easing, colours, gradients, endless motion. `--check` (wired as `npm run design:check`, run in CI before the build) fails on any suspect not listed in `design-allow.txt`. |
+| `first-open.mjs` | The sync gate: opens the root with **no query at all** in a fresh browser context and asserts that the entry screen is up and that nothing reached Supabase. `shot.mjs` cannot check this, because it always appends `?seed` and a seeded store is already entered. It never clicks Done, which would create a live anonymous user. Prints PASS/FAIL and exits 1 on failure. Run it after touching `src/state/sync.ts` or the first-open gate in `src/app/App.tsx`. |
 | `cdp.mjs` | The harness the others use: one headless Chrome per process (own debugging port, so parallel agents do not collide), isolated browser contexts, screenshots. `CDP_GPU=1` keeps WebGL on. |
 
 Typical loop while working on a screen:
@@ -29,7 +30,9 @@ are headless Chrome with `--disable-gpu`, so the sea hero shows its CSS fallback
 need a real device for a final look; everything else is what a phone renders. `?seed` is appended to
 every URL so the screens are populated; it is the demo block in `index.html`. `?day=YYYY-MM-DD`
 pins the date (the aboard states) and `?hour=N` pins the hour (the sky and the greeting), both read
-in `src/data/model.ts`. `?nosync` keeps a run off the backend entirely (no anonymous sign-in, so
+in `src/data/model.ts`. `?entry` (same file) renders the first-open screen once whatever the store
+says, which is the only way to shoot it from a seeded server; it does not gate sync, so pass
+`&nosync` alongside it. `?nosync` keeps a run off the backend entirely (no anonymous sign-in, so
 the live project's per-IP sign-in limit is not spent on screenshots; use it for everything except a
 test of the sync itself). `CDP_GPU=1` keeps WebGL on so the live sea renders. `UPDATE_PORT=n` moves
 `update.mjs` off its default 4180 so two agents can run it at once.
