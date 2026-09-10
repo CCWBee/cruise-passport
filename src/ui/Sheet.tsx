@@ -62,10 +62,11 @@ export function Sheet({ onClose, children, labelledBy }: {
   const closeRef = useRef(onClose)
   closeRef.current = onClose
 
+  // sheet:open and sheet:closed, below: src/main.tsx holds its post-deploy reload while one is mounted.
   useEffect(() => {
     const me = Symbol('sheet')
     openSheets.push(me)
-    if (openSheets.length === 1) lockBody()
+    if (openSheets.length === 1) { lockBody(); window.dispatchEvent(new Event('sheet:open')) }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && openSheets[openSheets.length - 1] === me) closeRef.current()
     }
@@ -75,7 +76,7 @@ export function Sheet({ onClose, children, labelledBy }: {
     sheetRef.current?.focus()
     return () => {
       openSheets.splice(openSheets.indexOf(me), 1)
-      if (!openSheets.length) unlockBody()
+      if (!openSheets.length) { unlockBody(); window.dispatchEvent(new Event('sheet:closed')) }
       window.removeEventListener('keydown', onKey)
       previous?.focus?.()
     }
