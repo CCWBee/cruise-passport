@@ -6,6 +6,7 @@ import { BADGES } from '../data/badges'
 import { hasBackend, unfriend, type FeedRow, type GroupRow } from './backend'
 import { computeStats, emptyPassport, FRIEND_COLOURS, type Entry, type Passport, type Friend, type Profile, type FriendColour } from './stats'
 import { decodeShare, ensureMyId, ensureMyCode, genCode, normaliseCode, parseFriend, ShareError, type SharePayload } from './share'
+import type { RestoreResult } from './restore'
 
 // re-export the social types/consts that used to live here, for existing call sites
 export { FRIEND_COLOURS }
@@ -70,6 +71,7 @@ interface State {
   importFriendPayload: (payload: SharePayload) => { ok: boolean; name?: string; reason?: string; stale?: boolean }
   importCode: (code: string) => Promise<{ ok: boolean; name?: string; reason?: string; stale?: boolean }>
   applyFeed: (direct: FeedRow[], group: FeedRow[]) => void
+  applyRestore: (r: RestoreResult) => void
   resetSocialIdentity: () => void
 
   // filters
@@ -333,6 +335,28 @@ export const useStore = create<State>()(
           return next
         })
         return { friends }
+      }),
+      // The passport, brought back from its backup and merged (state/restore.ts). This is the exact
+      // opposite of resetSocialIdentity below, which comes back as a stranger, and it must never
+      // call it: restore comes back as who you already were.
+      applyRestore: (r) => set((s) => {
+        // A restored passport earns a dozen medals in one go, and Home would show a coin for each.
+        // Seed the seen-set with everything the merged passport already earns, exactly as migration
+        // 8 does below, which is the failure that migration exists to prevent.
+        let seenMedals = s.seenMedals
+        try {
+          const drinks: Drink[] = [...DRINKS, ...r.custom]
+          const earned = BADGES.filter((b) => b.test(computeStats(drinks, r.me).badgeStat)).map((b) => b.id)
+          const add = earned.filter((id) => !seenMedals.includes(id))
+          if (add.length) seenMedals = [...seenMedals, ...add]
+        } catch { /* the passport is still restored; at worst Home shows a coin it need not have */ }
+        // My code has changed to the one the account already used, so every direct friend needs its
+        // edge made again under it. befriend writes both directions and is idempotent, so the next
+        // pull rebuilds the crew (sync.ts 104) and they simply see me under a different code.
+        const friends = r.codeChanged
+          ? s.friends.map((f): Friend => (f.groupOnly || !f.code ? f : { ...f, needsEdge: true }))
+          : s.friends
+        return { me: r.me, custom: r.custom, profile: r.profile, friends, seenMedals }
       }),
       // After a server-side erasure: come back as a stranger, so nothing left behind resolves to me.
       resetSocialIdentity: () => set((s) => ({
