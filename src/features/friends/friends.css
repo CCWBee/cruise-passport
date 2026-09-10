@@ -49,18 +49,8 @@
    than as the next group. Renamed from .addme-hint: it is the fourth member of the generic
    .friends-block / .friends-action / .friends-status family and two sheets now use it. */
 .friends-hint { margin-top: var(--s2); }
-/* the folded-away paste path: a text action, deliberately the quietest thing on the sheet, but the
-   only route left when the camera is refused, so it still has to be 44px of target */
-.friends-quiet {
-  display: block;
-  margin-top: var(--s5);
-  min-height: var(--ctl);
-  font-size: var(--f-meta);
-  font-weight: 600;
-  color: var(--ink-2);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
+/* the folded-away paste path is a .quiet-action (base.css): deliberately the quietest thing on the
+   sheet, but the only route left when the camera is refused, so it still has to be 44px of target */
 
 /* two-tap confirms live at the foot, well away from the thumb's resting path */
 .friends-danger { margin-top: var(--s6); }
@@ -123,19 +113,13 @@
 
 .addme-send { margin-top: var(--s4); }
 
-/* ── the QR block: white, because a code has to read under a camera ── */
+/* ── the QR block. The plate itself is .qr-plate (base.css), white because a code has to read under
+   a camera; what stays here is the block around it and the placeholder while the link is built ── */
 .addme {
   margin-top: var(--s3);
   display: grid;
   gap: var(--s3);
 }
-.addme-qr {
-  justify-self: center;
-  padding: var(--s3);
-  background: var(--on-accent);
-  line-height: 0;
-}
-.addme-qr svg { display: block; }
 .addme-qr-skel {
   inline-size: 200px;
   block-size: 200px;
