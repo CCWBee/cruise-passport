@@ -62,9 +62,24 @@ Accepted exceptions live in `tools/qa/design-allow.txt` with their reasons.
   anonymous users; purge only anonymous sessions created that day with profile name Alex and zero
   edges or memberships. Real users have existed since 3 September, so never blanket-purge. Pass
   `?seed&nosync` to keep a headless run off the backend entirely.
-- **Accounts:** there is no sign-in and no restore yet. `publishBackup` writes to `backups`; nothing
-  reads it. The Google sign-in and `fetchBackup` adapter code was written in 037be89 and removed in
-  7d4e3c6; recover it with `git show 037be89:src/state/backend.ts` rather than rewriting it.
+- **Accounts:** guest first, and signing in stays optional. "Keep your passport" in the Profile sheet
+  offers Google: an anonymous session upgrades through `linkIdentity`, so the user id and every row
+  under it survive. The merge is pure and tested (`src/state/restore.ts`, `npm test`); `sync.ts` owns
+  the calls, the states and the launch order. That order is the load-bearing part: `restoreOnLaunch()`
+  is one named promise, the first sync and every `runSync()` wait on it, and without that the first
+  publish would write an empty passport over a good backup on a new phone. A restore runs on an
+  explicit sign-in, or on launch when signed in and nothing has been done on this phone; never
+  silently on a phone in use. The canonical friend code is read from the signed-in user's own
+  `profiles` row and adopted, because a stale code collides on `profiles.code unique` and orphans
+  every friend edge. Until Charles opens the dashboard gates (`docs/BACKEND_SETUP.md` steps 2 and 4)
+  the button says "Sign-in is not available yet" rather than failing silently. There is no sign-out
+  control on purpose: signing out drops to no session and the next `ensureSession()` mints a fresh
+  anonymous user, which orphans every edge. Google itself has never been exercised end to end here.
+- **`?qa=` overrides** (QA only, `src/state/sync.ts`, the same family as `?seed`, `?nosync`, `?day=`
+  and `?hour=`): `?qa=account:saved,restore:done,restored:58,sync:held` puts any sign-in or restore
+  state on screen, and any of those four freezes the sync so nothing overwrites the state before the
+  shutter. `?qa=signedin:1` is the opposite: it leaves sync running and makes the session read as
+  signed in, so the whole restore path can be run against real rows with no Google account.
 - **Do not push to Isabel's repo** (`isabelgillam21-sketch/Princess-Cruise-Drinks`). This is
   `CCWBee/cruise-passport`.
 - **Headless screenshots** show the CSS fallback sea, not the WebGL one; the sea hero needs a real

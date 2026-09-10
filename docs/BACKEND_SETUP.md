@@ -22,9 +22,12 @@ OAuth client. Once you do the below and send me the two public values, I wire an
   toggle from enabling the provider; if you cannot find it, tell me your dashboard version.
 - **Authentication → URL Configuration**:
   - Site URL: `https://cruise.charlesbee.org`.
-  - Additional redirect URLs (add all): `http://localhost:5173`, `http://localhost:4173`,
-    `https://cruise.charlesbee.org`. Missing origins are the classic Google-redirect failure. The
-    old GitHub Pages address only redirects now and does not need to be listed.
+  - Additional redirect URLs (add all four, trailing slashes exactly as written):
+    `http://localhost:5173/`, `http://localhost:4173/`, `https://cruise.charlesbee.org/`,
+    `https://cruise.charlesbee.org`. Missing origins are the classic Google-redirect failure, and so
+    is a trailing-slash mismatch: the app sends its origin plus `BASE_URL`, which ends in a slash, so
+    the live origin is listed both ways. The old GitHub Pages address only redirects now and does not
+    need to be listed. `supabase/config.toml` holds the same list; keep the two in step.
 
 ## 3. Run the schema
 
