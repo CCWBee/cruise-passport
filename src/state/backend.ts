@@ -6,6 +6,7 @@
 // synthesises an identity card for those. Live end-to-end needs Charles's project
 // (docs/BACKEND_SETUP.md); the shapes here match the RPCs exactly.
 import type { SharePayload } from './share'
+import { readOAuthError } from './restore'
 import { backendConfigured, getSupabase } from './supabase'
 
 export interface FeedRow {
@@ -20,6 +21,43 @@ export interface GroupRow { id: string; name: string; plan: string; slots: numbe
 export interface MemberRow { code: string; name: string; colour: string; role: string; joinedAt: number }
 
 export const hasBackend = (): boolean => backendConfigured
+
+// ── the OAuth return leg ──
+// Everything the provider hands back on a failure, plus the tokens a successful implicit-flow login
+// leaves lying in the URL. `state` is the OAuth round-trip nonce, not anything of ours.
+const OAUTH_KEYS = [
+  'error', 'error_code', 'error_description', 'state',
+  'provider_token', 'access_token', 'refresh_token', 'expires_in', 'expires_at', 'token_type',
+]
+
+/** Strip the OAuth keys from one half of the URL, and only when that half actually carries one: a
+ *  query or fragment with no error in it is handed straight back, so `?seed` keeps its exact shape
+ *  and `/add#SPP…` is never rewritten at all. */
+function stripOAuth(raw: string, lead: string): string {
+  if (!raw) return raw
+  const params = new URLSearchParams(raw.replace(/^[#?]/, ''))
+  if (!OAUTH_KEYS.some((k) => params.has(k))) return raw
+  for (const k of OAUTH_KEYS) params.delete(k)
+  const rest = params.toString()
+  return rest ? lead + rest : ''
+}
+
+// Read at module evaluation and nowhere later. That order is both safe and necessary: this module is
+// fully evaluated before anything can call getSupabase(), which is a dynamic import, so the URL is
+// still intact when this line runs. The installed client does happen to leave a failed login's
+// parameters in place (_getSessionFromURL throws at its first check and never reaches its
+// hash-clearing branch), but depending on that is not worth it. And the error reaches the app no
+// other way: getSession() awaits initializePromise and ignores its error.
+const oauth = typeof location !== 'undefined' ? readOAuthError(location.hash, location.search) : null
+if (oauth && typeof location !== 'undefined' && typeof history !== 'undefined') {
+  try {
+    const cleaned = location.pathname + stripOAuth(location.search, '?') + stripOAuth(location.hash, '#')
+    history.replaceState(null, '', cleaned)
+  } catch { /* a URL we cannot rewrite is still readable, and the error is already captured above */ }
+}
+
+/** The provider error this page came back with, or null. Captured once, at module load. */
+export const oauthError = (): { code: string; description: string } | null => oauth
 
 // The import itself can fail (a precached chunk gone stale after a deploy), so it is caught here
 // rather than rejecting every adapter call and breaking the never-throws contract above.
@@ -86,6 +124,55 @@ export async function currentUserId(): Promise<string | null> {
 export async function signOut(): Promise<void> {
   const client = await sb()
   if (client) { try { await client.auth.signOut() } catch { /* the caller's rows are its own concern */ } }
+}
+
+/** Give up this session's own profiles, passports and backups rows, through the own-row policies, so
+ *  the identity about to be abandoned does not sit frozen in someone else's crew list under a code
+ *  nobody can reach again. Deliberately **not** deleteMyData(): that RPC also deletes groups this
+ *  user owns (migration 207) and memberships.group_id cascades (64), so using it here would destroy
+ *  a family group for every other member because one member signed in. */
+export async function discardGuestRows(): Promise<boolean> {
+  const client = await sb()
+  if (!client) return false // no backend at all; signInWithGoogle has already given up in that case
+  const uid = await currentUserId()
+  // No session is not a failure: there is nothing to discard, signInWithOAuth needs no session, and
+  // reporting false here would leave a phone that has never completed a sync unable to sign in.
+  if (!uid) return true
+  for (const table of ['profiles', 'passports', 'backups']) {
+    const { error } = await client.from(table).delete().eq('user_id', uid)
+    if (error) return false
+  }
+  return true
+}
+
+/** Leaves for Google, so a 'redirecting' result means this page is going away. The caller says what
+ *  happened when it is not, which is the point of returning a result at all: 037be89 swallowed the
+ *  error and the sheet would simply have appeared to do nothing. */
+export async function signInWithGoogle(redirectTo: string, mode: 'link' | 'fresh'): Promise<'redirecting' | 'unavailable' | 'failed'> {
+  const client = await sb()
+  if (!client) return 'failed'
+  // 'fresh' abandons this identity for another account's, so its rows go first. If they will not go,
+  // nothing is attempted: signing into A1 while A2's rows survive is the exact ghost this prevents.
+  if (mode === 'fresh' && !(await discardGuestRows())) return 'failed'
+  const kind = await sessionKind()
+  try {
+    // 'link' upgrades the session in place, so the user id and every row under it survive. With no
+    // session there is no identity to link to and linkIdentity would only error, so that case signs
+    // in whatever the mode says. It never signs out first: a guest who cancels at Google still holds
+    // the same user id and code, and the next sync republishes the rows just deleted, so a cancelled
+    // attempt costs a round trip rather than an identity.
+    const { error } = mode === 'link' && kind !== 'none'
+      ? await client.auth.linkIdentity({ provider: 'google', options: { redirectTo } })
+      : await client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } })
+    if (!error) return 'redirecting'
+    // The provider is off, or manual linking is: a gate Charles has not opened yet rather than a
+    // fault, so the sheet says so and leaves the button live. `code` is only present on newer GoTrue
+    // responses, which is why the message test is here as the fallback rather than as the test.
+    const code = (error as { code?: string }).code
+    if (code === 'provider_disabled' || code === 'manual_linking_disabled') return 'unavailable'
+    if (/not enabled|unsupported provider|manual linking/i.test(error.message || '')) return 'unavailable'
+    return 'failed'
+  } catch { return 'failed' }
 }
 
 // ── data ──
