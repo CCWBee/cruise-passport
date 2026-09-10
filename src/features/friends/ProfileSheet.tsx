@@ -44,7 +44,16 @@ export function ProfileSheet({ onClose }: { onClose: () => void }) {
         : sync.restored === 1 ? 'Brought back 1 drink.' : `Brought back ${sync.restored} drinks.`)
       : sync.restore === 'empty' ? 'Nothing to bring back yet. From now on this passport is kept.'
         : sync.restore === 'failed' ? 'Could not reach your backup. It will try again.' : ''
-  const statusLine = restoreLine || syncLine
+
+  // The offline news is said once. When the hint under the button is already carrying it, the sync
+  // line below repeats one idea at the same size and weight two lines apart, which is the doubling
+  // DESIGN.md "Working on this design" step 2 warns against. The hint yields nothing and the sync
+  // line does, because the hint is the line that explains why the button is dead, and it sits
+  // against the control it qualifies. Narrow on purpose: under 'unavailable' and 'failed-signin' the
+  // hint has switched to saying something else, so the sync line is then the only thing saying it.
+  const hintCarriesOffline = offline && sync.account === 'guest'
+    && sync.restore !== 'linked' && sync.restore !== 'unavailable' && sync.restore !== 'failed-signin'
+  const statusLine = restoreLine || (hintCarriesOffline ? '' : syncLine)
 
   // The only promise the app makes about the server. Forgetting the identity when the erasure failed
   // would leave every row on the server under a code no phone can reach again, and say nothing.
