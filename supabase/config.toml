@@ -1,11 +1,16 @@
 project_id = "cruise-passport"
 
 [auth]
-site_url = "https://ccwbee.github.io/cruise-passport/"
+site_url = "https://cruise.charlesbee.org"
+# The client sends origin + BASE_URL, which ends in a slash; a trailing-slash mismatch is the
+# classic Google-redirect failure, so both forms of the live origin are listed.
 additional_redirect_urls = [
-  "http://localhost:5173",
-  "https://ccwbee.github.io",
-  "https://ccwbee.github.io/cruise-passport/",
+  "http://localhost:5173/",
+  "http://localhost:4173/",
+  "https://cruise.charlesbee.org/",
   "https://cruise.charlesbee.org",
 ]
 enable_anonymous_sign_ins = true
+# A guest session upgrades to Google through linkIdentity, which the dashboard calls "Allow manual
+# linking". Without it every upgrade fails and the passport starts again under a new user.
+enable_manual_linking = true
