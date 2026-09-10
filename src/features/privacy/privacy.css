@@ -1,0 +1,8 @@
+/* The privacy note. Two rules, because everything else is the sheet's and base.css's already: the
+   sections carry their own 32 (.section) and their headings their 8 (.section-head). */
+
+/* consecutive paragraphs inside one section: base.css zeroes every p margin, so the seam between two
+   of them has to be stated. 12, because they are one idea continued, not two groups. */
+.privacy p + p { margin-top: var(--s3); }
+/* the foot is not a .section, so it needs the between-sections 32 explicitly */
+.privacy-foot { margin-top: var(--s6); }
