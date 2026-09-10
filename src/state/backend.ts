@@ -131,6 +131,23 @@ export async function fetchBackup(cruiseId: string): Promise<{ state: unknown; u
   return { state: data.state, updatedAt: new Date(data.updated_at).getTime() }
 }
 
+/** My own profiles row: the canonical friend code, and the name and colour that go with it. Same
+ *  three-way return and the same currentUserId() rule as fetchBackup, for the same reasons.
+ *  `code` is what every friend edge of this account already points at, so adopting it is what keeps
+ *  those edges live (see sync.ts, restoreNow). name and colour are read as well because `profiles`
+ *  is global across sailings: an account whose backup for *this* sailing is 'none' may still carry a
+ *  name from a previous one, and taking it when the local name is empty is the rule mergeProfile
+ *  already applies. */
+export async function fetchProfile(): Promise<{ code: string; name: string; colour: string } | 'none' | null> {
+  const client = await sb()
+  const uid = await currentUserId()
+  if (!client || !uid) return null
+  const { data, error } = await client.from('profiles').select('code, name, colour').eq('user_id', uid).maybeSingle()
+  if (error) return null
+  if (!data) return 'none'
+  return { code: data.code ?? '', name: data.name ?? '', colour: data.colour ?? '' }
+}
+
 export async function befriend(code: string): Promise<boolean> {
   const client = await sb()
   if (!client || !(await ensureSession())) return false
