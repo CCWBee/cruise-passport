@@ -46,7 +46,11 @@ Accepted exceptions live in `tools/qa/design-allow.txt` with their reasons.
 - **Deploy:** every push to `main` builds and deploys to Cloudflare Pages (`.github/workflows/deploy.yml`).
   Work on a branch; merge to `main` to ship. Secrets are repo secrets by name only
   (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`);
-  never write a value into a doc.
+  never write a value into a doc. A page that is open when a deploy lands now reloads itself once
+  the new worker takes control, so the first open after a deploy is the current build
+  (`src/main.tsx`, `startUpdates`). The reload is held while a sheet is open and runs when the last
+  one closes, so a half-typed "Add a missing drink" form is never dropped; `tools/qa/update.mjs` is
+  the check.
 - **Backend:** Supabase project `qpmrfoglxohmjhjtvkac`, separate from every other project's. Guest
   first; login stays optional. Migrations in `supabase/migrations/`.
 - **Seed:** `?seed` loads sample data and two friends from the inline block in `index.html`. It needs
