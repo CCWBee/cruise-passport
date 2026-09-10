@@ -45,6 +45,9 @@ const OLD_CHUNK = chunk[1]
 const count = (s, needle) => s.split(needle).length - 1
 if (count(bHtml, OLD_CHUNK) !== 1) { console.error(`index.html names ${OLD_CHUNK} ${count(bHtml, OLD_CHUNK)} times, expected 1`); process.exit(1) }
 if (count(bSw, OLD_CHUNK) !== 1) { console.error(`sw.js names ${OLD_CHUNK} ${count(bSw, OLD_CHUNK)} times, expected 1`); process.exit(1) }
+// Tree b renames the entry chunk and nothing else, so b's lazy chunks still carry a's hashes and are
+// dangling by design: the fixture proves the navigation onto the new shell, not that the reloaded app
+// then runs.
 fs.renameSync(path.join(B, 'assets', OLD_CHUNK), path.join(B, 'assets', NEW_CHUNK))
 bHtml = bHtml.replaceAll(OLD_CHUNK, NEW_CHUNK)
 bSw = bSw.replaceAll(OLD_CHUNK, NEW_CHUNK)
@@ -94,6 +97,8 @@ const server = http.createServer((req, res) => {
   })
   fs.createReadStream(file).pipe(res)
 })
+// A port already held by another agent's run would otherwise hang here with nothing said.
+server.once('error', (e) => { console.error('port ' + PORT + ' busy: ' + e.message); process.exit(1) })
 await new Promise((r) => server.listen(PORT, '127.0.0.1', r))
 const BASE = `http://127.0.0.1:${PORT}`   // 127.0.0.1 is a secure context, so workers register
 
@@ -127,6 +132,9 @@ try {
   {
     const u = await chrome.user('update')
     await u.goto(`${BASE}/?seed&nosync`); await sleep(3000)   // registration is on load, then the install
+    // The first install must not reload: there was no controller, so nothing was replaced and a
+    // reload would only cost the guest their place. A regression of that gate reads as 'reload' here.
+    if ((await u.eval("performance.getEntriesByType('navigation')[0].type")) !== 'navigate') fail('first install reloaded the page')
     await u.goto(`${BASE}/?seed&nosync`); await sleep(2000)   // the worker now controls the page
     if (!(await controlled(u))) fail('no sheet: the worker never took control of the first build')
     if (!(await shell(u)).includes(OLD_CHUNK)) fail(`no sheet: expected the page to be on ${OLD_CHUNK}, it is on ${await shell(u)}`)
@@ -162,12 +170,18 @@ try {
     const typed = await u.eval("document.querySelector('#add-name').value")
     if (typed !== 'Test negroni') fail(`sheet open: the name field reads ${JSON.stringify(typed)}, so the case would prove nothing`)
 
+    // Count the handovers. Without this the three assertions below also pass when the new worker
+    // simply never finished installing in 12s: nothing was held, because nothing ever asked to
+    // reload, and "reload held" would be printed over an install that had not happened.
+    await u.eval("window.__cc = 0; navigator.serviceWorker.addEventListener('controllerchange', () => { window.__cc++ })")
+
     current = B
     await checkForUpdate(u)
     await sleep(12000)
     if (!(await shell(u)).includes(OLD_CHUNK)) fail('sheet open: the page reloaded with the sheet still open')
     if (!(await u.eval("!!document.querySelector('.sheet')"))) fail('sheet open: the sheet went away')
     if ((await u.eval("document.querySelector('#add-name').value")) !== 'Test negroni') fail('sheet open: the half-typed form was lost')
+    if (!((await u.eval('window.__cc')) >= 1)) fail('sheet open: no new worker ever took control, so nothing was held')
     console.log('shot', await u.shot('update-held'))
     console.log('PASS  sheet open: reload held, form intact')
 

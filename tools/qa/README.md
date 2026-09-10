@@ -31,4 +31,5 @@ every URL so the screens are populated; it is the demo block in `index.html`. `?
 pins the date (the aboard states) and `?hour=N` pins the hour (the sky and the greeting), both read
 in `src/data/model.ts`. `?nosync` keeps a run off the backend entirely (no anonymous sign-in, so
 the live project's per-IP sign-in limit is not spent on screenshots; use it for everything except a
-test of the sync itself). `CDP_GPU=1` keeps WebGL on so the live sea renders.
+test of the sync itself). `CDP_GPU=1` keeps WebGL on so the live sea renders. `UPDATE_PORT=n` moves
+`update.mjs` off its default 4180 so two agents can run it at once.
