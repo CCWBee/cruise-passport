@@ -37,13 +37,33 @@ architecture in `docs/specs/2026-09-10-product-brief.md`.
   codes QR9Y-NYC3 and QAZ9-2TPD (12:43, 12:46), reviewer codes HCBC-6FT7 and PZQ5-W9FN plus one
   uncaptured at about 13:07 (13:03 to 13:07), fixer codes 3QJT-1FC5 and BDHC-KF9X (13:20, 13:22).
   Purge under the `CLAUDE.md` rule; never blanket-purge. Pass B's hand check adds one more.
-- In flight: pass B (entry and first open), build → gate review → fix, one stream, on `product`,
-  launched 10 September from `39676d1`. Resume:
-  `Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-pass-b-entry-first-open-wf_ad2def83-9b8.js", resumeFromRunId: "wf_ad2def83-9b8" })`.
-  Journal: `...\E--claude-projects\10468e48-0258-48b8-84c7-deaaceda11ba\subagents\workflows\wf_ad2def83-9b8\journal.jsonl`.
-  Its hand check creates one anonymous Alex user per builder and reviewer run and deletes it through
-  Delete my data in the same run (the auth row remains; the uid is in the run's report).
-  Order after B: E, then BYO (gated on Charles's two rulings), each its own run.
+- Pass B done 10 September (run `wf_ad2def83-9b8`): fifteen build commits `41f724e`..`3cc7f0f`,
+  review verdict fail (one major: a false height figure in the new DESIGN.md Entry section), two
+  docs-only fix commits, HEAD `a6e0e17`, all gates green (17 tests, tsc, design:check 32 files,
+  lint 28/0). Proven on the wire: zero backend calls before Done, sync resumes after it; version-2
+  and version-8 stores migrate to entered and are not re-asked.
+- Follow-ups B surfaced, not B's to fix (small, need Charles's yes because they change semantics):
+  (1) After Delete my data, if sync is live the next round trip mints a fresh anonymous user and
+  republishes the same passport and name under it (`deleteMyData` signs out, `resetSocialIdentity`
+  keeps the name, `ensureSession` creates a new user). Erasure severs the identity but not the
+  upload. Coherent fix now that consent exists: erasure also sets `enteredCruise` false, so the
+  entry screen asks again before anything publishes; the privacy note's Deleting it paragraph then
+  says so. (2) In the offline state the disabled "Keep it with Google" looks identical to the
+  enabled one (`:disabled` falls to the plain surface the plain button already has); one rule in
+  `base.css`. (3) A stacked sheet covers the one beneath exactly (both cap at 88svh); if the
+  layering should read, inset or scale the covered pane in `src/ui/Sheet.tsx`.
+- QA users from pass B: builder created three (uid `d7ffee51-…` code BGY1-YHH7, deleted;
+  uid `f07921a5-…`, deleted; one uncaptured at about 12:48:44 UTC, NOT deleted, minted by the
+  republish seam above, profile name Alex, zero edges); reviewer created one (uid `4cf630c9-…`
+  code NFD1-ETK8, deleted). So ten anonymous Alex users with profile rows to purge, plus three
+  auth-only rows whose profiles are already deleted (find by uid: `d7ffee51`, `f07921a5`,
+  `4cf630c9`).
+- In flight: pass E (landing and install), build → gate review → fix, one stream, on `product`,
+  launched 10 September from `a6e0e17`. Resume:
+  `Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-pass-e-landing-install-wf_2a3dddfc-aa1.js", resumeFromRunId: "wf_2a3dddfc-aa1" })`.
+  Journal: `...\E--claude-projects\10468e48-0258-48b8-84c7-deaaceda11ba\subagents\workflows\wf_2a3dddfc-aa1\journal.jsonl`.
+  No live-backend action in this pass. After E: BYO (gated on Charles's two rulings), then a short
+  polish pass for the three follow-ups above.
 - Rulings and copy still Charles's, per spec: C: what a "fresh" sign-in erases (spec deletes the
   guest's own profile, passport and backup rows and leaves memberships), and whether a lost
   `sessionStorage` trigger should have a manual restore. B: the privacy contact address
