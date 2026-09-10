@@ -50,8 +50,13 @@ let leaving = false
 let doneTimer: ReturnType<typeof setTimeout> | undefined
 
 type Mode = 'backend' | 'off'
+// Nothing signs in, nothing publishes and nothing pulls before Done on the first-open screen. The
+// consent line there says what sync does, and it would be false if this file published at module
+// load as it used to. Safe to read at load: the persist middleware hydrates synchronously from
+// localStorage, which is why store.ts can call ensureIdentity() at module scope.
 // ?nosync (QA) keeps a headless run off the backend: see qaNoSync() in data/model.ts
 function mode(): Mode {
+  if (!useStore.getState().enteredCruise) return 'off'
   return hasBackend() && !qaNoSync() ? 'backend' : 'off'
 }
 
@@ -148,8 +153,14 @@ async function publishBackend(): Promise<boolean> {
   // `code` is unique, so a blank one is never worth writing; every real profile has one (the store
   // stamps it at hydrate). A failed profile write is a failed sync: the feeds are authoritative for
   // name and colour, so silently reporting success would leave the crew on a stale name for ever.
+  // No fallback name. `profiles.name` is the column find_profiles, friend_feed and group_feed all
+  // read, so it is never given a name the guest did not type; find_profiles already excludes an empty
+  // one (coalesce(p.name, '') <> ''), so an unnamed guest is simply not findable rather than findable
+  // as somebody called "A friend". The four display fallbacks are client-side and unchanged, and
+  // share.ts 92 still puts the literal in passports.payload.n, which no SQL reads and parseFriend
+  // normalises on receipt: deliberate, and out of this workstream's scope.
   const profileOk = s.profile.code
-    ? await upsertProfile(s.profile.code, s.profile.name || 'A friend', s.profile.colour || 'aqua')
+    ? await upsertProfile(s.profile.code, s.profile.name, s.profile.colour || 'aqua')
     : true
   const ok = await publishPassport(s.cruiseId, buildPayload(s.me, s.profile))
   void publishBackup(s.cruiseId, { me: s.me, custom: s.custom, profile: s.profile }) // best-effort
@@ -397,6 +408,13 @@ const unsent = (s: ReturnType<typeof useStore.getState>): number =>
   s.friends.reduce((n, f) => n + (f.needsEdge ? 1 : 0), 0) + s.pendingInvites.length + s.pendingUnfriends.length
 
 useStore.subscribe((state, previous) => {
+  // Done on the first-open screen is what opens the gate above, and without this branch nothing would
+  // sync after it either: the three tests below watch me, profile and unsent, and setProfile fires
+  // while mode() is still off, so that change is swallowed and no publish is ever scheduled.
+  // markPending() alone is enough and is what to write: it calls updateVisibleInterval() itself, so
+  // the 60-second interval starts from the same call. Nothing is lost by publishing late, because
+  // publishBackend reads the whole current store rather than a diff.
+  if (state.enteredCruise && !previous.enteredCruise) { markPending(); return }
   if (state.me !== previous.me || state.profile !== previous.profile || unsent(state) > unsent(previous)) markPending()
 })
 
