@@ -11,14 +11,17 @@ architecture in `docs/specs/2026-09-10-product-brief.md`.
   (the brief has the reasons and the file-contention map).
 - `main` now carries the 5 September ops-review apply run as one commit (his 13 paths, committed
   10 September, not pushed). Pushing `main` deploys the `?seed` guard: asked, awaiting his answer.
-- Live is `62cdf04` (last green Deploy run, 5 September). Sellability assessment of 10 September
+- Live is `62cdf04` (last green Deploy run, 5 September). Baseline on `product` at `83e16e7`, 10
+  September: `design:check` 31 files clean, `lint` 0 errors (28 known warnings, per `CLAUDE.md`), `tsc` clean. One dev
+  server is up on 127.0.0.1:5173 (background task `blo717sae`). Sellability assessment of 10 September
   is folded into the brief; evidence under `tools/qa/shots-live-audit/` (gitignored).
 
 ## Open threads
 
 - In flight: Phase 1, spec drafting. One agent per workstream drafts `docs/specs/2026-09-10-<slug>.md`
-  from the brief; a critic pass checks each against the constitution and the brief. Workflow
-  `scriptPath` and `resumeFromRunId` go here the moment they exist.
+  from the brief; a second agent per spec refutes and revises it in place. Launched 10 September.
+  Resume: `Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-product-specs-wf_59cea1ba-a91.js", resumeFromRunId: "wf_59cea1ba-a91" })`.
+  Journal: `...\E--claude-projects\10468e48-0258-48b8-84c7-deaaceda11ba\subagents\workflows\wf_59cea1ba-a91\journal.jsonl`.
 - Then per workstream: implement → gate review → fix, each a resumable workflow, committed on
   `product` per pass.
 - Console gates for Charles (listed in the 10 September reply): Google provider + manual linking,
