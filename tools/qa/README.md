@@ -25,14 +25,18 @@ node tools/qa/scan.mjs src/features/drinks    # clear every line, or justify it
 npm run design:check                          # what CI will run
 ```
 
-Output goes to `tools/qa/shots/` (gitignored; `SHOTS_DIR=name` picks another folder). Screenshots
+Output goes to `tools/qa/shots/` (gitignored; `SHOTS_DIR=name` picks another folder). `SHOT_W` and
+`SHOT_H` move `shot.mjs` off 390×844, which is what the landing's desktop branch needs; they change
+nothing else, and `shots.mjs` carries its own size and is not affected. Screenshots
 are headless Chrome with `--disable-gpu`, so the sea hero shows its CSS fallback and WebGL surfaces
 need a real device for a final look; everything else is what a phone renders. `?seed` is appended to
 every URL so the screens are populated; it is the demo block in `index.html`. `?day=YYYY-MM-DD`
 pins the date (the aboard states) and `?hour=N` pins the hour (the sky and the greeting), both read
 in `src/data/model.ts`. `?entry` (same file) renders the first-open screen once whatever the store
 says, which is the only way to shoot it from a seeded server; it does not gate sync, so pass
-`&nosync` alongside it. `?nosync` keeps a run off the backend entirely (no anonymous sign-in, so
+`&nosync` alongside it. `?landing=desktop|phone` (same file) pins which branch of the landing
+renders, and `desktop` also forces the root gate open, for the same reason `?entry` exists: a seeded
+store has already migrated to entered, so the gate could never be reached otherwise. `?nosync` keeps a run off the backend entirely (no anonymous sign-in, so
 the live project's per-IP sign-in limit is not spent on screenshots; use it for everything except a
 test of the sync itself). `CDP_GPU=1` keeps WebGL on so the live sea renders. `UPDATE_PORT=n` moves
 `update.mjs` off its default 4180 so two agents can run it at once.
