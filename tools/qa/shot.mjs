@@ -4,7 +4,8 @@
 //   route: WITHOUT the leading slash: drinks, social, stats, "home" for the root (the ?seed demo data is added for you)
 //   --click: CSS selector to click after load (opens a sheet); --click2 clicks a second selector after that
 //   --eval : JS to run after load/clicks, its JSON result is printed
-// Env: SHOTS_DIR (default shots), CDP_PORT (default: derived from pid), SHOT_BASE (default http://127.0.0.1:5173)
+// Env: SHOTS_DIR (default shots), CDP_PORT (default: derived from pid), SHOT_BASE (default http://127.0.0.1:5173),
+//      SHOT_W / SHOT_H (default 390x844; the landing's desktop branch is the one screen that needs another size)
 import { launch, OUT } from './cdp.mjs'
 import { writeFileSync } from 'node:fs'
 import path from 'node:path'
@@ -21,7 +22,7 @@ const route = (rawRoute === 'home' || rawRoute === '.') ? '/'
 const opt = (k) => { const i = args.indexOf(k); return i > -1 ? args[i + 1] : undefined }
 const has = (k) => args.includes(k)
 const BASE = process.env.SHOT_BASE || 'http://127.0.0.1:5173'
-const W = 390, H = 844
+const W = Number(process.env.SHOT_W || 390), H = Number(process.env.SHOT_H || 844)
 const wait = Number(opt('--wait') || 2200)
 
 const chrome = await launch({ width: W, height: H })
