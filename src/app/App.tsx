@@ -4,9 +4,9 @@ import { decodeShare, extractShareCode, parseFriend, type SharePayload } from '.
 import { joinGroupFlow } from '../state/groups'
 import { hasBackend } from '../state/backend'
 import { Confirm } from '../ui/Confirm'
-import { CRUISES } from '../data/cruises'
+import { qaFirstOpen } from '../data/model'
 import { useStore } from '../state/store'
-import { CruisePicker } from '../features/cruise/CruisePicker'
+import { Entry } from '../features/cruise/Entry'
 import { Shell } from './Shell'
 import { Home } from '../features/home/Home'
 import { Drinks } from '../features/drinks/Drinks'
@@ -162,9 +162,14 @@ function NotFound() {
 
 export default function App() {
   const enteredCruise = useStore((s) => s.enteredCruise)
-  // Choosing a voyage is only a question when there is more than one; with a single sailing the
-  // picker is a card in front of every invite link, so it does not render.
-  if (!enteredCruise && CRUISES.length > 1) return <CruisePicker />
+  // ?entry (QA) renders the screen once over a seeded store, and Done clears it, so the click-through
+  // can be exercised too. The useState sits above the early return, so hook order is unconditional.
+  const [forced, setForced] = useState(() => qaFirstOpen())
+  // What decides the first screen is `enteredCruise`, not the number of sailings: consent has to
+  // precede the first befriend or join_group, so a tapped invite link on a cold phone sees this
+  // first. The URL is not touched, so after Done the router mounts on the original path with its
+  // fragment intact and the flow carries on.
+  if (!enteredCruise || forced) return <Entry onDone={() => setForced(false)} />
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Routes>
