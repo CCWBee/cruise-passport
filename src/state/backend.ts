@@ -31,15 +31,16 @@ const OAUTH_KEYS = [
 ]
 
 /** Strip the OAuth keys from one half of the URL, and only when that half actually carries one: a
- *  query or fragment with no error in it is handed straight back, so `?seed` keeps its exact shape
- *  and `/add#SPP…` is never rewritten at all. */
+ *  query or fragment with no error in it is handed straight back, so `/add#SPP…` is never rewritten
+ *  at all. Every surviving parameter keeps its original text rather than being rebuilt through
+ *  URLSearchParams, which re-encodes and turns a bare `?seed` into `?seed=`. */
 function stripOAuth(raw: string, lead: string): string {
   if (!raw) return raw
-  const params = new URLSearchParams(raw.replace(/^[#?]/, ''))
-  if (!OAUTH_KEYS.some((k) => params.has(k))) return raw
-  for (const k of OAUTH_KEYS) params.delete(k)
-  const rest = params.toString()
-  return rest ? lead + rest : ''
+  const parts = raw.replace(/^[#?]/, '').split('&')
+  const isOAuth = (p: string) => OAUTH_KEYS.includes(p.split('=')[0])
+  if (!parts.some(isOAuth)) return raw
+  const kept = parts.filter((p) => p && !isOAuth(p))
+  return kept.length ? lead + kept.join('&') : ''
 }
 
 // Read at module evaluation and nowhere later. That order is both safe and necessary: this module is
