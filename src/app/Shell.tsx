@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
+import { Masthead } from './Masthead'
 import { Nav } from './Nav'
-import { IconDrinks } from '../ui/Icon'
 import { ToastProvider, useToast } from '../ui/Toast'
 import './shell.css'
 
@@ -22,19 +22,14 @@ function CrewToasts() {
 }
 
 export function Shell() {
-  const { pathname } = useLocation()
-  const home = pathname === '/'
   return (
     <>
       <div className="ground" aria-hidden />
-      {!home && (
-        <header className="app-head">
-          <div className="wrap app-head-in">
-            <span className="brand" aria-hidden><IconDrinks size={19} /></span>
-            <span className="brand-name">Cocktail Passport</span>
-          </div>
-        </header>
-      )}
+      {/* Home carries the masthead too. The app's name has to be somewhere for a visitor who arrives
+          cold on the landing screen, and Home's rank order is unchanged by it: the greeting is still
+          the screen's first content line, with chrome above it exactly as on Drinks, Ship, Crew and
+          You. */}
+      <Masthead />
       <main className="view">
         <ToastProvider>
           <CrewToasts />
