@@ -141,8 +141,9 @@ export const useStore = create<State>()(
       friends: [],
       profile: { id: '', name: '', colour: 'aqua' },
       cruiseId: activeCruiseId(),
-      // With one sailing there is nothing to choose, so skip the picker entirely.
-      enteredCruise: CRUISES.length === 1,
+      // The first-open screen decides this now, whatever the number of sailings: it is the record
+      // that the consent line was shown and Done was tapped.
+      enteredCruise: false,
       groups: [],
       pendingInvites: [],
       pendingUnfriends: [],
@@ -372,7 +373,7 @@ export const useStore = create<State>()(
     }),
     {
       name: 'spcc2',
-      version: 8,
+      version: 9,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       migrate: (persisted: any, from: number) => {
         if (from < 2 && persisted) {
@@ -414,6 +415,12 @@ export const useStore = create<State>()(
             const stat = computeStats(drinks, persisted.me ?? emptyPassport()).badgeStat
             persisted.seenMedals = BADGES.filter((b) => b.test(stat)).map((b) => b.id)
           } catch { persisted.seenMedals = [] }
+        }
+        if (from < 9 && persisted) {
+          // The picker is now the first-open screen for everyone, not only for a second sailing. Anyone
+          // with a persisted store has been in the app, and has been syncing under the terms the privacy
+          // note now states, so they are entered and are not asked again.
+          persisted.enteredCruise = true
         }
         return persisted
       },
