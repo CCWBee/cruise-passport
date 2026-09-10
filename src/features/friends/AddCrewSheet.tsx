@@ -222,7 +222,7 @@ export function AddCrewSheet({ onClose, onDone }: {
         <button type="button" className="btn btn-wide addme-send" onClick={share} disabled={!link}>
           {online && find !== 'offline' ? 'Or send your link' : 'Send your link'}
         </button>
-        <p className="t-meta addme-hint">Standing together? AirDrop or Nearby Share it from the share sheet. Otherwise message it.</p>
+        <p className="t-meta friends-hint">Standing together? AirDrop or Nearby Share it from the share sheet. Otherwise message it.</p>
 
         {/* 3. the two quiet routes for the phone that will not take a link */}
         <div className="addme-actions">
