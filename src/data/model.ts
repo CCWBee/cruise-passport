@@ -135,6 +135,13 @@ export function nowHour(): number {
 export function qaNoSync(): boolean {
   return typeof location !== 'undefined' && new URLSearchParams(location.search).has('nosync')
 }
+/** ?entry (QA only) renders the first-open screen once whatever the store says, so it can be shot
+ *  from a seeded dev server: index.html seeds at version 2, so the store always migrates through the
+ *  step that marks it entered. It does not gate sync, which reads enteredCruise rather than this, so
+ *  a seeded run passes ?nosync too. */
+export function qaFirstOpen(): boolean {
+  return typeof location !== 'undefined' && new URLSearchParams(location.search).has('entry')
+}
 export function prettyDay(iso: string): string {
   return new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
 }
