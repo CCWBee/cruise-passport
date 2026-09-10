@@ -106,9 +106,13 @@ export function readBackup(raw: unknown): BackupState | null {
   for (const [id, v] of Object.entries(me.entries)) entries[id] = readEntry(v)
   const visits: Record<string, VenueVisit> = {}
   for (const [key, v] of Object.entries(me.visits)) visits[key] = readVisit(v)
-  const custom = Array.isArray(raw.custom)
+  // Deduped here as well as in the merge, because this is the sanitiser: a caller that takes the
+  // backup wholesale never goes through mergeCustom's local side, and two rows under one id would
+  // reach allDrinks() either way. mergeCustom against an empty local list is that same first-seen
+  // rule, so there is one implementation of it rather than two that can drift.
+  const custom = mergeCustom([], Array.isArray(raw.custom)
     ? raw.custom.map(readDrink).filter((d): d is Drink => d !== null)
-    : []
+    : [])
   return { me: { entries, visits }, custom, profile: readProfile(raw.profile) }
 }
 
@@ -158,10 +162,20 @@ export function mergeVisits(local: Record<string, VenueVisit>, remote: Record<st
 }
 
 /** Union by id, this phone's list first. A custom drink is a thing the guest wrote, so neither side
- *  is edited: the id decides, and the local one stands where both have it. */
+ *  is edited: the id decides and the first row carrying it stands, local before remote and, within
+ *  either list, in the order it arrived. The set grows as the loop runs rather than being fixed from
+ *  `local` up front, because a backup written by an older build can carry the same id twice; letting
+ *  both through would put two Drink rows under one id into allDrinks(), which the Drinks list and the
+ *  badge pass both read. */
 export function mergeCustom(local: Drink[], remote: Drink[]): Drink[] {
-  const have = new Set(local.map((d) => d.id))
-  return [...local, ...remote.filter((d) => !have.has(d.id))]
+  const have = new Set<string>()
+  const out: Drink[] = []
+  for (const d of [...local, ...remote]) {
+    if (have.has(d.id)) continue
+    have.add(d.id)
+    out.push(d)
+  }
+  return out
 }
 
 /** The name is this phone's when it has one, and the colour follows the name: a guest who has
@@ -194,7 +208,10 @@ export function mergeRestore(local: BackupState, remote: BackupState, opts: Rest
       entries: mergeEntries(local.me.entries, remote.me.entries),
       visits: mergeVisits(local.me.visits, remote.me.visits),
     }
-  const custom = opts.untouched ? [...remote.custom] : mergeCustom(local.custom, remote.custom)
+  // The untouched shortcut still goes through mergeCustom, with nothing on the local side: taking
+  // `remote.custom` as it stands would be the one path that skips the id rule, and a caller may hand
+  // this function a remote that never went through readBackup.
+  const custom = mergeCustom(opts.untouched ? [] : local.custom, remote.custom)
   let adopted = 0
   for (const [id, e] of Object.entries(me.entries)) {
     if (e.tried && !local.me.entries[id]?.tried) adopted++

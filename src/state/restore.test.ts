@@ -100,6 +100,25 @@ test('custom drinks union by id, this phone first', () => {
   assert.equal(r[1].name, 'Also mine')
 })
 
+test('two rows under one id are one drink, whichever side carries them', () => {
+  // A backup written by an older build can hold the same id twice. The id decides and the first row
+  // stands, or allDrinks() would list one custom drink twice and the badge pass would count it twice.
+  const withinRemote = mergeCustom([], [drink('c9', 'A'), drink('c9', 'B')])
+  assert.deepEqual(withinRemote.map((d) => d.id), ['c9'])
+  assert.equal(withinRemote[0].name, 'A')
+  const wholesale = mergeRestore(state(), state({ custom: [drink('c9', 'A'), drink('c9', 'B')] }), { untouched: true })
+  assert.deepEqual(wholesale.custom.map((d) => d.id), ['c9'])
+})
+
+test('readBackup drops a duplicate id, so the sanitiser covers the wholesale path too', () => {
+  const ok = readBackup({
+    me: { entries: {}, visits: {} },
+    custom: [{ id: 'c9', name: 'First' }, { id: 'c9', name: 'Second' }],
+  })
+  assert.ok(ok)
+  assert.deepEqual(ok.custom.map((d) => d.name), ['First'])
+})
+
 test('the name comes from the backup only when this phone has none, and the colour follows it', () => {
   const backup: Profile = { id: 'u1', name: 'Isabel', colour: 'melon' }
   const named = mergeProfile({ id: '', name: 'Alex', colour: 'lime' }, backup)
