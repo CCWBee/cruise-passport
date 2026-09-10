@@ -229,9 +229,13 @@ it carries its own ground and its own masthead and has no nav.
 16 between the two fields. No new token, no new radius, no shadow and no `backdrop-filter`, because
 the entry screen is not chrome and carries no glass.
 
-**The screen must not scroll, and the shot is the only check that counts.** At 390×844 headless it
-measures 844 of 844 with the consent line running to six lines, so a consent line that grows past six
-does not hold and the copy has to come down instead.
+**The screen must not scroll, and the shot is the only check that counts.** At 390×844 headless
+`.entry-in` measures 563 of the 737 the body offers below the masthead, with the consent line running
+to five lines of 18.2, so about 174px, roughly nine more lines, remain before it scrolls. A real
+iPhone's insets take about 49 of that: `.app-head` carries `--safe-t`, and the body's bottom padding
+is `max(var(--s6), var(--safe-b))`. Past that the copy has to come down instead. Measure `.entry-in`
+against the body, never the document height: `.entry` is `min-height: 100dvh`, so 844 of 844 is what
+an empty screen reads too and proves nothing.
 
 Nothing has left the phone when this renders, and nothing does until Done: `sync.ts` gates its whole
 transport on `enteredCruise`. That is what makes the consent line true rather than a description of
