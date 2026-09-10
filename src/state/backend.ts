@@ -47,6 +47,47 @@ export async function ensureSession(): Promise<string | null> {
   }
 }
 
+// ── who is signed in ──
+
+export type SessionKind = 'none' | 'anonymous' | 'signed-in'
+
+/** Three-valued on purpose, and this is the one adaptation the recovered adapter needed rather than
+ *  wanted. 037be89's isAnonymous() tested `Boolean(user) && …`, so a phone with **no session at all**
+ *  read as "not anonymous", i.e. signed in. The launch check runs before the first ensureSession(),
+ *  which is exactly when there is no session, so on a fresh phone the Profile sheet would have said
+ *  "Kept with Google" with no button on the very first open. */
+export async function sessionKind(): Promise<SessionKind> {
+  const client = await sb()
+  if (!client) return 'none'
+  try {
+    const user = (await client.auth.getSession()).data.session?.user
+    if (!user) return 'none'
+    // is_anonymous is what GoTrue stamps on the token now; the second test is 037be89's own (no
+    // email, no identities), kept as the fallback for a session minted before that field existed.
+    if (user.is_anonymous === true) return 'anonymous'
+    if (!user.email && (user.identities?.length ?? 0) === 0) return 'anonymous'
+    return 'signed-in'
+  } catch { return 'none' }
+}
+
+/** Kept under its recovered name, as a wrapper, so the question has one implementation. */
+export async function isAnonymous(): Promise<boolean> {
+  return (await sessionKind()) === 'anonymous'
+}
+
+/** The current user, or null. Unlike ensureSession() this never **creates** one, which is what makes
+ *  it the only way the restore path may resolve a user: see fetchBackup. */
+export async function currentUserId(): Promise<string | null> {
+  const client = await sb()
+  if (!client) return null
+  try { return (await client.auth.getSession()).data.session?.user?.id ?? null } catch { return null }
+}
+
+export async function signOut(): Promise<void> {
+  const client = await sb()
+  if (client) { try { await client.auth.signOut() } catch { /* the caller's rows are its own concern */ } }
+}
+
 // ── data ──
 
 export async function upsertProfile(code: string, name: string, colour: string): Promise<boolean> {
@@ -195,6 +236,6 @@ export async function deleteMyData(): Promise<boolean> {
   if (!client || !(await ensureSession())) return false
   const { error } = await client.rpc('delete_my_data')
   if (error) return false
-  try { await client.auth.signOut() } catch { /* the rows are gone either way */ }
+  await signOut() // one way to end a session, so a later sign-in path cannot grow a second
   return true
 }
