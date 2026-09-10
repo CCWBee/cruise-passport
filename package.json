@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "design:check": "node tools/qa/scan.mjs --check src",
     "design:scan": "node tools/qa/scan.mjs src",
-    "design:shots": "node tools/qa/shots.mjs http://127.0.0.1:5173 local"
+    "design:shots": "node tools/qa/shots.mjs http://127.0.0.1:5173 local",
+    "test": "node --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",
