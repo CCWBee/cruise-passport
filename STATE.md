@@ -2,105 +2,106 @@
 
 Open work for the Cocktail Passport. One-line status lives in `E:\claude-projects\PROJECTS.md`;
 agent context in `CLAUDE.md`; the reconciled checklist in `docs/PRODUCTIONISATION.md`; the product
-architecture in `docs/specs/2026-09-10-product-brief.md`.
+architecture in `docs/specs/2026-09-10-product-brief.md`, one spec per workstream beside it.
 
-## Where it stands (10 September 2026)
+## Where it stands (11 September 2026)
 
-- Charles ruled on the fork: (b), a product for any sailing. Build under way on branch `product`,
-  with workflows and subagents, one workstream at a time in the order A, C, B, E, BYO
-  (the brief has the reasons and the file-contention map).
-- `main` now carries the 5 September ops-review apply run as one commit (his 13 paths, committed
-  10 September, not pushed). Pushing `main` deploys the `?seed` guard: asked, awaiting his answer.
-- Live is `62cdf04` (last green Deploy run, 5 September). Baseline on `product` at `83e16e7`, 10
-  September: `design:check` 31 files clean, `lint` 0 errors (28 known warnings, per `CLAUDE.md`), `tsc` clean. One dev
-  server is up on 127.0.0.1:5173 (background task `blo717sae`). Sellability assessment of 10 September
-  is folded into the brief; evidence under `tools/qa/shots-live-audit/` (gitignored).
+- Charles ruled the fork: (b), a product for any sailing. The build is on branch `product`, done
+  with workflows and subagents one workstream at a time (build, gate review, fix each).
+- **Four of the five workstreams are shipped on `product`, HEAD `ce1d64d`:** A (the first open after
+  a deploy reloads onto the new build), C (optional Google sign-in and a tested restore merge), B
+  (the first-open screen, the sync gate behind it, the masthead on Home, the privacy note), E (the
+  desktop landing and install path at `/` and `/get`). 60 commits since live, 56 files, +7188/-269.
+  All gates green on HEAD: `npm run lint` 28 warnings 0 errors, `tsc` clean, `design:check` 33 files
+  clean, `npm test` 17/17, and `npm run build` exits 0 (PWA precache 16 entries).
+- **Not merged to `main`.** `main` deploys, so the merge is Charles's call and waits on his gates
+  below. `main` is `8b2ca89` locally (the 5 September ops-review tree committed 10 September, not
+  pushed); live is `62cdf04` (last green Deploy, 5 September).
+- Only **BYO** (bring your own sailing) is unbuilt, and it is gated on two Charles rulings (below).
+  A short **polish pass** for three follow-ups is also queued (below).
+
+## The four passes, for the record
+
+- Phase 1 specs (run `wf_59cea1ba-a91`): five specs in `docs/specs/2026-09-10-*.md`.
+- Pass A (`wf_a90270f3-7d1`): six commits `b42483a`..`7414857`, review pass.
+- Pass C (`wf_d78557ca-8a2`): fourteen commits `dd1a9fa`..`9ff1563` then four fixes to `39676d1`;
+  review caught two blockers (an em dash in a `sync.ts` comment, `mergeCustom` keeping duplicate
+  ids). Not exercisable here: Google, `linkIdentity`, the `fresh` path, a genuinely missing backup.
+- Pass B (`wf_ad2def83-9b8`): fifteen commits `41f724e`..`3cc7f0f` then two docs fixes to `a6e0e17`;
+  review caught a false height figure in the DESIGN.md Entry section.
+- Pass E: build (`wf_2a3dddfc-aa1`) landed eleven commits `56893b8`..`6fcdcdd` but the workflow died
+  on the Fable monthly spend cap before the builder returned, so it shipped unreviewed with one lint
+  regression. Review and fix ran separately (`wf_fade852e-771`): the fixer's `ce1d64d` moved
+  `isDesktopVisitor` to `model.ts`, lint back to 28. The reviewer confirmed every routing probe and
+  gate case (phone `/get` not-entered goes to Entry, both trailing-slash directions, `/add` reaches
+  AddRoute). Do not resume `wf_2a3dddfc-aa1`: its build agent is cached as an error, so a resume
+  re-runs the build over commits that already exist.
+- Attribution oddity, on record, not worth a history rewrite: pass E's eleven build commits carry
+  "Co-Authored-By: Claude Opus 5 (1M context)" (a non-existent model) plus a Fable line; C's four fix
+  commits carry Opus 5 too. Cannot fix without amend/rebase (forbidden). Cosmetic in unpushed history.
 
 ## Open threads
 
-- Phase 1 done 10 September (run `wf_59cea1ba-a91`, 10 agents, 0 errors): five specs in
-  `docs/specs/2026-09-10-*.md`, committed. Verdicts: A ready, B ready, E ready (after B lands),
-  C needs-charles (dashboard gates; anonymous path and merge buildable now), BYO needs-charles.
-- Pass A done 10 September (run `wf_a90270f3-7d1`): six commits `b42483a`..`7414857` on `product`;
-  review verdict pass, five minor harness findings folded into pass C's step 0. `tools/qa/update.mjs`
-  prints three PASS lines and fails on the old `main.tsx` (negative control run).
-- Pass C done 10 September (run `wf_d78557ca-8a2`): fourteen build commits `dd1a9fa`..`9ff1563`,
-  review verdict fail (two blockers: an em dash in a new `sync.ts` comment; `mergeCustom` kept
-  duplicate ids), four fix commits, HEAD `39676d1`, all gates green (17 tests, tsc, design:check,
-  lint 28/0). Live launch-order proven: the backups select precedes the first upsert. Not
-  exercisable here: Google, `linkIdentity`, the `fresh` path, a genuinely missing backup. Residual
-  one-line fixes left to the defaults: `restoreNow` snapshots state before its awaits; the
-  return-leg restore has no manual trigger. The fix commits carry two co-author lines (Opus 5
-  wrote them; the session line is Fable), which is accurate.
-- Anonymous QA users created on the live backend on 10 September, all profile name Alex, zero
-  edges and zero memberships, nine in total: two from the sellability shots (about 11:00), builder
-  codes QR9Y-NYC3 and QAZ9-2TPD (12:43, 12:46), reviewer codes HCBC-6FT7 and PZQ5-W9FN plus one
-  uncaptured at about 13:07 (13:03 to 13:07), fixer codes 3QJT-1FC5 and BDHC-KF9X (13:20, 13:22).
-  Purge under the `CLAUDE.md` rule; never blanket-purge. Pass B's hand check adds one more.
-- Pass B done 10 September (run `wf_ad2def83-9b8`): fifteen build commits `41f724e`..`3cc7f0f`,
-  review verdict fail (one major: a false height figure in the new DESIGN.md Entry section), two
-  docs-only fix commits, HEAD `a6e0e17`, all gates green (17 tests, tsc, design:check 32 files,
-  lint 28/0). Proven on the wire: zero backend calls before Done, sync resumes after it; version-2
-  and version-8 stores migrate to entered and are not re-asked.
-- Follow-ups B surfaced, not B's to fix (small, need Charles's yes because they change semantics):
-  (1) After Delete my data, if sync is live the next round trip mints a fresh anonymous user and
-  republishes the same passport and name under it (`deleteMyData` signs out, `resetSocialIdentity`
-  keeps the name, `ensureSession` creates a new user). Erasure severs the identity but not the
-  upload. Coherent fix now that consent exists: erasure also sets `enteredCruise` false, so the
-  entry screen asks again before anything publishes; the privacy note's Deleting it paragraph then
-  says so. (2) In the offline state the disabled "Keep it with Google" looks identical to the
-  enabled one (`:disabled` falls to the plain surface the plain button already has); one rule in
-  `base.css`. (3) A stacked sheet covers the one beneath exactly (both cap at 88svh); if the
-  layering should read, inset or scale the covered pane in `src/ui/Sheet.tsx`.
-- QA users from pass B: builder created three (uid `d7ffee51-…` code BGY1-YHH7, deleted;
-  uid `f07921a5-…`, deleted; one uncaptured at about 12:48:44 UTC, NOT deleted, minted by the
-  republish seam above, profile name Alex, zero edges); reviewer created one (uid `4cf630c9-…`
-  code NFD1-ETK8, deleted). So ten anonymous Alex users with profile rows to purge, plus three
-  auth-only rows whose profiles are already deleted (find by uid: `d7ffee51`, `f07921a5`,
-  `4cf630c9`).
-- Pass E build LANDED but its workflow died on the Fable monthly spend cap (10 September) before the
-  builder returned, so the review and fix phases never ran. Eleven commits `56893b8`..`6fcdcdd` are
-  on `product` (HEAD `6fcdcdd`): the landing at `/` and `/get`, `.qr-plate` and `.quiet-action`
-  minted in `base.css` and swept, `SHOT_W`/`SHOT_H` on `shot.mjs`. tsc clean, tests 17/17,
-  design:check 33 files clean, but lint is 29 warnings: E introduced one, `Landing.tsx:21`
-  `react(only-export-components)` from exporting `isDesktopVisitor()` beside the component (the
-  29th-warning regression the A spec avoided). E is UNREVIEWED. Do not resume run `wf_2a3dddfc-aa1`:
-  its build agent is cached as an error, so a resume re-runs the build over the eleven commits that
-  already exist.
-- In flight: pass E review and fix only (build already on the branch), one stream, on `product`,
-  launched 11 September from `6fcdcdd` (run `wf_fade852e-771`). Resume:
-  `Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-pass-e-review-fix-wf_fade852e-771.js", resumeFromRunId: "wf_fade852e-771" })`.
-  Journal: `...\subagents\workflows\wf_fade852e-771\journal.jsonl`. Reviewer reads `a6e0e17..HEAD`,
-  re-runs the spec's shots and probes at 390x844 and 1280x800, must catch the lint regression; fixer
-  moves `isDesktopVisitor` off `Landing.tsx` and applies the rest. No live-backend action. After E:
-  BYO (gated on Charles's two rulings), then a short polish pass for the three follow-ups above.
-- Spend note: the 10 September cap was Fable's monthly limit; session is back on Opus 4.8 as of
-  11 September. Workflows pass `model: "opus"` explicitly. If the cap fires again it is an account
-  wall only Charles can lift; keep every pass resumable.
-- Rulings and copy still Charles's, per spec: C: what a "fresh" sign-in erases (spec deletes the
-  guest's own profile, passport and backup rows and leaves memberships), and whether a lost
-  `sessionStorage` trigger should have a manual restore. B: the privacy contact address
-  (`PRIVACY_CONTACT`), retention wording, whether a dated consent record is wanted, and whether
-  being added by a friend should need acceptance (`befriend` writes both edges today). E: the price
-  sentence, whether a desktop visitor may open the passport in the browser, generalising the
-  `index.html` titles off "Sun Princess". BYO: ship without a way to hand a sailing to a friend, or
-  hold; package tiers on a user sailing (default: none).
-- Then per workstream: implement → gate review → fix, each a resumable workflow, committed on
-  `product` per pass.
-- Console gates for Charles (listed in the 10 September reply): Google provider + manual linking,
-  Google Cloud OAuth client, redirect allow-list + Site URL, any 0004 migration, purge two Alex users,
-  what is sold and at what price, a second real menu.
+### Charles's gates and rulings (nothing below is blocked on me)
+
+- **Push `main`.** `8b2ca89` carries the `?seed` guard; until it deploys a shared seed link can still
+  wipe a real user on the live site. His yes.
+- **Dashboard gates for sign-in** (C is built to fail honestly until these are done): Supabase Google
+  provider ON, Allow manual linking ON, a Google Cloud OAuth client with the Supabase callback URL,
+  Site URL `https://cruise.charlesbee.org` and the four redirect URLs in `supabase/config.toml`.
+  `docs/BACKEND_SETUP.md` steps 2 and 4 are the same list.
+- **Spec rulings, each built to a stated default so none blocked the build:** C: what a "fresh"
+  sign-in erases (default: the guest's own profile, passport and backup rows, memberships left), and
+  whether a lost `sessionStorage` trigger gets a manual restore (default: no). B: the privacy contact
+  address (`PRIVACY_CONTACT`, empty so its two sentences do not render), retention wording, whether a
+  dated consent record is wanted, and whether being added by a friend should need acceptance
+  (`befriend` writes both edges today). E: the price sentence (`PRICE_LINE` null), whether a desktop
+  visitor may open the passport in the browser (default: yes, one quiet action), generalising the
+  `index.html` titles off "Sun Princess".
+- **BYO rulings, which gate the last workstream:** ship without a way to hand a sailing to a friend or
+  hold until sharing exists ("hold" means BYO does not start); and package tiers on a user sailing
+  (default: none, so the Plus/Premier segment disappears there). Spec: `docs/specs/2026-09-10-byo-own-sailing.md`.
+- **Roll the Cloudflare API token** (pasted in chat 1 September, still the stored secret; rotation
+  register in `project-management/README.md`).
+
+### Follow-ups for the polish pass (small; two need a yes because they change semantics)
+
+1. **Erasure does not stop the upload.** After Delete my data, if sync is live the next round trip
+   mints a fresh anonymous user and republishes the same passport and name (`deleteMyData` signs out,
+   `resetSocialIdentity` keeps the name, `ensureSession` makes a new user). Coherent fix now that
+   consent exists: erasure also clears `enteredCruise`, so the entry screen asks again before anything
+   publishes, and the privacy note's Deleting it paragraph says so. Charles's yes (changes what the
+   control means). Documented in `CLAUDE.md` Seed as the QA trap it also causes.
+2. The disabled "Keep it with Google" in the offline state looks identical to the enabled one
+   (`:disabled` falls to the plain surface the plain button already has). One rule in `base.css`.
+3. A stacked sheet exactly covers the one beneath (both cap at 88svh). If the layering should read,
+   inset or scale the covered pane in `src/ui/Sheet.tsx` (workstream A's file).
+
+### Anonymous QA users to purge from the Supabase dashboard (all 10 September, profile name Alex, zero edges/memberships)
+
+- Sellability shots (~11:00): two, codes not recorded.
+- Pass C: builder QR9Y-NYC3 (12:43), QAZ9-2TPD (12:46); reviewer HCBC-6FT7, PZQ5-W9FN and one
+  uncaptured (~13:03 to 13:07); fixer 3QJT-1FC5 (13:20), BDHC-KF9X (13:22).
+- Pass B: one uncaptured at ~12:48:44 (NOT deleted, minted by the republish seam in follow-up 1).
+- Deleted-profile auth rows still present, find by uid: `d7ffee51`, `f07921a5`, `4cf630c9`.
+- Never blanket-purge; real users have existed since 3 September.
 
 ## Next action
 
-Launch the Phase 1 spec workflow (all agents `model: 'opus'`), record its handles here, review the
-drafted specs, commit them on `product`, then start one dev server on 5173 and run pass A.
+BYO is the only unbuilt workstream and is gated on Charles's two BYO rulings; the polish pass is
+queued behind it. Nothing else is actionable without Charles. When he clears the gates: build BYO
+(review the merged `product` first, since its spec was written against B's and C's specs, not their
+code), then the polish pass, then he reviews and merges `product` to `main`.
 
 ## Gotchas
 
 - `tools/qa/shot.mjs` always appends `?seed` and hits `SHOT_BASE`; against live it signs in an
-  anonymous user per run. For a live look use `tools/qa/cold.mjs`; for offline, `tools/qa/offline.mjs`.
+  anonymous user per run. For a live look use `tools/qa/cold.mjs`; offline, `tools/qa/offline.mjs`;
+  the update reload, `tools/qa/update.mjs`; the first-open sync gate, `tools/qa/first-open.mjs`.
+- Delete my data on a QA run must be on a `?nosync` page, or the erased user is replaced by an
+  unreachable one (follow-up 1; `CLAUDE.md` Seed).
 - The Claude-in-Chrome automation tab freezes `requestAnimationFrame` and force-darkens the page.
-- A phone or Brave showing an older design is not a failed deploy: it is workstream A.
 - Node on Windows needs `file:///E:/...` for an absolute ESM import; QA scripts import `./cdp.mjs`.
 - Never two workflow writers on one file; never a second dev server on 5173.
+- Every workflow here passes `model: "opus"` explicitly. The 10 September cap was Fable's monthly
+  limit; keep every pass resumable in case an account wall fires again.
