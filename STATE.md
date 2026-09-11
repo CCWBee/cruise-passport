@@ -58,12 +58,25 @@ architecture in `docs/specs/2026-09-10-product-brief.md`.
   code NFD1-ETK8, deleted). So ten anonymous Alex users with profile rows to purge, plus three
   auth-only rows whose profiles are already deleted (find by uid: `d7ffee51`, `f07921a5`,
   `4cf630c9`).
-- In flight: pass E (landing and install), build → gate review → fix, one stream, on `product`,
-  launched 10 September from `a6e0e17`. Resume:
-  `Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-pass-e-landing-install-wf_2a3dddfc-aa1.js", resumeFromRunId: "wf_2a3dddfc-aa1" })`.
-  Journal: `...\E--claude-projects\10468e48-0258-48b8-84c7-deaaceda11ba\subagents\workflows\wf_2a3dddfc-aa1\journal.jsonl`.
-  No live-backend action in this pass. After E: BYO (gated on Charles's two rulings), then a short
-  polish pass for the three follow-ups above.
+- Pass E build LANDED but its workflow died on the Fable monthly spend cap (10 September) before the
+  builder returned, so the review and fix phases never ran. Eleven commits `56893b8`..`6fcdcdd` are
+  on `product` (HEAD `6fcdcdd`): the landing at `/` and `/get`, `.qr-plate` and `.quiet-action`
+  minted in `base.css` and swept, `SHOT_W`/`SHOT_H` on `shot.mjs`. tsc clean, tests 17/17,
+  design:check 33 files clean, but lint is 29 warnings: E introduced one, `Landing.tsx:21`
+  `react(only-export-components)` from exporting `isDesktopVisitor()` beside the component (the
+  29th-warning regression the A spec avoided). E is UNREVIEWED. Do not resume run `wf_2a3dddfc-aa1`:
+  its build agent is cached as an error, so a resume re-runs the build over the eleven commits that
+  already exist.
+- In flight: pass E review and fix only (build already on the branch), one stream, on `product`,
+  launched 11 September from `6fcdcdd`. The reviewer reads the diff `a6e0e17..HEAD`, re-runs the
+  spec's shots and probes at 390x844 and 1280x800, and must catch the lint regression; the fixer
+  moves `isDesktopVisitor` off `Landing.tsx` (candidate: beside `qaLanding` in `src/data/model.ts`)
+  and applies any other findings. Resume handle recorded here once the run id exists. No live-backend
+  action. After E: BYO (gated on Charles's two rulings), then a short polish pass for the three
+  follow-ups above.
+- Spend note: the 10 September cap was Fable's monthly limit; session is back on Opus 4.8 as of
+  11 September. Workflows pass `model: "opus"` explicitly. If the cap fires again it is an account
+  wall only Charles can lift; keep every pass resumable.
 - Rulings and copy still Charles's, per spec: C: what a "fresh" sign-in erases (spec deletes the
   guest's own profile, passport and backup rows and leaves memberships), and whether a lost
   `sessionStorage` trigger should have a manual restore. B: the privacy contact address
