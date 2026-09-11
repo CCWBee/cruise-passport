@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Masthead } from '../../app/Masthead'
-import { qaLanding } from '../../data/model'
+import { isDesktopVisitor } from '../../data/model'
 import { Qr } from '../../ui/Qr'
 import './landing.css'
 
@@ -14,16 +14,8 @@ import './landing.css'
 // about the business, so it is his sentence to write, not one to draft for him.
 const PRICE_LINE: string | null = null
 
-// Three conditions together, not width alone: a phone in landscape can exceed 900px, and a tablet
-// with a trackpad genuinely is a desktop visitor for this purpose. matchMedia('(hover: hover)') is
-// already the app's test for a pointer device (avatarSpring.ts), and the typeof guard is that line's.
-// The value is read at render and not subscribed to: nobody resizes a laptop into a phone mid-install.
-export function isDesktopVisitor(): boolean {
-  const forced = qaLanding()
-  if (forced) return forced === 'desktop'
-  if (typeof matchMedia === 'undefined') return false
-  return matchMedia('(min-width: 900px) and (hover: hover) and (pointer: fine)').matches
-}
+// isDesktopVisitor() decides which branch renders. It lives in src/data/model.ts beside the other QA
+// overrides, so this file only exports its component (react(only-export-components)).
 
 // The desktop dead end, removed: a laptop visitor is handed the app on the phone in their pocket
 // rather than a first-open screen asking for a name and a colour on a machine that will never be

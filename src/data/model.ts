@@ -144,6 +144,18 @@ export function qaLanding(): 'desktop' | 'phone' | null {
   const raw = new URLSearchParams(location.search).get('landing')
   return raw === 'desktop' || raw === 'phone' ? raw : null
 }
+/** Decides which branch of the landing renders, on three conditions together and not width alone: a
+ *  phone in landscape can exceed 900px, and a tablet with a trackpad genuinely is a desktop visitor
+ *  for this purpose. matchMedia('(hover: hover)') is already the app's test for a pointer device
+ *  (avatarSpring.ts), and the typeof guard is that line's. The value is read at render and not
+ *  subscribed to: nobody resizes a laptop into a phone mid-install. Lives here beside qaLanding()
+ *  rather than in Landing.tsx so that file only exports its component (react(only-export-components)). */
+export function isDesktopVisitor(): boolean {
+  const forced = qaLanding()
+  if (forced) return forced === 'desktop'
+  if (typeof matchMedia === 'undefined') return false
+  return matchMedia('(min-width: 900px) and (hover: hover) and (pointer: fine)').matches
+}
 /** ?entry (QA only) renders the first-open screen once whatever the store says, so it can be shot
  *  from a seeded dev server: index.html seeds at version 2, so the store always migrates through the
  *  step that marks it entered. It does not gate sync, which reads enteredCruise rather than this, so

@@ -61,8 +61,9 @@ Accepted exceptions live in `tools/qa/design-allow.txt` with their reasons.
 - **Landing and install:** `/get` is the install path (what this is, a code of the live address, the
   two steps to a home screen, and a price slot that is empty until Charles rules), and the same screen
   also renders at `/` for a desktop first open, above the entry gate, so a laptop visitor is never
-  handed a name-and-colour card. `isDesktopVisitor()` (`src/features/landing/Landing.tsx`) decides it
-  on width, hover and pointer together. It collects nothing and asks the network for nothing.
+  handed a name-and-colour card. `isDesktopVisitor()` (`src/data/model.ts`, beside the QA overrides so
+  `Landing.tsx` only exports its component) decides it on width, hover and pointer together. It
+  collects nothing and asks the network for nothing.
 - **Rendering it headlessly:** `?landing=desktop|phone` pins the branch, and `desktop` also forces the
   root gate open, because `?seed` has always migrated the store to entered; `SHOT_W`/`SHOT_H` move
   `shot.mjs` off 390×844, which is the only way to see the desktop branch at the size it is for.
