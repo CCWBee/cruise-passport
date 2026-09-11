@@ -68,12 +68,12 @@ architecture in `docs/specs/2026-09-10-product-brief.md`.
   its build agent is cached as an error, so a resume re-runs the build over the eleven commits that
   already exist.
 - In flight: pass E review and fix only (build already on the branch), one stream, on `product`,
-  launched 11 September from `6fcdcdd`. The reviewer reads the diff `a6e0e17..HEAD`, re-runs the
-  spec's shots and probes at 390x844 and 1280x800, and must catch the lint regression; the fixer
-  moves `isDesktopVisitor` off `Landing.tsx` (candidate: beside `qaLanding` in `src/data/model.ts`)
-  and applies any other findings. Resume handle recorded here once the run id exists. No live-backend
-  action. After E: BYO (gated on Charles's two rulings), then a short polish pass for the three
-  follow-ups above.
+  launched 11 September from `6fcdcdd` (run `wf_fade852e-771`). Resume:
+  `Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-pass-e-review-fix-wf_fade852e-771.js", resumeFromRunId: "wf_fade852e-771" })`.
+  Journal: `...\subagents\workflows\wf_fade852e-771\journal.jsonl`. Reviewer reads `a6e0e17..HEAD`,
+  re-runs the spec's shots and probes at 390x844 and 1280x800, must catch the lint regression; fixer
+  moves `isDesktopVisitor` off `Landing.tsx` and applies the rest. No live-backend action. After E:
+  BYO (gated on Charles's two rulings), then a short polish pass for the three follow-ups above.
 - Spend note: the 10 September cap was Fable's monthly limit; session is back on Opus 4.8 as of
   11 September. Workflows pass `model: "opus"` explicitly. If the cap fires again it is an account
   wall only Charles can lift; keep every pass resumable.
