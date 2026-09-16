@@ -88,10 +88,22 @@ architecture in `docs/specs/2026-09-10-product-brief.md`, one spec per workstrea
 
 ## Next action
 
-BYO is the only unbuilt workstream and is gated on Charles's two BYO rulings; the polish pass is
-queued behind it. Nothing else is actionable without Charles. When he clears the gates: build BYO
-(review the merged `product` first, since its spec was written against B's and C's specs, not their
-code), then the polish pass, then he reviews and merges `product` to `main`.
+BYO is in flight (below). After it: the polish pass for the three follow-ups, then Charles reviews
+and merges `product` to `main` (a production deploy, his yes only).
+
+### In flight: BYO (bring your own sailing), launched 17 September from `45da690`
+
+Charles said "complete anything remaining", so the four open BYO questions are taken on the spec's
+stated defaults, all reversible on the branch: ship it solo (no way to hand a sailing to a friend yet;
+the sailing sheet says so), a user sailing declares no package tiers, the "Set up your own sailing"
+row is shown to everyone, the champion badge takes the sailing's ship name. Harness: reconcile (one
+agent maps the spec's stale anchors against the shipped A/C/B/E code into
+`docs/specs/2026-09-17-byo-reconcile.md`) -> build steps 1 to 8 (data layer and tests, with the
+regression before-sweep first) -> build steps 9 to 19 (screens, fixtures, docs, the after-sweep) ->
+refute-by-default review -> fix. No live-backend action anywhere in it. Run `wf_dc035ce5-972`. Resume:
+`Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-pass-byo-own-sailing-wf_dc035ce5-972.js", resumeFromRunId: "wf_dc035ce5-972" })`.
+Journal: `...\E--claude-projects\10468e48-0258-48b8-84c7-deaaceda11ba\subagents\workflows\wf_dc035ce5-972\journal.jsonl`.
+A stage that returns nothing or says stop ends the run with a note; read the journal before resuming.
 
 ## Gotchas
 
