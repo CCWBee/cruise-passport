@@ -74,7 +74,11 @@ export function computeStats(drinks: Drink[], p: Passport): Stats {
 
   const checked = VENUE_KEYS.filter((k) => p.visits[k]?.visited)
   const vset: Record<string, 1> = {}
-  tried.forEach((d) => { vset[d.venue] = 1 })
+  // Guarded against this sailing's own venues, as `checked` already is. Without it a drink carrying
+  // a venue key the sailing does not hold pushes `venues` above `totalVenues` and earns Every Bar
+  // off a bar that is not on the ship. No drink on the published sailing can do that, so there it
+  // is a no-op.
+  tried.forEach((d) => { if (VENUES[d.venue]) vset[d.venue] = 1 })
   checked.forEach((k) => { vset[k] = 1 })
   const vkeys = Object.keys(vset)
 
@@ -116,7 +120,8 @@ export function computeStats(drinks: Drink[], p: Passport): Stats {
   }
   const frozenSet = drinks.filter((d) => d.frozen)
   const frozenDone = frozenSet.length > 0 && frozenSet.every((d) => E(d.id).tried)
-  const pct = (tried.length / drinks.length) * 100
+  // Zero-guarded: a sailing can have an empty catalogue, and NaN here paints NaN% in the hero.
+  const pct = drinks.length ? (tried.length / drinks.length) * 100 : 0
 
   const badgeStat: BadgeStat = {
     n: tried.length, venues: vkeys.length, totalVenues: VENUE_KEYS.length,
