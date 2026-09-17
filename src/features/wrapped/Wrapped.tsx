@@ -8,8 +8,9 @@ import { useAllDrinks, useStore } from '../../state/store'
 import { useSources } from '../../state/social'
 import { IconClose } from '../../ui/Icon'
 import { useCountUp } from '../../ui/useCountUp'
+import { SHIP } from '../../data/model'
 import {
-  WRAPPED_TOTAL, certificateRows, deriveWrapped, listJoin, voyageDateRange, wrappedUnlocked,
+  certificateRows, deriveWrapped, listJoin, voyageDateRange, wrappedTotal, wrappedUnlocked,
   type WrappedCard, type WrappedFinale,
 } from './wrappedData'
 import { renderWrappedImage } from './wrappedImage'
@@ -146,12 +147,12 @@ function SaveWrapped({ card }: { card: WrappedFinale }) {
 // then the plain lines that qualify it. No plates, no rings, no medal disc. The count-up belongs to
 // the display numeral and nowhere else: digits twitching inside a 13px sentence cost more legibility
 // than they buy, and a card whose big thing is a name has no numeral to count.
-function CardBody({ card }: { card: WrappedCard }) {
+function CardBody({ card, total }: { card: WrappedCard; total: number }) {
   switch (card.kind) {
     case 'cover':
       return (
         <div className="wr-content wr-cover">
-          <h1 className="t-title wr-lead">Your Sun Princess, wrapped</h1>
+          <h1 className="t-title wr-lead">Your {SHIP}, wrapped</h1>
           <p className="t-meta">A voyage in cocktails</p>
           <p className="t-meta tnum">{card.dateRange}</p>
         </div>
@@ -161,7 +162,7 @@ function CardBody({ card }: { card: WrappedCard }) {
         <div className="wr-content">
           <p className="t-meta">You have tried</p>
           <p className="t-display tnum"><AnimatedNumber value={card.count} /></p>
-          <p className="t-meta">of {WRAPPED_TOTAL} drinks</p>
+          <p className="t-meta">of {total} drinks</p>
           <p className="t-meta">{card.pct.toFixed(0)}% of the passport</p>
         </div>
       )
@@ -225,7 +226,7 @@ function CardBody({ card }: { card: WrappedCard }) {
           <p className="t-meta">{card.count === 1 ? 'friend aboard' : 'friends aboard'}</p>
           <div className="wr-facts">
             {card.twin && <p className="t-meta">Taste twin: {card.twin.name}, {card.twin.affinityPct}% match</p>}
-            <p className="t-meta">Together you found {card.triedTogether} of {WRAPPED_TOTAL}</p>
+            <p className="t-meta">Together you found {card.triedTogether} of {total}</p>
             {card.onlyFriends > 0 && (
               <p className="t-meta tnum">{card.onlyFriends} of those you owe to the crew</p>
             )}
@@ -246,7 +247,7 @@ function CardBody({ card }: { card: WrappedCard }) {
                 <p key={row.label}><span className="t-meta">{row.label}</span><strong className="tnum">{row.value}</strong></p>
               ))}
             </div>
-            <p className="t-meta tnum">Sun Princess · {voyageDateRange()}</p>
+            <p className="t-meta tnum">{SHIP} · {voyageDateRange()}</p>
           </div>
           <SaveWrapped card={card} />
         </div>
@@ -431,7 +432,7 @@ export function Wrapped({ onClose, startIndex = 0 }: WrappedProps) {
       <main className="wr-stage" aria-live="polite">
         <section className="wr-card" key={`${card.kind}-${index}`} aria-label={`Card ${index + 1} of ${cards.length}`}>
           <div className="wr-backdrop" aria-hidden="true" />
-          <CardBody card={card} />
+          <CardBody card={card} total={wrappedTotal(drinks)} />
         </section>
       </main>
       {/* Three slots always, so the count keeps its place; the side words appear only where the tap

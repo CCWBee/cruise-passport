@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { SHIP } from '../../data/model'
 import { befriend, findProfiles, hasBackend, type FoundProfile } from '../../state/backend'
 import { joinGroupFlow } from '../../state/groups'
 import { buildCard, buildPayload, encodeShare, normaliseCode } from '../../state/share'
@@ -107,7 +108,7 @@ export function AddCrewSheet({ onClose, onDone }: {
   // gesture that asked for it, and the link is already in hand.
   const share = () => {
     if (!link) return
-    const data = { title: 'Add me on the Cocktail Passport', text: `${profile.name || 'A friend'} on the Sun Princess`, url: link }
+    const data = { title: 'Add me on the Cocktail Passport', text: `${profile.name || 'A friend'} on the ${SHIP}`, url: link }
     if (navigator.share) void navigator.share(data).catch(() => { /* they dismissed the share sheet */ })
     else void copy(link, 'Link copied')
   }

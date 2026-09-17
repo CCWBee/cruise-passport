@@ -1,3 +1,4 @@
+import { SHIP } from '../../data/model'
 import { certificateRows, voyageDateRange, type WrappedFinale } from './wrappedData'
 
 // The certificate, redrawn as a 1080x1920 poster for the share sheet. It carries the same numbers
@@ -210,7 +211,7 @@ export async function renderWrappedImage(card: WrappedFinale): Promise<Blob> {
       setFont(ctx, stack, 400, 28)
       ctx.fillStyle = INK_2
       ctx.textAlign = 'center'
-      ctx.fillText(clip(ctx, `Sun Princess · ${voyageDateRange()}`, inner), centre, top)
+      ctx.fillText(clip(ctx, `${SHIP} · ${voyageDateRange()}`, inner), centre, top)
     },
   })
 

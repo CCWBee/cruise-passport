@@ -3,7 +3,12 @@ import { DRINK_BY_ID, END, START, VENUES, type Drink } from '../../data/model'
 import { computeStats, type Passport, type Stats } from '../../state/stats'
 import { groupReach, tasteTwin, type Source } from '../../state/social'
 
-export const WRAPPED_TOTAL = 214
+/** Every drink on this sailing, the guest's own included. A user sailing has no published catalogue,
+ *  so the total is the catalogue they built, and a hard-coded 214 would be 0 for ever there. Zero
+ *  guarded by its callers: an empty sailing that has reached Wrapped by date must read 0%, not NaN%.
+ *  On the published sailing this is 214 for a guest with no custom drinks and 217 for one who added
+ *  three, which is a correction: the hero beside it has always said 217. */
+export const wrappedTotal = (drinks: Drink[]): number => drinks.length
 
 export interface WrappedArchetype {
   name: string
@@ -151,7 +156,7 @@ function crewCard(passport: Passport, srcs: Source[]): Extract<WrappedCard, { ki
 export function deriveWrapped(drinks: Drink[], passport: Passport, srcs: Source[] = []): WrappedCard[] {
   const stats = computeStats(drinks, passport)
   const cards: WrappedCard[] = [{ kind: 'cover', dateRange: voyageDateRange() }]
-  const pct = Math.min(100, stats.n / WRAPPED_TOTAL * 100)
+  const pct = drinks.length ? Math.min(100, stats.n / drinks.length * 100) : 0
   const spirit = favouriteSpirit(stats)
   const biggestDay = Object.entries(stats.byDay)
     .sort(([a, aDrinks], [b, bDrinks]) => bDrinks.length - aDrinks.length || a.localeCompare(b))[0]

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { DAYS, DECKS, VENUES, VENUE_KEYS, menuFor, type Drink } from '../../data/model'
+import { DAYS, DECKS, VENUES, VENUE_KEYS, deckLabel, menuFor, type Drink } from '../../data/model'
 import { useAllDrinks, useStore } from '../../state/store'
 import { bestRatedBars, useSources } from '../../state/social'
 import { computeStats } from '../../state/stats'
@@ -144,7 +144,7 @@ export function Stats() {
     const menu = Array.from(deckDrinks.values())
 
     return {
-      label: `Deck ${deck}`,
+      label: `Deck ${deckLabel(deck)}`,
       value: menu.filter((drink) => me.entries[drink.id]?.tried).length,
       total: menu.length,
     }
