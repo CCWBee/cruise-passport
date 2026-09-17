@@ -24,6 +24,12 @@ it so you recognise the tells when they creep back. The short version of the pro
    `npx tsc -p tsconfig.app.json --noEmit`. `tools/qa/README.md` has the loop. `tools/qa/gestures.mjs`
    warms the dev server itself before it starts timing, so a cold server no longer fails the first run.
 
+`shot.mjs` reads `--after` once and reuses it for both clicks, so a command carrying two of them
+waits the first value after each: a shot meant to land 900ms after the second click waits 2200 and
+arrives past the state it was for. The symptom is a PNG that disagrees with a CDP probe of the same
+moment, a shake already over or a window caught part-way through its 420ms clear. Pass one `--after`
+that suits the shot you want, and read the state back in `--eval` beside the picture.
+
 `npm run design:check` also runs in CI before the build, so an off-system value fails the deploy.
 Accepted exceptions live in `tools/qa/design-allow.txt` with their reasons.
 

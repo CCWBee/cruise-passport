@@ -401,10 +401,13 @@ demand, and finite. Home stays an instrument.
    sheet is the container and a box around the only thing present is the fourth banned tell. The
    window in its body is a circle about 112px across, `--ink` while the answer is inside it and
    `--cream` once the name has surfaced into it. It is the one dominant element.
-3. **The answer**, empty until a reveal: the venue and deck as `p.t-meta.tnum` ("THE MIX · Deck 17",
-   one middle dot; a drink with no venue prints its category), then the reason as `p.t-body`
-   ("Because you love gin", "Sam loved it", or "One you have not tried"). Centred, because it is the
-   caption of a centred object.
+3. **The answer**, empty until a reveal: the name in full as `p.t-strong`, but only when the
+   window's two lines could not hold it (seventeen of the sailing's 214 are that long), because the
+   one job of this moment is to name a drink and a clipped name does not; then the venue and deck
+   as `p.t-meta.tnum` ("THE MIX · Deck 17", one middle dot; a drink with no venue prints its
+   category), then the reason as `p.t-body` ("Because you love gin", "Sam loved it", or "One you
+   have not tried"). The clip is measured on the paint rather than guessed from a length, so a name
+   that fits is never repeated here. Centred, because it is the caption of a centred object.
 4. **The one filled control**, `button.btn.btn-coral.btn-wide.shake-go`: "Shake", then "Shaking" as
    a disabled ghost for the 2.1 seconds, then "Go get it". Tapping it replaces this sheet with
    `DrinkSheet`, one `.sheet` at a time; closing that returns to the reveal, not to Home.
