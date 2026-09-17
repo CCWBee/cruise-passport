@@ -2,6 +2,18 @@
    Motion). It is silent and still until the guest asks for it, it runs for 2.1 seconds and it stops.
    Nothing here loops, nothing here is ambient, and it lives inside a sheet, never on a screen. */
 
+/* ── the sheet: title and meta come from the Sheet primitive, then the shaker, the answer, the one
+   filled control and the quiet actions, 24 apart, which is the rhythm the entry screen's modules
+   keep. Nothing here is boxed. ── */
+.shake-body { display: grid; gap: var(--s5); margin-top: var(--s5); }
+/* the answer is the shaker's caption, so it takes the shaker's centring rather than the sheet's
+   left edge: two lines hung off the left of a centred object read as belonging to nothing */
+.shake-answer { display: grid; gap: var(--s1); text-align: center; }
+/* the two quiet actions sit 12 apart. .quiet-action carries 24 of its own margin, which is what the
+   grid above is already providing, so it is dropped here rather than doubled to 48. */
+.shake-quiets { display: grid; gap: var(--s3); }
+.shake-quiets .quiet-action { margin-top: 0; }
+
 /* the tin sits on the ground, no panel: the sheet is the container, and a box around the only thing
    present is the fourth banned tell */
 .shaker {
