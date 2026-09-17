@@ -27,8 +27,12 @@ it so you recognise the tells when they creep back. The short version of the pro
 `shot.mjs` reads `--after` once and reuses it for both clicks, so a command carrying two of them
 waits the first value after each: a shot meant to land 900ms after the second click waits 2200 and
 arrives past the state it was for. The symptom is a PNG that disagrees with a CDP probe of the same
-moment, a shake already over or a window caught part-way through its 420ms clear. Pass one `--after`
+moment, a shake already over or a lid caught part-way through its flip. Pass one `--after`
 that suits the shot you want, and read the state back in `--eval` beside the picture.
+
+`document.querySelector('[aria-live]')` in a `--eval` finds the toast region, which is mounted
+empty on every screen, and not the live line of the sheet you are looking at. Select the region you
+mean (`.sr-only[aria-live]`), or a passing shot will report an announcement that never happened.
 
 `npm run design:check` also runs in CI before the build, so an off-system value fails the deploy.
 Accepted exceptions live in `tools/qa/design-allow.txt` with their reasons.
