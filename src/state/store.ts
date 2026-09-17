@@ -60,6 +60,13 @@ interface State {
   setDate: (id: string, date: string) => void
   toggleVisit: (venueKey: string) => boolean
   addCustom: (d: Drink) => void
+  /** Everything this phone holds for one sailing, dropped: the drinks added on it, their entries,
+   *  and the visits on its venues. Called before deleteSailing(), which is what makes the venue
+   *  keys readable. */
+  forgetSailing: (cruiseId: string, venueKeys: string[]) => void
+  /** The same, for one venue: the drinks added at it on this sailing, their entries, and its
+   *  visit. */
+  forgetVenue: (cruiseId: string, venueKey: string) => void
 
   // social
   ensureIdentity: () => void
@@ -201,6 +208,30 @@ export const useStore = create<State>()(
       },
 
       addCustom: (d) => set((s) => ({ custom: [...s.custom, d] })),
+
+      // The only two places the passport is written to on a sailing's behalf, and they only ever
+      // remove keys that cannot resolve to anything once the sailing or the venue is gone: c… drink
+      // ids whose record goes with them, and venue keys belonging to this cruise id. A published
+      // venue key, a d/w/b id and anything under another sailing are unreachable from either
+      // argument. Keeping an entry for a drink that no longer exists would leave the passport
+      // counting drinks it cannot name.
+      forgetSailing: (cruiseId, venueKeys) => set((s) => {
+        const gone = s.custom.filter((d) => d.cruise === cruiseId)
+        const entries = { ...s.me.entries }
+        gone.forEach((d) => { delete entries[d.id] })
+        const visits = { ...s.me.visits }
+        venueKeys.forEach((k) => { delete visits[k] })
+        return { custom: s.custom.filter((d) => d.cruise !== cruiseId), me: { ...s.me, entries, visits } }
+      }),
+      forgetVenue: (cruiseId, venueKey) => set((s) => {
+        const here = (d: Drink) => d.cruise === cruiseId && d.venue === venueKey
+        const gone = s.custom.filter(here)
+        const entries = { ...s.me.entries }
+        gone.forEach((d) => { delete entries[d.id] })
+        const visits = { ...s.me.visits }
+        delete visits[venueKey]
+        return { custom: s.custom.filter((d) => !here(d)), me: { ...s.me, entries, visits } }
+      }),
 
       // ── social (rec/comment ride the existing Entry; friends are merged passports) ──
       // Every user (guests included) gets a stable uuid + public code, generated once and persisted.
@@ -373,7 +404,7 @@ export const useStore = create<State>()(
     }),
     {
       name: 'spcc2',
-      version: 9,
+      version: 10,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       migrate: (persisted: any, from: number) => {
         if (from < 2 && persisted) {
@@ -422,6 +453,16 @@ export const useStore = create<State>()(
           // note now states, so they are entered and are not asked again.
           persisted.enteredCruise = true
         }
+        if (from < 10 && persisted) {
+          // Custom drinks are now scoped to the sailing they were added on. Everything that already
+          // exists was added on the sailing this phone is in: there was only one until now.
+          try {
+            const cid = persisted.cruiseId || activeCruiseId()
+            const list = Array.isArray(persisted.custom) ? persisted.custom : []
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            persisted.custom = list.map((d: any) => (d && d.cruise ? d : { ...d, cruise: cid }))
+          } catch { /* a corrupt custom list must not cost the guest their passport */ }
+        }
         return persisted
       },
       // persist data only; UI (filters/showFilters) resets each session
@@ -438,9 +479,18 @@ export const useStore = create<State>()(
 // so "Add me" and the friend graph always have a handle to show.
 useStore.getState().ensureIdentity()
 
-/** Full drink list = catalogue + any custom drinks the user added. */
-export const allDrinks = (): Drink[] => [...DRINKS, ...useStore.getState().custom]
+/** Full drink list = this sailing's catalogue + the drinks the guest added on this sailing. The
+ *  `!d.cruise` arm keeps a drink from a backup written before drinks were scoped visible rather
+ *  than silently hiding it; on a user sailing such a drink carries a published venue key, so it
+ *  lands in the Drinks screen's "Your own drinks" group, which is where it belongs. */
+const onThisCruise = (custom: Drink[], cruiseId: string): Drink[] =>
+  custom.filter((d) => !d.cruise || d.cruise === cruiseId)
+export const allDrinks = (): Drink[] => {
+  const s = useStore.getState()
+  return [...DRINKS, ...onThisCruise(s.custom, s.cruiseId)]
+}
 export const useAllDrinks = () => {
   const custom = useStore((s) => s.custom)
-  return [...DRINKS, ...custom]
+  const cruiseId = useStore((s) => s.cruiseId)
+  return [...DRINKS, ...onThisCruise(custom, cruiseId)]
 }
