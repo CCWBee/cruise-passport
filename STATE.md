@@ -74,7 +74,11 @@ changes what Delete my data does; the spec has it built to a stated default when
   `https://qpmrfoglxohmjhjtvkac.supabase.co/auth/v1/callback`, then its Client ID into the Supabase
   Google panel, the Client Secret pasted by Charles himself (a secret never goes through this
   transcript), Enable Sign in with Google ON, Save. Bobble's own Supabase project and OAuth client
-  are not touched.
+  are not touched. BLOCKED 17 September: console.cloud.google.com refuses the signed-in Google
+  account with "Google Cloud access blocked: two-step verification" (Google enforces 2SV for the
+  console since May 2025). Enabling 2SV is a security setting on Charles's Google account and is
+  his alone; once on (and a few minutes for it to take), the OAuth client is one console visit.
+  The Supabase Google panel is left open in Brave, ready for the id and secret.
 - **Spec rulings, each built to a stated default so none blocked the build:** C: what a "fresh"
   sign-in erases (default: the guest's own rows, memberships left), and a lost `sessionStorage`
   trigger (default: no manual restore). B: the privacy contact address (`PRIVACY_CONTACT`, empty so
@@ -95,6 +99,16 @@ changes what Delete my data does; the spec has it built to a stated default when
   Deleted-profile auth rows still present, by uid: `d7ffee51`, `f07921a5`, `4cf630c9`.
 - BYO (17 September) created none: every check was local (fixtures, `node --test`, `?nosync` shots).
 - Never blanket-purge; real users have existed since 3 September.
+
+### In flight: the shaker (branch `shake`), launched 17 September
+
+Charles's brief: a lootbox-style build-up and reveal, but the object is a 2D cocktail shaker with
+dice in it and the reveal is 8-ball style; press, it shakes with noise and haptics, holds a beat,
+and a drink to go and get surfaces in the shaker's window. Spec `docs/specs/2026-09-17-shake.md`
+(mine: placement at the foot of For you, one coral in the sheet, an honest untried pick weighted
+by the For-you signals, a synthesised dice rattle with a persisted quiet toggle, the fifth authored
+motion moment with a reduced-motion fade). Harness: build -> refute-by-default review -> fix, one
+stream, all agents Opus. Resume handle recorded here the moment the run id exists.
 
 ## Next action
 
