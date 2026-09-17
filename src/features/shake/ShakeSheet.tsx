@@ -135,7 +135,7 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
         <p className="sheet-meta">The shaker picks one you have not tried.</p>
 
         <div className="shake-body">
-          <Shaker phase={phase} name={drink?.name} drinkId={drink?.id} nameRef={nameRef} />
+          <Shaker phase={phase} />
 
           {result && drink && (
             <div className="shake-answer">

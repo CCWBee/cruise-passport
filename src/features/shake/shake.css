@@ -20,54 +20,34 @@
 .shake-quiets .quiet-action { margin-top: 0; }
 
 /* the tin sits on the ground, no panel: the sheet is the container, and a box around the only thing
-   present is the fourth banned tell */
+   present is the fourth banned tell. The box is 80 taller than the drawing, and the drawing sits at
+   the foot of it: that air is the lid's swing space. The lid's far end is 135 from its hinge, so a
+   lid thrown past upright reaches 77 above the tin, and nothing but the lid and the hanging token is
+   ever drawn up there. */
 .shaker {
   position: relative;
   justify-self: center;
-  width: 196px; height: 205px;
+  width: 196px; height: 285px;
   color: var(--ink);
-  /* the hand is round the body, not the cap, so the tin pivots low */
-  transform-origin: 50% 80%;
+  /* the hand is round the body, not the cap, so the tin pivots low: 41 up from its base */
+  transform-origin: 50% calc(100% - 41px);
 }
-.shaker-tin { display: block; }
-
-/* the window's liquid: --ink while the answer is inside it, clearing to --cream as the name
-   surfaces. 420ms is the reveal's own length, shared with the name below it. */
-.shaker-liquid { fill: var(--ink); transition: fill 420ms var(--e-out); }
-.shaker.is-revealed .shaker-liquid { fill: var(--cream); }
-
-/* the answer, laid over the window. The circle's centre sits 28 below the drawing's, so the text is
-   nudged down by the same amount rather than floating in the middle of the tin. That 28, like the
-   102 below it, is a coordinate in the drawing and not a measure of the layout. */
-.shaker-window {
-  position: absolute; inset: 0;
+/* the three layers of the drawing, painted back to front in the order they are written: the token
+   inside the mouth, the lid, then the tin over both of them */
+.shaker-tin, .shaker-lid { display: block; position: absolute; left: 0; bottom: 0; }
+/* the drop at rest, 65 up from the base: low enough in the mouth that the tin's cream fill covers
+   it whole, which is what makes it invisible until it rises out */
+.shaker-token {
+  position: absolute; left: 50%; bottom: 65px;
+  width: 44px; height: 44px; margin-left: -22px;
   display: grid; place-items: center;
-  transform: translateY(28px);
+  opacity: 0;
   pointer-events: none;
 }
-.shaker-name {
-  /* the widest chord two lines of 15px can use inside the 112px window */
-  max-width: 102px;
-  color: var(--ink);
-  text-align: center;
-  line-height: 1.25;
-  /* a long name wraps and then clips, and the answer beneath the shaker then prints it in full:
-     seventeen of the sailing's 214 names are longer than two lines of this measure */
-  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
-  animation: shake-surface 420ms var(--e-out) both;
-}
-
-/* Rising through liquid, not bouncing: one overshoot of 6% on the y and then rest. DESIGN.md Motion
-   bans overshoot on UI state, and this is the written reason for the exception. It is the surfacing
-   itself, the thing the moment is for, and a linear arrival reads as a label being swapped. */
-@keyframes shake-surface {
-  from { opacity: 0; transform: translateY(14px); }
-  70% { opacity: 1; transform: translateY(-.84px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+.shaker-token > * { grid-area: 1 / 1; }
 
 /* Three phases and a hard stop: gentle to 0.6s, harder to 1.3s, violent to 1.8s, then upright and
-   still for the 300ms hold while the window is dark. The rotations and the 2 to 3px of jitter are
+   still for the 300ms hold before the lid goes. The rotations and the 2 to 3px of jitter are
    the one place in this file a literal is right: they are the amplitude of a physical movement, not
    a measure of the layout, and there is no spacing scale for how hard a tin is shaken. */
 .shaker.is-shaking { animation: shake-tin 1800ms var(--e-out) both; }
@@ -94,9 +74,7 @@
 
 @keyframes shake-fade { from { opacity: 0; } to { opacity: 1; } }
 
-/* Reduced motion: the tin does not move and the name does not travel, so the reveal is a fade. The
-   window still clears, because that is the state change itself and not decoration. */
+/* Reduced motion: the tin does not move. The rest of the fallback lands with the reveal itself. */
 @media (prefers-reduced-motion: reduce) {
   .shaker.is-shaking { animation: none; }
-  .shaker-name { animation: shake-fade var(--t-panel) var(--e-out) both; }
 }
