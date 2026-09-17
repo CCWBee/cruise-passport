@@ -38,6 +38,13 @@ Accepted exceptions live in `tools/qa/design-allow.txt` with their reasons.
 - `src/styles/` tokens and base; `src/ui/` the controls; `src/features/<screen>/` one folder per
   screen; `src/state/` store, social, sync, share codec; `src/data/` the ported drinks and venues
   (`raw.ts` is Isabel's data; change it deliberately).
+- `src/data/sailings.ts`: the sailings a guest sets up for themselves and every venue they add, in
+  `spcc-sailings` beside `spcc-cruise`, read lazily so the file can be imported under `node --test`.
+  `cruises.ts` folds them into `CRUISES` at module load, which is the reload contract: `VENUES`,
+  `VENUE_KEYS`, `DECKS`, `CATEGORIES` and `DRINKS` are resolved once, so saving a venue or a sailing
+  reloads the page, once, from the sheet's close handler and only when something was actually saved.
+  The three QA fixtures the BYO screens are shot from (`?seed&fixture=byo-new|byo-empty|byo`) are in
+  the same inline block in `index.html` as the demo seed.
 - `tools/qa/`: the screenshot and scan harness (zero dependencies).
 - `redirect/`: the GitHub Pages redirector for the old address.
 

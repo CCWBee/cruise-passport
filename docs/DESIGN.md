@@ -212,8 +212,10 @@ it carries its own ground and its own masthead and has no nav.
    viewport rather than part of the centred block.
 2. **The sailing.** `h1.t-title` with the ship, then one `p.t-meta` line: line, middle dot, dates.
    Sibling: a sheet's title and its one meta line. With more than one sailing in the registry the h1
-   becomes "Choose your sailing" and `Select` answers it under a "Your sailing" label; that branch
-   cannot render while `CRUISES` has one entry.
+   becomes "Choose your sailing" and `Select` answers it under a "Your sailing" label. The registry
+   holds the published sailing plus any the guest has set up for themselves, so that branch renders
+   from the moment they make one, and "Set up your own sailing" sits as one `button.row.pressable.cruise-byo`
+   beneath module 2 in either branch, in the privacy row's shape and its wrapper, with no chevron.
 3. **Name and colour.** `NameFields` inside `div.entry-fields`. On the ground, not in a `.panel`: the
    sibling is `ProfileSheet`, whose identical pair sits flat on the sheet. `NameCard` keeps its panel
    on Crew because it sits among other content there; here the form is the screen, and a box around
@@ -373,6 +375,15 @@ stars on the first line, one meta line (ingredients, one line, clamped), a tried
 that is a 44px target. Favourite, wishlist and the rest live in the sheet. Tags become part of the
 meta line ("Signature · £12"), not pills. Fold: search, count, the first heading and four rows.
 
+With no catalogue at all (a sailing the guest set up and has not yet added a drink to), modules 1 and
+2 go with module 3: a search over nothing, a filter over nothing and a count line reading "0 drinks"
+are three controls with nothing behind them. What is left is the `.dempty` shape the screen already
+has, one `p.t-body` and one primary inside `.dempty-acts`, and one button rather than the two the
+filter-empty state shows, because there is no filter to drop. With a venue the button opens the add
+sheet; with none it is a `Link` to `/ship`, because the venue form belongs to Ship and a second door
+onto it from here would be a divergent sibling. This state is tested before the filter-empty one, or
+an empty catalogue says "No drink matches that search" and offers a Reset with nothing to reset.
+
 ### Drink sheet
 
 Title, one meta line ("Good Spirits at Sea · Deck 7 · Signature"), ingredients as body, the blurb as
@@ -386,7 +397,25 @@ not fit one line); that is the intended shape, not a defect.
 
 Read: which bars, what is done, where next. A plain section per deck: heading "Deck 17 · 6 of 65",
 number in ink, then one row per venue: name, "n of m", a thin ink progress bar 3px tall. Visited is
-a mint check after the name. Fold: the top two decks.
+a mint check after the name. The deck's own label comes from `deckLabel()`, so a ship that calls a
+deck something other than its number says so here, in Stats and in the filter panel alike. Fold: the
+top two decks.
+
+A guest can add venues of their own, so the screen has two more states and one quiet door:
+
+- **Populated**, one `button.row.pressable.ship-add` after the last deck, in Crew's "Set up a group"
+  shape, chevron and all, alone in a bare `.section` with no heading. It is the one rounded row on
+  Ship and that is deliberate: `.row:not(:only-child)` squares the venue rows inside each deck
+  section, and this row is not another venue. Ink only; the coral budget stays unspent.
+- **Empty** (a sailing with no venues yet), where the action is the state, as on Badges: one
+  `p.t-body`, one `p.t-meta` and a filled `GlassButton variant="primary".ship-add`. Two lines rather
+  than Badges' one, because nothing else fills this screen; a filled control rather than Badges' text
+  link, because this is the only way to make the screen exist. The two never render together.
+- **Change this sailing**, one `.quiet-action` at the foot, on a sailing the guest set up only. The
+  sailing's name and dates are what this screen is about and changing them is rare, so it takes the
+  registered shape for the quietest text action at a screen's foot and spends no colour. It is the
+  only door onto the returning sailing sheet, which is where a sailing is renamed, re-dated or
+  deleted.
 
 ### Venue sheet
 
@@ -523,4 +552,6 @@ colour, are how that happens again. Read it before any change that renders.
 | `Medallion` | `src/features/badges/Medallion.tsx` | the badge disc, grid and sheet |
 | `SeaHero`, `SheetWave`, the hero count-up | `src/features/home/`, `src/ui/SheetWave.tsx` | the three authored motions; do not add a fourth without amending Motion above |
 | `You` | `src/features/you/You.tsx` | Stats, Badges and Log render inside it; they carry no page wrapper of their own |
-| Seed data | `index.html` (`?seed`) | how every screen is populated for a render |
+| `Sailing`, `allSailings()`, `venuesFor()` | `src/data/sailings.ts` | the sailings a guest sets up and every venue they add, in `spcc-sailings` beside `spcc-cruise`. It holds no drinks, entries or visits, so removing a sailing or a venue is two calls, the store's `forgetSailing()` or `forgetVenue()` first. The catalogue is resolved at module load, so a change to it reloads the page, once, from the sheet's own close handler and only when something was saved |
+| `VenueForm` | `src/features/ship/VenueForm.tsx` | the add-and-edit sheet for a venue, and `SailingSheet` (`src/features/cruise/`) its twin for a sailing. Both are `AddSheet`'s skeleton: `Sheet`, title, one `.sheet-meta` line, the `ui/` fields, one block primary. Every inline error is the `Field` primitive's own `error` prop, never a hand-written meta line; a remove or delete is a `ConfirmButton` below a hairline, as `ProfileSheet` places delete-my-data |
+| Seed data | `index.html` (`?seed`, `?fixture=byo-new\|byo-empty\|byo`) | how every screen is populated for a render; the three `fixture` values are the synthetic sailing the BYO screens are shot from |
