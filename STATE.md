@@ -65,10 +65,16 @@ changes what Delete my data does; the spec has it built to a stated default when
 ### Charles's gates and rulings (nothing below is blocked on me)
 
 - Push `main` and merge `product`: DONE 17 September on his go (see Where it stands).
-- **Dashboard gates for sign-in** (C fails honestly until then): Supabase Google provider ON, Allow
-  manual linking ON, a Google Cloud OAuth client with the Supabase callback URL, Site URL
-  `https://cruise.charlesbee.org` and the four redirect URLs in `supabase/config.toml`.
-  `docs/BACKEND_SETUP.md` steps 2 and 4 are the same list.
+- **Dashboard gates for sign-in**, being cleared in Brave 17 September on Charles's go: DONE in
+  Supabase project `qpmrfoglxohmjhjtvkac`: Site URL `https://cruise.charlesbee.org` (was the
+  GitHub Pages address); redirect list now eight entries (both slash forms of localhost:5173,
+  localhost:4173 and cruise.charlesbee.org, plus the two old github.io ones left in place, harmless);
+  Allow manual linking ON (saved, "Successfully updated settings"); anonymous sign-ins were already
+  ON. REMAINING: a Google Cloud OAuth client (Web) with redirect URI
+  `https://qpmrfoglxohmjhjtvkac.supabase.co/auth/v1/callback`, then its Client ID into the Supabase
+  Google panel, the Client Secret pasted by Charles himself (a secret never goes through this
+  transcript), Enable Sign in with Google ON, Save. Bobble's own Supabase project and OAuth client
+  are not touched.
 - **Spec rulings, each built to a stated default so none blocked the build:** C: what a "fresh"
   sign-in erases (default: the guest's own rows, memberships left), and a lost `sessionStorage`
   trigger (default: no manual restore). B: the privacy contact address (`PRIVACY_CONTACT`, empty so
