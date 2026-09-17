@@ -66,7 +66,7 @@ function readDrink(raw: unknown): Drink | null {
   if (!id || !name) return null
   const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [])
   const orNull = <T>(v: T | undefined): T | null => (v === undefined ? null : v)
-  return {
+  const drink: Drink = {
     id,
     name,
     venue: str(raw.venue) ?? '',
@@ -84,6 +84,12 @@ function readDrink(raw: unknown): Drink | null {
     premier: orNull(bool(raw.premier)),
     extra: orNull(num(raw.extra)),
   }
+  // Optional, and set only when the backup carries one, exactly as the profile's code is. A drink
+  // that came back without its cruise would fall into allDrinks()'s no-cruise arm and show on every
+  // sailing rather than on the one it was added to.
+  const cruise = str(raw.cruise)
+  if (cruise) drink.cruise = cruise
+  return drink
 }
 
 function readProfile(raw: unknown): Profile {

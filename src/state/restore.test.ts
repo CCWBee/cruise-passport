@@ -172,13 +172,15 @@ test('readBackup rebuilds field by field, so a retired profile field is dropped'
       entries: { d1: { tried: true, date: '2026-10-04', invented: 'nonsense' } },
       visits: { crooners: { visited: true } },
     },
-    custom: [{ id: 'c1', name: 'House negroni' }, { name: 'no id at all' }],
+    custom: [{ id: 'c1', name: 'House negroni', cruise: 'byo-QAFIXTR0' }, { name: 'no id at all' }],
     profile: { id: 'u1', name: 'Isabel', colour: 'melon', code: 'ABCD-EFGH', groupCode: 'GONE', syncUrl: 'https://gone' },
   })
   assert.ok(ok)
   assert.deepEqual(ok.me.entries.d1, { tried: true, date: '2026-10-04' })
   assert.deepEqual(Object.keys(ok.profile).sort(), ['code', 'colour', 'id', 'name'])
   assert.deepEqual(ok.custom.map((d) => d.id), ['c1'])  // a drink with no id cannot be logged against
+  // Without this the restored drink loses its sailing and shows on every one of them.
+  assert.equal(ok.custom[0].cruise, 'byo-QAFIXTR0')
 })
 
 test('readOAuthError reads the fragment and the query, and leaves a share code alone', () => {
