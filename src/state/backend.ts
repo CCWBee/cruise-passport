@@ -219,6 +219,29 @@ export async function fetchBackup(cruiseId: string): Promise<{ state: unknown; u
   return { state: data.state, updatedAt: new Date(data.updated_at).getTime() }
 }
 
+/** Every backup row this user owns, newest first. `backups` RLS is own-row ("own backup" for all,
+ *  using auth.uid() = user_id, 0001_init.sql), so a plain select is the whole query: no RPC, no
+ *  policy change, no schema change. It is how a phone learns about a sailing it has never been on,
+ *  since fetchBackup only ever asks for the cruise id this phone already holds.
+ *  The file's standing contract holds: it never throws, null means the call did not answer, and []
+ *  means you own none. A caller that conflated the two would read a failed request as "you have no
+ *  sailings" and adopt nothing while reporting success. currentUserId() rather than ensureSession(),
+ *  for the reason fetchBackup gives above. */
+export async function listBackups(): Promise<{ cruiseId: string; state: unknown; updatedAt: number }[] | null> {
+  const client = await sb()
+  const uid = await currentUserId()
+  if (!client || !uid) return null
+  const { data, error } = await client
+    .from('backups').select('cruise_id, state, updated_at')
+    .eq('user_id', uid).order('updated_at', { ascending: false })
+  if (error || !data) return null
+  return data.map((row) => ({
+    cruiseId: String(row.cruise_id),
+    state: row.state,
+    updatedAt: new Date(row.updated_at).getTime(),
+  }))
+}
+
 /** My own profiles row: the canonical friend code, and the name and colour that go with it. Same
  *  three-way return and the same currentUserId() rule as fetchBackup, for the same reasons.
  *  `code` is what every friend edge of this account already points at, so adopting it is what keeps

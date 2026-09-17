@@ -6,11 +6,15 @@
 import { create } from 'zustand'
 import {
   befriend, ensureSession, fetchBackup, fetchProfile, friendFeed, groupFeed, hasBackend, joinGroup,
-  myGroups, oauthError, publishBackup, publishPassport, sessionKind, signInWithGoogle, unfriend,
-  upsertProfile, type SessionKind,
+  listBackups, myGroups, oauthError, publishBackup, publishPassport, sessionKind, signInWithGoogle,
+  unfriend, upsertProfile, type SessionKind,
 } from './backend'
 import { qaNoSync } from '../data/model'
-import { isUntouched, mergeProfile, mergeRestore, readBackup, type BackupState } from './restore'
+import { exportAll, importSailings } from '../data/sailings'
+import {
+  isUntouched, mergeProfile, mergeRestore, mergeSailings, readBackup,
+  type BackupState, type SailingExport,
+} from './restore'
 import { buildPayload } from './share'
 import type { Friend, Profile } from './stats'
 import { useStore } from './store'
@@ -163,7 +167,9 @@ async function publishBackend(): Promise<boolean> {
     ? await upsertProfile(s.profile.code, s.profile.name, s.profile.colour || 'aqua')
     : true
   const ok = await publishPassport(s.cruiseId, buildPayload(s.me, s.profile))
-  void publishBackup(s.cruiseId, { me: s.me, custom: s.custom, profile: s.profile }) // best-effort
+  // The sailings ride in every backup row, the published sailing's included, so a phone restoring
+  // the default cruise id learns the guest's own sailings too. A few kilobytes, still unawaited.
+  void publishBackup(s.cruiseId, { me: s.me, custom: s.custom, profile: s.profile, sailings: exportAll() }) // best-effort
   return ok && profileOk
 }
 
@@ -304,10 +310,27 @@ async function restoreNow(): Promise<void> {
   if ((await kind()) !== 'signed-in') { useSyncStore.setState({ restore: 'idle' }); return }
   useSyncStore.setState({ restore: 'working' })
   const s = useStore.getState()
-  const [profileRow, backupRow] = await Promise.all([fetchProfile(), fetchBackup(s.cruiseId)])
+  const [profileRow, backupRow, backups] = await Promise.all([fetchProfile(), fetchBackup(s.cruiseId), listBackups()])
   // A call that did not answer is the one unrecoverable case here: writing a possibly empty passport
   // over a backup we could not read cannot be undone, so the publish gate stays shut.
   if (profileRow === null || backupRow === null) { useSyncStore.setState({ restore: 'failed' }); return }
+
+  // The sailings, folded in once for both exits below. listBackups() is deliberately out of the null
+  // test above: a null list means that one call did not answer, and nothing is adopted, but the
+  // passport merge did answer and shutting the publish gate over the sailings would cost the guest
+  // their next publish. Nothing here reloads: CRUISES is memoised at module load, so a sailing that
+  // arrives from the server appears on the next open, and the reload contract covers only a change
+  // the guest has just made themselves.
+  if (Array.isArray(backups)) {
+    let merged = exportAll()
+    for (const row of backups) {
+      const carried = row.state && typeof row.state === 'object'
+        ? (row.state as { sailings?: unknown }).sailings
+        : undefined
+      if (carried && typeof carried === 'object') merged = mergeSailings(merged, carried as SailingExport)
+    }
+    importSailings(merged)
+  }
 
   const server = profileRow === 'none' ? null : profileRow
   const canonicalCode = server && server.code ? server.code : undefined
