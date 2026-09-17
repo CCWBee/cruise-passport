@@ -65,7 +65,9 @@ between sections. Whitespace separates ideas; it does not pad every object.
   nav (the page scrolls under it), the sheet (the page shows through, blurred, behind it), the
   readout and countdown chips and the floating action on the sea hero (the water moves under
   them), the toast, and the Wrapped certificate over its drifting backdrop. Nowhere in the content
-  layer, never glass on glass (the glass bible's two hard rules).
+  layer, never glass on glass (the glass bible's two hard rules): a sheet that opens another
+  replaces it rather than stacking, the way the venue sheet opens the drink sheet and Your details
+  opens the privacy note.
 - **The glass recipe** (`.glass-live` plus `.glass-edge` in `base.css`, tuned per role by tokens):
   the film is a contrast obligation, not a fixed number: whatever white tint holds the text on it at
   4.5:1 against the darkest backdrop that surface can have (buy contrast with film, never by
@@ -167,7 +169,7 @@ state change visible; there is no global animation kill.
 
 ## States
 
-Every control ships default, pressed, focus-visible, disabled. Every list ships its empty state with
+Every control ships default, pressed, focus-visible, disabled, a disabled one a ghost of its enabled self rather than a second filled tone. Every list ships its empty state with
 the one action that fills it. Anything that waits on the network shows that it is waiting and what
 failed. Tried, visited, favourite and wishlist read the same way on every screen: a filled glyph in
 the state colour, not a background tint.
@@ -533,7 +535,7 @@ colour, are how that happens again. Read it before any change that renders.
 | `.qr-plate` | `base.css` | the white plate under any `Qr`, because a code has to read under a camera whatever the ground is: the add sheet, the group sheet and the landing. It hides itself when empty, which is how `Qr` returning null for a value it cannot encode is caught at every call site at once |
 | `.glass-live`, `.glass-edge`, `.glass-coral` | `base.css` | liquid glass for chrome: nav, sheet, hero chips and the floating action, toast, Wrapped certificate. Nothing in the content layer |
 | `Confirm`, `haptic()` | `src/ui/Confirm.tsx`, `src/ui/haptic.ts` | the one success confirmation (tick on glass, label, haptic); silent where the result is already visible |
-| `.btn .btn-coral .btn-wide`, `GlassButton` | `base.css`, `src/ui/GlassButton.tsx` | one filled coral control per screen; disabled falls to the plain surface |
+| `.btn .btn-coral .btn-wide`, `GlassButton` | `base.css`, `src/ui/GlassButton.tsx` | one filled coral control per screen; a disabled control drops its fill to a ghost (transparent, hairline, `--ink-2`) so it never reads as an active one |
 | `.quiet-action` | `base.css` | the quietest text action on a screen: a block, 44px of target, meta size at weight 600 in `--ink-2`, underlined, 24 above. Swept from `.friends-quiet`; the paste path and the guest line on Your details, and the landing's way on |
 | `.tag`, `.mini` | `base.css` | small outline tags inside a meta line; compact 36px secondary control |
 | `Sheet` + `.sheet-meta` | `src/ui/Sheet.tsx`, `sheet.css` | title then one meta line; no eyebrow; the SheetWave is its opening |

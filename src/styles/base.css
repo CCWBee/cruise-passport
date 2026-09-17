@@ -199,8 +199,10 @@ h1, h2, h3, p { margin: 0; }
 .btn-coral { background: var(--coral-ink); color: var(--on-accent); border-color: transparent; }
 .btn-mint { background: var(--mint-ink); color: var(--on-accent); border-color: transparent; }
 .btn-wide { width: 100%; }
-/* disabled falls back to the plain surface whatever the tone: a tinted coral disabled reads at 4.2:1 */
-.btn:disabled, .btn-coral:disabled, .btn-mint:disabled { cursor: default; color: var(--ink-2); background: var(--panel); border-color: var(--line); }
+/* disabled reads as a ghost against the filled enabled button: no fill, so a plain btn and a
+   disabled one no longer composite to the same near-white over the sheet; --ink-2 clears 4.9:1 on the
+   ground, and a coral disabled loses its fill as before (it would otherwise read at 4.2:1) */
+.btn:disabled, .btn-coral:disabled, .btn-mint:disabled { cursor: default; color: var(--ink-2); background: transparent; border-color: var(--line); }
 
 /* small tags (24px or under): outline only, meta ink. Part of a meta line, not a badge row. */
 .tag {

@@ -66,8 +66,12 @@ export function ProfileSheet({ onClose }: { onClose: () => void }) {
     setStatus('Deleted. Your phone’s copy stays.')
   }
 
+  // The privacy note replaces this sheet rather than stacking on it: a sheet over a sheet is glass
+  // on glass, which DESIGN.md Material forbids. Same pattern as VenueSheet returning DrinkSheet.
+  // Closing it clears privacyOpen so this sheet returns, which is where the guest opened it from.
+  if (privacyOpen) return <PrivacySheet onClose={() => setPrivacyOpen(false)} />
+
   return (
-    <>
       <Sheet onClose={onClose} labelledBy="profile-title">
         <div className="friends-sheet">
           <h2 className="t-title sheet-title" id="profile-title">Your details</h2>
@@ -185,9 +189,5 @@ export function ProfileSheet({ onClose }: { onClose: () => void }) {
           )}
         </div>
       </Sheet>
-      {/* Sheet registers itself in openSheets on mount and locks the body once, so this one stacks
-          above Your details with that sheet still visible behind it, and Escape closes only the top. */}
-      {privacyOpen && <PrivacySheet onClose={() => setPrivacyOpen(false)} />}
-    </>
   )
 }
