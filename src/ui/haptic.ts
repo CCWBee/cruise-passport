@@ -5,9 +5,16 @@
 // transient activation, and may well do nothing at all: treat an iPhone buzz as a bonus, never as
 // confirmation. The visible tick is the confirmation.
 
-const PATTERNS: Record<'success' | 'tap', number[]> = {
+type Kind = 'success' | 'tap' | 'shake'
+
+const PATTERNS: Record<Kind, number[]> = {
   success: [14, 40, 22], // two beats: the action landed
   tap: [10],
+  // The shaker's build-up. Buzzes that lengthen while the gaps between them close, mirroring the
+  // rattle's ticks accelerating from 230ms to 95ms, so the hand feels the same acceleration the ear
+  // hears. It runs about 500ms of the 1.8s shake, which is as long as a phone should be asked to
+  // buzz for a button press. Its first pulse is the press tap, so the press fires this and not both.
+  shake: [12, 90, 14, 70, 16, 55, 18, 45, 20, 40, 24],
 }
 
 let switchLabel: HTMLLabelElement | null = null
@@ -36,7 +43,7 @@ function iosSwitch(): HTMLLabelElement | null {
   }
 }
 
-export function haptic(kind: 'success' | 'tap' = 'tap'): void {
+export function haptic(kind: Kind = 'tap'): void {
   try {
     const vibrate = typeof navigator === 'undefined' ? undefined : navigator.vibrate?.bind(navigator)
     if (vibrate) { vibrate(PATTERNS[kind]); return }
