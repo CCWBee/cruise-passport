@@ -19,6 +19,8 @@
 .venue-blurb { margin-top: var(--s3); }
 .venue-shared { margin-top: var(--s2); }
 .venue-rule { margin-top: var(--s4); }
+/* the edit row sits with the block above it, at the same distance the shared-list line keeps */
+.venue-edit { margin-top: var(--s3); }
 .venue-visit { margin: var(--s4) 0; }
 .venue-progress { display: grid; gap: var(--s2); margin-top: var(--s4); }
 .venue-drinks { margin-top: var(--s4); font-variant-numeric: tabular-nums; }
