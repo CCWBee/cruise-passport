@@ -22,3 +22,13 @@
 .venue-visit { margin: var(--s4) 0; }
 .venue-progress { display: grid; gap: var(--s2); margin-top: var(--s4); }
 .venue-drinks { margin-top: var(--s4); font-variant-numeric: tabular-nums; }
+
+/* ── the venue form: AddSheet's shape, with a second button and a remove path ── */
+/* the note that saving reloads, directly above the primary it warns about */
+.venue-form-note { margin-top: var(--s4); }
+.venue-form-submit { margin-top: var(--s5); }
+.venue-form-note + .venue-form-submit { margin-top: var(--s2); }
+/* two stacked buttons: venues are entered in a batch on the day the sailing is set up, drinks one
+   at a time at a bar. One filled control, one outline, so the coral budget still holds. */
+.venue-form-again { margin-top: var(--s3); }
+.venue-form-remove { margin-top: var(--s4); }
