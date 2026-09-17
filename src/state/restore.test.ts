@@ -9,8 +9,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  isUntouched, mergeCustom, mergeEntry, mergeProfile, mergeRestore, mergeVisits,
-  readBackup, readOAuthError, type BackupState,
+  isUntouched, mergeCustom, mergeEntry, mergeProfile, mergeRestore, mergeSailings, mergeVisits,
+  readBackup, readOAuthError, type BackupState, type SailingExport, type VenueRecord,
 } from './restore.ts'
 import type { Drink } from '../data/model'
 import type { Passport, Profile } from './stats'
@@ -187,4 +187,52 @@ test('readOAuthError reads the fragment and the query, and leaves a share code a
   assert.deepEqual(readOAuthError('', '?error=server_error&error_code=identity_already_exists&error_description=x'), wanted)
   assert.equal(readOAuthError('#SPPAeyJ2Ijoy', ''), null)
   assert.equal(readOAuthError('', ''), null)
+})
+
+// ── the sailings a guest set up, merged off their own backups (mergeSailings) ──
+
+const venue = (name: string, deck = 4): VenueRecord =>
+  ({ name, deck, type: 'Bar', hours: '', blurb: '' })
+const sailing = (id: string, ship: string, updatedAt: number) =>
+  ({ id, ship, line: '', start: '2027-03-01', end: '2027-03-10', updatedAt })
+const sail = (o: Partial<SailingExport> = {}): SailingExport =>
+  ({ sailings: o.sailings ?? [], venues: o.venues ?? {} })
+
+test('a sailing both sides hold is taken from whichever was changed last', () => {
+  const local = sail({ sailings: [sailing('byo-1', 'Renamed here', 200)] })
+  const remote = sail({ sailings: [sailing('byo-1', 'Older name', 100)] })
+  assert.equal(mergeSailings(local, remote).sailings[0].ship, 'Renamed here')
+  assert.equal(mergeSailings(remote, local).sailings[0].ship, 'Renamed here')
+  assert.equal(mergeSailings(local, remote).sailings.length, 1)
+})
+
+test('a sailing only the backup holds is adopted', () => {
+  const local = sail({ sailings: [sailing('byo-1', 'On this phone', 100)] })
+  const remote = sail({ sailings: [sailing('byo-2', 'From the backup', 50)] })
+  const ids = mergeSailings(local, remote).sailings.map((s) => s.id)
+  assert.deepEqual(ids, ['byo-1', 'byo-2'])
+})
+
+test('a venue only the phone holds survives the merge', () => {
+  const local = sail({ venues: { 'byo-1': { 'u-here-aaaa': venue('Only here') } } })
+  const remote = sail({ venues: { 'byo-1': { 'u-there-bbbb': venue('Only there') } } })
+  const out = mergeSailings(local, remote).venues['byo-1']
+  assert.deepEqual(Object.keys(out).sort(), ['u-here-aaaa', 'u-there-bbbb'])
+  assert.equal(out['u-here-aaaa'].name, 'Only here')
+})
+
+test('a venue both hold keeps the phone copy, so a rename here is not undone by the server', () => {
+  const local = sail({ venues: { 'byo-1': { 'u-bar-aaaa': venue('Renamed here', 5) } } })
+  const remote = sail({ venues: { 'byo-1': { 'u-bar-aaaa': venue('Older name', 4) } } })
+  const out = mergeSailings(local, remote).venues['byo-1']
+  assert.equal(out['u-bar-aaaa'].name, 'Renamed here')
+  assert.equal(out['u-bar-aaaa'].deck, 5)
+})
+
+test('a cruise id only one side has keeps its whole venue record', () => {
+  const local = sail({ venues: { 'byo-1': { 'u-bar-aaaa': venue('Here') } } })
+  const remote = sail({ venues: { 'sun-princess-2026': { 'u-added-bbbb': venue('Added to the published sailing') } } })
+  const out = mergeSailings(local, remote).venues
+  assert.deepEqual(Object.keys(out).sort(), ['byo-1', 'sun-princess-2026'])
+  assert.equal(out['sun-princess-2026']['u-added-bbbb'].name, 'Added to the published sailing')
 })

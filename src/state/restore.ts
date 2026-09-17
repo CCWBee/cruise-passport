@@ -227,6 +227,58 @@ export function mergeRestore(local: BackupState, remote: BackupState, opts: Rest
   return { me, custom, profile, adopted, codeChanged: profile.code !== local.profile.code }
 }
 
+/** A sailing and the venues on it, as they ride in a `backups` row. Declared here rather than
+ *  imported from data/sailings.ts: this file keeps to types it declares itself or takes as whole
+ *  `import type` statements, and what comes off the wire is not necessarily what that module
+ *  currently writes, which is the same reason readBackup rebuilds a passport field by field. */
+export interface SailingRecord {
+  id: string
+  ship: string
+  line: string
+  start: string
+  end: string
+  updatedAt: number
+}
+export interface VenueRecord {
+  name: string
+  deck: number
+  type: string
+  hours: string
+  blurb: string
+  shares?: string
+  sharesNote?: string
+}
+export interface SailingExport {
+  sailings: SailingRecord[]
+  venues: Record<string, Record<string, VenueRecord>>
+}
+
+/** The sailings this phone holds, folded together with the ones its backups carry. Sailings union
+ *  by id, the newer `updatedAt` winning, so a ship name corrected on either phone survives. Venues
+ *  merge per cruise id with the phone's copy kept on any key both hold, so a venue renamed here is
+ *  not overwritten by an older name from the server; the backup's copy is taken only for a key this
+ *  phone does not have. Pure, and it never touches localStorage: the caller writes the result
+ *  through importSailings(). */
+export function mergeSailings(local: SailingExport, remote: SailingExport): SailingExport {
+  const byId = new Map<string, SailingRecord>()
+  for (const s of local.sailings ?? []) {
+    if (s && typeof s.id === 'string' && s.id) byId.set(s.id, s)
+  }
+  for (const s of remote.sailings ?? []) {
+    if (!s || typeof s.id !== 'string' || !s.id) continue
+    const held = byId.get(s.id)
+    if (!held || (s.updatedAt || 0) > (held.updatedAt || 0)) byId.set(s.id, s)
+  }
+  const venues: Record<string, Record<string, VenueRecord>> = {}
+  for (const [cruiseId, record] of Object.entries(remote.venues ?? {})) {
+    if (isObj(record)) venues[cruiseId] = { ...(record as Record<string, VenueRecord>) }
+  }
+  for (const [cruiseId, record] of Object.entries(local.venues ?? {})) {
+    if (isObj(record)) venues[cruiseId] = { ...(venues[cruiseId] ?? {}), ...record }
+  }
+  return { sailings: [...byId.values()], venues }
+}
+
 /** The OAuth failure the provider hands back on the return leg. PKCE puts it in the query and the
  *  implicit flow in the fragment; the installed client sets no flowType and so defaults to implicit
  *  (see supabase.ts), and both are read here so neither is assumed. A fragment that is a share code
