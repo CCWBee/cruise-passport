@@ -54,6 +54,55 @@
                 (st.custom || []).length || (st.profile && st.profile.name))) return
           } catch (e) {}
         }
+        /* QA fixtures for the bring-your-own-sailing screens (docs/specs/2026-09-10-byo-own-sailing.md).
+           Every name is synthetic on purpose, so no screenshot can be mistaken for a real menu and no
+           reviewer has to check whether a ship exists. The dates are fixed rather than relative,
+           because both the countdown chip and Home's module 2 branch on whether today is inside the
+           sailing; ten days, not fifteen, is what makes the chip's change visible. Each fixture
+           writes all three keys and returns before the demo seed's own spcc2 write below, so the two
+           never both run, and it writes spcc2 at the store's current persist version so no migrate
+           step runs over it: the steps that mark a store entered would undo byo-new otherwise. */
+        var fixture = q.get('fixture')
+        if (fixture === 'byo-new' || fixture === 'byo-empty' || fixture === 'byo') {
+          var SID = 'byo-QAFIXTR0'
+          var fxSailings = fixture === 'byo-new' ? [] : [{ id: SID, ship: 'QA Sailing', line: 'QA Line', start: '2027-03-01', end: '2027-03-10', updatedAt: 0 }]
+          var fxVenues = {}
+          var fxCustom = [], fxEntries = {}, fxVisits = {}
+          if (fixture === 'byo') {
+            fxVenues[SID] = {
+              'u-fixturebarone-qa01': { name: 'Fixture Bar One', deck: 4, type: 'Bar', hours: '4pm to late', blurb: 'A synthetic venue, for the screenshots.' },
+              'u-fixturecafe-qa02': { name: 'Fixture Café', deck: 4, type: 'Café', hours: '7am to 6pm', blurb: '' },
+              'u-fixturebartwo-qa03': { name: 'Fixture Bar Two', deck: 5, type: 'Bar', hours: '', blurb: '' }
+            }
+            var fxDrink = function (id, name, venue, category) {
+              return { id: id, name: name, venue: venue, cruise: SID, category: category, spirits: [],
+                ingredients: 'Ingredients not recorded', flavors: [], sweet: 3, strength: 3, frozen: false,
+                price: null, desc: 'Added to your personal passport.', verified: true,
+                plus: null, premier: null, extra: null }
+            }
+            fxCustom = [
+              fxDrink('c1', 'Fixture Highball', 'u-fixturebarone-qa01', 'Classic'),
+              fxDrink('c2', 'Fixture Sour', 'u-fixturebarone-qa01', 'Signature'),
+              fxDrink('c3', 'Fixture Cold Brew', 'u-fixturebartwo-qa03', 'Coffee')
+            ]
+            fxEntries = { c1: { tried: true, date: '2027-03-04', rating: 4 }, c2: { tried: true, date: '2027-03-04' } }
+            fxVisits = { 'u-fixturebarone-qa01': { visited: true, date: '2027-03-04' } }
+          } else if (fixture === 'byo-empty') {
+            fxVenues[SID] = {}
+          }
+          if (fixture === 'byo-new') localStorage.removeItem('spcc-cruise')
+          else localStorage.setItem('spcc-cruise', SID)
+          localStorage.setItem('spcc-sailings', JSON.stringify({ v: 1, sailings: fxSailings, venues: fxVenues }))
+          localStorage.setItem('spcc2', JSON.stringify({ state: {
+            me: { entries: fxEntries, visits: fxVisits },
+            custom: fxCustom, friends: [], groups: [], pendingInvites: [], pendingUnfriends: [],
+            profile: { id: 'me-self', name: 'Alex', colour: 'aqua' },
+            cruiseId: fixture === 'byo-new' ? 'sun-princess-2026' : SID,
+            enteredCruise: fixture !== 'byo-new',
+            seenMedals: []
+          }, version: 10 }))
+          return
+        }
         var DAYS = [], d = new Date('2026-10-03T12:00:00'), e = new Date('2026-10-17T12:00:00')
         while (d <= e) { DAYS.push(d.toISOString().slice(0, 10)); d.setDate(d.getDate() + 1) }
         var entries = {}, visits = {}
