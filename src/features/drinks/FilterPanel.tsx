@@ -1,7 +1,7 @@
 import { Chip } from '../../ui/Chip'
 import { GlassButton } from '../../ui/GlassButton'
 import { Segmented, type SegOption } from '../../ui/Segmented'
-import { DECKS, SPIRITS, FLAVOURS, CATEGORIES, VENUES, VENUE_KEYS } from '../../data/model'
+import { DECKS, SPIRITS, FLAVOURS, CATEGORIES, HAS_PACKAGES, VENUES, VENUE_KEYS, deckLabel } from '../../data/model'
 import { useStore } from '../../state/store'
 import type { Filters } from '../../state/store'
 import { nChosen, type Counts } from './facets'
@@ -54,8 +54,14 @@ export function FilterPanel({ counts, resultN, total, constrained }: { counts: C
       <Segmented ariaLabel="Status" options={statusOpts} value={statusVal}
         onChange={(v) => setFilters({ tried: v === 'yes' ? true : v === 'no' ? false : null })} />
 
-      <div className="f-label">Package</div>
-      <Segmented ariaLabel="Package" options={pkgOpts} value={f.pkg} onChange={(v) => setFilters({ pkg: v })} />
+      {/* A sailing the guest set up declares no package tiers, so every drink on it is 'unknown'
+          and a Plus / Premier / Extra segment would be a filter with nothing behind it. */}
+      {HAS_PACKAGES && (
+        <>
+          <div className="f-label">Package</div>
+          <Segmented ariaLabel="Package" options={pkgOpts} value={f.pkg} onChange={(v) => setFilters({ pkg: v })} />
+        </>
+      )}
 
       <div className="fquick">
         {bool('frozen', 'Frozen')}
@@ -68,7 +74,7 @@ export function FilterPanel({ counts, resultN, total, constrained }: { counts: C
         <summary><span>Where</span><span className="fsum">{whereSummary}</span></summary>
         <div className="fcloud">
           {DECKS.map((d) => (
-            <Chip key={d} label={d === 15 ? 'Deck 15/16' : 'Deck ' + d} count={c('decks', d)} on={f.decks.includes(d)} disabled={c('decks', d) === 0} onClick={() => toggleMulti('decks', d)} />
+            <Chip key={d} label={'Deck ' + deckLabel(d)} count={c('decks', d)} on={f.decks.includes(d)} disabled={c('decks', d) === 0} onClick={() => toggleMulti('decks', d)} />
           ))}
         </div>
         {DECKS.map((deck) => {
@@ -76,7 +82,7 @@ export function FilterPanel({ counts, resultN, total, constrained }: { counts: C
           if (!vs.length) return null
           return (
             <div key={deck} className="fvdeck">
-              <div className="fvdeck-h">Deck {deck === 15 ? '15/16' : deck}</div>
+              <div className="fvdeck-h">Deck {deckLabel(deck)}</div>
               <div className="fcloud">
                 {vs.map((k) => (
                   <Chip key={k} label={VENUES[k].name} count={c('venues', k)} on={f.venues.includes(k)} disabled={c('venues', k) === 0} onClick={() => toggleMulti('venues', k)} />
