@@ -2,7 +2,8 @@
 // base64url code, usually inside an /add# link.
 // Encoder emits mode A (plain); decoder accepts A and B (deflate) so an older phone never fails
 // to paste a newer sender's code. Pasted codes are untrusted → decode is try/catch + sanitised.
-import { DRINK_BY_ID, START, END } from '../data/model'
+import { DRINK_BY_ID, START, END, VENUES } from '../data/model'
+import { isUserVenue } from '../data/sailings'
 import { FRIEND_COLOURS, type Entry, type Passport, type Friend, type Profile } from './stats'
 
 const PREFIX = 'SPP'
@@ -88,7 +89,9 @@ export function buildPayload(me: Passport, profile: Profile): SharePayload {
     if (p) e[id] = p
   }
   const s: Record<string, 1> = {}
-  for (const [k, v] of Object.entries(me.visits)) if (v.visited) s[k] = 1
+  // A venue the guest made does not exist on anybody else's phone, exactly as a custom drink's id
+  // does not, so it is left out of the payload for the same reason.
+  for (const [k, v] of Object.entries(me.visits)) if (v.visited && !isUserVenue(k)) s[k] = 1
   const out: SharePayload = { v: 2, id: ensureMyId(profile), n: profile.name || 'A friend', c: profile.colour || 'aqua', ts: Date.now(), e, s }
   if (profile.code) out.k = profile.code
   return out
@@ -149,7 +152,9 @@ export function parseFriend(p: SharePayload): Friend {
     if (Object.keys(e).length) entries[id] = e
   }
   const visits: Record<string, { visited: boolean }> = {}
-  for (const k of Object.keys(p.s || {})) visits[k] = { visited: true }
+  // Filtered against this sailing's venues, as the entries above are against its drinks: a code
+  // from a phone on a different sailing cannot put keys into the roster that resolve to nothing.
+  for (const k of Object.keys(p.s || {})) if (VENUES[k]) visits[k] = { visited: true }
   const colour = (FRIEND_COLOURS as readonly string[]).includes(p.c) ? p.c : hashColour(p.id)
   const name = (typeof p.n === 'string' ? p.n : '').trim().slice(0, 24) || 'A friend'
   const code = typeof p.k === 'string' && p.k.trim() ? normaliseCode(p.k) : undefined
