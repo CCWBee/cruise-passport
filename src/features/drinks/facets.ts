@@ -17,14 +17,20 @@ interface Group {
 
 export function matchQuery(d: Drink, q: string): boolean {
   if (!q) return true
-  const hay = (d.name + ' ' + d.ingredients + ' ' + VENUES[d.venue].name + ' ' +
+  // Guarded: a drink can carry a venue key this sailing does not hold, and the name of a venue that
+  // is not there is simply nothing to search on.
+  const hay = (d.name + ' ' + d.ingredients + ' ' + (VENUES[d.venue]?.name || '') + ' ' +
     d.category + ' ' + d.spirits.join(' ') + ' ' + d.flavors.join(' ')).toLowerCase()
   return hay.indexOf(q) > -1
 }
 
 export const GROUPS: Record<string, Group> = {
   venues: { kind: 'multi', active: (f) => f.venues.length > 0, pass: (d, f) => !f.venues.length || f.venues.indexOf(d.venue) > -1, tokens: (d) => [d.venue] },
-  decks: { kind: 'multi', active: (f) => f.decks.length > 0, pass: (d, f) => !f.decks.length || f.decks.indexOf(VENUES[d.venue].deck) > -1, tokens: (d) => [VENUES[d.venue].deck] },
+  // Both halves are guarded, and the tokens half is the one that matters twice over: without it a
+  // drink at a venue this sailing does not hold tallies under the key "undefined" and the filter
+  // panel grows a chip reading "Deck undefined". An unknown venue is on no deck, so it passes only
+  // when no deck is chosen and it counts towards none.
+  decks: { kind: 'multi', active: (f) => f.decks.length > 0, pass: (d, f) => !f.decks.length || f.decks.indexOf(VENUES[d.venue]?.deck ?? -1) > -1, tokens: (d) => { const v = VENUES[d.venue]; return v ? [v.deck] : [] } },
   spirits: { kind: 'multi', active: (f) => f.spirits.length > 0, pass: (d, f) => !f.spirits.length || f.spirits.some((x) => d.spirits.indexOf(x) > -1), tokens: (d) => d.spirits },
   flavors: { kind: 'multi', active: (f) => f.flavors.length > 0, pass: (d, f) => !f.flavors.length || f.flavors.some((x) => d.flavors.indexOf(x) > -1), tokens: (d) => d.flavors },
   cats: { kind: 'multi', active: (f) => f.cats.length > 0, pass: (d, f) => !f.cats.length || f.cats.indexOf(d.category) > -1, tokens: (d) => [d.category] },
