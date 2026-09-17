@@ -6,6 +6,7 @@ import { useStore } from '../../state/store'
 import { Select } from '../../ui/Select'
 import { PrivacySheet, PRIVACY_SUBTITLE } from '../privacy/PrivacySheet'
 import { NameFields } from '../social/NameFields'
+import { SailingSheet } from './SailingSheet'
 import './cruise.css'
 
 function prettyRange(start: string, end: string): string {
@@ -30,7 +31,9 @@ export function Entry({ onDone }: { onDone: () => void }) {
   const [draft, setDraft] = useState(() => useStore.getState().profile.name)
   const [chosen, setChosen] = useState(() => activeCruiseId())
   const [privacyOpen, setPrivacyOpen] = useState(false)
-  // One sailing today, so the second branch cannot render; it is verified by tsc alone.
+  const [sailingOpen, setSailingOpen] = useState(false)
+  // Two branches, and both render: the registry holds the published sailing plus whatever the guest
+  // has set up for themselves, so the second appears the moment they make one.
   const many = CRUISES.length > 1
   const cruise = cruiseById(chosen) ?? CRUISES[0]
 
@@ -79,6 +82,28 @@ export function Entry({ onDone }: { onDone: () => void }) {
               </header>
             )}
 
+            {/* One row beneath module 2, in its own wrapper div for the reason the privacy row has
+                one: .row:not(:only-child) (base.css) squares a row with siblings, and wrapped it
+                keeps radius 12 and its press tint. It is the privacy row's shape rather than Crew's
+                group row, because it is on this screen and two rows on one screen must read the
+                same way; that is also why it carries no chevron. .cruise-byo carries no style of
+                its own and exists so the QA shot can click it. The copy does not change between the
+                two module-2 branches: "not on this list" is true of a one-line block as much as of
+                a two-option Select. */}
+            <div>
+              <button
+                type="button"
+                className="row pressable cruise-byo"
+                aria-haspopup="dialog"
+                onClick={() => setSailingOpen(true)}
+              >
+                <span className="row-copy">
+                  <span className="t-strong">Set up your own sailing</span>
+                  <span className="t-meta">For a ship that is not on this list</span>
+                </span>
+              </button>
+            </div>
+
             {/* on the ground, not in a panel: the sibling is ProfileSheet, whose identical pair sits
                 flat on the sheet. NameCard keeps its panel on Crew because it sits among other
                 content there; here the form is the screen, and a box around the only thing present is
@@ -124,6 +149,7 @@ export function Entry({ onDone }: { onDone: () => void }) {
         </div>
       </main>
       {privacyOpen && <PrivacySheet onClose={() => setPrivacyOpen(false)} />}
+      {sailingOpen && <SailingSheet onClose={() => setSailingOpen(false)} />}
     </>
   )
 }

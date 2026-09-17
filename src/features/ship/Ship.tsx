@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { activeCruiseId } from '../../data/cruises'
 import { DECKS, VENUES, VENUE_KEYS, deckLabel, menuFor, type Drink } from '../../data/model'
+import { sailingById } from '../../data/sailings'
 import { useAllDrinks, useStore } from '../../state/store'
+import { SailingSheet } from '../cruise/SailingSheet'
 import { GlassButton } from '../../ui/GlassButton'
 import { IconCheck, IconChevron } from '../../ui/Icon'
 import { VenueForm } from './VenueForm'
@@ -22,9 +24,12 @@ export function Ship() {
   const visits = useStore((s) => s.me.visits)
   const [openVenue, setOpenVenue] = useState<string | null>(null)
   const [addVenue, setAddVenue] = useState(false)
+  const [changeSailing, setChangeSailing] = useState(false)
   // The catalogue was built from this id (cruises.ts), so the venues written here land in the record
-  // the next load reads back.
+  // the next load reads back. A sailing found in spcc-sailings is one the guest set up; the
+  // published sailing is not in there, so it is never offered a new name, new dates or a delete.
   const cruiseId = activeCruiseId()
+  const sailing = sailingById(cruiseId)
   // deep link: /ship?venue=<key> opens that venue (also used for QA)
   useEffect(() => {
     const k = new URLSearchParams(location.search).get('venue')
@@ -116,8 +121,23 @@ export function Ship() {
           </button>
         </section>
       )}
+      {/* The sailing's name and dates are what this screen is about, and changing them is rare, so
+          the registered shape for the quietest text action at a screen's foot is what carries it. It
+          spends no colour, and it renders on a sailing the guest set up only. It sits outside the
+          foot row's section, so neither of the two squares the other's corners. */}
+      {sailing && (
+        <button
+          type="button"
+          className="quiet-action ship-sailing"
+          aria-haspopup="dialog"
+          onClick={() => setChangeSailing(true)}
+        >
+          Change this sailing
+        </button>
+      )}
       {openVenue && <VenueSheet venueKey={openVenue} onClose={() => setOpenVenue(null)} />}
       {addVenue && <VenueForm cruiseId={cruiseId} onClose={() => setAddVenue(false)} />}
+      {changeSailing && sailing && <SailingSheet sailing={sailing} onClose={() => setChangeSailing(false)} />}
     </div>
   )
 }

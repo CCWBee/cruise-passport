@@ -23,3 +23,13 @@
    same reason. */
 .entry-fields { display: grid; gap: var(--s4); }
 .entry-fields > .f-field { margin-top: 0; }
+
+/* ── the sailing sheet: the same shape as the venue form, so the two read alike ── */
+.sailing-note { margin-top: var(--s4); }
+.sailing-submit { margin-top: var(--s5); }
+.sailing-note + .sailing-submit { margin-top: var(--s2); }
+/* the crew limitation, under the primary and above the hairline, so the last thing on the returning
+   sheet is still its destructive control */
+.sailing-crew { margin-top: var(--s4); }
+.sailing-rule { margin-top: var(--s5); }
+.sailing-delete { margin-top: var(--s4); }
