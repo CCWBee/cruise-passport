@@ -1,4 +1,4 @@
-import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { VENUES } from '../../data/model'
 import { pickedForYou, useSources } from '../../state/social'
 import { useAllDrinks, useStore } from '../../state/store'
@@ -15,7 +15,9 @@ import './shake.css'
 // crew like) or the theatre would be the whole of it.
 
 const SHAKE_MS = 1800   // the three phases, ending upright
-const HOLD_MS = 300     // the anticipation beat, window still dark
+const HOLD_MS = 300     // the anticipation beat, the tin still shut
+const SETTLE_MS = 580   // the lid at 0, the drop 60 behind it, its rise 520: the drop lands here
+const CLOSE_MS = 240    // the lid back on and the drop back in, before a second shake
 const REDUCED_MS = 300  // no shake and no sound: long enough to read as an answer being found
 
 const QUIET_KEY = 'spcc-shake-quiet'
@@ -46,9 +48,6 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
   const [quiet, setQuiet] = useState(readQuiet)
   const [openDrink, setOpenDrink] = useState<string | null>(null)
   const [announce, setAnnounce] = useState('')
-  // true when the window's two-line clamp cut the name, so the caption has to carry it
-  const [clipped, setClipped] = useState(false)
-  const nameRef = useRef<HTMLSpanElement>(null)
   const rattle = useRef<Rattle | null>(null)
   const timer = useRef(0)
 
@@ -62,9 +61,12 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
   // a drink at a venue prints the venue and its deck; one with no venue prints its category, which
   // is all that is true about where to find it
   const where = drink ? (venue ? `${venue.name} · Deck ${venue.deck}` : drink.category) : ''
-  // What the two lines beneath the shaker say, spoken as one sentence: the middle dot is gone in
-  // speech, so the deck needs its word back.
-  const spoken = drink ? (venue ? `Try ${venue.name}'s ${drink.name}, Deck ${venue.deck}` : `Try ${drink.name}`) : ''
+  // What the card beneath the shaker says, spoken as one sentence: the middle dot is gone in
+  // speech, so the deck needs its word back. It waits for the drop to land, so the announcement and
+  // the card arrive together rather than the reader hearing the answer while the lid is still going.
+  const spoken = drink && phase === 'revealed'
+    ? (venue ? `Try ${venue.name}'s ${drink.name}, Deck ${venue.deck}` : `Try ${drink.name}`)
+    : ''
 
   // The region is mounted empty and filled a frame after the reveal: a live region inserted already
   // holding its text is unreliably announced by VoiceOver and NVDA (ui/Confirm.tsx says the same).
@@ -74,43 +76,52 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
     return () => cancelAnimationFrame(frame)
   }, [spoken])
 
-  // The window holds two lines and no more, and seventeen of the sailing's names are longer than
-  // that. Measured rather than guessed, and measured on the paint: a name that fits is not repeated
-  // under the shaker, because the answer would then say the same thing twice. The 1px of tolerance
-  // keeps a name that exactly fills the box off the caption.
-  useLayoutEffect(() => {
-    const el = nameRef.current
-    if (phase !== 'revealed' || !el) { setClipped(false); return }
-    setClipped(el.scrollHeight > el.clientHeight + 1)
-  }, [phase, result?.id])
-
   useEffect(() => () => {
     window.clearTimeout(timer.current)
     rattle.current?.stop()
   }, [])
 
+  // The shake itself, from a shaker that is already shut.
+  const run = (pick: ShakeResult) => {
+    // one pattern, not a tap and then a series: on Android a second vibrate() replaces the first,
+    // and this one opens with the press tap anyway
+    haptic('shake')
+    rattle.current = startRattle(quiet)
+    setPhase('shaking')
+    const reduced = reducedMotion()
+    timer.current = window.setTimeout(() => {
+      // the lid goes here, and the cork with it. The result is set at the same moment, so the sheet
+      // takes the card's height while the lid is flipping; the card itself is held back in CSS to
+      // the drop's landing, which is the one thing that would jolt if it arrived late.
+      rattle.current?.reveal()
+      setResult(pick)
+      setRecent((r) => [...r, pick.id].slice(-RECENT_KEPT))
+      setPhase('opening')
+      timer.current = window.setTimeout(() => {
+        haptic('success')
+        setPhase('revealed')
+        // no Confirm tick: the answer is on the screen, which is DESIGN.md's own test for when a
+        // confirmation is owed and when it is noise
+      }, reduced ? 0 : SETTLE_MS)
+    }, reduced ? REDUCED_MS : SHAKE_MS + HOLD_MS)
+  }
+
   const press = () => {
     const pick = shake({ drinks, entries: me.entries, forYou: picks.map((p) => ({ id: p.drink.id, reason: p.reason })), recent, random: Math.random })
     // nothing to shake: the row on Home is hidden in that case, so this is the defence behind it
     if (!pick) return
-    // one pattern, not a tap and then a series: on Android a second vibrate() replaces the first,
-    // and this one opens with the press tap anyway
-    haptic('shake')
     window.clearTimeout(timer.current)
     rattle.current?.stop()
-    rattle.current = startRattle(quiet)
     setAnnounce('')
     setResult(null)
-    setPhase('shaking')
-    timer.current = window.setTimeout(() => {
-      rattle.current?.reveal()
-      haptic('success')
-      setResult(pick)
-      setPhase('revealed')
-      setRecent((r) => [...r, pick.id].slice(-RECENT_KEPT))
-      // no Confirm tick: the answer is on the screen, which is DESIGN.md's own test for when a
-      // confirmation is owed and when it is noise
-    }, reducedMotion() ? REDUCED_MS : SHAKE_MS + HOLD_MS)
+    // Shake again puts the lid back on and the drop back in the mouth first, so every shake starts
+    // from a closed shaker rather than from an open one snapping shut as it begins to move.
+    if (phase === 'opening' || phase === 'revealed') {
+      setPhase('closing')
+      timer.current = window.setTimeout(() => run(pick), CLOSE_MS)
+      return
+    }
+    run(pick)
   }
 
   const toggleQuiet = () => {
@@ -124,7 +135,11 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
   // guest can shake again from where they were.
   if (openDrink) return <DrinkSheet id={openDrink} onClose={() => setOpenDrink(null)} onOpen={setOpenDrink} />
 
-  const label = phase === 'shaking' ? 'Shaking'
+  // Shut, shaking or opening, the control is the same ghost reading Shaking: the answer is not on
+  // screen until the drop has landed, and a button that says Go get it before then has nothing to go
+  // and get.
+  const busy = phase === 'shaking' || phase === 'opening' || phase === 'closing'
+  const label = busy ? 'Shaking'
     : phase === 'revealed' ? (result?.allTried ? 'Go again' : 'Go get it')
       : 'Shake'
 
@@ -139,9 +154,9 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
 
           {result && drink && (
             <div className="shake-answer">
-              {/* the name only when the window could not hold it: the one job of this moment is to
-                  name a drink, and a clipped name does not */}
-              {clipped && <p className="t-strong">{drink.name}</p>}
+              {/* the name first and in full: the one job of this moment is to name a drink, and the
+                  drop that came out of the tin carries no lettering of its own */}
+              <h3 className="t-h2">{drink.name}</h3>
               <p className="t-meta tnum">{where}</p>
               <p className="t-body">{result.reason}</p>
             </div>
@@ -150,7 +165,7 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             className="btn btn-coral btn-wide pressable shake-go"
-            disabled={phase === 'shaking'}
+            disabled={busy}
             onClick={() => (phase === 'revealed' && result ? setOpenDrink(result.id) : press())}
           >
             {label}
