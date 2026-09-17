@@ -19,9 +19,9 @@ architecture in `docs/specs/2026-09-10-product-brief.md`, one spec per workstrea
 - **Not merged to `main`.** `main` deploys, so the merge is Charles's call and waits on his gates
   below. `main` is `8b2ca89` locally (the 5 September ops-review tree committed 10 September, not
   pushed); live is `62cdf04` (last green Deploy, 5 September).
-- Left to build: the **polish pass** (three follow-ups, `docs/specs/2026-09-17-polish.md`). Items 2
-  and 3 need no ruling and are being done now; item 1 changes what Delete my data means, so it waits
-  for Charles's yes.
+- The **polish pass** (`docs/specs/2026-09-17-polish.md`): items 2 and 3 shipped 17 September
+  (`91240ba`, detail below); item 1 changes what Delete my data means, so it waits for Charles's yes.
+  Nothing else is buildable without him.
 
 ## The five passes, for the record
 
