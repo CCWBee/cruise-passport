@@ -108,14 +108,24 @@ and a drink to go and get surfaces in the shaker's window. Spec `docs/specs/2026
 (mine: placement at the foot of For you, one coral in the sheet, an honest untried pick weighted
 by the For-you signals, a synthesised dice rattle with a persisted quiet toggle, the fifth authored
 motion moment with a reduced-motion fade). Harness: build -> refute-by-default review -> fix, one
-stream, all agents Opus. Run `wf_dc5809ec-9c7`. Resume:
+stream, all agents Opus. DONE 17 September: eight build commits `c838edf`..`619bec5`, review
+verdict fail on one major (17 of 214 drink names clipped in the window with nothing carrying them in
+full) fixed by `b37dda4` (the full name renders beneath the shaker only when the window clips,
+measured) and `6166158` (docs); the one minor was the spec contradicting itself on the window's
+colour pair (the built reveal is ink on a cream window, 10.4:1, which is right). Gates green:
+46/46 tests, tsc, lint 28/0, design:check 34 files, no allow-list change, build exit 0. My own read
+of the four renders: holds the constitution and has the build-up. The reviewer could not make the
+pick name a tried drink across 2,000 catalogue cases. Not merged: a deploy, Charles's yes.
+Run `wf_dc5809ec-9c7`. Resume (only if something must be re-run):
 `Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-shake-wf_dc5809ec-9c7.js", resumeFromRunId: "wf_dc5809ec-9c7" })`.
 If a fix agent dies on the spend cap with the review done, apply the findings in the main loop as
 the BYO fix was; if the builder dies, its commits are on `shake`, run review and fix separately.
 
 ## Next action
 
-Everything remaining is Charles's: review and merge `product` to `main` (a production deploy), the
+Everything remaining is Charles's: merge `shake` to `main` (a production deploy; the shaker is built,
+reviewed and green), enable two-step verification on the Google account so the OAuth client can be
+created, the
 dashboard gates for sign-in, the held spec rulings, polish item 1's go (one small change built to the
 spec's default), the Cloudflare token roll, and the QA-user purge. Nothing else is buildable without
 him: the whole any-sailing product plus the two ruling-free polish items are on the branch, green.
