@@ -108,7 +108,10 @@ and a drink to go and get surfaces in the shaker's window. Spec `docs/specs/2026
 (mine: placement at the foot of For you, one coral in the sheet, an honest untried pick weighted
 by the For-you signals, a synthesised dice rattle with a persisted quiet toggle, the fifth authored
 motion moment with a reduced-motion fade). Harness: build -> refute-by-default review -> fix, one
-stream, all agents Opus. Resume handle recorded here the moment the run id exists.
+stream, all agents Opus. Run `wf_dc5809ec-9c7`. Resume:
+`Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-shake-wf_dc5809ec-9c7.js", resumeFromRunId: "wf_dc5809ec-9c7" })`.
+If a fix agent dies on the spend cap with the review done, apply the findings in the main loop as
+the BYO fix was; if the builder dies, its commits are on `shake`, run review and fix separately.
 
 ## Next action
 
