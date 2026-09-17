@@ -16,9 +16,12 @@ architecture in `docs/specs/2026-09-10-product-brief.md`, one spec per workstrea
   venues and logs against them). 89 commits since `main`, 69 files, +9071/-306.
 - All gates green on HEAD: `npm run lint` 28 warnings 0 errors, `tsc` clean, `design:check` 33 files
   clean, `npm test` 32/32, and `npm run build` exits 0 (PWA precache 16 entries).
-- **Not merged to `main`.** `main` deploys, so the merge is Charles's call and waits on his gates
-  below. `main` is `8b2ca89` locally (the 5 September ops-review tree committed 10 September, not
-  pushed); live is `62cdf04` (last green Deploy, 5 September).
+- **LIVE.** On Charles's explicit go (17 September, "push and merge"), `main` was pushed at `8b2ca89`
+  (seed guard, deploy green) and then fast-forwarded to `product` and pushed at `f1d9d92`; that deploy
+  is green and cruise.charlesbee.org serves shell `index-PBbi6Q4N.js` carrying the entry screen,
+  sign-in, landing and BYO. Further work goes on branch `shake` (the shaker feature) and merges to
+  `main` when it ships. Every phone with the app installed shows the old build once more before
+  the A-pass reload takes over (documented in workstream A).
 - The **polish pass** (`docs/specs/2026-09-17-polish.md`): items 2 and 3 shipped 17 September
   (`91240ba`, detail below); item 1 changes what Delete my data means, so it waits for Charles's yes.
   Nothing else is buildable without him.
@@ -61,9 +64,7 @@ changes what Delete my data does; the spec has it built to a stated default when
 
 ### Charles's gates and rulings (nothing below is blocked on me)
 
-- **Push `main`.** `8b2ca89` carries the `?seed` guard; until it deploys a shared seed link can still
-  wipe a real user on the live site.
-- **Merge `product` to `main`** when he has reviewed it: a production deploy, his yes only.
+- Push `main` and merge `product`: DONE 17 September on his go (see Where it stands).
 - **Dashboard gates for sign-in** (C fails honestly until then): Supabase Google provider ON, Allow
   manual linking ON, a Google Cloud OAuth client with the Supabase callback URL, Site URL
   `https://cruise.charlesbee.org` and the four redirect URLs in `supabase/config.toml`.
