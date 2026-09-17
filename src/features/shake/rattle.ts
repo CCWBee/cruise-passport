@@ -8,7 +8,7 @@
 export interface Rattle {
   /** Cut it short: the sheet closed, or the guest shook again. */
   stop(): void
-  /** The window clearing: one soft thock as the answer surfaces. */
+  /** The tin opening: the cork as the lid goes, then the thock as the drop lands. */
   reveal(): void
 }
 
@@ -34,6 +34,11 @@ const DECAY_LOW = 0.022, DECAY_HIGH = 0.035
 const ATTACK = 0.002
 const CLACK_HZ = 1900, CLACK_DECAY = 0.08, CLACK_GAIN = 0.2
 const THOCK_FROM = 220, THOCK_TO = 150, THOCK_MS = 0.11, THOCK_GAIN = 0.1
+// The lid coming off: a cork, which is a burst whose band falls rather than sits. That fall is why
+// it cannot go through burst(), and it is what makes it a cork instead of one more die.
+const POP_FROM = 1400, POP_TO = 700, POP_DECAY = 0.055, POP_GAIN = 0.18
+// the drop's 60ms of lead and its 520ms rise: the thock lands on the hang, not on the lid
+const SETTLE_AT = 0.58
 
 type Ctor = { new(): AudioContext }
 type Win = { AudioContext?: Ctor; webkitAudioContext?: Ctor }
@@ -113,6 +118,41 @@ export function startRattle(quiet: boolean): Rattle {
       sources.push(src)
     }
 
+    const pop = (at: number) => {
+      const src = c.createBufferSource()
+      src.buffer = noiseBuffer(c)
+      const band = c.createBiquadFilter()
+      band.type = 'bandpass'
+      band.frequency.setValueAtTime(POP_FROM, at)
+      band.frequency.exponentialRampToValueAtTime(POP_TO, at + POP_DECAY)
+      band.Q.value = BAND_Q
+      const amp = c.createGain()
+      amp.gain.setValueAtTime(0.0001, at)
+      amp.gain.exponentialRampToValueAtTime(POP_GAIN, at + ATTACK)
+      amp.gain.exponentialRampToValueAtTime(0.0001, at + POP_DECAY)
+      src.connect(band).connect(amp).connect(master)
+      src.start(at)
+      src.stop(at + POP_DECAY + 0.01)
+      sources.push(src)
+    }
+
+    // The drop landing: a sine falling a fifth in a tenth of a second. The only oscillator in the
+    // piece, and the last sound in it.
+    const thock = (at: number) => {
+      const osc = c.createOscillator()
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(THOCK_FROM, at)
+      osc.frequency.exponentialRampToValueAtTime(THOCK_TO, at + THOCK_MS)
+      const amp = c.createGain()
+      amp.gain.setValueAtTime(0.0001, at)
+      amp.gain.exponentialRampToValueAtTime(THOCK_GAIN, at + ATTACK)
+      amp.gain.exponentialRampToValueAtTime(0.0001, at + THOCK_MS)
+      osc.connect(amp).connect(master)
+      osc.start(at)
+      osc.stop(at + THOCK_MS + 0.02)
+      sources.push(osc)
+    }
+
     // One pass over the whole schedule, laid down now against the clock. Nothing here is a timer, so
     // a busy main thread cannot stretch the rhythm out and the whole thing is finite by construction.
     for (const phase of PHASES) {
@@ -138,21 +178,13 @@ export function startRattle(quiet: boolean): Rattle {
       stop: hush,
       reveal() {
         try {
-          // The answer surfacing through the liquid: a sine falling a fifth in a tenth of a second.
-          // The only oscillator in the piece, and the only sound after the stop.
+          // Both sounds of the opening, laid down in one pass like the rattle itself: the cork as the
+          // lid goes, the thock 580ms later as the drop settles onto its hang. The sheet calls this
+          // once, when the lid starts, and the clock keeps the thock on the picture; a timer would
+          // let a busy main thread put it somewhere the eye is not.
           const at = c.currentTime
-          const osc = c.createOscillator()
-          osc.type = 'sine'
-          osc.frequency.setValueAtTime(THOCK_FROM, at)
-          osc.frequency.exponentialRampToValueAtTime(THOCK_TO, at + THOCK_MS)
-          const amp = c.createGain()
-          amp.gain.setValueAtTime(0.0001, at)
-          amp.gain.exponentialRampToValueAtTime(THOCK_GAIN, at + ATTACK)
-          amp.gain.exponentialRampToValueAtTime(0.0001, at + THOCK_MS)
-          osc.connect(amp).connect(master)
-          osc.start(at)
-          osc.stop(at + THOCK_MS + 0.02)
-          sources.push(osc)
+          pop(at)
+          thock(at + SETTLE_AT)
         } catch { /* a sound is never worth an exception */ }
       },
     }
