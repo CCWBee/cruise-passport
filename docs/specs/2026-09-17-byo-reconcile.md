@@ -168,8 +168,9 @@ ones the spec quotes, which matters as much as the ones that moved.
     eleven by the existence of `<prefix>-<label>.png`, so **"pairs 11" is right** (it is printed by
     `compare.mjs:42` as `… height <h> pairs 11`). Note that a sweep writes **19** files per prefix,
     not eleven: the eight full-page screens also write `<prefix>-<label>-full.png`, and the three
-    sheets do not. The spec's hash one-liner walks all nineteen, which is correct and was run to
-    confirm it still executes (`node -e` is CommonJS here despite `"type": "module"`).
+    sheets do not. The spec's hash one-liner walks all nineteen, and it was run to confirm it still
+    executes (`node -e` is CommonJS here despite `"type": "module"`), but only twelve of the nineteen
+    are byte-stable enough to gate on: see the sweep section.
 
 **Also worth having in hand:** `ConfirmButton`'s default `className` is still `btn btn-wide`
 (`ConfirmButton.tsx:8`) and its note renders at line 37; `Field.tsx` renders `span.field-hint.field-err`
@@ -416,6 +417,25 @@ node tools/qa/shot.mjs $P-wrapped     "wrapped?nosync" --wait 3000 --full
 Then `SHOTS_DIR=shots-byo node tools/qa/compare.mjs before after`, which must print `pairs 11`, and
 the spec's hash one-liner over `tools/qa/shots-byo`, which walks the 19 files.
 
+**The montage and the hash pass do not cover the same files.** `compare.mjs:16` pairs on
+`<prefix>-<label>.png` only, so the eight `-full.png` files are never in the montage; they are checked
+by the hash pass alone. Every full-page change in the table below is therefore invisible to the eye in
+`compare.mjs`'s output and has to be opened by hand once the hash names it.
+
+**Seven of the nineteen files are not byte-stable, so the hash pass is a gate on twelve of them.**
+Measured on the branch by taking each shot twice, back to back, against the seeded published sailing:
+
+- **Stable**, so a `DIFF` is real: `drinks`, `drinks-full`, `drink-sheet`, `ship`, `ship-full`,
+  `stats`, `stats-full`, `badges`, `badges-full`, `log`, `log-full`, `venue-sheet`.
+- **Not stable**, so a `DIFF` proves nothing: `home`, `home-full`, `social`, `social-full`,
+  `wrapped`, `wrapped-full`, `add-sheet`. The sea's CSS fallback, the hero count-up, the Wrapped
+  drift and the avatar springs are all still running when the shutter falls, and two runs seconds
+  apart differ. Read those seven in the montage, or through the relevant `--eval`, and never take a
+  hash `DIFF` on them for a regression.
+
+All six files expected to change are inside the stable twelve, so the mechanical pass is exactly as
+strong as this workstream needs it to be.
+
 **Expected to differ: six files, three of the eleven compare pairs.** Each position was measured on
 the branch against the seeded published sailing at 390×844.
 
@@ -432,7 +452,8 @@ The deck-label change on `ship` and `stats` is the deliberate fix of the existin
 the filter panel said 15/16 and Ship and Stats said 15. It is a change on the October sailing and
 Charles sees it in the montage.
 
-**Expected to hash `same`, and why each could have moved but does not:**
+**Expected not to change, and why each could have moved but does not** (on the seven unstable files
+this is a claim about what the montage shows, not about the hash):
 `home`, `home-full` (`countdown()` reads `DAYS.length`, which is 15 on this sailing; module 2's three
 facts are non-zero because the sailing has venues; the hero is unchanged), `drinks`, `drinks-full`
 (`CATEGORIES` becomes a union with an eleven-entry base vocabulary, and parsing `raw.ts` confirms the
@@ -445,9 +466,12 @@ the "Sun Princess" literal at line 110, which is inside the Web Share payload an
 `wrapped`, `wrapped-full` (`wrappedTotal(drinks)` is `drinks.length`, which is 214 for the seeded
 passport, the number `WRAPPED_TOTAL` hard-coded).
 
-`home` and `home-full` differing is the clock, not a regression, whether the gap is an hour or a day.
-Re-run the two sweeps back to back before treating it as one. Anything else that differs is
-unintended, and `stats.ts:77`'s new `vset` venue guard in particular must show no change: no drink on
+The spec's note that a `home` `DIFF` is the clock rather than a regression understates it: `home` and
+`home-full` never hash `same`, whatever the hour, because the sea and the count-up are still moving.
+On top of that the clock does move real copy, so keep the two sweeps in the same hour and on the same
+day: "Sails in N days" and the greeting date turn over at midnight and the sky palette on the hour.
+Anything that differs inside the stable twelve is unintended, and `stats.ts:77`'s new `vset` venue
+guard in particular must show no change: no drink on
 the published sailing can carry a venue key outside `VENUES`, so that line is a no-op there and a
 `DIFF` on `stats` beyond the deck label means it is not.
 
