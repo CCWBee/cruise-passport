@@ -45,6 +45,9 @@ Accepted exceptions live in `tools/qa/design-allow.txt` with their reasons.
   reloads the page, once, from the sheet's close handler and only when something was actually saved.
   The three QA fixtures the BYO screens are shot from (`?seed&fixture=byo-new|byo-empty|byo`) are in
   the same inline block in `index.html` as the demo seed.
+- `src/features/shake/`: the shaker, opened from the foot of Home's "For you". `pick.ts` is the
+  decision (pure, tested), `rattle.ts` the synthesised dice, `Shaker.tsx` the drawing and
+  `ShakeSheet.tsx` the states; the fifth authored moment, written up in `docs/DESIGN.md`.
 - `tools/qa/`: the screenshot and scan harness (zero dependencies).
 - `redirect/`: the GitHub Pages redirector for the old address.
 

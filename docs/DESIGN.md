@@ -158,14 +158,24 @@ The nav uses icon plus label at all times.
 
 ## Motion
 
-Four authored moments and nothing else moves on its own: the ship bobbing on the sea (the sea itself,
+Five authored moments and nothing else moves on its own: the ship bobbing on the sea (the sea itself,
 with its sky following the clock, is the app's one live effect), the SheetWave wash when a sheet
-opens, the hero count-up on first paint, and the new-medal coin's single turn on Home (one rotation,
-then still). Everything else is feedback: press
+opens, the hero count-up on first paint, the new-medal coin's single turn on Home (one rotation,
+then still), and the shaker in the Shake sheet. Everything else is feedback: press
 scale `.97` over 120ms, state colour over 200ms, sheet rise over 280ms. One easing, `--e-out`.
 No overshoot or spring curves on UI state, no reveal stagger on every screen, no chart grow-ins,
 no endless pulses. Under `prefers-reduced-motion` each effect has its own fallback that keeps the
 state change visible; there is no global animation kill.
+
+**The shake** is the fifth, and the only one the guest starts themselves: 1.8s of shaking in three
+phases (gentle, then harder with 2px of jitter, then violent with 3px, and a hard stop upright), a
+300ms hold with the window still dark, then the window clearing from `--ink` to `--cream` over 420ms
+while the name rises into it. That rise carries one 6% overshoot on the y, which is the single
+written exception to the no-overshoot rule above: it is the answer surfacing through liquid, the
+thing the whole moment exists for, and a linear arrival reads as a label being swapped. The reason
+is in `shake.css` beside the keyframes. It is finite, it is user-triggered, it lives inside a sheet
+and nothing else on the sheet moves while it runs. Under `prefers-reduced-motion` the tin does not
+move, the rattle is silent and the name fades in over 200ms, so the reveal still lands.
 
 ## States
 
@@ -346,8 +356,15 @@ first content line.
    card names the drink and, in the accent, the honest basis for the pick: a crew member whose
    palate matches yours who loved it ("Sam matches your taste" / "Loved by Sam and Ravi", from
    `pickedForYou` over `recommendedForYou`), or the spirit you rate highest ("Because you love
-   whiskey", three-plus of your own fives). It renders only when there is a real personal basis, so
-   it is absent for a fresh guest with no ratings and no crew: never a generic "you might like".
+   whiskey", three-plus of your own fives). The shelf renders only when there is a real personal
+   basis, so it is absent for a fresh guest with no ratings and no crew: never a generic "you might
+   like". At the foot of the section, after the shelf, one `button.row.pressable.shake-open` in its
+   own wrapper, no chevron, `aria-haspopup="dialog"`, reading "Shake for a drink" over "The shaker
+   picks one you have not tried", which opens the Shake sheet. It borrows this heading and adds
+   none, because this is the section that already exists to suggest drinks, and it is ink only: Log
+   a drink keeps the screen's coral. When there is no shelf the section still renders, the heading
+   and this one row, because for that guest the shaker is the most useful thing on the screen. With
+   no catalogue at all there is nothing to shake and nothing to suggest, and the section goes.
 4. **Last bar** (aboard): one row for the venue of the last drink logged today, with "12 of 44
    tried here" and the first untried drink there named; it opens that venue's sheet. With nothing
    logged today it is "Your top bar"; before sailing it is "Where to start", the biggest bar and
@@ -369,6 +386,45 @@ rendering the aboard branch with the date pinned (`?day=2026-10-05`, a QA overri
 only control with that intent: the Drinks page's catalogue action is "Add a missing drink". Opening
 Drinks from it focuses the search field and shows the ring; the keyboard is the platform's to
 raise, and it will not from a route change on iOS.
+
+### Shake sheet
+
+Read: what should I drink, decided for me. It sits here, straight after Home, because Home is the
+only place it opens from. It is the app's one moment of theatre and it earns it twice over: the pick
+is genuinely useful (untried, never one this sitting has already surfaced, weighted by what the guest
+and their crew like), and it is silent and still until asked for. The theatre is inside a sheet, on
+demand, and finite. Home stays an instrument.
+
+1. **Title and meta.** `h2.t-title.sheet-title` "Shake", then one `p.sheet-meta`: "The shaker picks
+   one you have not tried."
+2. **The shaker** (`Shaker`), centred, about 200px tall, `--ink` stroke on `--cream`, no panel: the
+   sheet is the container and a box around the only thing present is the fourth banned tell. The
+   window in its body is a circle about 112px across, `--ink` while the answer is inside it and
+   `--cream` once the name has surfaced into it. It is the one dominant element.
+3. **The answer**, empty until a reveal: the venue and deck as `p.t-meta.tnum` ("THE MIX · Deck 17",
+   one middle dot; a drink with no venue prints its category), then the reason as `p.t-body`
+   ("Because you love gin", "Sam loved it", or "One you have not tried"). Centred, because it is the
+   caption of a centred object.
+4. **The one filled control**, `button.btn.btn-coral.btn-wide.shake-go`: "Shake", then "Shaking" as
+   a disabled ghost for the 2.1 seconds, then "Go get it". Tapping it replaces this sheet with
+   `DrinkSheet`, one `.sheet` at a time; closing that returns to the reveal, not to Home.
+5. **The quiet actions**, `.quiet-action`: "Shake again" on a reveal, and the sound toggle always,
+   "Shake quietly" when sound is on and "Shake with sound" when it is off, persisted in
+   `spcc-shake-quiet`. The label states the action, not the state, as every other quiet action does.
+
+24 between modules 2 to 5, 12 between the two quiet actions. Radius 12 on the button, none on the
+shaker, no glass anywhere on it: it sits in the content layer. No pill, no dot, no rule, no emoji.
+
+Sound is `startRattle` (Motion above, and the registry): synthesised, no asset, created inside the
+press handler so iOS allows it, and silent when the guest chose quiet or reduced motion is set. The
+reveal fires `haptic('success')` and no `Confirm` tick: the answer is on the screen, which is this
+document's own test for when a confirmation is owed. An `aria-live="polite"` region says what the
+two lines beneath the shaker say, as one sentence ("Try THE MIX's Red Stripe, Deck 17"), once.
+
+When every drink on the sailing has been tried the shake still runs, the reveal names the guest's
+highest-rated drink, the reason reads "You have tried them all. Have another." and the button reads
+"Go again". The catalogue is local, so there is no loading, offline or error state here and none is
+to be added.
 
 ### Drinks
 
@@ -552,6 +608,11 @@ colour, are how that happens again. Read it before any change that renders.
 | `seenMedals`, `markMedalsSeen()` | `src/state/store.ts` (persist v8) | which badges' "new medal" moment Home has shown; seeded on upgrade with what was already earned |
 | `SeaHero` (`level`, `hour`, `chips`) | `src/features/home/SeaHero.tsx` | the sea; the sky follows `hour`, the shader lenses the water under the `chips` rectangles |
 | `pickedForYou()` | `src/state/social.ts` | the "For you" shelf: honest picks (taste-matched crew, or your top spirit); empty when there is no personal basis |
+| `Shaker` | `src/features/shake/Shaker.tsx` | the cobbler shaker and its window, drawn on a 168 by 176 grid in `Icon.tsx`'s stroke idiom and rendered a seventh larger. It is not in the icon set because it is not an icon: it is the one object on its screen, and an icon there would be a 24px glyph blown up. The window is part of the drawing, not a disc laid over it |
+| `ShakeSheet` | `src/features/shake/ShakeSheet.tsx` | the Shake sheet and its three states, opened by `.shake-open` on Home and from nowhere else. It returns `DrinkSheet` on "Go get it" rather than stacking one, the same replacement `ProfileSheet` and `VenueSheet` use |
+| `shake()` | `src/features/shake/pick.ts` | what the shaker surfaces: untried only, never one of this sitting's last six, weight 4 for a drink the "For you" shelf already vouches for, 2 for the guest's top spirit, 1 for the rest, each weight carrying the line that explains it. Pure, with `random` injected, tested in `pick.test.ts` |
+| `startRattle()` | `src/features/shake/rattle.ts` | the dice in the tin: WebAudio, synthesised, no asset, the whole schedule laid down in one pass at press time. A silent no-op when the guest chose quiet, under reduced motion, or where there is no `AudioContext` |
+| `haptic('shake')` | `src/ui/haptic.ts` | the third pattern, a rising series mirroring the rattle's acceleration. Its first pulse is the press tap, so the press fires this one and not both |
 | `DrinkCard` | `src/features/drinks/DrinkCard.tsx` | the drink row everywhere a drink is listed (Drinks, venue sheet) |
 | `Medallion` | `src/features/badges/Medallion.tsx` | the badge disc, grid and sheet |
 | `SeaHero`, `SheetWave`, the hero count-up | `src/features/home/`, `src/ui/SheetWave.tsx` | the three authored motions; do not add a fourth without amending Motion above |
