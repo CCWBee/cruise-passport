@@ -8,7 +8,7 @@ import {
   type NextBadge,
 } from '../../state/stats'
 import { useSources, pickedForYou } from '../../state/social'
-import { DAYS, START, today, nowHour, VENUES } from '../../data/model'
+import { DAYS, START, today, nowHour, VENUES, VENUE_KEYS } from '../../data/model'
 import { useCountUp } from '../../ui/useCountUp'
 import { FriendDot } from '../../ui/FriendDot'
 import { IconStar } from '../../ui/Icon'
@@ -30,7 +30,8 @@ const drinkVenue = (key: string) => VENUES[key]?.name || key
 
 function countdown(): { text: ReactNode } {
   const i = DAYS.indexOf(today())
-  if (i > -1) return { text: <>Day <b>{i + 1}</b> of 15 aboard</> }
+  // DAYS.length, not 15: a ten-day sailing says ten, and the Sun Princess still says fifteen.
+  if (i > -1) return { text: <>Day <b>{i + 1}</b> of {DAYS.length} aboard</> }
   const d = Math.ceil((+new Date(START + 'T00:00:00') - +new Date(today() + 'T00:00:00')) / 86400000)
   if (d > 0) return { text: <>Sails in <b>{d}</b> day{d === 1 ? '' : 's'}</> }
   return { text: <>Voyage complete</> }
@@ -159,6 +160,10 @@ export function Home() {
   // loved it, or it is in the spirit you rate highest). Renders only when there is a real basis.
   const picks = useMemo(() => pickedForYou(me, srcs), [me, srcs])
 
+  // Module 2's three facts are true only when there is something to count. With no venues at all
+  // before sailing, and with no bars aboard, every one of them is zero.
+  const shipZero = aboard ? s.barsTotal === 0 : VENUE_KEYS.length === 0
+
   // the top drink: a row either way. With a rating it opens the sheet; empty, it goes to the
   // list that fills it, so the empty state ships the one action that ends it.
   const topDrink = (
@@ -192,7 +197,9 @@ export function Home() {
         <p className="sea-count glass-live glass-sm glass-edge" ref={countRef}>{cd.text}</p>
         <div className="sea-readout glass-live glass-sm glass-edge" ref={readoutRef}>
           <div className="sea-pct tnum">{pctShown.toFixed(0)}<small>%</small></div>
-          <p className="sea-sub">{s.n} of {s.total}<br />tried</p>
+          {/* with nothing to try the two lines keep their shape and their measure, and say what is
+              true rather than "0 of 0" */}
+          <p className="sea-sub">{s.total ? <>{s.n} of {s.total}<br />tried</> : <>no drinks<br />yet</>}</p>
         </div>
         {/* the one primary action on the app, floating on the water where the thumb rests */}
         <Link to="/drinks?log=1" className="sea-log glass-live glass-sm glass-edge glass-coral pressable" viewTransition>
@@ -202,6 +209,20 @@ export function Home() {
 
       <section className="section">
         <div className="section-head"><h2 className="t-h2">{aboard ? 'Today' : 'The ship'}</h2></div>
+        {/* The heading stays either way; what changes is the row beneath, in the two cases where
+            the three facts would all be structural zeros, which DESIGN.md forbids outright. Aboard
+            the test is barsTotal and not the venue count, because a sailing whose venues are all
+            restaurants has venues and no bars. It is Home's own empty-state row (the "No top drink
+            yet" row below) and needs no wrapper: Home's rows sit as siblings of a .section-head and
+            are already squared, so a wrapper would make this the one rounded thing on the screen. */}
+        {shipZero ? (
+          <Link to="/ship" className="row pressable" viewTransition>
+            <span className="row-copy">
+              <span className="t-strong">{aboard ? 'Add a bar' : 'Add your first venue'}</span>
+              <span className="t-meta">{aboard ? 'Nothing to check in at on this sailing yet' : 'Bars, cafés and restaurants you will drink at'}</span>
+            </span>
+          </Link>
+        ) : (
         <div className="facts">
           {aboard ? (
             // Aboard, three numbers that move by the day. "Day n of 15" is not among them: the
@@ -223,6 +244,7 @@ export function Home() {
             </>
           )}
         </div>
+        )}
       </section>
 
       {picks.length > 0 && (
