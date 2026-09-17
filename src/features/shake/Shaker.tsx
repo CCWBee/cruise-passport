@@ -16,10 +16,12 @@ export function Shaker({ phase, name, drinkId }: { phase: ShakePhase; name?: str
     + (phase === 'revealed' ? ' is-revealed' : '')
   return (
     <div className={cls}>
+      {/* Drawn on a 168 by 176 grid and rendered a seventh larger, so the window is the 112 across
+          the reveal needs: at 96 a name as ordinary as "Lychee Vodka Mojito" clipped. */}
       <svg
         className="shaker-tin"
-        width={168}
-        height={176}
+        width={196}
+        height={205}
         viewBox="0 0 168 176"
         fill="var(--cream)"
         stroke="currentColor"

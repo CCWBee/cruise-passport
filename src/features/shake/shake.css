@@ -24,7 +24,7 @@
 .shaker {
   position: relative;
   justify-self: center;
-  width: 168px; height: 176px;
+  width: 196px; height: 205px;
   color: var(--ink);
   /* the hand is round the body, not the cap, so the tin pivots low */
   transform-origin: 50% 80%;
@@ -36,17 +36,18 @@
 .shaker-liquid { fill: var(--ink); transition: fill 420ms var(--e-out); }
 .shaker.is-revealed .shaker-liquid { fill: var(--cream); }
 
-/* the answer, laid over the window. The circle's centre sits 24 below the drawing's, so the text is
-   nudged down by the same amount rather than floating in the middle of the tin. */
+/* the answer, laid over the window. The circle's centre sits 28 below the drawing's, so the text is
+   nudged down by the same amount rather than floating in the middle of the tin. That 28, like the
+   102 below it, is a coordinate in the drawing and not a measure of the layout. */
 .shaker-window {
   position: absolute; inset: 0;
   display: grid; place-items: center;
-  transform: translateY(var(--s5));
+  transform: translateY(28px);
   pointer-events: none;
 }
 .shaker-name {
-  /* the widest chord two lines of 15px can use inside the 96px window */
-  max-width: 88px;
+  /* the widest chord two lines of 15px can use inside the 112px window */
+  max-width: 102px;
   color: var(--ink);
   text-align: center;
   line-height: 1.25;
