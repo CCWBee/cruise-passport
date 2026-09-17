@@ -1,5 +1,5 @@
 import { useId, useState, type FormEvent } from 'react'
-import { CATEGORIES, PLUS, PREM, VENUES, VENUE_KEYS, type Drink } from '../../data/model'
+import { CATEGORIES, pkgFields, VENUES, VENUE_KEYS, type Drink } from '../../data/model'
 import { useStore } from '../../state/store'
 import { TextField, TextArea, NumberField } from '../../ui/Field'
 import { GlassButton } from '../../ui/GlassButton'
@@ -37,9 +37,7 @@ export function AddSheet({ onClose }: { onClose: () => void }) {
       price: finalPrice,
       desc: 'Added to your personal passport.',
       verified: true,
-      plus: finalPrice === null ? null : finalPrice <= PLUS,
-      premier: finalPrice === null ? null : finalPrice <= PREM,
-      extra: finalPrice === null ? null : Math.max(0, finalPrice - PREM),
+      ...pkgFields(finalPrice),
     }
     addCustom(drink)
     onClose()

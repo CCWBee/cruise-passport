@@ -4,11 +4,22 @@ import { activeCruise } from './cruises'
 import { type VenueRaw } from './raw'
 
 // The active cruise supplies the dataset. Resolved once at module load; switching cruises reloads.
-const DATA = activeCruise().data
-const { VENUES, COCKTAILS, WINES, BEERS, PLUS, PREM, START, END } = DATA
+const ACTIVE = activeCruise()
+const DATA = ACTIVE.data
+const { VENUES, COCKTAILS, WINES, BEERS, PLUS, PREM, START, END, DECK_LABELS } = DATA
 
-export { VENUES, PLUS, PREM, START, END }
+export { VENUES, START, END }
 export type Venue = VenueRaw
+
+/** The ship this sailing is on. The places that print a ship name read it here, so a guest on a
+ *  sailing they set up is shown the name they typed rather than the Sun Princess. */
+export const SHIP = ACTIVE.ship
+
+/** Whether this sailing declares package tiers at all. A sailing the guest set up does not, so no
+ *  drink on it can be classified against one. PLUS and PREM stay module-local on purpose: a
+ *  `number | undefined` in the exported surface invites exactly the comparison this pair exists to
+ *  stop, and pkgFields() below is the whole of what a caller needs. */
+export const HAS_PACKAGES = typeof PLUS === 'number' && typeof PREM === 'number'
 
 export interface Drink {
   id: string
@@ -24,12 +35,21 @@ export interface Drink {
   price: number | null
   desc: string
   verified: boolean
-  plus: boolean | null // <= $15 (null when price unknown)
+  plus: boolean | null // <= $15 (null when price unknown, or the sailing declares no packages)
   premier: boolean | null // <= $20
   extra: number | null // amount over $20
+  cruise?: string // set on a drink the guest added: it appears only on the sailing it was added to
 }
 
 export type PkgTier = 'plus' | 'prem' | 'over' | 'unknown'
+
+/** The three package fields for a price. Null throughout when the sailing declares no package
+ *  tiers, or the price is unknown: Math.max(0, p - undefined) is NaN, and NaN in `extra` is what
+ *  a user sailing would otherwise store on every drink with a price. */
+export function pkgFields(p: number | null): Pick<Drink, 'plus' | 'premier' | 'extra'> {
+  if (p === null || !HAS_PACKAGES) return { plus: null, premier: null, extra: null }
+  return { plus: p <= PLUS!, premier: p <= PREM!, extra: Math.max(0, p - PREM!) }
+}
 
 /** Rebuild the 214-drink list exactly as the original build() did. */
 export function buildDrinks(): Drink[] {
@@ -40,9 +60,7 @@ export function buildDrinks(): Drink[] {
       id: 'd' + i, name: r[0], venue: r[1], category: r[2], spirits: r[3],
       ingredients: r[4], flavors: r[5], sweet: r[6], strength: r[7], frozen: r[8],
       price: p, desc: r[10], verified: r[11],
-      plus: p === null ? null : p <= PLUS,
-      premier: p === null ? null : p <= PREM,
-      extra: p === null ? null : Math.max(0, p - PREM),
+      ...pkgFields(p),
     })
   })
   WINES.forEach((w, i) => {
@@ -51,8 +69,8 @@ export function buildDrinks(): Drink[] {
       ingredients: w[1] + ' by the glass',
       flavors: [w[1] === 'Red' ? 'Bitter' : 'Refreshing'],
       sweet: w[0] === 'Moscato' ? 5 : 2, strength: 2, frozen: false, price: w[2], verified: true,
-      desc: 'Poured across the ship. ' + (w[2] <= PLUS ? 'Within the Plus allowance.' : 'Premier tier.'),
-      plus: w[2] <= PLUS, premier: w[2] <= PREM, extra: Math.max(0, w[2] - PREM),
+      desc: 'Poured across the ship. ' + (HAS_PACKAGES && w[2] <= PLUS! ? 'Within the Plus allowance.' : 'Premier tier.'),
+      ...pkgFields(w[2]),
     })
   })
   BEERS.forEach((b, i) => {
@@ -62,7 +80,7 @@ export function buildDrinks(): Drink[] {
       sweet: 1, strength: b[0].indexOf('0.0') > -1 ? 0 : 2, frozen: false, price: b[1],
       verified: true,
       desc: 'Available fleet wide. Add $2 at pool bars to make it a michelada.',
-      plus: true, premier: true, extra: 0,
+      ...pkgFields(b[1]),
     })
   })
   return out
@@ -73,11 +91,30 @@ export const DRINK_BY_ID: Record<string, Drink> = Object.fromEntries(DRINKS.map(
 
 export const SPIRITS = ['Vodka', 'Rum', 'Gin', 'Tequila', 'Bourbon', 'Whiskey', 'Scotch', 'Brandy', 'Cognac', 'Mezcal', 'Liqueur', 'Wine', 'Beer']
 export const FLAVOURS = ['Tropical', 'Fruity', 'Sour', 'Sweet', 'Bitter', 'Refreshing', 'Strong', 'Coffee', 'Dessert']
-export const DECKS = [7, 8, 9, 15, 17, 18]
-export const CATEGORIES = Array.from(new Set(DRINKS.map((d) => d.category))).sort()
+// Read up here, above DECKS, because DECKS is derived from it and a const cannot be read before it
+// is declared. Nothing between the two touches it.
+export const VENUE_KEYS = Object.keys(VENUES)
+/** The decks this sailing's venues are on, derived rather than declared. On the published data that
+ *  is [7, 8, 9, 15, 17, 18] at counts 9, 6, 4, 1, 6 and 2: the same array it replaces, so Ship,
+ *  Stats and the filter panel render identically there. A sailing with no venues has no decks. */
+export const DECKS = Array.from(new Set(VENUE_KEYS.map((k) => VENUES[k].deck))).sort((a, b) => a - b)
+/** What the ship calls a deck, where it calls it something other than the number. The one reader of
+ *  DECK_LABELS, so Ship, Stats and the filter panel all print the same thing. */
+export const deckLabel = (deck: number): string => DECK_LABELS?.[deck] ?? String(deck)
+// A base vocabulary, so a sailing with a catalogue of one drink still offers the types worth
+// choosing from and the four badges that key off a category name stay reachable. Every one of these
+// is a category the published dataset already uses, so the union below is the same thirteen in the
+// same order there; the two Princess brand names in that data are deliberately not in the base and
+// still appear on the published sailing, because they come from its own catalogue.
+const BASE_CATEGORIES = ['Classic', 'Signature', 'Martini', 'Margarita', 'Spritz', 'Frozen', 'Coffee', 'Dessert', 'Mocktail', 'Wine', 'Beer']
+export const CATEGORIES = Array.from(new Set([...DRINKS.map((d) => d.category), ...BASE_CATEGORIES])).sort()
 
 /** Package tier — the one place price classification lives. null price = 'unknown'. */
 export function pkgOf(d: Drink): PkgTier {
+  // A drink can carry a price and still have no tier: on a sailing that declares no packages every
+  // drink has a real price and null tiers, and without this test the two below would fall through
+  // to 'over', which is a claim about a package the sailing does not have.
+  if (d.plus === null || d.premier === null) return 'unknown'
   if (d.price === null || d.price === undefined) return 'unknown'
   if (d.plus === true) return 'plus'
   if (d.premier === true) return 'prem'
@@ -97,8 +134,17 @@ export function menuFor(venueKey: string, drinks: Drink[] = DRINKS): Drink[] {
   return s ? drinks.filter((d) => d.venue === s) : []
 }
 
-export const VENUE_KEYS = Object.keys(VENUES)
-export const isRestaurant = (venueKey: string) => ['Restaurant', 'Experience'].includes(VENUES[venueKey].type)
+/** The kinds a venue can be: the seven the published dataset uses and nothing else (Bar 5, Pub 1,
+ *  Lounge 2, Café 3, Pool bar 7, Restaurant 8, Experience 2). It is the venue form's Kind list and
+ *  the source isRestaurant is read against, so the two cannot drift. */
+export const VENUE_TYPES = ['Bar', 'Pub', 'Lounge', 'Café', 'Pool bar', 'Restaurant', 'Experience']
+export const VENUE_TYPES_RESTAURANT = ['Restaurant', 'Experience']
+/** Guarded: a drink or a link can carry a venue key this sailing does not hold, and reading .type
+ *  off the miss is one of the four lookups that used to be a white screen. */
+export const isRestaurant = (venueKey: string) => {
+  const v = VENUES[venueKey]
+  return !!v && VENUE_TYPES_RESTAURANT.includes(v.type)
+}
 
 // ── voyage calendar ──
 export function voyageDays(): string[] {
