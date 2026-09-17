@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { emptyFilters, useAllDrinks, useStore, type Filters } from '../../state/store'
-import { VENUES, VENUE_KEYS, type Drink } from '../../data/model'
+import { VENUES, VENUE_KEYS, deckLabel, type Drink } from '../../data/model'
 import { facets, nChosen, loosest, GROUP_LABEL } from './facets'
 import { DrinkCard } from './DrinkCard'
 import { FilterPanel } from './FilterPanel'
@@ -138,7 +138,7 @@ export function Drinks() {
           return (
             <section className="dgroup" key={g.key}>
               <div className="section-head dgroup-head">
-                <h2 className="t-h2">{g.name}{g.deck ? ` · Deck ${g.deck}` : ''}</h2>
+                <h2 className="t-h2">{g.name}{g.deck ? ` · Deck ${deckLabel(g.deck)}` : ''}</h2>
                 <span className="t-meta tnum dgroup-n">{tried} of {g.list.length} tried</span>
               </div>
               <div className="dlist">
