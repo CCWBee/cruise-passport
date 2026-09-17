@@ -60,10 +60,14 @@ export function Entry({ onDone }: { onDone: () => void }) {
               <header>
                 <div className="section-head"><h1 className="t-title">Choose your sailing</h1></div>
                 {/* one control at 44px answers a one-of-n question and needs no selected-state
-                    colour; AddSheet's "Add a missing drink" is the API this copies */}
+                    colour; AddSheet's "Add a missing drink" is the API this copies. No f-label: the
+                    h1 above is the label, the way the single-sailing branch's ship-name h1 needs no
+                    field label either; module 3's name and colour keep their labels because they have
+                    no h1 of their own. Dropping the doubled label is also what keeps this taller
+                    branch off the scroll on a notched phone (docs/DESIGN.md, Entry). The Select keeps
+                    its ariaLabel so a screen reader still hears it. */}
                 <div className="entry-fields">
                   <div className="f-field">
-                    <span className="f-label">Your sailing</span>
                     <Select
                       value={chosen}
                       onChange={setChosen}

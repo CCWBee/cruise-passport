@@ -232,8 +232,10 @@ it carries its own ground and its own masthead and has no nav.
 the entry screen is not chrome and carries no glass.
 
 **The screen must not scroll, and the shot is the only check that counts.** At 390×844 headless
-`.entry-in` measures 563 of the 737 the body offers below the masthead, with the consent line running
-to five lines of 18.2, so about 174px, roughly nine more lines, remain before it scrolls. A real
+`.entry-in` measures 643 of the 737 the body offers below the masthead on the single-sailing branch and
+669 on the multi-sailing branch (the "Set up your own sailing" row and, on the multi branch, the sailing
+Select add to it; the multi branch drops the Select's field label to stay off the scroll, its h1 being the
+label). Both leave room to spare headless. A real
 iPhone's insets take about 49 of that: `.app-head` carries `--safe-t`, and the body's bottom padding
 is `max(var(--s6), var(--safe-b))`. Past that the copy has to come down instead. Measure `.entry-in`
 against the body, never the document height: `.entry` is `min-height: 100dvh`, so 844 of 844 is what
