@@ -9,7 +9,7 @@ architecture in `docs/specs/2026-09-10-product-brief.md`, one spec per workstrea
 - Charles ruled the fork: (b), a product for any sailing, and later "complete anything remaining".
   The whole any-sailing build is on branch `product`, done with workflows and subagents one
   workstream at a time (build, gate review, fix each).
-- **All five workstreams are shipped on `product`, HEAD `c128da0`:** A (the first open after a
+- **All five workstreams are shipped on `product`, HEAD `91240ba`:** A (the first open after a
   deploy reloads onto the new build), C (optional Google sign-in and a tested restore merge), B
   (the first-open screen, the sync gate behind it, the masthead on Home, the privacy note), E (the
   desktop landing and install path at `/` and `/get`), BYO (a guest sets up their own sailing and
@@ -48,14 +48,16 @@ architecture in `docs/specs/2026-09-10-product-brief.md`, one spec per workstrea
 
 ## Open threads
 
-### In flight: the polish pass, items 2 and 3, in the main loop
+### Polish pass: items 2 and 3 done, item 1 held for Charles
 
-Spec `docs/specs/2026-09-17-polish.md`. Item 2: a disabled `.btn` must read as disabled (today the
-offline "Keep it with Google" is identical to the enabled Delete my data); one `base.css` rule with
-existing tokens. Item 3: the privacy note replaces the Profile sheet rather than stacking on it
-(sheet-on-sheet is forbidden); a `ProfileSheet.tsx` replacement in the house pattern, `Sheet.tsx`
-untouched. Item 1 (erasure re-asks consent) is held for Charles because it changes what a control
-does; the spec has it built to a stated default when he says go.
+Spec `docs/specs/2026-09-17-polish.md`. Done in the main loop 17 September (`91240ba`): item 2, a
+disabled `.btn` now drops its fill to a ghost (transparent, hairline, `--ink-2`) so it reads as
+inactive next to the filled enabled buttons, measured `rgba(0,0,0,0)` against `rgb(253,250,242)`;
+item 3, the privacy note replaces the Profile sheet the way the venue sheet opens the drink sheet
+(one `.sheet` in the DOM, closing returns to Your details), `Sheet.tsx` untouched. DESIGN registry,
+States and Sheets corrected to match. Verified: tsc, lint 28/0, design:check 33, tests 32/32,
+gestures 18/18, first-open, build. Item 1 (erasure re-asks consent) is held for Charles because it
+changes what Delete my data does; the spec has it built to a stated default when he says go.
 
 ### Charles's gates and rulings (nothing below is blocked on me)
 
@@ -89,9 +91,10 @@ does; the spec has it built to a stated default when he says go.
 
 ## Next action
 
-Finish polish items 2 and 3 in the main loop and commit them. Then everything remaining is Charles's:
-the merge, the dashboard gates, the held rulings, item 1's go, the token roll, the purge. When he
-gives item 1 the go it is one small change built to the spec's default.
+Everything remaining is Charles's: review and merge `product` to `main` (a production deploy), the
+dashboard gates for sign-in, the held spec rulings, polish item 1's go (one small change built to the
+spec's default), the Cloudflare token roll, and the QA-user purge. Nothing else is buildable without
+him: the whole any-sailing product plus the two ruling-free polish items are on the branch, green.
 
 ## Gotchas
 
