@@ -1,2 +1,5 @@
 /* Add a drink: the shared field system, then the one filled control in the sheet. */
 .add-submit { margin-top: var(--s5); }
+/* the way out when the sailing has no venues to pick: the Drinks empty state's own line and link */
+.add-noven { margin-top: var(--s4); }
+.add-noven + .dempty-acts { margin-top: var(--s4); }

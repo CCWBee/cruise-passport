@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { emptyFilters, useAllDrinks, useStore, type Filters } from '../../state/store'
 import { VENUES, VENUE_KEYS, type Drink } from '../../data/model'
 import { facets, nChosen, loosest, GROUP_LABEL } from './facets'
@@ -63,6 +64,40 @@ export function Drinks() {
     const extra = [...by.keys()].filter((k) => !VENUES[k])
     return [...known, ...extra].map((k) => ({ key: k, name: VENUES[k]?.name || 'Your own drinks', deck: VENUES[k]?.deck, list: by.get(k)! }))
   }, [results])
+
+  // The catalogue itself is empty, which is not the same question as a filter that matched nothing,
+  // and it is tested first: otherwise an empty catalogue falls into the filter-empty copy and says
+  // "No drink matches that search" with a Reset that has nothing to reset. A search over nothing, a
+  // filter over nothing and a count line reading "0 drinks" are three controls with nothing behind
+  // them, so the search row, the panel and the toolbar all go and .dempty is the whole screen.
+  if (drinks.length === 0) {
+    return (
+      <div className="wrap page drinks">
+        <div className="dempty">
+          {VENUE_KEYS.length === 0 ? (
+            <>
+              <p className="t-body">Add a venue first, then the drinks you order there.</p>
+              {/* It navigates rather than opening a second door onto the venue form: that form
+                  belongs to Ship, and Ship with no venues is already the empty state whose one
+                  control is "Add a venue", so the guest lands on the action either way. */}
+              <div className="dempty-acts">
+                <Link to="/ship" className="gbtn gbtn-primary gbtn-md" viewTransition>Add a venue</Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="t-body">Nothing on your list yet.</p>
+              {/* one button, not the two the filter-empty state shows: there is no filter to drop */}
+              <div className="dempty-acts">
+                <GlassButton variant="primary" type="button" aria-haspopup="dialog" onClick={() => setShowAdd(true)}>Add a drink</GlassButton>
+              </div>
+            </>
+          )}
+        </div>
+        {showAdd && <AddSheet onClose={() => setShowAdd(false)} />}
+      </div>
+    )
+  }
 
   return (
     <div className="wrap page drinks">

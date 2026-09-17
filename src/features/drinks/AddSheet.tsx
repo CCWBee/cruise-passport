@@ -1,4 +1,5 @@
 import { useId, useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { CATEGORIES, pkgFields, VENUES, VENUE_KEYS, type Drink } from '../../data/model'
 import { useStore } from '../../state/store'
 import { TextField, TextArea, NumberField } from '../../ui/Field'
@@ -11,15 +12,16 @@ export function AddSheet({ onClose }: { onClose: () => void }) {
   const addCustom = useStore((s) => s.addCustom)
   const titleId = useId()
   const [name, setName] = useState('')
-  const [venue, setVenue] = useState(VENUE_KEYS[0])
+  const [venue, setVenue] = useState(VENUE_KEYS[0] ?? '')
   const [category, setCategory] = useState(CATEGORIES[0] || 'Cocktail')
   const [spirits, setSpirits] = useState('')
   const [ingredients, setIngredients] = useState('')
   const [price, setPrice] = useState('')
 
+  const cleanName = name.trim()
+
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const cleanName = name.trim()
     if (!cleanName) return
     const parsed = price.trim() === '' ? null : Number(price)
     const finalPrice = parsed !== null && Number.isFinite(parsed) ? parsed : null
@@ -37,10 +39,31 @@ export function AddSheet({ onClose }: { onClose: () => void }) {
       price: finalPrice,
       desc: 'Added to your personal passport.',
       verified: true,
+      // Stamped from the store and not from activeCruiseId(): the two agree in practice, but
+      // allDrinks() filters against this field, so writing it from the same source it is read
+      // against removes any chance of a drink saved under one id and looked for under another.
+      cruise: useStore.getState().cruiseId,
       ...pkgFields(finalPrice),
     }
     addCustom(drink)
     onClose()
+  }
+
+  // Reachable only through /drinks?add once the toolbar control is suppressed, and it renders the
+  // same way out as the Drinks empty state rather than a form whose venue Select has nothing in it.
+  // The Select is not disabled instead: src/ui/Select.tsx has no disabled prop, and minting one
+  // would mean a registry entry in DESIGN.md and a sweep of every other Select for this one state.
+  if (VENUE_KEYS.length === 0) {
+    return (
+      <Sheet onClose={onClose} labelledBy={titleId}>
+        <h2 className="t-title sheet-title" id={titleId}>Add a drink</h2>
+        <p className="sheet-meta">Something new, or missing from the published menus.</p>
+        <p className="t-body add-noven">Add a venue first, then the drinks you order there.</p>
+        <div className="dempty-acts">
+          <Link to="/ship" className="gbtn gbtn-primary gbtn-md" onClick={onClose} viewTransition>Add a venue</Link>
+        </div>
+      </Sheet>
+    )
   }
 
   return (
@@ -88,7 +111,10 @@ export function AddSheet({ onClose }: { onClose: () => void }) {
           onChange={(event) => setPrice(event.target.value)}
           placeholder="Leave blank if unknown"
         />
-        <GlassButton variant="primary" block type="submit" className="add-submit">Add it</GlassButton>
+        {/* disabled rather than an early return on submit: a button that does nothing when tapped
+            is the state DESIGN.md's "Every control ships default, pressed, focus-visible, disabled"
+            exists to prevent, and the venue form is written the same way */}
+        <GlassButton variant="primary" block type="submit" className="add-submit" disabled={!cleanName}>Add it</GlassButton>
       </form>
     </Sheet>
   )
