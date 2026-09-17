@@ -2,6 +2,11 @@
    Motion). It is silent and still until the guest asks for it, it runs for 2.1 seconds and it stops.
    Nothing here loops, nothing here is ambient, and it lives inside a sheet, never on a screen. */
 
+/* Home's door onto the shaker, at the foot of "For you". 16 below the shelf, which is the gap
+   between two groups inside one section; with no shelf the row follows the heading and takes the
+   section head's own 8. */
+.rec-rail + .shake-row { margin-top: var(--s4); }
+
 /* ── the sheet: title and meta come from the Sheet primitive, then the shaker, the answer, the one
    filled control and the quiet actions, 24 apart, which is the rhythm the entry screen's modules
    keep. Nothing here is boxed. ── */

@@ -15,6 +15,7 @@ import { IconStar } from '../../ui/Icon'
 // the flat coin, the Suspense fallback for the 3D one: the same object the Badges grid draws
 import { MedalDisc } from '../badges/Badges'
 import { DrinkSheet } from '../drinks/DrinkSheet'
+import { ShakeSheet } from '../shake/ShakeSheet'
 import { VenueSheet } from '../ship/VenueSheet'
 import { WrappedTeaser } from '../wrapped/WrappedTeaser'
 // the coin's own stylesheet: it carries the metal and emblem custom properties Medallion reads off
@@ -79,6 +80,7 @@ export function Home() {
   const srcs = useSources()
   const [openId, setOpenId] = useState<string | null>(null)
   const [openVenue, setOpenVenue] = useState<string | null>(null)
+  const [shakeOpen, setShakeOpen] = useState(false)
   const s = useMemo(() => computeStats(drinks, me), [drinks, me])
   const pct = Math.min(100, s.pct)
   const pctShown = useCountUp(pct)
@@ -247,27 +249,51 @@ export function Home() {
         )}
       </section>
 
-      {picks.length > 0 && (
+      {/* The section renders for the shelf or for the shaker alone: for a guest with no ratings and
+          no crew there is no shelf, and the shaker is then the most useful thing on the screen, so
+          the heading and this one row are the whole section. With no catalogue at all there is
+          nothing to shake and nothing to suggest, and the section goes. */}
+      {(picks.length > 0 || drinks.length > 0) && (
         <section className="section">
           <div className="section-head"><h2 className="t-h2">For you</h2></div>
           {/* a shelf you swipe: each card is an independently opened unit, so it earns its boundary.
               The reason line, in the accent, is the honest basis: a matched friend, or your palate. */}
-          <ul className="rec-rail" role="list">
-            {picks.map((p) => (
-              <li key={p.drink.id} className="rec-card">
-                <button
-                  type="button"
-                  className="rec-open pressable"
-                  onClick={() => setOpenId(p.drink.id)}
-                  aria-label={`${p.drink.name}, ${drinkVenue(p.drink.venue)}. ${p.reason}`}
-                >
-                  <span className="rec-reason">{p.reason}</span>
-                  <span className="rec-name t-strong">{p.drink.name}</span>
-                  <span className="rec-meta t-meta">{drinkVenue(p.drink.venue)} · {p.drink.spirits[0] || p.drink.category}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
+          {picks.length > 0 && (
+            <ul className="rec-rail" role="list">
+              {picks.map((p) => (
+                <li key={p.drink.id} className="rec-card">
+                  <button
+                    type="button"
+                    className="rec-open pressable"
+                    onClick={() => setOpenId(p.drink.id)}
+                    aria-label={`${p.drink.name}, ${drinkVenue(p.drink.venue)}. ${p.reason}`}
+                  >
+                    <span className="rec-reason">{p.reason}</span>
+                    <span className="rec-name t-strong">{p.drink.name}</span>
+                    <span className="rec-meta t-meta">{drinkVenue(p.drink.venue)} · {p.drink.spirits[0] || p.drink.category}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {/* the playful last item of the section that already exists to suggest drinks, so it
+              borrows that heading and adds none. Ink only: Log a drink keeps the screen's coral.
+              Its own wrapper, so .row:not(:only-child) leaves a row that stands alone at radius 12. */}
+          {drinks.length > 0 && (
+            <div className="shake-row">
+              <button
+                type="button"
+                className="row pressable shake-open"
+                aria-haspopup="dialog"
+                onClick={() => setShakeOpen(true)}
+              >
+                <span className="row-copy">
+                  <span className="t-strong">Shake for a drink</span>
+                  <span className="t-meta">The shaker picks one you have not tried</span>
+                </span>
+              </button>
+            </div>
+          )}
         </section>
       )}
 
@@ -416,6 +442,7 @@ export function Home() {
 
       {openId && <DrinkSheet id={openId} onClose={() => setOpenId(null)} onOpen={setOpenId} />}
       {openVenue && <VenueSheet venueKey={openVenue} onClose={() => setOpenVenue(null)} />}
+      {shakeOpen && <ShakeSheet onClose={() => setShakeOpen(false)} />}
     </div>
   )
 }
