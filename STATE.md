@@ -115,7 +115,13 @@ measured) and `6166158` (docs); the one minor was the spec contradicting itself 
 colour pair (the built reveal is ink on a cream window, 10.4:1, which is right). Gates green:
 46/46 tests, tsc, lint 28/0, design:check 34 files, no allow-list change, build exit 0. My own read
 of the four renders: holds the constitution and has the build-up. The reviewer could not make the
-pick name a tried drink across 2,000 catalogue cases. Not merged: a deploy, Charles's yes.
+pick name a tried drink across 2,000 catalogue cases. LIVE 18 September on Charles's "push it":
+`main` fast-forwarded to `96ed788`, deploy green, shell `index-rrIOdR1a.js`.
+REVISION in flight (branch `shake`, base `96ed788`): Charles: "shakers don't have windows, so should
+be the top come off and it pops out like a lootbox lootcrate drop". The spec's Revision section
+(18 September) replaces the window: the lid flips open at the reveal, a drawn token pops out of the
+mouth and hangs, and the name resolves beneath the shaker as the card (which also retires the
+window's clipping fix). Harness: build steps 8 to 12 -> review -> fix. Handle recorded below.
 Run `wf_dc5809ec-9c7`. Resume (only if something must be re-run):
 `Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-shake-wf_dc5809ec-9c7.js", resumeFromRunId: "wf_dc5809ec-9c7" })`.
 If a fix agent dies on the spend cap with the review done, apply the findings in the main loop as
@@ -123,9 +129,10 @@ the BYO fix was; if the builder dies, its commits are on `shake`, run review and
 
 ## Next action
 
-Everything remaining is Charles's: merge `shake` to `main` (a production deploy; the shaker is built,
-reviewed and green), enable two-step verification on the Google account so the OAuth client can be
-created, the
+The shaker revision (lid off, the drop pops out) is building; when green it merges to `main` (a deploy;
+Charles has said push it for the shaker, so the revision ships on the same instruction unless he
+says otherwise). Then everything remaining is Charles's: enable two-step verification on the Google
+account so the OAuth client can be created, the
 dashboard gates for sign-in, the held spec rulings, polish item 1's go (one small change built to the
 spec's default), the Cloudflare token roll, and the QA-user purge. Nothing else is buildable without
 him: the whole any-sailing product plus the two ruling-free polish items are on the branch, green.
