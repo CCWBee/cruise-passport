@@ -41,3 +41,6 @@ features/wrapped/wrapped.css :: wr-drift
 # TEMPORARY. The sheet's film is 88%, not the 58% tokens.css carries: a sheet opens over the sea
 # hero, where 58% leaves 13px --ink-2 at 3.10:1 over --sea-lo. The sheet shadows the token locally
 # until tokens.css and DESIGN.md carry 88%; delete this line with the shadow.
+# where the drop rests inside the shaker's mouth: a coordinate in the drawing, like the rotations
+# beside it, and not a measure of the layout, so it is not on the spacing scale
+features/shake/shake.css :: bottom: 80px

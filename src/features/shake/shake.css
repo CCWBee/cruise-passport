@@ -20,14 +20,15 @@
 .shake-quiets .quiet-action { margin-top: 0; }
 
 /* the tin sits on the ground, no panel: the sheet is the container, and a box around the only thing
-   present is the fourth banned tell. The box is 80 taller than the drawing, and the drawing sits at
-   the foot of it: that air is the lid's swing space. The lid's far end is 135 from its hinge, so a
-   lid thrown past upright reaches 77 above the tin, and nothing but the lid and the hanging token is
-   ever drawn up there. */
+   present is the fourth banned tell. The box is 70 taller than the drawing and the drawing sits at
+   the foot of it: that air is the lid's swing space. The lid is 116 long from its hinge, so passing
+   upright it reaches 62 above the tin, and the drop hangs in the same band. Nothing else is ever
+   drawn up there, and it is reserved rather than borrowed so an open lid never lands on the meta
+   line above. */
 .shaker {
   position: relative;
   justify-self: center;
-  width: 196px; height: 285px;
+  width: 196px; height: 275px;
   color: var(--ink);
   /* the hand is round the body, not the cap, so the tin pivots low: 41 up from its base */
   transform-origin: 50% calc(100% - 41px);
@@ -35,16 +36,70 @@
 /* the three layers of the drawing, painted back to front in the order they are written: the token
    inside the mouth, the lid, then the tin over both of them */
 .shaker-tin, .shaker-lid { display: block; position: absolute; left: 0; bottom: 0; }
-/* the drop at rest, 65 up from the base: low enough in the mouth that the tin's cream fill covers
+/* the drop at rest, 80 up from the base: far enough down the mouth that the tin's cream fill covers
    it whole, which is what makes it invisible until it rises out */
 .shaker-token {
-  position: absolute; left: 50%; bottom: 65px;
+  position: absolute; left: 50%; bottom: 80px;
   width: 44px; height: 44px; margin-left: -22px;
   display: grid; place-items: center;
   opacity: 0;
   pointer-events: none;
 }
 .shaker-token > * { grid-area: 1 / 1; }
+
+/* ── The reveal, in three beats: the lid off at 0, the drop out at 60, the card under it at 580.
+   Each beat is finite, none of them loops, and the whole thing runs once per shake. ── */
+
+/* The hinge is the back edge of the rim, where the strainer top seats on it: (34, 46) on the
+   drawing's grid, which is 40 by 54 once the drawing is rendered a seventh larger. It is the left
+   end of that line rather than the right, because a lid hinged on the right turns through -105 by
+   falling across the body; hinged here the same turn throws it up and back off the mouth, which is
+   what a lid coming off looks like. Seating it where the lid meets the rim rather than at the rim's
+   own end keeps the two touching: pivot 19 further out and the open lid floats away from the tin. */
+.shaker-lid { transform-origin: 40px 54px; }
+.shaker.is-open .shaker-lid {
+  transform: rotate(-105deg);
+  animation: lid-open 320ms var(--e-out) both;
+}
+.shaker.is-open .shaker-token {
+  opacity: 1;
+  transform: translateY(-84px);
+  animation: token-pop 520ms var(--e-out) 60ms both;
+}
+
+/* Thrown, not eased: the lid carries one overshoot of 6% past open and settles back, and the drop
+   rises 8 past its hang and settles onto it. DESIGN.md Motion bans overshoot on UI state, and this
+   is the written reason for the exception: this is not a state changing, it is a tin being opened,
+   and a linear arrival reads as two pictures being swapped. One overshoot each, never a bounce. */
+@keyframes lid-open {
+  from { transform: rotate(0); }
+  75% { transform: rotate(-111deg); }
+  to { transform: rotate(-105deg); }
+}
+@keyframes token-pop {
+  from { opacity: 0; transform: translateY(0); }
+  /* solid before it clears the rim, or it comes out of the mouth as a ghost */
+  30% { opacity: 1; }
+  70% { transform: translateY(-92px); }
+  to { opacity: 1; transform: translateY(-84px); }
+}
+
+/* Shake again puts the shaker back together first, both at once and faster than they opened, so
+   every shake starts from a closed tin. */
+.shaker.is-closing .shaker-lid { animation: lid-close 240ms var(--e-out) both; }
+.shaker.is-closing .shaker-token { animation: token-drop 240ms var(--e-out) both; }
+@keyframes lid-close {
+  from { transform: rotate(-105deg); }
+  to { transform: rotate(0); }
+}
+@keyframes token-drop {
+  from { opacity: 1; transform: translateY(-84px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* The card is rendered the moment the lid goes and held back to the drop's settle, so the sheet
+   changes height once, under the flip, instead of jolting the hanging token as it lands. */
+.shake-answer { animation: shake-fade 260ms var(--e-out) 580ms both; }
 
 /* Three phases and a hard stop: gentle to 0.6s, harder to 1.3s, violent to 1.8s, then upright and
    still for the 300ms hold before the lid goes. The rotations and the 2 to 3px of jitter are
@@ -74,7 +129,14 @@
 
 @keyframes shake-fade { from { opacity: 0; } to { opacity: 1; } }
 
-/* Reduced motion: the tin does not move. The rest of the fallback lands with the reveal itself. */
+/* Reduced motion: nothing turns and nothing travels. The tin stays still, the lid and the drop take
+   their open and hanging positions and fade there, and the card arrives with them rather than
+   waiting for a settle that no longer happens. The reveal still lands, which is the point. */
 @media (prefers-reduced-motion: reduce) {
   .shaker.is-shaking { animation: none; }
+  .shaker.is-open .shaker-lid,
+  .shaker.is-open .shaker-token,
+  .shaker.is-closing .shaker-lid,
+  .shaker.is-closing .shaker-token { animation: shake-fade var(--t-panel) var(--e-out) both; }
+  .shake-answer { animation-delay: 0s; animation-duration: var(--t-panel); }
 }
