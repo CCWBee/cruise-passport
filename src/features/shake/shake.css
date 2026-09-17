@@ -51,7 +51,8 @@
   color: var(--ink);
   text-align: center;
   line-height: 1.25;
-  /* a long name wraps and then clips; the meta line beneath the shaker carries it in full */
+  /* a long name wraps and then clips, and the answer beneath the shaker then prints it in full:
+     seventeen of the sailing's 214 names are longer than two lines of this measure */
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
   animation: shake-surface 420ms var(--e-out) both;
 }

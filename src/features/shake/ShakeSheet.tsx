@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { VENUES } from '../../data/model'
 import { pickedForYou, useSources } from '../../state/social'
 import { useAllDrinks, useStore } from '../../state/store'
@@ -46,6 +46,9 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
   const [quiet, setQuiet] = useState(readQuiet)
   const [openDrink, setOpenDrink] = useState<string | null>(null)
   const [announce, setAnnounce] = useState('')
+  // true when the window's two-line clamp cut the name, so the caption has to carry it
+  const [clipped, setClipped] = useState(false)
+  const nameRef = useRef<HTMLSpanElement>(null)
   const rattle = useRef<Rattle | null>(null)
   const timer = useRef(0)
 
@@ -70,6 +73,16 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
     const frame = requestAnimationFrame(() => setAnnounce(spoken))
     return () => cancelAnimationFrame(frame)
   }, [spoken])
+
+  // The window holds two lines and no more, and seventeen of the sailing's names are longer than
+  // that. Measured rather than guessed, and measured on the paint: a name that fits is not repeated
+  // under the shaker, because the answer would then say the same thing twice. The 1px of tolerance
+  // keeps a name that exactly fills the box off the caption.
+  useLayoutEffect(() => {
+    const el = nameRef.current
+    if (phase !== 'revealed' || !el) { setClipped(false); return }
+    setClipped(el.scrollHeight > el.clientHeight + 1)
+  }, [phase, result?.id])
 
   useEffect(() => () => {
     window.clearTimeout(timer.current)
@@ -122,10 +135,13 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
         <p className="sheet-meta">The shaker picks one you have not tried.</p>
 
         <div className="shake-body">
-          <Shaker phase={phase} name={drink?.name} drinkId={drink?.id} />
+          <Shaker phase={phase} name={drink?.name} drinkId={drink?.id} nameRef={nameRef} />
 
           {result && drink && (
             <div className="shake-answer">
+              {/* the name only when the window could not hold it: the one job of this moment is to
+                  name a drink, and a clipped name does not */}
+              {clipped && <p className="t-strong">{drink.name}</p>}
               <p className="t-meta tnum">{where}</p>
               <p className="t-body">{result.reason}</p>
             </div>

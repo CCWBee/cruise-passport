@@ -1,3 +1,4 @@
+import type { RefObject } from 'react'
 import './shake.css'
 
 // The shaker itself: a cobbler shaker drawn the way ui/Icon.tsx draws everything, one stroke on a
@@ -10,7 +11,14 @@ import './shake.css'
 
 export type ShakePhase = 'idle' | 'shaking' | 'revealed'
 
-export function Shaker({ phase, name, drinkId }: { phase: ShakePhase; name?: string; drinkId?: string }) {
+export function Shaker({ phase, name, drinkId, nameRef }: {
+  phase: ShakePhase
+  name?: string
+  drinkId?: string
+  // the sheet measures this span to learn whether the clamp cut the name, and prints it in full
+  // beneath the shaker when it did
+  nameRef?: RefObject<HTMLSpanElement | null>
+}) {
   const cls = 'shaker'
     + (phase === 'shaking' ? ' is-shaking' : '')
     + (phase === 'revealed' ? ' is-revealed' : '')
@@ -43,7 +51,7 @@ export function Shaker({ phase, name, drinkId }: { phase: ShakePhase; name?: str
           the app's own type role, none of which an SVG string does. `data-drink` names what the
           window is showing, which is what the QA reveal check reads. */}
       <div className="shaker-window" data-drink={drinkId}>
-        {name && <span className="shaker-name t-strong">{name}</span>}
+        {name && <span ref={nameRef} className="shaker-name t-strong">{name}</span>}
       </div>
     </div>
   )
