@@ -121,7 +121,8 @@ REVISION in flight (branch `shake`, base `96ed788`): Charles: "shakers don't hav
 be the top come off and it pops out like a lootbox lootcrate drop". The spec's Revision section
 (18 September) replaces the window: the lid flips open at the reveal, a drawn token pops out of the
 mouth and hangs, and the name resolves beneath the shaker as the card (which also retires the
-window's clipping fix). Harness: build steps 8 to 12 -> review -> fix. Handle recorded below.
+window's clipping fix). Harness: build steps 8 to 12 -> review -> fix. Run `wf_89d0b4ac-795`. Resume:
+`Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-shake-lid-wf_89d0b4ac-795.js", resumeFromRunId: "wf_89d0b4ac-795" })`.
 Run `wf_dc5809ec-9c7`. Resume (only if something must be re-run):
 `Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-shake-wf_dc5809ec-9c7.js", resumeFromRunId: "wf_dc5809ec-9c7" })`.
 If a fix agent dies on the spend cap with the review done, apply the findings in the main loop as
