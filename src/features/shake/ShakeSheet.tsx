@@ -152,9 +152,9 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
         <div className="shake-body">
           <Shaker phase={phase} />
 
+          {/* data-drink names what the card is naming, which is what the QA reveal check reads
+              back against the store to prove the pick was a drink the guest has not tried */}
           {result && drink && (
-            {/* data-drink names what the card is naming, which is what the QA reveal check reads
-                back against the store to prove the pick was a drink the guest has not tried */}
             <div className="shake-answer" data-drink={drink.id}>
               {/* the name first and in full: the one job of this moment is to name a drink, and the
                   drop that came out of the tin carries no lettering of its own */}
