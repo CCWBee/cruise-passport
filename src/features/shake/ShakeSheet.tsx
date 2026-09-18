@@ -153,7 +153,9 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
           <Shaker phase={phase} />
 
           {result && drink && (
-            <div className="shake-answer">
+            {/* data-drink names what the card is naming, which is what the QA reveal check reads
+                back against the store to prove the pick was a drink the guest has not tried */}
+            <div className="shake-answer" data-drink={drink.id}>
               {/* the name first and in full: the one job of this moment is to name a drink, and the
                   drop that came out of the tin carries no lettering of its own */}
               <h3 className="t-h2">{drink.name}</h3>
