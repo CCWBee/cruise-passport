@@ -173,7 +173,7 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
 
           <div className="shake-quiets">
             {phase === 'revealed' && (
-              <button type="button" className="quiet-action" onClick={press}>Shake again</button>
+              <button type="button" className="quiet-action shake-again" onClick={press}>Shake again</button>
             )}
             <button type="button" className="quiet-action" onClick={toggleQuiet}>
               {/* the label states the action, not the state, as every other quiet action does */}
