@@ -47,6 +47,9 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
   const [recent, setRecent] = useState<string[]>([])
   const [quiet, setQuiet] = useState(readQuiet)
   const [openDrink, setOpenDrink] = useState<string | null>(null)
+  // the reveal is to be found where it was left when the drink sheet closes, rather than played
+  // again on the fresh mount that closing it produces (the reason is beside the handler below)
+  const [still, setStill] = useState(false)
   const [announce, setAnnounce] = useState('')
   const rattle = useRef<Rattle | null>(null)
   const timer = useRef(0)
@@ -114,6 +117,9 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
     rattle.current?.stop()
     setAnnounce('')
     setResult(null)
+    // the drawing moves again from here, and it has to be released before the reverse below rather
+    // than when the shake itself starts, or the lid and the drop would snap shut instead of closing
+    setStill(false)
     // Shake again puts the lid back on and the drop back in the mouth first, so every shake starts
     // from a closed shaker rather than from an open one snapping shut as it begins to move.
     if (phase === 'opening' || phase === 'revealed') {
@@ -133,6 +139,14 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
   // The drink sheet replaces this one rather than stacking on it: a sheet over a sheet is glass on
   // glass, which DESIGN.md Material forbids. Closing it returns to the reveal, not to Home, so the
   // guest can shake again from where they were.
+  //
+  // That replacement unmounts this subtree, so the return is a fresh mount at phase 'revealed' and
+  // every part of the opening would run again on the new elements: the lid flipping and the drop
+  // popping with no shake behind them, and the answer just read blanking while its fade waits out
+  // the drop. `still` holds the drawing and the card at the end state instead. The live line goes
+  // with it, so the region does not come back already holding the sentence it has said, which is
+  // the case the comment above it warns is announced unreliably.
+  const goGet = (id: string) => { setStill(true); setAnnounce(''); setOpenDrink(id) }
   if (openDrink) return <DrinkSheet id={openDrink} onClose={() => setOpenDrink(null)} onOpen={setOpenDrink} />
 
   // Shut, shaking or opening, the control is the same ghost reading Shaking: the answer is not on
@@ -150,12 +164,12 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
         <p className="sheet-meta">The shaker picks one you have not tried.</p>
 
         <div className="shake-body">
-          <Shaker phase={phase} />
+          <Shaker phase={phase} still={still} />
 
           {/* data-drink names what the card is naming, which is what the QA reveal check reads
               back against the store to prove the pick was a drink the guest has not tried */}
           {result && drink && (
-            <div className="shake-answer" data-drink={drink.id}>
+            <div className={'shake-answer' + (still ? ' is-still' : '')} data-drink={drink.id}>
               {/* the name first and in full: the one job of this moment is to name a drink, and the
                   drop that came out of the tin carries no lettering of its own */}
               <h3 className="t-h2">{drink.name}</h3>
@@ -168,7 +182,7 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
             type="button"
             className="btn btn-coral btn-wide pressable shake-go"
             disabled={busy}
-            onClick={() => (phase === 'revealed' && result ? setOpenDrink(result.id) : press())}
+            onClick={() => (phase === 'revealed' && result ? goGet(result.id) : press())}
           >
             {label}
           </button>

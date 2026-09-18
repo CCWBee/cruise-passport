@@ -21,11 +21,14 @@ export type ShakePhase = 'idle' | 'shaking' | 'opening' | 'revealed' | 'closing'
 // The drawing, rendered a seventh larger than the 168 by 176 grid it is drawn on.
 const W = 196, H = 205
 
-export function Shaker({ phase }: { phase: ShakePhase }) {
+// `still` is the state the sheet asks for when it comes back from the drink sheet: the drawing is
+// where it was left, open, and it must not play the opening again to arrive there.
+export function Shaker({ phase, still = false }: { phase: ShakePhase; still?: boolean }) {
   const cls = 'shaker'
     + (phase === 'shaking' ? ' is-shaking' : '')
     + (phase === 'opening' || phase === 'revealed' ? ' is-open' : '')
     + (phase === 'closing' ? ' is-closing' : '')
+    + (still ? ' is-still' : '')
   return (
     <div className={cls}>
       {/* The drop: a drawn token, not a label. It carries no text, because a name inside 44px is the

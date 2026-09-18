@@ -140,3 +140,14 @@
   .shaker.is-closing .shaker-token { animation: shake-fade var(--t-panel) var(--e-out) both; }
   .shake-answer { animation-delay: 0s; animation-duration: var(--t-panel); }
 }
+
+/* Going to the drink sheet replaces this sheet, so coming back is a fresh mount already at the
+   reveal: on a new element every animation above would run again from its first frame, which is a
+   lid thrown open and a drop popping with no shake behind them, and the answer the guest had just
+   read blanking for two-thirds of a second. `is-still` takes the paths away and leaves the end
+   values .is-open already carries, so the reveal is simply where it was left. It sits last in the
+   file, after the reduced-motion block, because the rules it has to beat carry the same
+   specificity and source order is the whole of what decides between them. */
+.shaker.is-still .shaker-lid,
+.shaker.is-still .shaker-token,
+.shake-answer.is-still { animation: none; }
