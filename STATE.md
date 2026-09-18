@@ -4,7 +4,7 @@ Open work for the Cocktail Passport. One-line status lives in `E:\claude-project
 agent context in `CLAUDE.md`; the reconciled checklist in `docs/PRODUCTIONISATION.md`; the product
 architecture in `docs/specs/2026-09-10-product-brief.md`, one spec per workstream beside it.
 
-## Where it stands (17 September 2026)
+## Where it stands (18 September 2026)
 
 - Charles ruled the fork: (b), a product for any sailing, and later "complete anything remaining".
   The whole any-sailing build is on branch `product`, done with workflows and subagents one
@@ -25,6 +25,14 @@ architecture in `docs/specs/2026-09-10-product-brief.md`, one spec per workstrea
 - The **polish pass** (`docs/specs/2026-09-17-polish.md`): items 2 and 3 shipped 17 September
   (`91240ba`, detail below); item 1 changes what Delete my data means, so it waits for Charles's yes.
   Nothing else is buildable without him.
+- **The shaker is LIVE with its lid revision** (18 September, on Charles's "push it"): `main`
+  fast-forwarded to `33cbe50`, deploy run 35401254485 green, production serves shell
+  `index-iwDlGEbk.js`. Probed on production with `tools/qa/shake-live.mjs` over `?seed&nosync`: no
+  `.shaker-window` in the DOM, the reveal at lid -105° and drop -84px with the card at opacity 1 and
+  the live line read, one sheet at Go get it, and the return from the drink sheet `is-open is-still`
+  at the end values in every sample from 120ms to 1s with the live line empty. Branch `shake`
+  equals `main`. One visual left for Charles: the drop's glyph (IconDrinks at 20px in the 44px
+  disc, as the spec names) reads closer to a numeral 7 than to a glass; 24px is the offer.
 
 ## The five passes, for the record
 
@@ -100,7 +108,7 @@ changes what Delete my data does; the spec has it built to a stated default when
 - BYO (17 September) created none: every check was local (fixtures, `node --test`, `?nosync` shots).
 - Never blanket-purge; real users have existed since 3 September.
 
-### In flight: the shaker (branch `shake`), launched 17 September
+### The shaker (branch `shake`), 17 to 18 September: done and live
 
 Charles's brief: a lootbox-style build-up and reveal, but the object is a 2D cocktail shaker with
 dice in it and the reveal is 8-ball style; press, it shakes with noise and haptics, holds a beat,
@@ -127,8 +135,19 @@ commits (`141e56d`..`a70e83a`) and one uncommitted edit, which I committed and t
 its build agent has no cached result, so a resume rebuilds over commits that exist. Review and fix
 run separately: run `wf_5a75f3f7-e50` (review over `96ed788..HEAD`, then fix). Resume:
 `Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-shake-lid-review-fix-wf_5a75f3f7-e50.js", resumeFromRunId: "wf_5a75f3f7-e50" })`.
-Head at launch `b41822f`: tests 46/46, tsc, lint 28/0, design:check 34. When green: merge `shake` to
-`main` (Charles's "push it" covers the shaker; the revision is his own correction to it).
+DONE 18 September: the review's verdict was fail on one major (Go get it replaces the sheet with
+DrinkSheet, so closing it remounted at phase 'revealed' and the lid, the drop and the card's fade all
+ran again from their first frames, the answer blanking for two thirds of a second and the live
+region coming back already holding its once-only line) and four minors; the choreography otherwise
+measured to spec beat for beat. The fix phase landed `d1f082b` (a `still` flag set beside
+`setOpenDrink` with the live line cleared, released at the top of `press()` rather than in `run()`
+so the 240ms reverse before a Shake again survives; `.is-still` takes the animations off the lid,
+the drop and the card and leaves the end values `.is-open` carries, last in the file because it ties
+on specificity with the reduced-motion rules) and `ed28d97` (registry: five phases). I folded the
+two spec-words minors into `33cbe50` (the hinge is the left-hand end of the rim line; the
+reduced-motion fade is `var(--t-panel)`, 200ms, not 300). The two remaining minors are Charles's
+taste: the drop's glyph size and nothing else. Merged, deployed and probed on production, see Where
+it stands.
 Original build run, for the record. Resume (do not):
 `Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-shake-lid-wf_89d0b4ac-795.js", resumeFromRunId: "wf_89d0b4ac-795" })`.
 Run `wf_dc5809ec-9c7`. Resume (only if something must be re-run):
@@ -138,19 +157,20 @@ the BYO fix was; if the builder dies, its commits are on `shake`, run review and
 
 ## Next action
 
-The shaker revision (lid off, the drop pops out) is building; when green it merges to `main` (a deploy;
-Charles has said push it for the shaker, so the revision ships on the same instruction unless he
-says otherwise). Then everything remaining is Charles's: enable two-step verification on the Google
-account so the OAuth client can be created, the
-dashboard gates for sign-in, the held spec rulings, polish item 1's go (one small change built to the
-spec's default), the Cloudflare token roll, and the QA-user purge. Nothing else is buildable without
-him: the whole any-sailing product plus the two ruling-free polish items are on the branch, green.
+Nothing is in flight. The shaker with its lid revision is live at `33cbe50` and probed on
+production. Everything remaining is Charles's: whether the drop's glyph goes to 24px (one CSS value
+and a spec line), enable two-step verification on the Google account so the OAuth client can be
+created, the dashboard gates for sign-in, the held spec rulings, polish item 1's go (one small change
+built to the spec's default), the Cloudflare token roll, and the QA-user purge. Nothing else is
+buildable without him: the whole any-sailing product, the two ruling-free polish items and the
+shaker are on `main`, green.
 
 ## Gotchas
 
 - `tools/qa/shot.mjs` always appends `?seed` and hits `SHOT_BASE`; against live it signs in an
   anonymous user per run. For a live look use `tools/qa/cold.mjs`; offline `tools/qa/offline.mjs`;
-  the update reload `tools/qa/update.mjs`; the first-open sync gate `tools/qa/first-open.mjs`. The
+  the update reload `tools/qa/update.mjs`; the first-open sync gate `tools/qa/first-open.mjs`; the
+  shaker end to end on production `tools/qa/shake-live.mjs` (Home is `/`, not `/home`). The
   BYO screens shoot from `?seed&fixture=byo-new|byo-empty|byo` (see `CLAUDE.md`).
 - Delete my data on a QA run must be on a `?nosync` page, or the erased user is replaced by an
   unreachable one (polish item 1; `CLAUDE.md` Seed).
