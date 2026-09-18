@@ -121,7 +121,12 @@ REVISION in flight (branch `shake`, base `96ed788`): Charles: "shakers don't hav
 be the top come off and it pops out like a lootbox lootcrate drop". The spec's Revision section
 (18 September) replaces the window: the lid flips open at the reveal, a drawn token pops out of the
 mouth and hangs, and the name resolves beneath the shaker as the card (which also retires the
-window's clipping fix). Harness: build steps 8 to 12 -> review -> fix. Run `wf_89d0b4ac-795`. Resume:
+window's clipping fix). The build run `wf_89d0b4ac-795` died with its session after landing six
+commits (`141e56d`..`a70e83a`) and one uncommitted edit, which I committed and then had to correct
+(`518a494`, `b41822f`: a JSX comment in an invalid position had broken tsc). Do not resume that run:
+its build agent has no cached result, so a resume rebuilds over commits that exist. Review and fix
+run separately (handle below). Head `b41822f`: tests 46/46, tsc, lint 28/0, design:check 34.
+Original build run, for the record. Resume (do not):
 `Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-shake-lid-wf_89d0b4ac-795.js", resumeFromRunId: "wf_89d0b4ac-795" })`.
 Run `wf_dc5809ec-9c7`. Resume (only if something must be re-run):
 `Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-shake-wf_dc5809ec-9c7.js", resumeFromRunId: "wf_dc5809ec-9c7" })`.
