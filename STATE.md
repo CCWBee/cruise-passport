@@ -125,7 +125,10 @@ window's clipping fix). The build run `wf_89d0b4ac-795` died with its session af
 commits (`141e56d`..`a70e83a`) and one uncommitted edit, which I committed and then had to correct
 (`518a494`, `b41822f`: a JSX comment in an invalid position had broken tsc). Do not resume that run:
 its build agent has no cached result, so a resume rebuilds over commits that exist. Review and fix
-run separately (handle below). Head `b41822f`: tests 46/46, tsc, lint 28/0, design:check 34.
+run separately: run `wf_5a75f3f7-e50` (review over `96ed788..HEAD`, then fix). Resume:
+`Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-shake-lid-review-fix-wf_5a75f3f7-e50.js", resumeFromRunId: "wf_5a75f3f7-e50" })`.
+Head at launch `b41822f`: tests 46/46, tsc, lint 28/0, design:check 34. When green: merge `shake` to
+`main` (Charles's "push it" covers the shaker; the revision is his own correction to it).
 Original build run, for the record. Resume (do not):
 `Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-shake-lid-wf_89d0b4ac-795.js", resumeFromRunId: "wf_89d0b4ac-795" })`.
 Run `wf_dc5809ec-9c7`. Resume (only if something must be re-run):
