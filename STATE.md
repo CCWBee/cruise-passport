@@ -197,12 +197,16 @@ sheets returned to after a replacement.
 
 ## Next action
 
-Workflow B is running, run `wf_d3288a12-b10`. Resume (completed agents replay from cache):
-`Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-shaker-fold-and-declutter-wf_d3288a12-b10.js", resumeFromRunId: "wf_d3288a12-b10" })`.
-The six stream worktrees stay after the merge (their branches hold the work); remove them only
-once `main` carries it. When it returns: the gates myself, my own read of the sweep and the films,
-then merge `shake-declutter` to `main` (a deploy, on his "verify and push it") and probe
-production. Everything else remaining is Charles's: two-step verification on the Google account for
+Workflow B `wf_d3288a12-b10` built everything (the fold's five commits `5a03277`..`b5140e4`; the six
+streams on `worktree-wf_d3288a12-b10-{2..7}`) and was stopped by me at 22:03 while the fold ran a
+last slow grep: its merge, docs, review and fix phases were not run. I merged the six streams by hand
+(`--no-ff`, no conflicts), then finished what they left in `0b1195c`; gates green (46/46, tsc,
+`oxlint src` 27 + 1 in tools, design:check 34, build). Now running: docs, a four-lens review with
+refuting verifiers, and a fix pass, run `wf_e306cb1f-de7`. Resume:
+`Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-declutter-docs-review-fix-wf_e306cb1f-de7.js", resumeFromRunId: "wf_e306cb1f-de7" })`.
+The six stream worktrees under `.claude/worktrees/` (now gitignored) stay until `main` carries the
+work. When the run returns: the gates myself, my own read of the sweep and the films, then merge
+`shake-declutter` to `main` (a deploy, on his "verify and push it") and probe production. Everything else remaining is Charles's: two-step verification on the Google account for
 the OAuth client, the held spec rulings, the Cloudflare token roll, the QA-user purge, and the QA
 harness's leaked Chrome profiles (thread above).
 
