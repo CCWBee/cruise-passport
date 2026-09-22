@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
-import { Masthead } from './Masthead'
 import { Nav } from './Nav'
 import { ToastProvider, useToast } from '../ui/Toast'
 import './shell.css'
@@ -25,11 +24,9 @@ export function Shell() {
   return (
     <>
       <div className="ground" aria-hidden />
-      {/* Home carries the masthead too. The app's name has to be somewhere for a visitor who arrives
-          cold on the landing screen, and Home's rank order is unchanged by it: the greeting is still
-          the screen's first content line, with chrome above it exactly as on Drinks, Ship, Crew and
-          You. */}
-      <Masthead />
+      {/* No masthead here: every cold visitor meets Entry or the landing first (App.tsx), and both
+          carry it. Inside the tabs the guest knows which app this is, and the first line of each
+          screen is its own. */}
       <main className="view">
         <ToastProvider>
           <CrewToasts />

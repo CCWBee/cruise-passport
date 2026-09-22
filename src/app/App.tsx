@@ -48,10 +48,8 @@ const atGet = () => path() === base() + '/get'
 function InviteScreen({ msg, failed }: { msg: string; failed: boolean }) {
   return (
     <div className="wrap page">
-      <div className="panel card center">
-        <p className="t-body" role="status">{msg}</p>
-        {failed && <Link to="/social" className="btn btn-wide" style={{ marginTop: 16 }}>Go to your crew</Link>}
-      </div>
+      <p className="t-body" role="status">{msg}</p>
+      {failed && <Link to="/social" className="btn btn-wide page-act">Go to your crew</Link>}
     </div>
   )
 }
@@ -103,9 +101,7 @@ function AddRoute() {
   if (!named && !failed) {
     return (
       <div className="wrap page">
-        <NameCard lead={from && from !== 'A friend'
-          ? `${from} is adding you. Tell them who you are, then we’ll add you both.`
-          : 'Tell them who you are, then we’ll add you.'} />
+        <NameCard lead={from && from !== 'A friend' ? `${from} is adding you.` : 'Someone is adding you.'} />
       </div>
     )
   }
@@ -154,7 +150,7 @@ function JoinRoute() {
   if (!named) {
     return (
       <div className="wrap page">
-        <NameCard lead="Tell the group who you are, then we’ll add you." />
+        <NameCard lead="You are joining a group." />
       </div>
     )
   }
@@ -170,9 +166,9 @@ function JoinRoute() {
 function NotFound() {
   return (
     <div className="wrap page">
-      <h1 className="t-title">Not found</h1>
-      <p className="muted t-body">That link does not go anywhere here.</p>
-      <Link to="/" className="btn" style={{ marginTop: 16 }}>Back to your passport</Link>
+      {/* the title is the whole message; .page > h1's own 16 sets the button under it */}
+      <h1 className="t-title">That link does not go anywhere</h1>
+      <Link to="/" className="btn">Back to your passport</Link>
     </div>
   )
 }

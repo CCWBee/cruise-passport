@@ -1,5 +1,8 @@
+/* The safe-area inset sits on the view, not on .page: each screen sets its own top padding, and
+   with no masthead above the tabs the view is what has to clear the status bar. */
 .view {
   min-height: 100dvh;
+  padding-top: calc(var(--s3) + var(--safe-t));
   padding-bottom: calc(var(--nav-h) + var(--s5) + var(--safe-b));
 }
 .app-head {
@@ -11,4 +14,5 @@
 
 .page { padding-top: var(--s3); }
 .page > h1 { margin-bottom: var(--s4); }
-.page-lead { margin: 0 0 var(--s4); }
+/* the way on under an invite route's line: 16, a group's gap */
+.page-act { margin-top: var(--s4); }

@@ -57,7 +57,7 @@ export function Landing({ onContinue, continueLabel }: { onContinue: () => void;
               <section className="section">
                 <div className="section-head"><h2 className="t-h2">Open it on your phone</h2></div>
                 <div className="landing-code">
-                  <p className="t-meta">Point your phone’s camera at this code. There is nothing to download from an app store.</p>
+                  <p className="t-meta">Point your phone’s camera at this code.</p>
                   {/* the label is the only thing that tells a screen reader this code from an add
                       code or a group invite (Qr's own comment). The plate hides itself if the value
                       will not encode, and the address below is always real, selectable text, so
@@ -81,19 +81,19 @@ export function Landing({ onContinue, continueLabel }: { onContinue: () => void;
                   <div className="line">
                     <div className="landing-step">
                       <span className="t-strong">On iPhone</span>
-                      <span className="t-meta">Open the address in Safari, tap the share button, then Add to Home Screen.</span>
+                      <span className="t-meta">In Safari, tap the share button, then Add to Home Screen.</span>
                     </div>
                   </div>
                   <div className="line">
                     <div className="landing-step">
                       <span className="t-strong">On Android</span>
-                      <span className="t-meta">Open the address in Chrome, tap the menu, then Install app.</span>
+                      <span className="t-meta">In Chrome, tap the menu, then Install app.</span>
                     </div>
                   </div>
                   {/* "Cocktails" is the name in index.html and the manifest: the one concrete fact a
                       guest needs to find it again. "Add to Home Screen" and "Install app" keep their
                       capitals because they are the labels on the platforms' own menus, quoted. */}
-                  <p className="t-meta landing-note">It saves as Cocktails, with its own icon, and opens without a browser bar.</p>
+                  <p className="t-meta landing-note">It saves as Cocktails.</p>
                 </>
               )}
             </section>

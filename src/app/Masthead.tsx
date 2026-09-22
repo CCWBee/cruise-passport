@@ -1,9 +1,9 @@
 import { IconDrinks } from '../ui/Icon'
 import './shell.css'
 
-// The app's name, above every screen. Chrome, not content: it sits above the first content line
-// rather than in the rank order. Lifted out of Shell so the entry screen, which renders outside
-// Shell, can carry the same masthead rather than a second copy of the markup.
+// The app's name, above the entry screen and the landing, the two screens a cold visitor meets.
+// Chrome, not content: it sits above the first content line rather than in the rank order. One
+// component so the two carry the same masthead rather than two copies of the markup.
 export function Masthead() {
   return (
     <header className="app-head">

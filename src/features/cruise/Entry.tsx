@@ -4,7 +4,7 @@ import { activeCruiseId, CRUISES, cruiseById } from '../../data/cruises'
 import { hasBackend } from '../../state/backend'
 import { useStore } from '../../state/store'
 import { Select } from '../../ui/Select'
-import { PrivacySheet, PRIVACY_SUBTITLE } from '../privacy/PrivacySheet'
+import { PrivacySheet } from '../privacy/PrivacySheet'
 import { NameFields } from '../social/NameFields'
 import { SailingSheet } from './SailingSheet'
 import './cruise.css'
@@ -91,9 +91,9 @@ export function Entry({ onDone }: { onDone: () => void }) {
                 keeps radius 12 and its press tint. It is the privacy row's shape rather than Crew's
                 group row, because it is on this screen and two rows on one screen must read the
                 same way; that is also why it carries no chevron. .cruise-byo carries no style of
-                its own and exists so the QA shot can click it. The copy does not change between the
-                two module-2 branches: "not on this list" is true of a one-line block as much as of
-                a two-option Select. */}
+                its own and exists so the QA shot can click it. One line: "your own sailing" says
+                what it is, and on the single-sailing branch there is no list for a second line to
+                point at. */}
             <div>
               <button
                 type="button"
@@ -103,7 +103,6 @@ export function Entry({ onDone }: { onDone: () => void }) {
               >
                 <span className="row-copy">
                   <span className="t-strong">Set up your own sailing</span>
-                  <span className="t-meta">For a ship that is not on this list</span>
                 </span>
               </button>
             </div>
@@ -124,13 +123,16 @@ export function Entry({ onDone }: { onDone: () => void }) {
                 server logs with IP addresses in them, which the note two taps away says. */}
             <p className="t-meta">
               {hasBackend()
-                ? 'Tapping Done turns on sync: your name, colour and the drinks you log go to this app’s own server in London, under your friend code. You do not need to sign in, there is no analytics and no advertising, and you can delete it all from Your details at any time.'
-                : 'This version of the app has no server, so nothing leaves this phone. Your passport is stored on this phone only.'}
+                ? 'Done turns on sync: your name, colour and the drinks you log go to this app’s own server in London, under your friend code. No sign-in needed, no analytics, no advertising. Delete it all from Your details at any time.'
+                : 'This version of the app has no server, so nothing leaves this phone.'}
             </p>
 
             {/* in its own wrapper so .row:not(:only-child) (base.css) does not square its corners: an
-                isolated row keeps radius 12. The same row, class and strings go into ProfileSheet, so
-                the note is reached the same way in both places. */}
+                isolated row keeps radius 12. The same row and class go into ProfileSheet, so the note
+                is reached the same way in both places. One deliberate difference: here the row is one
+                line, without PRIVACY_SUBTITLE, because the consent line directly above already says
+                what leaves the phone and how to remove it. ProfileSheet has no such line, so its row
+                keeps the subtitle. */}
             <div>
               <button
                 type="button"
@@ -140,7 +142,6 @@ export function Entry({ onDone }: { onDone: () => void }) {
               >
                 <span className="row-copy">
                   <span className="t-strong">Privacy note</span>
-                  <span className="t-meta">{PRIVACY_SUBTITLE}</span>
                 </span>
               </button>
             </div>
