@@ -1,1 +1,209 @@
-/* Variant b. Scope every rule under .shaker-b or .shake[data-shaker="b"]. */
+/* Variant b, "The top comes off" (docs/specs/2026-09-22-shaker-v2.md). Every rule is scoped under
+   .shaker-b or .shake[data-shaker="b"], so nothing here can move another variant. The classes are
+   the variant's own (sb-), because shake.css styles .shaker-tin, .shaker-lid and .shaker-token
+   unscoped and they would leak in.
+
+   The literals in the keyframes below (the travel, the tilts, the lift of the seal, the throw of the
+   top) are the amplitude of a physical movement, as shake.css says of its own: there is no spacing
+   scale for how hard a tin is shaken. They are all transforms. Every curve is --e-out. */
+
+/* The stage: the full width of the sheet and 275 tall, the height the sheet was measured with, in
+   every phase. The shaker stands at its foot. The 65 of air above it is where the shake travels, where
+   the top is thrown and where the glass hangs; nothing is ever drawn below the foot, because below it
+   is the answer's slot. No panel and no glass: the sheet is the container. */
+.shaker-b {
+  position: relative;
+  height: 275px;
+  color: var(--ink);
+}
+/* the rig: the whole shaker, 84 by 210, which is what the hand moves. It turns about its middle. */
+.shaker-b .sb-rig {
+  position: absolute; left: 50%; bottom: 0;
+  width: 84px; height: 210px; margin-left: -42px;
+  transform-origin: 42px 105px;
+}
+.shaker-b .sb-prize,
+.shaker-b .sb-body,
+.shaker-b .sb-lid { display: block; position: absolute; left: 0; top: 0; }
+.shaker-b .sb-top { display: block; }
+/* the glass waits inside the body, where the cream fill hides it, and is not painted at all until the
+   top comes off */
+.shaker-b .sb-prize { opacity: 0; pointer-events: none; }
+/* the top turns about its own middle as it is thrown: (45, 40) on the grid, a fifteenth smaller */
+.shaker-b .sb-lid, .shaker-b .sb-top { transform-origin: 42px 38px; }
+/* the rim flexes about its own centre when the seal strains */
+.shaker-b .sb-rim { transform-box: fill-box; transform-origin: center; }
+
+/* Steel, in the app's idiom: a light strip left of centre in white, a shade down the right in --line,
+   nothing else. The sea engraved round the foot is the app's own sea on the tin, at a hairline in
+   --ink-3. The drink in the glass is --line, the one shade. */
+/* .75, the glass chrome's own specular, which is the precedent DESIGN.md names for light on steel */
+.shaker-b .sb-light { fill: rgba(255, 255, 255, .75); stroke: none; }
+.shaker-b .sb-shade { fill: var(--line); stroke: none; }
+.shaker-b .sb-sea { fill: none; stroke: var(--ink-3); stroke-width: 1; }
+.shaker-b .sb-fine { stroke-width: 1.4; }
+/* the glass is placed a quarter larger than it is drawn, so its fine lines are a quarter lighter */
+.shaker-b .sb-glass .sb-fine { stroke-width: 1.12; }
+.shaker-b .sb-drink { fill: var(--line); stroke: none; }
+
+/* ── The shake: 1.8s in three phases, gentle, harder, violent, stepping where the rattle's ticks
+   quicken (33% and 72%). The motion is travel, up the diagonal over the shoulder and back, the tin
+   tilting as it goes: each keyframe is a reversal, where the dice hit the end of the tin, and each
+   stroke leaves fast and slows into the next reversal. It only ever travels up from rest, so it never
+   paints below its own foot. The last stroke comes down hard and swings a hair past upright, and the
+   tin stands still on the clack at 1.8s. ── */
+.shaker-b.is-shaking .sb-rig { animation: sb-shake 1800ms var(--e-out) both; }
+@keyframes sb-shake {
+  0% { transform: none; }
+  12.8% { transform: translate(-7px, -14px) rotate(-5deg); }
+  25.6% { transform: translate(2px, -4px) rotate(2deg); }
+  33.3% { transform: translate(-14px, -28px) rotate(-10deg); }
+  41.7% { transform: translate(4px, -7px) rotate(4deg); }
+  50% { transform: translate(-16px, -31px) rotate(-11deg); }
+  58.3% { transform: translate(4px, -7px) rotate(4deg); }
+  66.7% { transform: translate(-18px, -34px) rotate(-13deg); }
+  72.2% { transform: translate(6px, -10px) rotate(6deg); }
+  77.5% { transform: translate(-22px, -42px) rotate(-16deg); }
+  82.8% { transform: translate(6px, -10px) rotate(6deg); }
+  88.1% { transform: translate(-22px, -42px) rotate(-16deg); }
+  96.7% { transform: translate(1px, -2px) rotate(3deg); }
+  100% { transform: none; }
+}
+
+/* ── The held beat, 500ms with the tin at rest: the seal strains. The top lifts a hair and settles,
+   then lifts again, higher and faster, and settles; each time the rim beneath it bulges. Then the top
+   presses down a hair and the rim bulges hardest: the wind-up before the throw. ── */
+.shaker-b.is-shaking .sb-lid { animation: sb-strain 500ms var(--e-out) 1800ms both; }
+.shaker-b.is-shaking .sb-rim { animation: sb-flex 500ms var(--e-out) 1800ms both; }
+@keyframes sb-strain {
+  0%, 20% { transform: none; }
+  32% { transform: translateY(-6px); }
+  46% { transform: none; }
+  56% { transform: translateY(-9px); }
+  66% { transform: none; }
+  80%, 100% { transform: translateY(2px); }
+}
+@keyframes sb-flex {
+  0%, 20% { transform: none; }
+  32% { transform: scale(1.06, .85); }
+  46% { transform: none; }
+  56% { transform: scale(1.09, .8); }
+  66% { transform: none; }
+  80%, 100% { transform: scale(1.12, .75); }
+}
+
+/* ── The pop, in three beats from the moment the top goes. The top is thrown up off the body at once
+   and drifts away to the right a beat behind, tilting, so it arcs clear of the mouth; it fades as it
+   goes and is gone before it reaches the top of the stage. The body recoils once and the rim springs
+   back. At 60 the glass starts up out of the mouth, 95 to where its foot clears the rim, goes 8 past
+   that and settles onto it at 560, the landing. One overshoot each, never a bounce: the exceptions
+   DESIGN.md Motion writes for the shaker, because a tin being opened is not a state changing. ── */
+.shaker-b.is-open .sb-rig { transform-origin: 42px 210px; animation: sb-recoil 260ms var(--e-out) both; }
+.shaker-b.is-open .sb-rim { animation: sb-release 260ms var(--e-out) both; }
+.shaker-b.is-open .sb-lid {
+  transform: translateY(-52px);
+  animation: sb-throw 520ms var(--e-out) both;
+}
+.shaker-b.is-open .sb-top {
+  opacity: 0;
+  transform: translateX(90px) rotate(36deg);
+  animation: sb-drift 520ms var(--e-out) 50ms both, sb-vanish 340ms var(--e-out) 180ms both;
+}
+.shaker-b.is-open .sb-prize {
+  opacity: 1;
+  transform: translateY(-95px);
+  animation: sb-rise 500ms var(--e-out) 60ms both;
+}
+@keyframes sb-recoil {
+  from { transform: none; }
+  35% { transform: scale(1.03, .96); }
+  to { transform: none; }
+}
+@keyframes sb-release {
+  from { transform: scale(1.12, .75); }
+  40% { transform: scale(.97, 1.04); }
+  to { transform: none; }
+}
+@keyframes sb-throw {
+  from { transform: translateY(2px); }
+  to { transform: translateY(-52px); }
+}
+@keyframes sb-drift {
+  from { transform: none; }
+  to { transform: translateX(90px) rotate(36deg); }
+}
+@keyframes sb-vanish {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes sb-rise {
+  from { transform: none; }
+  62% { transform: translateY(-103px); }
+  to { transform: translateY(-95px); }
+}
+
+/* Shake again puts it back together first, softer and faster than it came apart: the glass sinks back
+   into the body and the top settles onto the rim from just above it, fading in, both inside 240. */
+.shaker-b.is-closing .sb-prize { opacity: 1; animation: sb-sink 220ms var(--e-out) both; }
+.shaker-b.is-closing .sb-lid { animation: sb-reseat 240ms var(--e-out) both; }
+@keyframes sb-sink {
+  from { transform: translateY(-95px); }
+  to { transform: none; }
+}
+@keyframes sb-reseat {
+  from { opacity: 0; transform: translateY(-14px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ── The card. The sheet renders it at the pop and shake.css fades it in whole at 580; here it follows
+   this shaker's own landing instead, and its three lines arrive in reading order, 80 apart: the name
+   as the glass settles, then the place, then the reason, each from a little below and out of focus.
+   All three are in by 3.3s from the press. ── */
+.shake[data-shaker="b"] .shake-answer { animation: none; }
+.shake[data-shaker="b"] .shake-answer > * { animation: sb-line 300ms var(--e-out) both; }
+.shake[data-shaker="b"] .shake-answer > :nth-child(1) { animation-delay: 540ms; }
+.shake[data-shaker="b"] .shake-answer > :nth-child(2) { animation-delay: 620ms; }
+.shake[data-shaker="b"] .shake-answer > :nth-child(3) { animation-delay: 700ms; }
+@keyframes sb-line {
+  from { opacity: 0; transform: translateY(8px); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+@keyframes sb-fade-in { from { opacity: 0; } }
+@keyframes sb-fade-out-hung {
+  from { opacity: 1; transform: translateY(-95px); }
+  to { opacity: 0; transform: translateY(-95px); }
+}
+
+/* Reduced motion: gentler, not nothing. Nothing travels, nothing turns, the seal does not strain. The
+   top fades off where it sits, the glass fades in where it hangs and the card fades in whole, all over
+   the same 200ms every other fallback uses, so the reveal still lands. Shake again fades them back. */
+@media (prefers-reduced-motion: reduce) {
+  .shaker-b.is-shaking .sb-rig,
+  .shaker-b.is-shaking .sb-lid,
+  .shaker-b.is-shaking .sb-rim,
+  .shaker-b.is-open .sb-rig,
+  .shaker-b.is-open .sb-rim { animation: none; }
+  .shaker-b.is-open .sb-lid { transform: none; animation: none; }
+  /* sb-vanish names its start: the open top's own opacity is already 0, so a keyframe that named only
+     its end would fade from 0 to 0 and the top would vanish in a cut */
+  .shaker-b.is-open .sb-top { transform: none; animation: sb-vanish var(--t-panel) var(--e-out) both; }
+  .shaker-b.is-open .sb-prize { animation: sb-fade-in var(--t-panel) var(--e-out) both; }
+  .shaker-b.is-closing .sb-prize { animation: sb-fade-out-hung var(--t-panel) var(--e-out) both; }
+  .shaker-b.is-closing .sb-lid { animation: sb-fade-in var(--t-panel) var(--e-out) both; }
+  /* :nth-child(n) matches every line and carries the specificity of the delays above, so the card
+     fades in whole and at once rather than inheriting the stagger */
+  .shake[data-shaker="b"] .shake-answer > :nth-child(n) { animation: sb-fade-in var(--t-panel) var(--e-out) both; }
+}
+
+/* Coming back from the drink sheet is a fresh mount already at the reveal: the drawing and the card
+   are where they were left, with no animation replaying (shake.css, is-still, has the reason). Last in
+   the file, because the rules it beats carry the same specificity and source order decides. The card's
+   own lines are named here too: the shared is-still rule only reaches the card itself. */
+.shaker-b.is-still .sb-rig,
+.shaker-b.is-still .sb-lid,
+.shaker-b.is-still .sb-top,
+.shaker-b.is-still .sb-rim,
+.shaker-b.is-still .sb-prize,
+.shake[data-shaker="b"] .shake-answer.is-still,
+.shake[data-shaker="b"] .shake-answer.is-still > * { animation: none; }

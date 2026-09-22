@@ -1,1 +1,204 @@
-/* Variant a. Scope every rule under .shaker-a or .shake[data-shaker="a"]. */
+/* Variant a: the cobbler, cap off (docs/specs/2026-09-22-shaker-v2.md, angle A). Every rule is
+   scoped under .shaker-a or .shake[data-shaker="a"], so nothing here can move another variant.
+
+   The stage is one fixed box, 300 by 292, in every phase. The shaker stands centred at its foot; the
+   90 above the cap is the room the shake's travel, the cap's flight and the glass's hang take, and
+   whatever leaves the drawing fades before it reaches the stage's edge, so nothing paints over the
+   title above or the answer below. */
+.shaker-a {
+  justify-self: center;
+  width: 300px; height: 292px;
+  color: var(--ink);
+}
+.shaker-a svg { display: block; overflow: visible; }
+
+/* the steel's light and shade, and the engraving: white at low opacity is the light on steel (the
+   glass chrome's specular is the precedent), --line the only shade, --ink-3 the hairline */
+.shaker-a .a-light { fill: rgba(255, 255, 255, .7); }
+.shaker-a .a-shade { fill: var(--line); }
+.shaker-a .a-engrave { stroke: var(--ink-3); stroke-width: 1.1; }
+.shaker-a .a-groove { stroke: var(--ink-3); stroke-width: 1.3; }
+.shaker-a .a-ray { opacity: 0; }
+
+/* The pivots. Every px value in this file is on the drawing's own grid, shown at nine tenths. The
+   rig and the cap are drawn round their pivots in the markup (ShakerA.tsx says why), so each turns
+   about its own origin; the glass about its foot, because it grows out of the mouth. */
+.shaker-a .a-rig, .shaker-a .a-cap { transform-origin: 0 0; }
+.shaker-a .a-glass { transform-box: fill-box; transform-origin: 50% 100%; }
+
+/* ── The shake: 2220ms, which is the sheet's popMs, so the shake and the held beat are one
+   timeline and the tin cannot drift off the rattle. The table (ms, from the press):
+
+     0 to 110      the wind-up: a 3px dip and a tilt the wrong way
+     240 to 460    gentle: up the diagonal 16 and back, leaning 8 degrees
+     600 to 1200   harder: 26 to 30 up, leaning 13 to 15, three strokes
+     1300 to 1700  violent: 38 to 40 up, leaning 20, a knock every 80ms
+     1700 to 1800  set down upright on the bar, straight in and stopped, which is the clack
+     1800 to 1950  one rock back on the base and settled: the follow-through
+     1950 to 2220  the pressure: a tremble that grows from under a pixel to two and a half
+
+   The travel is along the tin's own axis, up and to the right as it leans, because a cobbler is
+   shaken end to end over the shoulder. The lean peaks with the lift, so the foot never drops through
+   the stage's floor. Each stroke eases out into its reversal (fast off one end, slowing into the
+   other, which is a hand turning the tin round); the set-down is the one linear segment, since a tin
+   put down hard does not slow before it meets the bar. The amplitudes are the one place a literal is
+   right: they are how hard a tin is shaken, not a measure of the layout. ── */
+.shaker-a.is-shaking .a-rig { animation: a-shake 2220ms var(--e-out) both; }
+@keyframes a-shake {
+  0% { transform: translate(0, 0) rotate(0); }
+  4.95% { transform: translate(0, 3px) rotate(-3deg); }
+  10.81% { transform: translate(5px, -16px) rotate(8deg); }
+  20.72% { transform: translate(1px, -3px) rotate(3deg); }
+  27.03% { transform: translate(9px, -26px) rotate(13deg); }
+  33.78% { transform: translate(1px, -2px) rotate(6deg); }
+  40.54% { transform: translate(10px, -28px) rotate(14deg); }
+  47.3% { transform: translate(1px, -2px) rotate(6deg); }
+  54.05% { transform: translate(11px, -30px) rotate(15deg); }
+  58.56% { transform: translate(0, -1px) rotate(8deg); }
+  62.16% { transform: translate(14px, -38px) rotate(19deg); }
+  65.77% { transform: translate(-2px, -1px) rotate(9deg); }
+  69.37% { transform: translate(15px, -40px) rotate(20deg); }
+  72.97% { transform: translate(2px, -2px) rotate(8deg); }
+  76.58% { transform: translate(14px, -38px) rotate(19deg); animation-timing-function: linear; }
+  81.08% { transform: translate(0, 0) rotate(0); }
+  83.33% { transform: translate(0, 0) rotate(-1.5deg); }
+  85.59% { transform: translate(0, 0) rotate(0.6deg); }
+  87.84% { transform: translate(0, 0) rotate(0); }
+  89.64% { transform: translate(0.8px, 0) rotate(0.2deg); }
+  90.99% { transform: translate(-0.8px, 0) rotate(-0.2deg); }
+  92.34% { transform: translate(1.2px, 0) rotate(0.3deg); }
+  93.69% { transform: translate(-1.2px, 0) rotate(-0.3deg); }
+  95.05% { transform: translate(1.8px, 0) rotate(0.5deg); }
+  96.4% { transform: translate(-1.8px, 0) rotate(-0.5deg); }
+  97.75% { transform: translate(2.4px, 0) rotate(0.7deg); }
+  98.87% { transform: translate(-2.4px, 0) rotate(-0.7deg); }
+  100% { transform: translate(0, 0) rotate(0); }
+}
+
+/* The cap chatters on the same timeline: it lags the tin at the top of each stroke, lifting off the
+   strainer and knocking back, more as the shake gets harder; it jumps once as the tin is set down;
+   then through the held beat it rises on the pressure to 6 clear, rocking, so a gap opens at the
+   neck, which is the tell that the pop is coming. */
+.shaker-a.is-shaking .a-cap { animation: a-chatter 2220ms var(--e-out) both; }
+@keyframes a-chatter {
+  0% { transform: translateY(0) rotate(0); }
+  11.71% { transform: translateY(-1px) rotate(0); }
+  20.72% { transform: translateY(0) rotate(0); }
+  27.93% { transform: translateY(-2px) rotate(3deg); }
+  33.78% { transform: translateY(0) rotate(0); }
+  41.44% { transform: translateY(-2px) rotate(-3deg); }
+  47.3% { transform: translateY(0) rotate(0); }
+  54.95% { transform: translateY(-2px) rotate(3deg); }
+  58.56% { transform: translateY(0) rotate(0); }
+  62.84% { transform: translateY(-3px) rotate(-4deg); }
+  65.77% { transform: translateY(0) rotate(0); }
+  70.05% { transform: translateY(-3px) rotate(4deg); }
+  72.97% { transform: translateY(0) rotate(0); }
+  77.25% { transform: translateY(-3px) rotate(-4deg); }
+  81.08% { transform: translateY(0) rotate(0); }
+  82.21% { transform: translateY(-2px) rotate(2deg); }
+  83.78% { transform: translateY(0) rotate(0); }
+  87.84% { transform: translateY(0) rotate(0); }
+  90.09% { transform: translateY(-1.5px) rotate(1.5deg); }
+  91.89% { transform: translateY(-1px) rotate(-1.5deg); }
+  93.69% { transform: translateY(-3px) rotate(2.5deg); }
+  95.5% { transform: translateY(-2.5px) rotate(-2.5deg); }
+  97.3% { transform: translateY(-5px) rotate(3deg); }
+  98.65% { transform: translateY(-4.5px) rotate(-2deg); }
+  100% { transform: translateY(-6px) rotate(0); }
+}
+
+/* ── The pop, from the sheet's popMs. The cap goes straight up off the neck, then tumbles away over
+   the right shoulder, turning, and has faded before it reaches the stage's edge. 90ms behind it, once the
+   cap is clear of the mouth, the glass rises out of the mouth, from 0.9 of its size, 8 past its hang and back onto it, once: the
+   thrown-not-eased exception DESIGN.md Motion already writes for the drop. The burst is six strokes
+   fanned over the mouth as the glass clears it, out and gone inside 240ms. The end values are
+   static, so `still` can take the paths away and leave the reveal where it was. ── */
+.shaker-a.is-open .a-cap {
+  opacity: 0;
+  animation: a-cap-pop 520ms var(--e-out) both;
+}
+.shaker-a.is-open .a-glass {
+  transform: translateY(-110px);
+  animation: a-glass-rise 470ms var(--e-out) 90ms both;
+}
+.shaker-a.is-open .a-ray { animation: a-ray 240ms var(--e-out) 100ms both; }
+/* and the tin kicks down 2px as the pressure lets go, then stands again: the release, felt in the
+   thing that was holding it */
+.shaker-a.is-open .a-rig { animation: a-recoil 220ms var(--e-out) both; }
+@keyframes a-recoil {
+  from { transform: translateY(0); }
+  30% { transform: translateY(2px); }
+  to { transform: translateY(0); }
+}
+
+@keyframes a-cap-pop {
+  0% { opacity: 1; transform: translate(0, -6px) rotate(0); }
+  18% { opacity: 1; transform: translate(8px, -46px) rotate(24deg); }
+  /* over the top of its arc and falling: gravity, not an ease */
+  42% { opacity: 1; transform: translate(40px, -56px) rotate(120deg); animation-timing-function: linear; }
+  100% { opacity: 0; transform: translate(92px, -16px) rotate(240deg); }
+}
+@keyframes a-glass-rise {
+  from { transform: translateY(0) scale(.9); }
+  65% { transform: translateY(-118px) scale(1); }
+  to { transform: translateY(-110px) scale(1); }
+}
+@keyframes a-ray {
+  from { opacity: 0; transform: translateX(-4px); }
+  25% { opacity: 1; }
+  to { opacity: 0; transform: translateX(10px); }
+}
+
+/* Shake again puts it back first, in 240ms, softer and faster than it opened: the glass sinks into
+   the mouth and the cap drops back onto the neck. */
+.shaker-a.is-closing .a-glass { animation: a-glass-sink 240ms var(--e-out) both; }
+.shaker-a.is-closing .a-cap { animation: a-cap-back 240ms var(--e-out) both; }
+@keyframes a-glass-sink {
+  from { transform: translateY(-110px); }
+  to { transform: translateY(0); }
+}
+@keyframes a-cap-back {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── The card follows this shaker's landing rather than the shared 580ms: the name as the glass
+   settles (landMs, 560), then the place, then the reason, 80ms apart, each from 8px down and a
+   4px blur. The card itself does not fade, its lines do. ── */
+.shake[data-shaker="a"] .shake-answer { animation: none; }
+.shake[data-shaker="a"] .shake-answer > * { animation: a-line 300ms var(--e-out) both; }
+.shake[data-shaker="a"] .shake-answer > :nth-child(1) { animation-delay: 560ms; }
+.shake[data-shaker="a"] .shake-answer > :nth-child(2) { animation-delay: 640ms; }
+.shake[data-shaker="a"] .shake-answer > :nth-child(3) { animation-delay: 720ms; }
+@keyframes a-line {
+  from { opacity: 0; transform: translateY(8px); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+@keyframes a-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes a-fade-out { from { opacity: 1; } to { opacity: 0; } }
+
+/* Reduced motion: nothing travels and nothing turns. The tin stays where it stands, the cap fades
+   off, the glass fades in where it hangs, the burst is not drawn, and the card's lines fade in
+   together over the same 200ms every other fallback uses. The reveal still lands. */
+@media (prefers-reduced-motion: reduce) {
+  .shaker-a.is-shaking .a-rig,
+  .shaker-a.is-shaking .a-cap,
+  .shaker-a.is-open .a-rig,
+  .shaker-a.is-open .a-ray { animation: none; }
+  .shaker-a.is-open .a-cap { animation: a-fade-out var(--t-panel) var(--e-out) both; }
+  .shaker-a.is-open .a-glass { animation: a-fade-in var(--t-panel) var(--e-out) both; }
+  .shaker-a.is-closing .a-glass { transform: translateY(-110px); animation: a-fade-out var(--t-panel) var(--e-out) both; }
+  .shaker-a.is-closing .a-cap { animation: a-fade-in var(--t-panel) var(--e-out) both; }
+  .shake[data-shaker="a"] .shake-answer > :nth-child(n) { animation: a-fade-in var(--t-panel) var(--e-out) both; }
+}
+
+/* Back from the drink sheet the reveal is a fresh mount already open: `still` takes every path away
+   and leaves the end values above, so it is simply where it was left. Last in the file and at the
+   highest specificity here, because the rules it has to beat sit above it. */
+.shaker-a.is-still .a-rig,
+.shaker-a.is-still .a-cap,
+.shaker-a.is-still .a-glass,
+.shaker-a.is-still .a-ray,
+.shake[data-shaker="a"] .shake-answer.is-still > :nth-child(n) { animation: none; }
