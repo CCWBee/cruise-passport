@@ -150,8 +150,10 @@ export function Stats() {
     }
   }), [drinks, me.entries])
 
+  // The top five answer "what do you drink", as "Highest rated" does; the tail is ones and twos.
   const categories = Object.entries(stats.byCategory)
     .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
     .map(([label, value]) => ({ label, value }))
   const venues = Object.entries(stats.byVenue)
     .sort((a, b) => b[1] - a[1])
@@ -160,6 +162,7 @@ export function Stats() {
   const spirits = Object.entries(stats.bySpirit)
     .filter(([name]) => name !== 'Wine' && name !== 'Beer')
     .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
     .map(([label, value]) => ({ label, value }))
   const highest = stats.rated
     .slice()
@@ -177,7 +180,7 @@ export function Stats() {
 
   if (!stats.n) {
     return (
-      <div className="stats stats-empty">
+      <div className="empty-state">
         <p className="t-body">Your stats appear once you log a drink.</p>
         <Link className="btn btn-coral" to="/drinks">Log a drink</Link>
       </div>

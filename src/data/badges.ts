@@ -26,7 +26,14 @@ export interface BadgeDef {
   /** live progress for count-type badges (locked-state "7 of 12") */
   progress?: (s: BadgeStat) => { cur: number; need: number }
   tier?: 'bronze' | 'silver' | 'gold' | 'special'
+  /** progress is per cent of the list, not a count of drinks */
+  percent?: true
 }
+
+/** "58 of 100", or "27% of 50%" for a percentage badge. Everywhere else in the app "n of m" counts
+ *  drinks, so a percentage says so in its own figures rather than leaning on the hint. */
+export const badgeCount = (badge: BadgeDef, cur: number, need: number): string =>
+  badge.percent ? `${cur}% of ${need}%` : `${cur} of ${need}`
 
 export const BADGES: BadgeDef[] = [
   { id: 'first', emoji: '🥇', name: 'First Sip', hint: 'Log one drink', tier: 'bronze', test: (s) => s.n >= 1, progress: (s) => ({ cur: s.n, need: 1 }) },
@@ -48,8 +55,8 @@ export const BADGES: BadgeDef[] = [
   { id: 'gin', emoji: '🌿', name: 'Gin Explorer', hint: 'Ten gin drinks', tier: 'silver', test: (s) => s.sp('Gin') >= 10, progress: (s) => ({ cur: s.sp('Gin'), need: 10 }) },
   { id: 'rum', emoji: '🏴‍☠️', name: 'Rum Captain', hint: 'Twelve rum drinks', tier: 'silver', test: (s) => s.sp('Rum') >= 12, progress: (s) => ({ cur: s.sp('Rum'), need: 12 }) },
   { id: 'wine', emoji: '🍷', name: 'Wine Connoisseur', hint: 'Twelve wines by the glass', tier: 'silver', test: (s) => s.cat('Wine') >= 12, progress: (s) => ({ cur: s.cat('Wine'), need: 12 }) },
-  { id: 'master', emoji: '🎩', name: 'Cocktail Master', hint: 'Half of everything', tier: 'gold', test: (s) => s.pct >= 50, progress: (s) => ({ cur: Math.round(s.pct), need: 50 }) },
+  { id: 'master', emoji: '🎩', name: 'Cocktail Master', hint: 'Half of everything', tier: 'gold', percent: true, test: (s) => s.pct >= 50, progress: (s) => ({ cur: Math.round(s.pct), need: 50 }) },
   // The one badge whose name is read from the data: the October crowd still earns Sun Princess
   // Champion, and a guest on a sailing they set up earns their own ship's.
-  { id: 'champion', emoji: '🏆', name: SHIP + ' Champion', hint: 'Ninety per cent', tier: 'special', test: (s) => s.pct >= 90, progress: (s) => ({ cur: Math.round(s.pct), need: 90 }) },
+  { id: 'champion', emoji: '🏆', name: SHIP + ' Champion', hint: 'Ninety per cent', tier: 'special', percent: true, test: (s) => s.pct >= 90, progress: (s) => ({ cur: Math.round(s.pct), need: 90 }) },
 ]

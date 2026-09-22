@@ -131,17 +131,6 @@ export async function renderWrappedImage(card: WrappedFinale): Promise<Blob> {
   const blocks: Block[] = []
 
   blocks.push({
-    h: 34,
-    gap: 24,
-    draw: (top) => {
-      setFont(ctx, stack, 400, 30)
-      ctx.fillStyle = INK_2
-      ctx.textAlign = 'center'
-      ctx.fillText('Certificate of a voyage', centre, top)
-    },
-  })
-
-  blocks.push({
     h: 58,
     gap: 32,
     draw: (top) => {

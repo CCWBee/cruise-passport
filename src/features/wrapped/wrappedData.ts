@@ -13,12 +13,11 @@ export const wrappedTotal = (drinks: Drink[]): number => drinks.length
 export interface WrappedArchetype {
   name: string
   blurb: string
-  traits: string[]
 }
 
 export type WrappedCard =
   | { kind: 'cover'; dateRange: string }
-  | { kind: 'tried'; count: number; pct: number }
+  | { kind: 'tried'; count: number }
   | { kind: 'topbar'; venue: string; deck: number; count: number }
   | { kind: 'spirit'; spirit: string; count: number }
   | { kind: 'bigday'; date: string; count: number }
@@ -30,7 +29,6 @@ export type WrappedCard =
       count: number
       twin: { name: string; affinityPct: number } | null
       triedTogether: number
-      onlyFriends: number
       shared: string[]
     }
   | {
@@ -46,7 +44,7 @@ export type WrappedCard =
 
 export type WrappedFinale = Extract<WrappedCard, { kind: 'finale' }>
 
-const ARCHETYPES: Record<string, Omit<WrappedArchetype, 'traits'>> = {
+const ARCHETYPES: Record<string, WrappedArchetype> = {
   spiritForward: { name: 'Spirit-Forward', blurb: 'You take it strong and unsweetened, and you have opinions.' },
   sweetTooth: { name: 'Sweet Tooth', blurb: 'Pudding in a glass, and no apology for it.' },
   classicist: { name: 'The Classicist', blurb: 'Martinis and old standards. You know what you like.' },
@@ -93,9 +91,7 @@ function deriveArchetype(stats: Stats): WrappedArchetype | null {
     completionist: (stats.pct / 100) * 8,
   }
   const id = Object.keys(scores).sort((a, b) => scores[b] - scores[a])[0]
-  const traits = [topKey(flavours), topKey(categories), `${Object.keys(venues).length} venues`]
-    .filter((value): value is string => Boolean(value))
-  return { ...ARCHETYPES[id], traits }
+  return ARCHETYPES[id]
 }
 
 function voyageDateRange(): string {
@@ -148,7 +144,6 @@ function crewCard(passport: Passport, srcs: Source[]): Extract<WrappedCard, { ki
     count: friends.length,
     twin: twin ? { name: twin.source.name, affinityPct: Math.round(twin.affinity * 100) } : null,
     triedTogether: reach.triedTogether,
-    onlyFriends: reach.onlyFriends,
     shared: shared.slice(0, 3),
   }
 }
@@ -164,7 +159,7 @@ export function deriveWrapped(drinks: Drink[], passport: Passport, srcs: Source[
   const archetype = deriveArchetype(stats)
   const medals = BADGES.filter((badge) => badge.test(stats.badgeStat)).length
 
-  if (stats.n > 0) cards.push({ kind: 'tried', count: stats.n, pct })
+  if (stats.n > 0) cards.push({ kind: 'tried', count: stats.n })
   if (stats.favVenue && stats.favVenueN > 0) {
     cards.push({
       kind: 'topbar',

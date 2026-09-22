@@ -9,9 +9,6 @@
 /* where the h3 is the section's first content, it keeps the heading-to-content gap of 8 */
 .section > h2 + .stats-sub { margin-top: 0; }
 
-/* the empty state: one sentence and the one action that fills it */
-.stats-empty { display: grid; justify-items: start; gap: var(--s4); }
-
 /* ── lists: static rows, so no press tint and no button affordance ── */
 .stats-list { display: flex; flex-direction: column; }
 

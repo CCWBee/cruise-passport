@@ -1,6 +1,6 @@
 import { Suspense, lazy, useEffect, useId, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { BADGES, type BadgeDef, type BadgeStat } from '../../data/badges'
+import { BADGES, badgeCount, type BadgeDef, type BadgeStat } from '../../data/badges'
 import { computeStats } from '../../state/stats'
 import { useAllDrinks, useStore } from '../../state/store'
 import { IconTrophy } from '../../ui/Icon'
@@ -104,7 +104,7 @@ export function Badges() {
       <section className="section">
         <div className="section-head">
           <h2 className="t-h2">Earned</h2>
-          <p className="t-meta tnum">{earned.length} of {BADGES.length} earned</p>
+          {earned.length > 0 && <p className="t-meta tnum">{earned.length} of {BADGES.length}</p>}
         </div>
 
         {earned.length ? (
@@ -123,10 +123,10 @@ export function Badges() {
             ))}
           </div>
         ) : (
-          <>
-            <p className="t-meta">Badges arrive as you log drinks.</p>
-            <Link className="badge-empty-action" to="/drinks">Log a drink</Link>
-          </>
+          <div className="empty-state">
+            <p className="t-body">Badges arrive as you log drinks.</p>
+            <Link className="btn btn-coral" to="/drinks">Log a drink</Link>
+          </div>
         )}
       </section>
 
@@ -141,13 +141,14 @@ export function Badges() {
               type="button"
               className="row badge-row"
               onClick={() => setSelectedBadge(badge)}
-              aria-label={`${badge.name}, ${cur} of ${need}`}
+              aria-label={`${badge.name}, ${badgeCount(badge, cur, need)}`}
             >
+              {/* the hint is the sheet's meta line, one tap away; here the count says what is left */}
               <span className="row-copy">
                 <span className="t-strong">{badge.name}</span>
-                <span className="t-meta">{badge.hint}</span>
               </span>
               <span className="badge-meter">
+                <span className="t-meta tnum">{badgeCount(badge, cur, need)}</span>
                 <span
                   className="badge-track"
                   role="progressbar"
@@ -158,7 +159,6 @@ export function Badges() {
                 >
                   <span className="badge-fill" style={{ width: `${pct}%` }} />
                 </span>
-                <span className="t-meta tnum">{cur} of {need}</span>
               </span>
             </button>
           ))}
@@ -203,7 +203,7 @@ export function Badges() {
               {selectedEarned
                 ? 'Earned'
                 : selectedProgress
-                  ? `Not earned yet: ${selectedProgress.cur} of ${selectedProgress.need}`
+                  ? badgeCount(selectedBadge, selectedProgress.cur, selectedProgress.need)
                   : 'Not earned yet'}
             </p>
           </div>

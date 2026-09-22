@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { DAYS, VENUES, prettyDay } from '../../data/model'
+import { Link } from 'react-router-dom'
+import { DAYS, prettyDay } from '../../data/model'
 import { useAllDrinks, useStore } from '../../state/store'
 import { computeStats } from '../../state/stats'
 import { IconStar } from '../../ui/Icon'
@@ -7,8 +8,9 @@ import { DrinkSheet } from '../drinks/DrinkSheet'
 import './log.css'
 
 // The log renders inside the You page, so it adds no wrapper of its own: one plain section per day,
-// a heading with its date and count, then rows on the ground separated by hairlines. Days after the
-// last logged one collapse to a single line so the tail of the voyage does not scroll as filler.
+// a heading with its date and count, then rows on the ground separated by hairlines. A row is the
+// drink and its rating on one line; the bar is the drink sheet's meta line, one tap away. Days after
+// the last logged one collapse to a single line so the tail of the voyage does not scroll as filler.
 export function Log() {
   const drinks = useAllDrinks()
   const me = useStore((s) => s.me)
@@ -24,7 +26,10 @@ export function Log() {
   return (
     <>
       {lastLogged < 0 ? (
-        <p className="t-meta">Nothing logged yet. Mark a drink as tried and it appears here under its day.</p>
+        <div className="empty-state">
+          <p className="t-body">Nothing logged yet.</p>
+          <Link className="btn btn-coral" to="/drinks">Log a drink</Link>
+        </div>
       ) : null}
 
       {DAYS.slice(0, lastLogged + 1).map((iso, i) => {
@@ -66,7 +71,6 @@ export function Log() {
                 >
                   <span className="row-copy">
                     <span className="t-body">{drink.name}</span>
-                    <span className="t-meta">{VENUES[drink.venue]?.name || drink.venue}</span>
                   </span>
                   {rating ? (
                     <span className="log-rating tnum" aria-label={`Rated ${rating} out of 5 stars`}>
