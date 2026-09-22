@@ -1,8 +1,8 @@
 import { useId } from 'react'
-import { glassFamily } from './glassFamily'
+import { glassFamily } from '../../data/glass'
 
 // The prize: a glass drawn for the kind of drink, so the guest can tell what is coming before the card
-// names it. Eight families, each drawn once on a 64 by 72 box in the shaker's own idiom: one ink
+// names it. Nine families, each drawn once on a 64 by 72 box in the shaker's own idiom: one ink
 // stroke over a cream fill, and the drink itself in --line, the one shade the drawing is allowed. No
 // colour, no lettering, never IconDrinks (that glyph is the brand's funnel and draws one side of a
 // glass). They are SVG groups, not whole images, because they are painted inside the shaker's drawing,
@@ -12,8 +12,9 @@ import { glassFamily } from './glassFamily'
 // weight on screen whatever it is scaled to; the fine lines (a pick, the lime's segments, steam, ice)
 // are `fine`, which the caller passes in the same units.
 
-// Which family a drink takes is glassFamily.ts's decision (its name first, then frozen, then its
-// category), kept apart from the drawings so it can be tested.
+// Which family a drink takes is src/data/glass.ts's decision (the classified table for the published
+// catalogue, rules for a drink the guest added), kept apart from the drawings so it can be tested.
+// The list's icons (ui/Icon.tsx, GlassIcon) are the same nine families drawn at 24px.
 
 const BOX_W = 64, BOX_H = 72
 
@@ -77,6 +78,19 @@ export function WineGlass() {
     <>
       <Bowl outline="M18 6C11 19 10 33 20 38.5C26 41.5 38 41.5 44 38.5C54 33 53 19 46 6Z" level={23} />
       <Stem from={40.5} />
+    </>
+  )
+}
+
+/** Sparkling wine and its cocktails: a tall narrow flute on a stem, and a few bubbles rising in it */
+export function FluteGlass({ fine }: { fine: number }) {
+  return (
+    <>
+      <Bowl outline="M24 4H40C41 18 40 36 32 44C24 36 23 18 24 4Z" level={12} />
+      <Stem from={44} />
+      <circle cx="31" cy="30" r="1.4" strokeWidth={fine} />
+      <circle cx="33.5" cy="22" r="1.2" strokeWidth={fine} />
+      <circle cx="30.5" cy="16.5" r="1" strokeWidth={fine} />
     </>
   )
 }
@@ -163,6 +177,7 @@ export function Glass({ drink, fine }: { drink: { name: string; category: string
       {family === 'hurricane' && <HurricaneGlass />}
       {family === 'highball' && <HighballGlass fine={fine} />}
       {family === 'rocks' && <RocksGlass fine={fine} />}
+      {family === 'flute' && <FluteGlass fine={fine} />}
     </g>
   )
 }

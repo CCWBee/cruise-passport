@@ -1,6 +1,7 @@
 // Drawn icon set — one grid (24px box, 1.8px stroke, round caps/joins), outline↔filled.
 // Replaces emoji used as UI chrome. Emoji stays only as content voice (category glyphs, badges).
 import type { SVGProps, ReactNode } from 'react'
+import type { GlassFamily } from '../data/glass'
 
 type P = SVGProps<SVGSVGElement> & { size?: number; filled?: boolean }
 
@@ -146,3 +147,73 @@ export const IconTrophy = (p: P) => (
     <path d="M8 7H5v1.2a3 3 0 0 0 3.5 3M16 7h3v1.2a3 3 0 0 1-3.5 3" />
   </Svg>
 )
+
+// ── the glasses: what a drink is served in, which is what kind of drink it is ─────────────────────
+// Nine families (src/data/glass.ts), the same ones the shaker's prize is drawn as, here on the icon
+// grid. Every bowl is drawn whole, both sides: IconDrinks above is the brand's funnel and draws one
+// side of a glass, which is right for the tab and wrong for a drink. GlassIcon picks by family.
+export const IconGlassCocktail = (p: P) => (
+  <Svg {...p}>
+    <path d="M4.5 5.5h15L12 13.5z" />
+    <path d="M12 13.5v6M8.5 19.5h7" />
+  </Svg>
+)
+export const IconGlassMargarita = (p: P) => (
+  <Svg {...p}>
+    <path d="M3.5 7h15c0 3-2.8 4.3-5.2 4.6 0 2.9-1 4.2-2.3 4.2s-2.3-1.3-2.3-4.2C6.3 11.3 3.5 10 3.5 7z" />
+    <path d="M11 15.8v3.7M7.8 19.5h6.4" />
+    {/* the lime wedge on the rim, which is what tells it from the cocktail glass at this size */}
+    <path d="M15.5 7a3 3 0 0 1 6 0z" />
+  </Svg>
+)
+export const IconGlassWine = (p: P) => (
+  <Svg {...p}>
+    <path d="M8 4.5c-1.8 3.5-2 7 .4 8.7 1.8 1.2 5.4 1.2 7.2 0 2.4-1.7 2.2-5.2.4-8.7z" />
+    <path d="M12 14.1v5.4M8.5 19.5h7" />
+  </Svg>
+)
+export const IconGlassFlute = (p: P) => (
+  <Svg {...p}>
+    <path d="M9.8 3.5h4.4c.4 4.5 0 8.7-2.2 10.7-2.2-2-2.6-6.2-2.2-10.7z" />
+    <path d="M12 14.2v5.3M9 19.5h6" />
+  </Svg>
+)
+export const IconGlassPint = (p: P) => (
+  <Svg {...p}>
+    <path d="M6.5 4.5h11l-1.2 14.7a1.2 1.2 0 0 1-1.2 1.1H8.9a1.2 1.2 0 0 1-1.2-1.1z" />
+    <path d="M6.9 8.5h10.2" />
+  </Svg>
+)
+export const IconGlassCup = (p: P) => (
+  <Svg {...p}>
+    <path d="M5.5 9.5H16V14a4.5 4.5 0 0 1-4.5 4.5H10A4.5 4.5 0 0 1 5.5 14z" />
+    <path d="M16 11h1.2a2.2 2.2 0 0 1 0 4.4H16M4 20.5h14.5" />
+    <path d="M9 4.8c-.8 1 .8 1.8 0 2.8M12.5 4.8c-.8 1 .8 1.8 0 2.8" />
+  </Svg>
+)
+export const IconGlassHurricane = (p: P) => (
+  <Svg {...p}>
+    <path d="M13.4 9 16.2 2.2" />
+    <path d="M8 4c.3 2.5 2 3.5 1.8 5.5-.2 2-2.5 3.5-2.2 6.3.3 2.2 2.2 3.2 4.4 3.2s4.1-1 4.4-3.2c.3-2.8-2-4.3-2.2-6.3-.2-2 1.5-3 1.8-5.5z" />
+    <path d="M9.5 21h5" />
+  </Svg>
+)
+export const IconGlassHighball = (p: P) => (
+  <Svg {...p}>
+    <path d="M13.2 11.5 16.6 2" />
+    <path d="M7 4.5h10V19a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 7 19z" />
+  </Svg>
+)
+export const IconGlassRocks = (p: P) => (
+  <Svg {...p}>
+    <path d="M5.5 8.5h13l-.9 10.3a1.5 1.5 0 0 1-1.5 1.4H7.9a1.5 1.5 0 0 1-1.5-1.4z" />
+    <rect x="9.3" y="11.6" width="5.4" height="5.4" rx="1" transform="rotate(-8 12 14.3)" />
+  </Svg>
+)
+
+const GLASS_ICONS: Record<GlassFamily, (p: P) => ReactNode> = {
+  cocktail: IconGlassCocktail, margarita: IconGlassMargarita, wine: IconGlassWine, flute: IconGlassFlute,
+  pint: IconGlassPint, cup: IconGlassCup, hurricane: IconGlassHurricane, highball: IconGlassHighball,
+  rocks: IconGlassRocks,
+}
+export const GlassIcon = ({ family, ...p }: P & { family: GlassFamily }) => GLASS_ICONS[family](p)

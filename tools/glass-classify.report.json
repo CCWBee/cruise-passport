@@ -1,0 +1,1906 @@
+{
+ "model": "jev-1.13.0",
+ "tokens": 129323,
+ "report": [
+  {
+   "name": "Prosecco",
+   "family": "flute",
+   "by": "code"
+  },
+  {
+   "name": "Villa Sandi 'Romero Britto Princess Love' Prosecco",
+   "family": "flute",
+   "by": "code"
+  },
+  {
+   "name": "Piper Heidsieck Champagne",
+   "family": "flute",
+   "by": "code"
+  },
+  {
+   "name": "Moscato",
+   "family": "wine",
+   "by": "code"
+  },
+  {
+   "name": "Sauvignon Blanc",
+   "family": "wine",
+   "by": "code"
+  },
+  {
+   "name": "Chardonnay",
+   "family": "wine",
+   "by": "code"
+  },
+  {
+   "name": "Pinot Grigio",
+   "family": "wine",
+   "by": "code"
+  },
+  {
+   "name": "Riesling",
+   "family": "wine",
+   "by": "code"
+  },
+  {
+   "name": "Rosé",
+   "family": "wine",
+   "by": "code"
+  },
+  {
+   "name": "Pinot Noir",
+   "family": "wine",
+   "by": "code"
+  },
+  {
+   "name": "Merlot",
+   "family": "wine",
+   "by": "code"
+  },
+  {
+   "name": "Cabernet Sauvignon",
+   "family": "wine",
+   "by": "code"
+  },
+  {
+   "name": "Red Blend",
+   "family": "wine",
+   "by": "code"
+  },
+  {
+   "name": "Emmolo Sauvignon Blanc",
+   "family": "wine",
+   "by": "code"
+  },
+  {
+   "name": "Flowers Chardonnay",
+   "family": "wine",
+   "by": "code"
+  },
+  {
+   "name": "Chateau d'Esclans 'Whispering Angel' Rosé",
+   "family": "wine",
+   "by": "code"
+  },
+  {
+   "name": "Sea Sun Pinot Noir",
+   "family": "wine",
+   "by": "code"
+  },
+  {
+   "name": "Bonanza Cabernet Sauvignon by Caymus",
+   "family": "wine",
+   "by": "code"
+  },
+  {
+   "name": "Melorosa Red Blend by Jason Aldean",
+   "family": "wine",
+   "by": "code"
+  },
+  {
+   "name": "M. Haslinger & Fils Champagne",
+   "family": "flute",
+   "by": "code"
+  },
+  {
+   "name": "Beau Joie Brut Champagne",
+   "family": "flute",
+   "by": "code"
+  },
+  {
+   "name": "Budweiser",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Bud Light",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Coors Light",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Miller Lite",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Michelob Ultra",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Heineken",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Heineken Light",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Heineken Silver",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Heineken 0.0",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Stella Artois",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Corona Extra",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Dos Equis",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Red Stripe",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Peroni Nastro Azzurro",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Lagunitas IPA",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Blue Moon Belgian White",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Guinness Stout",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Samuel Adams Boston Lager",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Asahi",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Sapporo",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Foster's Oil Can",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Angry Orchard Cider",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Strongbow Cider",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Truly Hard Seltzer",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Heineken (draft)",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Affligem (draft)",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Strongbow Cider (draft)",
+   "family": "pint",
+   "by": "code"
+  },
+  {
+   "name": "Gin & Tonic Ultima",
+   "family": "highball",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "margarita",
+    0
+   ]
+  },
+  {
+   "name": "Azul Blanco",
+   "family": "margarita",
+   "by": "jev",
+   "p": 0.49,
+   "next": [
+    "cocktail",
+    0.46
+   ]
+  },
+  {
+   "name": "Grappa Peach",
+   "family": "flute",
+   "by": "jev",
+   "p": 0.89,
+   "next": [
+    "highball",
+    0.06
+   ]
+  },
+  {
+   "name": "Bangkok Mule",
+   "family": "highball",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "rocks",
+    0
+   ]
+  },
+  {
+   "name": "Apples Delight",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.54,
+   "next": [
+    "rocks",
+    0.25
+   ]
+  },
+  {
+   "name": "Sandia en Fuego",
+   "family": "margarita",
+   "by": "jev",
+   "p": 0.81,
+   "next": [
+    "rocks",
+    0.09
+   ]
+  },
+  {
+   "name": "The Great Pumpkin",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.54,
+   "next": [
+    "cocktail",
+    0.26
+   ]
+  },
+  {
+   "name": "Vanilla Sky",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.55,
+   "next": [
+    "highball",
+    0.31
+   ]
+  },
+  {
+   "name": "The Cartagena Cool",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.97,
+   "next": [
+    "cocktail",
+    0.03
+   ]
+  },
+  {
+   "name": "Coco-Cafe",
+   "family": "cup",
+   "by": "jev",
+   "p": 0.72,
+   "next": [
+    "rocks",
+    0.18
+   ]
+  },
+  {
+   "name": "Aperitivo Roma",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.68,
+   "next": [
+    "highball",
+    0.2
+   ]
+  },
+  {
+   "name": "Barbados Swizzler",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.51,
+   "next": [
+    "highball",
+    0.32
+   ]
+  },
+  {
+   "name": "Key Lime Martini",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "cup",
+    0
+   ]
+  },
+  {
+   "name": "Mykonos Press",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.98,
+   "next": [
+    "cocktail",
+    0.02
+   ]
+  },
+  {
+   "name": "Pastis Pearl",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.9,
+   "next": [
+    "rocks",
+    0.05
+   ]
+  },
+  {
+   "name": "Saint Petersburg Mule",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.98,
+   "next": [
+    "cup",
+    0.02
+   ]
+  },
+  {
+   "name": "Starry Night in Oslo",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.49,
+   "next": [
+    "rocks",
+    0.38
+   ]
+  },
+  {
+   "name": "Butterfly",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.95,
+   "next": [
+    "highball",
+    0.04
+   ]
+  },
+  {
+   "name": "Loch Ness Martini",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "flute",
+    0
+   ]
+  },
+  {
+   "name": "Classic Cosmo",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "wine",
+    0
+   ]
+  },
+  {
+   "name": "French Martini",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "cup",
+    0
+   ]
+  },
+  {
+   "name": "Blackberry Thicket",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.54,
+   "next": [
+    "rocks",
+    0.3
+   ]
+  },
+  {
+   "name": "Crooners Signature 007",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "rocks",
+    0
+   ]
+  },
+  {
+   "name": "Figs & Honey",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.75,
+   "next": [
+    "rocks",
+    0.23
+   ]
+  },
+  {
+   "name": "Clover Club",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "highball",
+    0
+   ]
+  },
+  {
+   "name": "Rum Brulee",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.65,
+   "next": [
+    "cocktail",
+    0.32
+   ]
+  },
+  {
+   "name": "Cask and Coco",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.89,
+   "next": [
+    "cocktail",
+    0.11
+   ]
+  },
+  {
+   "name": "Ferrero",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.59,
+   "next": [
+    "cocktail",
+    0.41
+   ]
+  },
+  {
+   "name": "Chairman of the Board",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "highball",
+    0
+   ]
+  },
+  {
+   "name": "Negroni Bianco",
+   "family": "rocks",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "margarita",
+    0
+   ]
+  },
+  {
+   "name": "Lavender Smoke",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.88,
+   "next": [
+    "rocks",
+    0.09
+   ]
+  },
+  {
+   "name": "Vintage Sidecar",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "cup",
+    0
+   ]
+  },
+  {
+   "name": "The White Lady",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "rocks",
+    0
+   ]
+  },
+  {
+   "name": "Carajillo Old Fashioned",
+   "family": "rocks",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "cocktail",
+    0
+   ]
+  },
+  {
+   "name": "Elixir of the Night",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.63,
+   "next": [
+    "cocktail",
+    0.37
+   ]
+  },
+  {
+   "name": "Brooklyn Nights",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.8,
+   "next": [
+    "rocks",
+    0.2
+   ]
+  },
+  {
+   "name": "Irish Tails",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.39,
+   "next": [
+    "rocks",
+    0.28
+   ]
+  },
+  {
+   "name": "Sailing Through the Orchids",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.97,
+   "next": [
+    "highball",
+    0.02
+   ]
+  },
+  {
+   "name": "Violette Haze",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.93,
+   "next": [
+    "highball",
+    0.06
+   ]
+  },
+  {
+   "name": "Whispers of Lapsang",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.9400000000000001,
+   "next": [
+    "cocktail",
+    0.06
+   ]
+  },
+  {
+   "name": "The Rose",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.96,
+   "next": [
+    "rocks",
+    0.03
+   ]
+  },
+  {
+   "name": "The Lux Classic",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "highball",
+    0
+   ]
+  },
+  {
+   "name": "Clover Breeze",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.94,
+   "next": [
+    "highball",
+    0.03
+   ]
+  },
+  {
+   "name": "Passion of the Irish",
+   "family": "highball",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "cocktail",
+    0
+   ]
+  },
+  {
+   "name": "Tropical Alibi",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.34,
+   "next": [
+    "hurricane",
+    0.27
+   ]
+  },
+  {
+   "name": "Filthy Molly",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.97,
+   "next": [
+    "rocks",
+    0.03
+   ]
+  },
+  {
+   "name": "Fiery High Ball",
+   "family": "highball",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "wine",
+    0
+   ]
+  },
+  {
+   "name": "Kenmare's Kiss",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.91,
+   "next": [
+    "highball",
+    0.05
+   ]
+  },
+  {
+   "name": "The Golden Gorse",
+   "family": "highball",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "cocktail",
+    0
+   ]
+  },
+  {
+   "name": "Pair of Queens",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.59,
+   "next": [
+    "highball",
+    0.35
+   ]
+  },
+  {
+   "name": "Howth Castle",
+   "family": "cup",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "highball",
+    0
+   ]
+  },
+  {
+   "name": "Under the Mango Tree",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.51,
+   "next": [
+    "cocktail",
+    0.29
+   ]
+  },
+  {
+   "name": "Flanna's Elixir",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.58,
+   "next": [
+    "rocks",
+    0.4
+   ]
+  },
+  {
+   "name": "Irish Time",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.95,
+   "next": [
+    "cocktail",
+    0.05
+   ]
+  },
+  {
+   "name": "Black Oak",
+   "family": "rocks",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "flute",
+    0
+   ]
+  },
+  {
+   "name": "Wicklow Pipes",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.6900000000000001,
+   "next": [
+    "rocks",
+    0.31
+   ]
+  },
+  {
+   "name": "Sea Legs",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.78,
+   "next": [
+    "margarita",
+    0.13
+   ]
+  },
+  {
+   "name": "Pants On Fire",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.63,
+   "next": [
+    "cocktail",
+    0.2
+   ]
+  },
+  {
+   "name": "Fancy Pants Paloma",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.93,
+   "next": [
+    "margarita",
+    0.06
+   ]
+  },
+  {
+   "name": "Hot Pants",
+   "family": "margarita",
+   "by": "jev",
+   "p": 0.6,
+   "next": [
+    "cocktail",
+    0.26
+   ]
+  },
+  {
+   "name": "24k Margarita",
+   "family": "margarita",
+   "by": "jev",
+   "p": 0.99,
+   "next": [
+    "cocktail",
+    0.01
+   ]
+  },
+  {
+   "name": "Pantalones Tequila Sunrise",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.95,
+   "next": [
+    "rocks",
+    0.02
+   ]
+  },
+  {
+   "name": "Classic Irish Coffee",
+   "family": "cup",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "hurricane",
+    0
+   ]
+  },
+  {
+   "name": "Grace O'Malley's Irish Coffee",
+   "family": "cup",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "pint",
+    0
+   ]
+  },
+  {
+   "name": "Sláinte Irish Coffee",
+   "family": "cup",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "wine",
+    0
+   ]
+  },
+  {
+   "name": "Sláinte Frozen Irish",
+   "family": "hurricane",
+   "by": "jev",
+   "p": 0.99,
+   "next": [
+    "cup",
+    0.01
+   ]
+  },
+  {
+   "name": "Eye of the Storm",
+   "family": "highball",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "rocks",
+    0
+   ]
+  },
+  {
+   "name": "Sea Bottom",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.69,
+   "next": [
+    "rocks",
+    0.15
+   ]
+  },
+  {
+   "name": "Over the Horizon",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.38,
+   "next": [
+    "highball",
+    0.34
+   ]
+  },
+  {
+   "name": "Anchors Away",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.9,
+   "next": [
+    "cocktail",
+    0.1
+   ]
+  },
+  {
+   "name": "Anne Bonny's Pearls",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.51,
+   "next": [
+    "rocks",
+    0.4
+   ]
+  },
+  {
+   "name": "The Captain",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.92,
+   "next": [
+    "cocktail",
+    0.08
+   ]
+  },
+  {
+   "name": "Fool's Gold",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.96,
+   "next": [
+    "highball",
+    0.03
+   ]
+  },
+  {
+   "name": "Dead Men Tell No Tales",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.45,
+   "next": [
+    "highball",
+    0.4
+   ]
+  },
+  {
+   "name": "Ship In A Bottle",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.37,
+   "next": [
+    "cocktail",
+    0.34
+   ]
+  },
+  {
+   "name": "Revenge of the Kraken",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.66,
+   "next": [
+    "margarita",
+    0.23
+   ]
+  },
+  {
+   "name": "Dragon Fruit Refresher",
+   "family": "margarita",
+   "by": "jev",
+   "p": 0.73,
+   "next": [
+    "highball",
+    0.13
+   ]
+  },
+  {
+   "name": "Seabreeze Spritz",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.77,
+   "next": [
+    "wine",
+    0.21
+   ]
+  },
+  {
+   "name": "Blue Pineapple Margarita",
+   "family": "margarita",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "pint",
+    0
+   ]
+  },
+  {
+   "name": "Sand Meets the Sea",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.69,
+   "next": [
+    "cocktail",
+    0.18
+   ]
+  },
+  {
+   "name": "Sunsets on the Ocean",
+   "family": "margarita",
+   "by": "jev",
+   "p": 0.45,
+   "next": [
+    "cocktail",
+    0.32
+   ]
+  },
+  {
+   "name": "Aperol Frosé",
+   "family": "hurricane",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "pint",
+    0
+   ]
+  },
+  {
+   "name": "Ocean Dreams",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.54,
+   "next": [
+    "highball",
+    0.28
+   ]
+  },
+  {
+   "name": "Driftwood",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.36,
+   "next": [
+    "highball",
+    0.33
+   ]
+  },
+  {
+   "name": "Baileys Colada",
+   "family": "hurricane",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "margarita",
+    0
+   ]
+  },
+  {
+   "name": "Ocean Fog",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.56,
+   "next": [
+    "margarita",
+    0.25
+   ]
+  },
+  {
+   "name": "Blowfish",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.4,
+   "next": [
+    "highball",
+    0.3
+   ]
+  },
+  {
+   "name": "Dragon Fruit Mojito",
+   "family": "highball",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "margarita",
+    0
+   ]
+  },
+  {
+   "name": "Aperol Coconut Margarita",
+   "family": "margarita",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "pint",
+    0
+   ]
+  },
+  {
+   "name": "Spicy Mango Margarita",
+   "family": "margarita",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "flute",
+    0
+   ]
+  },
+  {
+   "name": "Under the Sea",
+   "family": "highball",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "margarita",
+    0
+   ]
+  },
+  {
+   "name": "Strawberries & Cream",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.66,
+   "next": [
+    "rocks",
+    0.14
+   ]
+  },
+  {
+   "name": "Carajillo",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.83,
+   "next": [
+    "cup",
+    0.16
+   ]
+  },
+  {
+   "name": "Peach Fresca",
+   "family": "highball",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "cup",
+    0
+   ]
+  },
+  {
+   "name": "Strawberry Fresca",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.99,
+   "next": [
+    "cocktail",
+    0.01
+   ]
+  },
+  {
+   "name": "Watermelon Fresca",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.67,
+   "next": [
+    "cocktail",
+    0.28
+   ]
+  },
+  {
+   "name": "Empress Rose",
+   "family": "wine",
+   "by": "jev",
+   "p": 0.69,
+   "next": [
+    "highball",
+    0.29
+   ]
+  },
+  {
+   "name": "Truly Caliente Fresca",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.95,
+   "next": [
+    "margarita",
+    0.03
+   ]
+  },
+  {
+   "name": "Truly Pineapple & Coconut Daiquiri",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.96,
+   "next": [
+    "hurricane",
+    0.02
+   ]
+  },
+  {
+   "name": "Jungle Bird",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.52,
+   "next": [
+    "rocks",
+    0.26
+   ]
+  },
+  {
+   "name": "Land Ahoy",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.3,
+   "next": [
+    "cocktail",
+    0.24
+   ]
+  },
+  {
+   "name": "Lychee Vodka Mojito",
+   "family": "highball",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "rocks",
+    0
+   ]
+  },
+  {
+   "name": "Peanut Jungle Ball",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.73,
+   "next": [
+    "highball",
+    0.13
+   ]
+  },
+  {
+   "name": "State Fair",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.6,
+   "next": [
+    "highball",
+    0.34
+   ]
+  },
+  {
+   "name": "I Can't Feel the Rain",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.56,
+   "next": [
+    "highball",
+    0.31
+   ]
+  },
+  {
+   "name": "Aperol-Colada",
+   "family": "hurricane",
+   "by": "jev",
+   "p": 0.74,
+   "next": [
+    "highball",
+    0.24
+   ]
+  },
+  {
+   "name": "Passion Tree",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.93,
+   "next": [
+    "flute",
+    0.07
+   ]
+  },
+  {
+   "name": "Frosé",
+   "family": "hurricane",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "highball",
+    0
+   ]
+  },
+  {
+   "name": "Twisted Dirty Banana",
+   "family": "hurricane",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "highball",
+    0
+   ]
+  },
+  {
+   "name": "Guava Margarita",
+   "family": "margarita",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "cup",
+    0
+   ]
+  },
+  {
+   "name": "Coconut Margarita",
+   "family": "margarita",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "flute",
+    0
+   ]
+  },
+  {
+   "name": "Grilled Pineapple Margarita",
+   "family": "margarita",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "cocktail",
+    0
+   ]
+  },
+  {
+   "name": "Gina Colada",
+   "family": "hurricane",
+   "by": "jev",
+   "p": 0.72,
+   "next": [
+    "highball",
+    0.27
+   ]
+  },
+  {
+   "name": "The Levant",
+   "family": "highball",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "rocks",
+    0
+   ]
+  },
+  {
+   "name": "Murasaki Margarita",
+   "family": "margarita",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "cup",
+    0
+   ]
+  },
+  {
+   "name": "Nagoya Negroni",
+   "family": "rocks",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "margarita",
+    0
+   ]
+  },
+  {
+   "name": "Dansu",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.88,
+   "next": [
+    "rocks",
+    0.07
+   ]
+  },
+  {
+   "name": "Makoto Gin & Tonic",
+   "family": "highball",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "margarita",
+    0
+   ]
+  },
+  {
+   "name": "Kodai No Hana",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.62,
+   "next": [
+    "highball",
+    0.28
+   ]
+  },
+  {
+   "name": "Coffee Nichibotsu",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.78,
+   "next": [
+    "cup",
+    0.16
+   ]
+  },
+  {
+   "name": "Full of Seoul",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.42,
+   "next": [
+    "cocktail",
+    0.34
+   ]
+  },
+  {
+   "name": "Umai Pink",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.54,
+   "next": [
+    "highball",
+    0.26
+   ]
+  },
+  {
+   "name": "Biiru",
+   "family": "pint",
+   "by": "jev",
+   "p": 0.95,
+   "next": [
+    "highball",
+    0.05
+   ]
+  },
+  {
+   "name": "Green Pea Soup",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.5,
+   "next": [
+    "margarita",
+    0.19
+   ]
+  },
+  {
+   "name": "Singapore Fling",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.91,
+   "next": [
+    "cocktail",
+    0.08
+   ]
+  },
+  {
+   "name": "Negroni",
+   "family": "rocks",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "pint",
+    0
+   ]
+  },
+  {
+   "name": "Americano",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.8200000000000001,
+   "next": [
+    "rocks",
+    0.15
+   ]
+  },
+  {
+   "name": "Aperol Spritz",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.58,
+   "next": [
+    "wine",
+    0.37
+   ]
+  },
+  {
+   "name": "Hugo Spritz",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.6,
+   "next": [
+    "wine",
+    0.36
+   ]
+  },
+  {
+   "name": "Limoncello Spritz",
+   "family": "wine",
+   "by": "jev",
+   "p": 0.61,
+   "next": [
+    "highball",
+    0.31
+   ]
+  },
+  {
+   "name": "Toscana",
+   "family": "flute",
+   "by": "jev",
+   "p": 0.88,
+   "next": [
+    "cocktail",
+    0.05
+   ]
+  },
+  {
+   "name": "Sienna",
+   "family": "flute",
+   "by": "jev",
+   "p": 0.6,
+   "next": [
+    "wine",
+    0.25
+   ]
+  },
+  {
+   "name": "Perano",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.87,
+   "next": [
+    "rocks",
+    0.09
+   ]
+  },
+  {
+   "name": "Chianti Sangria",
+   "family": "wine",
+   "by": "jev",
+   "p": 0.99,
+   "next": [
+    "highball",
+    0.01
+   ]
+  },
+  {
+   "name": "Bolgheri",
+   "family": "cup",
+   "by": "jev",
+   "p": 0.33,
+   "next": [
+    "cocktail",
+    0.33
+   ]
+  },
+  {
+   "name": "Strawberry Love Potion",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.88,
+   "next": [
+    "rocks",
+    0.07
+   ]
+  },
+  {
+   "name": "Chocolate Royale",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.84,
+   "next": [
+    "cocktail",
+    0.15
+   ]
+  },
+  {
+   "name": "Espresso My Love",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "rocks",
+    0
+   ]
+  },
+  {
+   "name": "Britto Coupe",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "highball",
+    0
+   ]
+  },
+  {
+   "name": "Heart of Glass",
+   "family": "flute",
+   "by": "jev",
+   "p": 0.83,
+   "next": [
+    "cocktail",
+    0.16
+   ]
+  },
+  {
+   "name": "Britto Watermelon",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.47000000000000003,
+   "next": [
+    "highball",
+    0.27
+   ]
+  },
+  {
+   "name": "Bubble Bath of Love",
+   "family": "margarita",
+   "by": "jev",
+   "p": 0.62,
+   "next": [
+    "cocktail",
+    0.28
+   ]
+  },
+  {
+   "name": "Signature Tiramisu",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.81,
+   "next": [
+    "flute",
+    0.09
+   ]
+  },
+  {
+   "name": "Aperol Spritz (Bellini's)",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.44,
+   "next": [
+    "wine",
+    0.44
+   ]
+  },
+  {
+   "name": "Limoncello Spritz (Bellini's)",
+   "family": "flute",
+   "by": "jev",
+   "p": 0.51,
+   "next": [
+    "wine",
+    0.35
+   ]
+  },
+  {
+   "name": "Peach Bellini",
+   "family": "flute",
+   "by": "jev",
+   "p": 0.99,
+   "next": [
+    "wine",
+    0.01
+   ]
+  },
+  {
+   "name": "Escape from Houdini's Chest",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.5,
+   "next": [
+    "rocks",
+    0.43
+   ]
+  },
+  {
+   "name": "Artemis",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.5,
+   "next": [
+    "cup",
+    0.33
+   ]
+  },
+  {
+   "name": "Houdini's Escape",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.6900000000000001,
+   "next": [
+    "cocktail",
+    0.25
+   ]
+  },
+  {
+   "name": "Lilypad",
+   "family": "cocktail",
+   "by": "jev",
+   "p": 0.79,
+   "next": [
+    "rocks",
+    0.15
+   ]
+  },
+  {
+   "name": "Flowers in Bloom",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.54,
+   "next": [
+    "cocktail",
+    0.44
+   ]
+  },
+  {
+   "name": "Indigo Oasis",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.58,
+   "next": [
+    "cocktail",
+    0.36
+   ]
+  },
+  {
+   "name": "Spiced Negroni",
+   "family": "rocks",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "hurricane",
+    0
+   ]
+  },
+  {
+   "name": "Sunset on Ice",
+   "family": "wine",
+   "by": "jev",
+   "p": 0.46,
+   "next": [
+    "highball",
+    0.34
+   ]
+  },
+  {
+   "name": "Caribbean Punch",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.99,
+   "next": [
+    "hurricane",
+    0.01
+   ]
+  },
+  {
+   "name": "Fresh Ginger Mojito",
+   "family": "highball",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "wine",
+    0
+   ]
+  },
+  {
+   "name": "Coffee and Donuts Milkshake",
+   "family": "hurricane",
+   "by": "jev",
+   "p": 0.66,
+   "next": [
+    "highball",
+    0.18
+   ]
+  },
+  {
+   "name": "Painkiller",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.55,
+   "next": [
+    "hurricane",
+    0.32
+   ]
+  },
+  {
+   "name": "Mango Mai Tai",
+   "family": "highball",
+   "by": "jev",
+   "p": 0.62,
+   "next": [
+    "rocks",
+    0.15000000000000002
+   ]
+  },
+  {
+   "name": "Peanut Butter and Jelly Carajillo",
+   "family": "rocks",
+   "by": "jev",
+   "p": 0.91,
+   "next": [
+    "cup",
+    0.09
+   ]
+  },
+  {
+   "name": "Espresso",
+   "family": "cup",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "hurricane",
+    0
+   ]
+  },
+  {
+   "name": "Cappuccino",
+   "family": "cup",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "rocks",
+    0
+   ]
+  },
+  {
+   "name": "Caffè Latte",
+   "family": "cup",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "flute",
+    0
+   ]
+  },
+  {
+   "name": "Mocha",
+   "family": "cup",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "highball",
+    0
+   ]
+  },
+  {
+   "name": "Macchiato",
+   "family": "cup",
+   "by": "jev",
+   "p": 1,
+   "next": [
+    "pint",
+    0
+   ]
+  },
+  {
+   "name": "Orange Granita",
+   "family": "hurricane",
+   "by": "jev",
+   "p": 0.95,
+   "next": [
+    "highball",
+    0.03
+   ]
+  }
+ ]
+}
