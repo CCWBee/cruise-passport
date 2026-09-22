@@ -193,7 +193,10 @@ h1, h2, h3, p { margin: 0; }
   min-height: var(--ctl); padding: 0 var(--s4); border-radius: var(--r-control);
   font-size: var(--f-body); font-weight: 600; line-height: 1; white-space: nowrap;
   background: var(--panel-solid); color: var(--ink); border: 1px solid var(--line);
-  transition: scale var(--t-press) var(--e-out), background-color var(--t-panel) var(--e-out);
+  /* the fill, the edge and the label change on one clock: a label that flips before its fill passes
+     a frame of white on a pale ground (or ink on coral) between disabled and enabled */
+  transition: scale var(--t-press) var(--e-out), background-color var(--t-panel) var(--e-out),
+    border-color var(--t-panel) var(--e-out), color var(--t-panel) var(--e-out);
 }
 .btn:active { scale: .97; }
 .btn-coral { background: var(--coral-ink); color: var(--on-accent); border-color: transparent; }

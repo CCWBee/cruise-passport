@@ -139,9 +139,13 @@ export function Shaker({ phase, still = false, drink }: ShakerProps) {
               <path d="M28.5 84L30.5 84L33 212L31.5 212Z" />
               <path d="M19 31C13 39 10.5 49 10 62L16 62C16.5 49 18.5 40 23 32Z" />
             </g>
+            {/* the shade: the far side, and a narrow dark reflection beside each strip of light,
+                which is what makes a highlight read on cream, as it does on polished steel */}
             <g className="shaker-shade" stroke="none">
               <path d="M66 84H84C81.5 140 77 190 74 210H64.5C66.5 190 67.5 140 66 84Z" />
               <path d="M58 27C70 31 77 44 78 62H70C69.5 46 65.5 34 58 27Z" />
+              <path d="M31.5 84L37 84L38.5 212L34 212Z" />
+              <path d="M23 32C18.5 40 16.5 49 16 62L20.5 62C21 50 22.5 41 26.5 33.5Z" />
             </g>
             <path d={BODY} fill="none" />
             <path d={DOME} fill="none" />
@@ -154,7 +158,7 @@ export function Shaker({ phase, still = false, drink }: ShakerProps) {
           <g transform="translate(44 11)"><g className="shaker-cap"><g transform="translate(-44 -11)">
             <path d={CAP} />
             <path className="shaker-light" d="M32 4.5H35V18.5H32Z" stroke="none" />
-            <path className="shaker-shade" d="M52 4H59.5V19H52Z" stroke="none" />
+            <path className="shaker-shade" d="M52 4H59.5V19H52ZM35.5 4H38.5V19H35.5Z" stroke="none" />
             {/* the grooves round the cap's lower half */}
             <path d="M27.5 11.5H60.5M27.5 14.5H60.5M27.5 17.5H60.5" fill="none" stroke="var(--ink-3)" strokeWidth={HAIRLINE} />
             <path d={CAP} fill="none" />

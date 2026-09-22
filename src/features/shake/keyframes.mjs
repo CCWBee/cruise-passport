@@ -134,11 +134,11 @@ const sampled = (name, ms, every, at) => {
   return lines.join('\n')
 }
 
-// ── the cap off, from the pop: straight up off the neck on --e-out to its apex (70 above, drifting 22
-// to the right so it is clear of the glass coming up behind it), then a fall on a parabola, still
-// drifting right and tumbling, fading from 90ms after the apex and gone by 150ms after that, well
+// ── the cap off, from the pop: thrown up off the neck on --e-out to its apex in 70ms (80 above, 72 on
+// screen, leaning 18 to the right so it is clear of the glass coming up behind it), then a fall on a
+// parabola, running right and tumbling, fading from 60ms after the apex and gone by 180 after it,
 // inside the 300 the spec allows. It starts from the press-down's 1.8, where the beat left it.
-export const CAP_OFF = { rise: 110, fall: 240, apex: -70, drift: 22, run: 0.5, g: 0.0042 }
+export const CAP_OFF = { rise: 70, fall: 190, apex: -80, drift: 18, run: 0.8, g: 0.006, fadeFrom: 60, fadeFor: 120 }
 const capAt = (t) => {
   const { rise, apex, drift, run, g } = CAP_OFF
   let x, y, deg, o
@@ -148,7 +148,7 @@ const capAt = (t) => {
   } else {
     const f = t - rise
     x = drift + run * f; y = apex + 0.5 * g * f * f; deg = 25 + f * 0.95
-    o = f < 90 ? 1 : Math.max(0, 1 - (f - 90) / 150)
+    o = f < CAP_OFF.fadeFrom ? 1 : Math.max(0, 1 - (f - CAP_OFF.fadeFrom) / CAP_OFF.fadeFor)
   }
   return `opacity: ${r(o)}; transform: translate(${r(x, 1)}px, ${r(y, 1)}px) rotate(${r(deg, 1)}deg);`
 }
@@ -161,6 +161,9 @@ const capAt = (t) => {
 const HANG = 4, NECK = 20, S0 = 0.6, BOX_H = 72
 const D0 = NECK + 1 + BOX_H * S0 - HANG   // the box's top 1 under the neck line
 const OVER = -8, PEAK = 0.62
+// the glass starts 20ms behind the cap, so the cap is off the neck before the rim comes up under it;
+// it still shows inside 40ms of the cap leaving, because its first frames are its fastest
+export const GLASS_LAG = 20
 const scaleAt = (dy) => {
   const foot = HANG + dy
   if (foot >= NECK) return S0
@@ -169,13 +172,33 @@ const scaleAt = (dy) => {
   return S0 + (1 - S0) * u * u * (3 - 2 * u)
 }
 const glassAt = (dy) => `transform: translate(0, ${r(dy, 1)}px) scale(${r(scaleAt(dy), 3)});`
+const RISE = S.landMs - GLASS_LAG
 const riseDy = (t) => {
-  const u = t / S.landMs
+  const u = t / RISE
   return u <= PEAK ? D0 + (OVER - D0) * eOut(u / PEAK) : OVER + (0 - OVER) * eOut((u - PEAK) / (1 - PEAK))
 }
 // the sink before a second shake: the same path backwards, off the hang and into the mouth in 180
 export const SINK = 180
 const sinkDy = (t) => D0 * eOut(t / SINK)
+
+// The cap must clear the glass coming up behind it: at every 5ms of the flight, the gap between the
+// cap's turned box and the part of the glass's box that is out of the mouth, while the cap shows.
+const GLASS_HALF = 29, RIM = 6
+let tightest = Infinity
+for (let t = 0; t <= CAP_OFF.rise + CAP_OFF.fall; t += 5) {
+  const m = capAt(t).match(/opacity: ([\d.]+); transform: translate\(([-\d.]+)px, ([-\d.]+)px\) rotate\(([-\d.]+)deg\)/)
+  if (Number(m[1]) < 0.35) continue
+  const cx = 44 + Number(m[2]), cy = 11 + Number(m[3]), a = (Number(m[4]) * Math.PI) / 180
+  const hw = 17 * Math.abs(Math.cos(a)) + 9 * Math.abs(Math.sin(a)), hh = 17 * Math.abs(Math.sin(a)) + 9 * Math.abs(Math.cos(a))
+  const tg = t - GLASS_LAG, dy = tg < 0 ? D0 : tg <= RISE ? riseDy(tg) : 0, sc = scaleAt(dy), foot = HANG + dy
+  const gy0 = foot - (BOX_H - RIM) * sc, gy1 = Math.min(foot, NECK)
+  if (gy0 >= NECK) continue
+  const gapX = Math.abs(cx - 44) - hw - GLASS_HALF * sc
+  const gapY = Math.max(gy0 - (cy + hh), (cy - hh) - gy1)
+  tightest = Math.min(tightest, Math.max(gapX, gapY))
+}
+if (tightest < 0) console.warn(`WARNING: the cap passes through the glass (by ${r(-tightest, 1)} on the grid)`)
+else console.log(`the cap clears the glass by ${r(tightest, 1)} at its closest`)
 
 const out = [
   '/* ── computed: node src/features/shake/keyframes.mjs writes everything from here to the end marker,',
@@ -183,7 +206,7 @@ const out = [
   table('shaker-shake', RIG, ([, x, y, d]) => `translate(${x}px, ${y}px) rotate(${d}deg)`, 's'),
   table('shaker-beat', CAP, ([, y, d]) => `translateY(${y}px) rotate(${d}deg)`, 'o'),
   sampled('shaker-cap-off', CAP_OFF.rise + CAP_OFF.fall, 20, capAt),
-  sampled('shaker-glass-rise', S.landMs, 20, (t) => glassAt(riseDy(t))),
+  sampled('shaker-glass-rise', RISE, 20, (t) => glassAt(riseDy(t))),
   sampled('shaker-glass-sink', SINK, 20, (t) => glassAt(sinkDy(t))),
   '/* ── end of computed keyframes ── */',
 ].join('\n')
