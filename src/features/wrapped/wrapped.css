@@ -74,6 +74,8 @@
 .wr-blurb { max-width: 30ch; color: var(--ink-2); }
 /* the facts that qualify a card, held a step away from the line the numeral belongs to */
 .wr-facts { display: grid; gap: var(--s1); margin-top: var(--s3); }
+/* a list of three drink names wraps evenly rather than leaving one name alone on the second line */
+.wr-facts p { text-wrap: balance; }
 .wr-cover { align-items: flex-start; text-align: left; }
 .wr-cover .wr-lead { max-width: 12ch; }
 
@@ -107,6 +109,9 @@
 .wr-summary p + p { border-top: 1px solid var(--line); }
 .wr-summary strong { max-width: 62%; text-align: right; font-size: var(--f-meta); font-weight: 600; }
 .wr-save { pointer-events: auto; position: relative; z-index: 6; }
+/* empty at rest, "Saved." after: it holds its one line either way, so the centred stack does not
+   move under the guest's thumb when the status lands */
+.wr-save-note { min-height: calc(var(--f-meta) * 1.4); }
 
 .wr-hint {
   position: absolute; z-index: 8; right: var(--s4); bottom: calc(var(--safe-b) + var(--s3)); left: var(--s4);

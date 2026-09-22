@@ -28,16 +28,6 @@
   text-overflow: ellipsis;
 }
 
-/* the one action that fills the empty grid */
-.badge-empty-action {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--ctl);
-  font-size: var(--f-body);
-  font-weight: 600;
-  color: var(--coral-ink);
-}
-
 /* ── the coin: one flat metal face, a hairline rim, the emblem struck pale into it ──
    The tier ladder is four steps of ink into the ground's own white. A tier is an ordinal, so it is
    ink, like every other ordinal in the app: no rating gold enters badge art. The lightest step
@@ -97,17 +87,20 @@
 /* ── Close and Locked: rows on the ground ── */
 .badge-row { color: inherit; }
 
+/* a Close row is one line: the name, then the count and its bar side by side at the right. The bar
+   is fixed and last, so the bars stand in one column and every count ends on the same edge. */
 .badge-meter {
   display: grid;
-  justify-items: end;
-  gap: var(--s1);
+  grid-auto-flow: column;
+  align-items: center;
+  gap: var(--s2);
   flex: none;
-  width: 88px;
+  white-space: nowrap;
 }
 
 .badge-track {
   display: block;
-  width: 100%;
+  width: 56px;
   height: 3px;
   overflow: hidden;
   border-radius: var(--r-tag);

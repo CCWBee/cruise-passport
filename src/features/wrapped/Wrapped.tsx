@@ -117,7 +117,7 @@ function SaveWrapped({ card }: { card: WrappedFinale }) {
         download(blob)
       }
     } catch {
-      setStatus('Could not make the picture.')
+      setStatus('Could not make the picture. Try again.')
     } finally {
       setBusy(false)
     }
@@ -138,7 +138,8 @@ function SaveWrapped({ card }: { card: WrappedFinale }) {
       >
         {busy ? 'Making your picture…' : 'Save my Wrapped'}
       </button>
-      <p className="wr-save-note t-meta" role="status">{status || 'Saves a picture you can post.'}</p>
+      {/* empty at rest: the button says what it does; the region stays mounted so "Saved." is announced */}
+      <p className="wr-save-note t-meta" role="status">{status}</p>
     </>
   )
 }
@@ -163,7 +164,6 @@ function CardBody({ card, total }: { card: WrappedCard; total: number }) {
           <p className="t-meta">You have tried</p>
           <p className="t-display tnum"><AnimatedNumber value={card.count} /></p>
           <p className="t-meta">of {total} drinks</p>
-          <p className="t-meta">{card.pct.toFixed(0)}% of the passport</p>
         </div>
       )
     case 'topbar':
@@ -171,8 +171,7 @@ function CardBody({ card, total }: { card: WrappedCard; total: number }) {
         <div className="wr-content">
           <p className="t-meta">Your top bar</p>
           <h2 className="t-title wr-lead">{card.venue}</h2>
-          <p className="t-meta tnum">Deck {card.deck}</p>
-          <p className="t-meta">{card.count} drinks logged here</p>
+          <p className="t-meta tnum">Deck {card.deck} · {card.count} drinks</p>
         </div>
       )
     case 'spirit':
@@ -180,7 +179,7 @@ function CardBody({ card, total }: { card: WrappedCard; total: number }) {
         <div className="wr-content">
           <p className="t-meta">Favourite spirit</p>
           <h2 className="t-title wr-lead">{card.spirit}</h2>
-          <p className="t-meta">{card.count} appearances in your glass</p>
+          <p className="t-meta tnum">{card.count} drinks</p>
         </div>
       )
     case 'bigday':
@@ -207,7 +206,6 @@ function CardBody({ card, total }: { card: WrappedCard; total: number }) {
           <p className="t-meta">Your cocktail archetype</p>
           <h2 className="t-title wr-lead">{card.archetype.name}</h2>
           <p className="t-body wr-blurb">{card.archetype.blurb}</p>
-          <p className="t-meta">{card.archetype.traits.join(', ')}</p>
         </div>
       )
     case 'medals':
@@ -215,7 +213,7 @@ function CardBody({ card, total }: { card: WrappedCard; total: number }) {
         <div className="wr-content">
           <p className="t-meta">Medals</p>
           <p className="t-display tnum"><AnimatedNumber value={card.count} /></p>
-          <p className="t-meta tnum">of {card.total} medals earned</p>
+          <p className="t-meta tnum">of {card.total} earned</p>
         </div>
       )
     case 'crew':
@@ -227,9 +225,6 @@ function CardBody({ card, total }: { card: WrappedCard; total: number }) {
           <div className="wr-facts">
             {card.twin && <p className="t-meta">Taste twin: {card.twin.name}, {card.twin.affinityPct}% match</p>}
             <p className="t-meta">Together you found {card.triedTogether} of {total}</p>
-            {card.onlyFriends > 0 && (
-              <p className="t-meta tnum">{card.onlyFriends} of those you owe to the crew</p>
-            )}
             {card.shared.length > 0 && <p className="t-meta">Both loved: {listJoin(card.shared)}</p>}
           </div>
         </div>
@@ -238,7 +233,6 @@ function CardBody({ card, total }: { card: WrappedCard; total: number }) {
       return (
         <div className="wr-content wr-finale">
           <div className="wr-certificate panel">
-            <p className="t-meta">Certificate of a voyage</p>
             <h2 className="t-title">Cruise Wrapped</h2>
             <p className="t-display tnum wr-cert-number"><AnimatedNumber value={card.count} /></p>
             <p className="t-meta">drinks tried, <span className="tnum">{card.pct.toFixed(0)}%</span> complete</p>
@@ -435,11 +429,12 @@ export function Wrapped({ onClose, startIndex = 0 }: WrappedProps) {
           <CardBody card={card} total={wrappedTotal(drinks)} />
         </section>
       </main>
-      {/* Three slots always, so the count keeps its place; the side words appear only where the tap
-          they name actually moves the story. */}
+      {/* Three slots always, so Previous and Next keep their places; the side words appear only where
+          the tap they name actually moves the story. The rail at the top says where you are, so the
+          middle slot is empty unless the story is held. */}
       <div className="wr-hint" aria-hidden="true">
         <span>{index > 0 ? 'Previous' : ''}</span>
-        <span>{holding ? 'Paused' : `${index + 1} of ${cards.length}`}</span>
+        <span>{holding ? 'Paused' : ''}</span>
         <span>{last ? '' : 'Next'}</span>
       </div>
     </div>,
