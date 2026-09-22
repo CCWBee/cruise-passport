@@ -8,9 +8,11 @@ import { IconCheck, IconStar } from '../../ui/Icon'
 export const DrinkCard = memo(function DrinkCard({ d, onOpen }: { d: Drink; onOpen: (id: string) => void }) {
   const e = useStore((s) => s.me.entries[d.id]) || {}
   const toggleTried = useStore((s) => s.toggleTried)
-  // Tier and price as plain text at the end of the meta line, never pills, and one middle dot at
-  // most: the unconfirmed warning belongs to the sheet, where there is room to say what it means.
-  const fold = [d.category, d.price !== null ? money(d.price) : null].filter(Boolean).join(' · ')
+  // The price as plain text at the end of the meta line, never a pill. The category stays in the
+  // sheet's meta line and the Type filter: within a venue group it is usually the same row after row,
+  // and the ingredients need the room. The unconfirmed warning belongs to the sheet too.
+  const price = d.price !== null ? money(d.price) : ''
+  const meta = d.ingredients || price
 
   return (
     <article className="dcard">
@@ -23,10 +25,12 @@ export const DrinkCard = memo(function DrinkCard({ d, onOpen }: { d: Drink; onOp
             </span>
           ) : null}
         </span>
-        <span className="d-meta">
-          <span className="d-ing">{d.ingredients}</span>
-          <span className="d-fold tnum">{fold}</span>
-        </span>
+        {meta && (
+          <span className="d-meta">
+            <span className="d-ing">{d.ingredients}</span>
+            {price && <span className="d-fold tnum">{price}</span>}
+          </span>
+        )}
       </button>
       <button
         className={'d-try' + (e.tried ? ' on' : '')}

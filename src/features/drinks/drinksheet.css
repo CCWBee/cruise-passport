@@ -4,13 +4,13 @@
 .ds-desc { margin-top: var(--s2); }
 .ds-facts { margin-top: var(--s2); }
 .ds-warn { margin-top: var(--s2); }
-.ds-rule { margin: var(--s4) 0; }
 
 /* a sentence-case label above a group of controls */
 .ds-label { font-size: var(--f-meta); font-weight: 600; color: var(--ink-2); }
 
-/* sweetness and strength: five ink dots each */
-.ds-meters { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); }
+/* sweetness and strength: five ink dots each. Space, not a rule, sets the groups apart: a hairline
+   separates rows in a list and never groups inside a sheet. */
+.ds-meters { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); margin-top: var(--s5); }
 .ds-meter { display: grid; gap: var(--s2); }
 .ds-dots { display: flex; gap: var(--s1); }
 /* an off dot keeps a ring in --ink-3 so the denominator of "3 of 5" survives sun glare */
@@ -19,7 +19,7 @@
 .ds-abv { margin-top: var(--s3); }
 
 /* rating */
-.ds-rate-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s3); }
+.ds-rate-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s3); margin-top: var(--s5); }
 .ds-group { font-size: var(--f-meta); color: var(--gold-ink); white-space: nowrap; }
 .ds-stars { display: flex; gap: var(--s1); margin-top: var(--s1); }
 .ds-star {
@@ -29,7 +29,6 @@
 }
 .ds-star:active { background-color: var(--press); }
 .ds-star.on { color: var(--gold); }
-.ds-consensus { margin-top: var(--s2); }
 .ds-recby { display: flex; align-items: center; gap: var(--s2); margin-top: var(--s2); }
 
 /* one group of compact chips: tried in mint when on, the rest in ink */
@@ -54,8 +53,3 @@
 .ds-crew-copy p { margin-top: 2px; overflow-wrap: anywhere; }
 .ds-crew-name { display: inline-flex; align-items: center; gap: var(--s2); }
 .ds-crew-stars { display: inline-flex; align-items: center; color: var(--gold); }
-
-/* the other drinks at this bar: 36px controls, each with a 44px hit area */
-.ds-also { display: flex; flex-wrap: wrap; }
-.ds-also .mini { position: relative; }
-.ds-also .mini::before { content: ''; position: absolute; inset: -4px 0; }
