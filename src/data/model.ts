@@ -69,7 +69,8 @@ export function buildDrinks(): Drink[] {
       ingredients: w[1] + ' by the glass',
       flavors: [w[1] === 'Red' ? 'Bitter' : 'Refreshing'],
       sweet: w[0] === 'Moscato' ? 5 : 2, strength: 2, frozen: false, price: w[2], verified: true,
-      desc: 'Poured across the ship. ' + (HAS_PACKAGES && w[2] <= PLUS! ? 'Within the Plus allowance.' : 'Premier tier.'),
+      // the tier is already beside the price in the sheet's facts line, so the blurb does not repeat it
+      desc: 'Poured across the ship.',
       ...pkgFields(w[2]),
     })
   })

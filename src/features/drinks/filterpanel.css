@@ -1,10 +1,13 @@
 /* The filter panel: a form with its own boundary, so it is the one panel on this screen.
    Nothing inside it is a box: labels, chips and groups separated by hairlines. */
 .fpanel { padding: var(--s4); margin-top: var(--s3); }
-.fhead { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); min-height: var(--ctl); }
+/* Clear all alone, at the trailing edge where it has always sat */
+.fhead { display: flex; align-items: center; justify-content: flex-end; min-height: var(--ctl); }
 
-/* .f-label itself is base.css's; the panel only spaces its labels down from the group above */
+/* .f-label itself is base.css's; the panel only spaces its labels down from the group above, and
+   the first one, with no head above it, sits on the panel's own padding */
 .fpanel .f-label { margin-top: var(--s4); }
+.fpanel > .f-label:first-child { margin-top: 0; }
 .fquick { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s4); }
 
 .fgrp { border-top: 1px solid var(--line); margin-top: var(--s4); }
@@ -18,5 +21,3 @@
 .fgrp[open] .fsum { display: none; }
 
 .fcloud { display: flex; flex-wrap: wrap; gap: var(--s2); padding-bottom: var(--s3); }
-.fvdeck { margin-top: var(--s2); }
-.fvdeck-h { font-size: var(--f-meta); font-weight: 600; color: var(--ink-2); margin-bottom: var(--s2); }

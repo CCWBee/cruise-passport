@@ -47,7 +47,6 @@ export function Drinks() {
     [drinks, filters, q, entries],
   )
   const chosen = nChosen(filters)
-  const constrained = chosen - filters.venues.length > 0 || q.trim().length > 0
   const drop = results.length === 0 ? loosest(drinks, filters, q, (id) => entries[id] || {}) : null
   // The escape hatch drops the one group it names and keeps every other choice the guest made.
   const dropGroup = (key: string) =>
@@ -115,7 +114,7 @@ export function Drinks() {
         </button>
       </div>
 
-      {showFilters && <FilterPanel counts={counts} resultN={results.length} total={drinks.length} constrained={constrained} />}
+      {showFilters && <FilterPanel counts={counts} />}
 
       <div className="dtoolbar">
         <p className="t-meta tnum">
@@ -149,7 +148,7 @@ export function Drinks() {
         })
       )}
 
-      {openId && <DrinkSheet id={openId} onClose={() => setOpenId(null)} onOpen={setOpenId} />}
+      {openId && <DrinkSheet id={openId} onClose={() => setOpenId(null)} />}
       {showAdd && <AddSheet onClose={() => setShowAdd(false)} />}
     </div>
   )

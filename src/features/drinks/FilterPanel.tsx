@@ -1,19 +1,19 @@
 import { Chip } from '../../ui/Chip'
 import { GlassButton } from '../../ui/GlassButton'
 import { Segmented, type SegOption } from '../../ui/Segmented'
-import { DECKS, SPIRITS, FLAVOURS, CATEGORIES, HAS_PACKAGES, VENUES, VENUE_KEYS, deckLabel } from '../../data/model'
+import { DECKS, SPIRITS, FLAVOURS, CATEGORIES, HAS_PACKAGES, deckLabel } from '../../data/model'
 import { useStore } from '../../state/store'
 import type { Filters } from '../../state/store'
 import { nChosen, type Counts } from './facets'
 import './filterpanel.css'
 
-export function FilterPanel({ counts, resultN, total, constrained }: { counts: Counts; resultN: number; total: number; constrained: boolean }) {
+export function FilterPanel({ counts }: { counts: Counts }) {
   const f = useStore((s) => s.filters)
   const setFilters = useStore((s) => s.setFilters)
   const clear = useStore((s) => s.clearFilters)
   const c = (g: string, key: string | number) => counts[g]?.[String(key)] || 0
 
-  const toggleMulti = <K extends 'venues' | 'decks' | 'spirits' | 'flavors' | 'cats'>(g: K, val: Filters[K][number]) => {
+  const toggleMulti = <K extends 'decks' | 'spirits' | 'flavors' | 'cats'>(g: K, val: Filters[K][number]) => {
     const arr = [...(f[g] as Array<Filters[K][number]>)]
     const i = arr.indexOf(val)
     if (i > -1) arr.splice(i, 1); else arr.push(val)
@@ -39,16 +39,18 @@ export function FilterPanel({ counts, resultN, total, constrained }: { counts: C
     return <Chip label={label} count={count} on={on} disabled={count === 0} onClick={() => setFilters({ [g]: !on } as Partial<Filters>)} />
   }
 
-  const venuesByDeck = (deck: number) => VENUE_KEYS.filter((k) => VENUES[k].deck === deck)
-  const whereSummary = [f.decks.length ? `${f.decks.length} deck${f.decks.length > 1 ? 's' : ''}` : '', f.venues.length ? `${f.venues.length} bar${f.venues.length > 1 ? 's' : ''}` : ''].filter(Boolean).join(', ') || 'Any'
+  const whereSummary = f.decks.length ? `${f.decks.length} deck${f.decks.length > 1 ? 's' : ''}` : 'Any'
   const listSummary = (arr: string[]) => (arr.length ? arr.join(', ') : 'Any')
 
   return (
     <div className="fpanel panel">
-      <div className="fhead">
-        <p className="t-strong tnum">{resultN} of {total}</p>
-        {nChosen(f) > 0 && <GlassButton variant="ghost" onClick={clear}>Clear all</GlassButton>}
-      </div>
+      {/* The count line under the panel is the one count; the head holds Clear all alone, and only
+          when there is something to clear. */}
+      {nChosen(f) > 0 && (
+        <div className="fhead">
+          <GlassButton variant="ghost" onClick={clear}>Clear all</GlassButton>
+        </div>
+      )}
 
       <div className="f-label">Status</div>
       <Segmented ariaLabel="Status" options={statusOpts} value={statusVal}
@@ -70,27 +72,15 @@ export function FilterPanel({ counts, resultN, total, constrained }: { counts: C
         {bool('top', 'Rated 4+')}
       </div>
 
-      <details className="fgrp" open={f.decks.length > 0 || f.venues.length > 0}>
+      {/* Where is the decks alone. A bar is found by typing its name, which the search matches, or
+          from its own sheet on Ship; a chip per venue was a fourth route to the same place. */}
+      <details className="fgrp" open={f.decks.length > 0}>
         <summary><span>Where</span><span className="fsum">{whereSummary}</span></summary>
         <div className="fcloud">
           {DECKS.map((d) => (
             <Chip key={d} label={'Deck ' + deckLabel(d)} count={c('decks', d)} on={f.decks.includes(d)} disabled={c('decks', d) === 0} onClick={() => toggleMulti('decks', d)} />
           ))}
         </div>
-        {DECKS.map((deck) => {
-          const vs = venuesByDeck(deck).filter((k) => !(constrained && c('venues', k) === 0 && !f.venues.includes(k)))
-          if (!vs.length) return null
-          return (
-            <div key={deck} className="fvdeck">
-              <div className="fvdeck-h">Deck {deckLabel(deck)}</div>
-              <div className="fcloud">
-                {vs.map((k) => (
-                  <Chip key={k} label={VENUES[k].name} count={c('venues', k)} on={f.venues.includes(k)} disabled={c('venues', k) === 0} onClick={() => toggleMulti('venues', k)} />
-                ))}
-              </div>
-            </div>
-          )
-        })}
       </details>
 
       <details className="fgrp" open={f.spirits.length > 0}>

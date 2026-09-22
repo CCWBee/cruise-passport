@@ -31,13 +31,16 @@ export function AddSheet({ onClose }: { onClose: () => void }) {
       venue,
       category,
       spirits: spirits.split(',').map((spirit) => spirit.trim()).filter(Boolean),
-      ingredients: ingredients.trim() || 'Ingredients not recorded',
+      // Nothing is written that the guest did not type: an empty ingredients line and no blurb, and
+      // the sheet renders neither. Sweetness and strength are the Drink type's required numbers and
+      // the drink sheet never shows them for a drink the guest added.
+      ingredients: ingredients.trim(),
       flavors: [],
       sweet: 3,
       strength: 3,
       frozen: false,
       price: finalPrice,
-      desc: 'Added to your personal passport.',
+      desc: '',
       verified: true,
       // Stamped from the store and not from activeCruiseId(): the two agree in practice, but
       // allDrinks() filters against this field, so writing it from the same source it is read
@@ -57,7 +60,7 @@ export function AddSheet({ onClose }: { onClose: () => void }) {
     return (
       <Sheet onClose={onClose} labelledBy={titleId}>
         <h2 className="t-title sheet-title" id={titleId}>Add a drink</h2>
-        <p className="sheet-meta">Something new, or missing from the published menus.</p>
+        <p className="sheet-meta">Only you will see it.</p>
         <p className="t-body add-noven">Add a venue first, then the drinks you order there.</p>
         <div className="dempty-acts">
           <Link to="/ship" className="gbtn gbtn-primary gbtn-md" onClick={onClose} viewTransition>Add a venue</Link>
@@ -69,7 +72,7 @@ export function AddSheet({ onClose }: { onClose: () => void }) {
   return (
     <Sheet onClose={onClose} labelledBy={titleId}>
       <h2 className="t-title sheet-title" id={titleId}>Add a drink</h2>
-      <p className="sheet-meta">Something new, or missing from the published menus.</p>
+      <p className="sheet-meta">Only you will see it.</p>
       <form onSubmit={submit} autoComplete="off">
         <TextField id="add-name" label="Name" name="name" required autoFocus value={name} onChange={(event) => setName(event.target.value)} />
         <div className="field">
@@ -94,7 +97,6 @@ export function AddSheet({ onClose }: { onClose: () => void }) {
           id="add-spirits"
           label="Spirits"
           name="spirits"
-          hint="Separate more than one with commas."
           value={spirits}
           onChange={(event) => setSpirits(event.target.value)}
           placeholder="Gin, liqueur"
