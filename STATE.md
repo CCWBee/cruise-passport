@@ -4,7 +4,15 @@ Open work for the Cocktail Passport. One-line status lives in `E:\claude-project
 agent context in `CLAUDE.md`; the reconciled checklist in `docs/PRODUCTIONISATION.md`; the product
 architecture in `docs/specs/2026-09-10-product-brief.md`, one spec per workstream beside it.
 
-## Where it stands (22 September 2026)
+## Where it stands (23 September 2026)
+
+- **LIVE 23 September at `6f54560`** (deploy run 35797903930 green, shell `index-B8nC17Lm.js`), on
+  Charles's "verify and push it" and "continue ... sexy up, declutter": the shaker second pass (a
+  cobbler from his reference photograph, cap off, the drink's glass rising out of the neck), the
+  declutter of every screen, polish item 1 (Delete my data asks for consent again), the sea as one
+  long swell the liner rides, the glass a drink is served in leading every drink row (classified by
+  Jev, ruled on by hand), a shaker glyph on Home's shake row, Crew's classes renamed so Brave's
+  blocking no longer hides its heading, and the page declared light-only. Detail in the thread below.
 
 - Charles ruled the fork: (b), a product for any sailing, and later "complete anything remaining".
   The whole any-sailing build is on branch `product`, done with workflows and subagents one
@@ -70,7 +78,7 @@ Charles: in `close()`, wait for the Chrome process to exit, then `rmSync(profile
 true, force: true })` with a few retries, as `design/tools/qa/cdp.mjs` already does; and sweep stale
 `cruise-qa-profile-*` at launch so a crashed run cannot leak. Removing the existing 886 is his call.
 
-### Polish pass: items 2 and 3 done, item 1 held for Charles
+### Polish pass: all three items done (item 1 live 23 September)
 
 Spec `docs/specs/2026-09-17-polish.md`. Done in the main loop 17 September (`91240ba`): item 2, a
 disabled `.btn` now drops its fill to a ghost (transparent, hairline, `--ink-2`) so it reads as
@@ -166,7 +174,7 @@ Run `wf_dc5809ec-9c7`. Resume (only if something must be re-run):
 If a fix agent dies on the spend cap with the review done, apply the findings in the main loop as
 the BYO fix was; if the builder dies, its commits are on `shake`, run review and fix separately.
 
-### In flight (22 September): shaker second pass, declutter, polish item 1 (branch `shake-declutter`)
+### Shaker second pass, declutter, polish item 1 (branch `shake-declutter`), 22 to 23 September: done and live
 
 Charles, 22 September: "The shaker animation isn't there yet like it doesn't look great also check
 out any pending work and verify and push it, also make sure we've declutterred the ui as it's a bit
@@ -189,26 +197,34 @@ sheets returned to after a replacement.
   I ruled A (its reveal keeps the shaker; B's leaves a tumbler under the glass), with grafts from B
   and C: `docs/specs/2026-09-22-shaker-fold.md`. The audit found about 90 cuts on 17 surfaces; I
   ruled its twelve open questions, each towards fewer elements: `docs/specs/2026-09-22-declutter.md`.
-- Workflow B `wf_d3288a12-b10`, running: the fold in the main tree against the 5173 dev server; six
-  declutter streams (home, drinks, ship, crew with polish item 1 first, you, shell) each in its own
-  git worktree with a production preview on 4181 to 4186; then a merge, a docs pass, four review
-  lenses with refuting verifiers, and a fix pass. Then (me): gates, my own look at the renders and
-  films, merge to `main`, deploy, production probe.
+- Workflow B `wf_d3288a12-b10` built the fold (`5a03277`..`b5140e4`) and six declutter streams in
+  worktrees; I stopped it while the fold ran a last slow grep and merged the streams by hand
+  (`--no-ff`, no conflicts), then finished their leftovers (`0b1195c`). The follow-up review run
+  `wf_e306cb1f-de7` died with its session a minute in; on 23 September Charles ruled out headless
+  Chrome ("use brave browser mcp tool to verify stuff not headless chrome it nukes cpu perf"), so
+  the review ran as a browser-free code review (no must-fix; two should-fixes applied in `a004cfb`)
+  and a docs pass (`0b3d969`), and every render was checked by me in Brave.
+- 23 September, in the main loop, verified in Brave: the quiet actions centred again and the glass
+  chosen by drink (`aacf654`); Charles: "the wavyness of the water should be lower frequency so the
+  boat is actually interacting fewer bigger waves", so one long swell the liner rides, pitch damped
+  to a third (`9f40e16`); the page declared light-only, because Dark Reader in Brave inverted it
+  (`9f40e16`); Charles: "maybe an icon by drinks by type ... can always use JEV to classify them", so
+  `tools/glass-classify.mjs` (Jev jev-1.13.0, $0.0054, twelve hand rulings in
+  `tools/glass-classify.overrides.json`) and a glass leading every drink row (`634e699`, `cd01492`);
+  Brave Shields hid `.social-head`, the only door onto Your details, so Crew's classes are `crew-*`
+  (`6a2d592`). Merged and deployed at `6f54560`.
 
 ## Next action
 
-Workflow B `wf_d3288a12-b10` built everything (the fold's five commits `5a03277`..`b5140e4`; the six
-streams on `worktree-wf_d3288a12-b10-{2..7}`) and was stopped by me at 22:03 while the fold ran a
-last slow grep: its merge, docs, review and fix phases were not run. I merged the six streams by hand
-(`--no-ff`, no conflicts), then finished what they left in `0b1195c`; gates green (46/46, tsc,
-`oxlint src` 27 + 1 in tools, design:check 34, build). Now running: docs, a four-lens review with
-refuting verifiers, and a fix pass, run `wf_e306cb1f-de7`. Resume:
-`Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-declutter-docs-review-fix-wf_e306cb1f-de7.js", resumeFromRunId: "wf_e306cb1f-de7" })`.
-The six stream worktrees under `.claude/worktrees/` (now gitignored) stay until `main` carries the
-work. When the run returns: the gates myself, my own read of the sweep and the films, then merge
-`shake-declutter` to `main` (a deploy, on his "verify and push it") and probe production. Everything else remaining is Charles's: two-step verification on the Google account for
-the OAuth client, the held spec rulings, the Cloudflare token roll, the QA-user purge, and the QA
-harness's leaked Chrome profiles (thread above).
+Nothing is in flight. The overhaul is live at `6f54560`. Open from the code review, none blocking:
+an erase can race a sync already in flight (`ProfileSheet.tsx` erase against `sync.ts` runSync:
+hold syncs before the RPC); Shake again lands the prize about 100ms past the 3.0s budget because the
+260ms reverse comes first; dead code (`Filters.venues` and facets' venues group, the store's
+`'again'` toggle, `computeStats().best`). Housekeeping: the six stream worktrees under
+`.claude/worktrees/` can go now `main` carries their work (their branches stay). Charles's: two-step
+verification on the Google account for the OAuth client, the held spec rulings, the Cloudflare
+token roll, the QA-user purge (the polish item 1 live run's two users deleted themselves), and the
+QA harness's leaked Chrome profiles (thread above).
 
 ## Gotchas
 
@@ -219,7 +235,13 @@ harness's leaked Chrome profiles (thread above).
   BYO screens shoot from `?seed&fixture=byo-new|byo-empty|byo` (see `CLAUDE.md`).
 - Delete my data on a QA run must be on a `?nosync` page, or the erased user is replaced by an
   unreachable one (polish item 1; `CLAUDE.md` Seed).
-- The Claude-in-Chrome automation tab freezes `requestAnimationFrame` and force-darkens the page.
+- Verify in Brave (the extension, an iframe wrapper at 390 wide, `?seed&nosync`; CLAUDE.md step 4).
+  The automation tab is hidden, so `requestAnimationFrame` runs only when a screenshot is taken and
+  no animation advances between calls; timers still run. Dark Reader in Brave rewrote every colour
+  (signature: background `rgb(24, 26, 27)`, text `rgb(232, 230, 227)`) until the page locked it; a
+  cached old service worker in Brave serves an old shell on the first load after a deploy, and the
+  second load is current. Never `?seed` on the live origin in Brave: it shares storage with any
+  real passport there.
 - Node on Windows needs `file:///E:/...` for an absolute ESM import; there is no `python3`, only
   `python`; QA scripts import `./cdp.mjs` relatively.
 - Never two workflow writers on one file; never a second dev server on 5173.
