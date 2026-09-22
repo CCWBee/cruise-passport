@@ -39,11 +39,10 @@ export function Ship() {
   return (
     <div className="wrap page ship-page">
       <h1 className="t-title">The ship</h1>
-      {/* The empty state is the action, as the Badges screen does it (Badges.tsx). Two lines rather
-          than one, because Badges' list fills itself as a side effect of using the app and nothing
-          fills this screen except this control, so the second line says what a venue is for; and a
-          filled primary rather than a text link, because this is the only way to make the screen
-          exist. Ship spends no coral otherwise, so the cap of one filled control holds.
+      {/* The empty state is the action, as every empty list's is (.empty-state on You). Two lines
+          rather than one, because the You lists fill themselves as a side effect of using the app and
+          nothing fills this screen except this control, so the second line says what a venue is for;
+          and a filled primary, because this is the only way to make the screen exist. Ship spends no coral otherwise, so the cap of one filled control holds.
           It and the foot row carry the same class, because they are the same action and QA clicks
           one selector, and they never render together: with no venues DECKS is empty, so no deck
           section renders and the foot row is not reached. */}

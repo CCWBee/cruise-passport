@@ -21,7 +21,7 @@ export const DrinkCard = memo(function DrinkCard({ d, onOpen }: { d: Drink; onOp
   return (
     <article className="dcard">
       <button className="d-open" onClick={() => onOpen(d.id)}>
-        <GlassIcon family={glassFamily(d)} className="d-glass" />
+        <GlassIcon family={glassFamily(d)} className="row-lead" />
         <span className="d-copy">
         <span className="d-line1">
           <span className="d-name">{d.name}</span>

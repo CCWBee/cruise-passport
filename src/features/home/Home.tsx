@@ -12,6 +12,7 @@ import { DAYS, START, today, nowHour, VENUES, VENUE_KEYS } from '../../data/mode
 import { badgeCount } from '../../data/badges'
 import { useCountUp } from '../../ui/useCountUp'
 import { FriendDot } from '../../ui/FriendDot'
+import { IconShaker } from '../../ui/Icon'
 // the flat coin, the Suspense fallback for the 3D one: the same object the Badges grid draws
 import { MedalDisc } from '../badges/Badges'
 import { DrinkSheet } from '../drinks/DrinkSheet'
@@ -51,9 +52,10 @@ const BADGE_UNIT: Record<string, [string, string]> = {
 }
 function badgeRemainder(nb: NextBadge): string {
   const left = Math.max(1, nb.need - nb.cur)
+  // a percentage badge says so from its own definition (badges.ts `percent`), the fact badgeCount reads
+  if (nb.badge.percent) return `${left}% more of the list`
   const unit = BADGE_UNIT[nb.badge.id]
-  if (!unit) return `${left}% more of the list`
-  return `${left} more ${left === 1 ? unit[0] : unit[1]}`
+  return unit ? `${left} more ${left === 1 ? unit[0] : unit[1]}` : `${left} more`
 }
 
 // The greeting's second line. The hero chip already says which day of the voyage it is, so this says
@@ -261,6 +263,7 @@ export function Home() {
                 aria-haspopup="dialog"
                 onClick={() => setShakeOpen(true)}
               >
+                <IconShaker className="row-lead" />
                 <span className="row-copy">
                   <span className="t-strong">Shake for a drink</span>
                 </span>

@@ -8,7 +8,8 @@ export default defineConfig({
   base: '/',
   // the QA harness writes screenshots (and once wrote Chrome profiles) under tools/; watching them
   // reload-stormed the dev server until it died
-  server: { watch: { ignored: ['**/tools/**', '**/dist/**'] } },
+  // .claude/ holds the workflow worktrees, whole checkouts of this repo, which a watcher would crawl too
+  server: { watch: { ignored: ['**/tools/**', '**/dist/**', '**/.claude/**'] } },
   plugins: [
     react(),
     VitePWA({

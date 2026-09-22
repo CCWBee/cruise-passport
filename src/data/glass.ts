@@ -12,12 +12,6 @@ export type GlassFamily = 'cocktail' | 'margarita' | 'wine' | 'flute' | 'pint' |
 /** Every family, in the order the list's filter and a legend would name them. */
 export const GLASS_FAMILIES: GlassFamily[] = ['cocktail', 'margarita', 'rocks', 'highball', 'hurricane', 'flute', 'wine', 'pint', 'cup']
 
-/** What each glass is called, for an aria-label beside its icon. */
-export const GLASS_NAME: Record<GlassFamily, string> = {
-  cocktail: 'Cocktail glass', margarita: 'Margarita glass', rocks: 'Rocks glass', highball: 'Highball',
-  hurricane: 'Hurricane glass', flute: 'Flute', wine: 'Wine glass', pint: 'Beer glass', cup: 'Coffee cup',
-}
-
 /** Words in a drink's name that settle its glass, first match wins. */
 const BY_NAME: Array<[RegExp, GlassFamily]> = [
   [/martini|cosmo\b/i, 'cocktail'],

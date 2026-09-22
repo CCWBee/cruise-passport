@@ -172,6 +172,10 @@ h1, h2, h3, p { margin: 0; }
 .row:active { background-color: var(--press); }
 .row + .row, .line + .line, .line + .row, .row + .line { border-top: 1px solid var(--line); }
 .row-copy { display: grid; gap: 2px; min-width: 0; flex: 1; }
+/* a row's leading glyph: the glass a drink comes in on any row that names a drink (Drinks, a venue's
+   list, Log, Stats, Crew), and the shaker on Home's row that opens it. An icon-only glyph, so --ink-3,
+   never a state colour */
+.row-lead { flex: none; color: var(--ink-3); }
 .row-copy > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* an empty list: one short line and the one filled action that fills it, flush to the leading edge.

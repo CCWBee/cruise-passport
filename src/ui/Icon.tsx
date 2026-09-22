@@ -211,6 +211,17 @@ export const IconGlassRocks = (p: P) => (
   </Svg>
 )
 
+/** The cobbler shaker at icon size: cap, domed strainer, band, tapered body. It leads Home's row that
+ *  opens the shaker, so the row says what it does before its words are read. */
+export const IconShaker = (p: P) => (
+  <Svg {...p}>
+    <path d="M10.2 2.8h3.6v2.4h-3.6z" />
+    <path d="M10.2 5.2C8.2 5.9 7.3 7.7 7.2 9.8h9.6c-.1-2.1-1-3.9-3-4.6" />
+    <path d="M6.4 9.8h11.2v2H6.4z" />
+    <path d="M7.1 11.8l1 8.3a1.3 1.3 0 0 0 1.3 1.1h5.2a1.3 1.3 0 0 0 1.3-1.1l1-8.3" />
+  </Svg>
+)
+
 const GLASS_ICONS: Record<GlassFamily, (p: P) => ReactNode> = {
   cocktail: IconGlassCocktail, margarita: IconGlassMargarita, wine: IconGlassWine, flute: IconGlassFlute,
   pint: IconGlassPint, cup: IconGlassCup, hurricane: IconGlassHurricane, highball: IconGlassHighball,

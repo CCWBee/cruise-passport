@@ -10,8 +10,6 @@ styles/base.css :: radial-gradient(940px 720px
 styles/base.css :: backdrop-filter
 styles/base.css :: inset 0 1px 0 var(--glass-rim)
 styles/base.css :: linear-gradient(to bottom, var(--glass-highlight-film)
-# the nav lens: a see-through film with the specular edge, sliding under the active tab
-app/nav.css :: inset 0 1px 0 var(--glass-rim)
 # the Confirm tick floats over content: the sheet's shadow plus the specular edge on its disc and label plate
 ui/confirm.css :: var(--sh-sheet), inset 0 1px 0 var(--glass-rim)
 # the toast is glass: film, blur, edge

@@ -168,7 +168,10 @@ icon appears beside text only when it adds recognition the word lacks (tried, fa
 glass a drink is served in). The nav uses icon plus label at all times.
 
 The set holds a glass for each of the nine families in `src/data/glass.ts` (`IconGlassCocktail` and
-the rest, chosen by `GlassIcon`), every bowl drawn whole, both sides. `IconDrinks` is the brand's
+the rest, chosen by `GlassIcon`), every bowl drawn whole, both sides, and `IconShaker`, the cobbler at
+icon size. Either one leads a row in the `.row-lead` slot: the glass on every row that names a drink
+(Drinks, a venue's list, Log, Stats' rated rows, Crew's Discover together), the shaker on Home's row
+that opens the Shake sheet. `IconDrinks` is the brand's
 funnel and draws one side of a glass, which is right for the tab and wrong for a drink. The glass
 leads the drink row (`DrinkCard`, on Drinks and in the venue sheet), in `--ink-3` because it is an
 icon-only glyph, and never in a state colour: it says what kind of drink it is before a word is
@@ -290,7 +293,9 @@ Each thing is said once. These rules come from the 22 September declutter
 - **A number is shown once per screen, and not on a tab another tab already covers.** The filter
   panel carries no count because the count line beneath it is one; Ship's deck headings carry none
   because Stats' "Where you have been" has completion by deck; the Wrapped footer carries no
-  position because the rail at the top shows it.
+  position because the rail at the top shows it. The one written exception is Home's Last bar ("12
+  of 44 tried here"), which repeats a Ship row on purpose: it answers "what is left at this bar"
+  where the guest is standing, without a tap, and that question is Home's to answer.
 
 ## Navigation
 
@@ -459,7 +464,8 @@ hero is.
    whiskey", three-plus of your own fives). The shelf renders only when there is a real personal
    basis, so it is absent for a fresh guest with no ratings and no crew: never a generic "you might
    like". At the foot of the section, after the shelf, one `button.row.pressable.shake-open` in its
-   own wrapper, no chevron, `aria-haspopup="dialog"`, reading "Shake for a drink" on one line, which
+   own wrapper, no chevron, `aria-haspopup="dialog"`, led by `IconShaker` in the `.row-lead` slot so
+   it reads as the door it is rather than a heading, reading "Shake for a drink" on one line, which
    opens the Shake sheet; what the shaker does is that sheet's meta line, and the row does not repeat
    it (Copy). It borrows this heading and adds none, because this is the section that already exists
    to suggest drinks, and it is ink only: Log
@@ -649,8 +655,10 @@ A guest can add venues of their own, so the screen has two more states and one q
 
 Title, meta line (deck, kind, hours), blurb, the shared-list line ("Same list as THE MIX.") when the
 venue pours another's list, "Edit this venue" as one row on a venue the guest added, the visited
-switch as one row, the count line as text ("6 of 44 tried", or "No drinks here yet." when the venue
-has none), then the venue's drinks as the same rows Drinks uses. Space separates the groups; there
+switch as one row, the count line as text ("6 of 44 tried"), then the venue's drinks as the same rows
+Drinks uses. A venue with no drinks, which only a guest's own venue can be, takes `.empty-state`:
+"No drinks here yet." and one filled "Add a drink", which opens the add sheet preset to this venue in
+place of this sheet (one sheet at a time), and closing it comes back here. Space separates the groups; there
 is no hairline and no meter. The same number was in the text, the meter and the row behind the
 sheet, and every drink below carries its own tried check.
 
@@ -682,7 +690,9 @@ meta line says so ("Beside them? AirDrop or Nearby Share it."). (3) One row of t
 "Scan their code" and "Show my code" (the QR and the code with Copy unfold inline, the code with no
 visible label, because the toggle above it now reads "Hide my code"). (4) "Join a group with a
 code", a `.quiet-action` folded like the paste path and 12 above it, unfolding in place to the
-label, field and "Join group" button: most joins arrive as a tapped `/join` link, so the field is
+field, labelled "Invite code or link" with no placeholder, and the "Join group" button; the field
+takes focus as it unfolds, as the paste path's does, because the tap that unfolded it unmounted the
+control that held focus: most joins arrive as a tapped `/join` link, so the field is
 the rare route. Every success, on either phone, ends in the `Confirm` tick; the other side gets a
 toast "Sam added you" on the next pull. The privacy trade is stated in `0003_find_profiles.sql`:
 anyone in the app can find anyone who has set a name, and nothing beyond name, colour and code is
@@ -813,7 +823,8 @@ colour, are how that happens again. Read it before any change that renders.
 | `Sheet` + `.sheet-meta` | `src/ui/Sheet.tsx`, `sheet.css` | title then one meta line, which carries the one fact the controls do not show (Copy); no eyebrow; the SheetWave is its opening |
 | `Field`, `SearchField`, `Select`, `Switch`, `Segmented`, `Chip`, `Toast`, `FriendDot` | `src/ui/` | the controls; restyle them there, never locally |
 | Icons (`Icon.tsx`: `IconStar`, `IconCheck`, `IconChevron`, ...) | `src/ui/Icon.tsx` | the only icon system; no glyph characters, no emoji; add to the set, do not draw inline |
-| `GlassIcon` (`IconGlassCocktail` and the other eight) | `src/ui/Icon.tsx` | the glass a drink is served in, one per family of `src/data/glass.ts`, on the icon grid with both sides of every bowl drawn. `GlassIcon` picks by family; the drink row shows it at the leading edge in `--ink-3`. The shaker's prize is the same families drawn large (`Glass`) |
+| `GlassIcon` (`IconGlassCocktail` and the other eight), `IconShaker` | `src/ui/Icon.tsx` | the glass a drink is served in, one per family of `src/data/glass.ts`, on the icon grid with both sides of every bowl drawn. `GlassIcon` picks by family. The shaker's prize is the same families drawn large (`Glass`) |
+| `.row-lead` | `base.css` | a row's leading glyph, `--ink-3`, never a state colour: the glass on every row that names a drink (`DrinkCard`, Log, Stats' rated rows, Crew's Discover together), `IconShaker` on Home's shake row. A new row that names a drink takes it |
 | `.sr-only` | `base.css` | visually hidden, still announced |
 | `.empty-state` | `base.css` | an empty list: one short `p.t-body` and the one filled `.btn.btn-coral` that fills it, flush to the leading edge, 16 apart. Stats, Badges and Log use it (ruling 9 of the 22 September declutter, which retired `.stats-empty` and `.badge-empty-action`); a new empty list on another screen reuses it |
 | `.meter` | `base.css` | the 3px measure beside a count out of a total (a Ship venue row once something there is tried, Home's nearest-badge row); Stats' 6px deck bars and the badge rows keep their own shapes. Never an empty track: with nothing to fill it, it is not drawn |

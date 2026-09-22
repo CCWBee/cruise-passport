@@ -112,7 +112,7 @@ export function AddSheet({ onClose, venue: preset }: { onClose: () => void; venu
           inputMode="decimal"
           value={price}
           onChange={(event) => setPrice(event.target.value)}
-          placeholder="Leave blank if unknown"
+          placeholder="12"
         />
         {/* disabled rather than an early return on submit: a button that does nothing when tapped
             is the state DESIGN.md's "Every control ships default, pressed, focus-visible, disabled"

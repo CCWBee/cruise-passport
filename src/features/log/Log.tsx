@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import { DAYS, prettyDay } from '../../data/model'
 import { useAllDrinks, useStore } from '../../state/store'
 import { computeStats } from '../../state/stats'
-import { IconStar } from '../../ui/Icon'
+import { glassFamily } from '../../data/glass'
+import { GlassIcon, IconStar } from '../../ui/Icon'
 import { DrinkSheet } from '../drinks/DrinkSheet'
 import './log.css'
 
@@ -69,6 +70,7 @@ export function Log() {
                   type="button"
                   onClick={() => setOpenId(drink.id)}
                 >
+                  <GlassIcon family={glassFamily(drink)} className="row-lead" />
                   <span className="row-copy">
                     <span className="t-body">{drink.name}</span>
                   </span>

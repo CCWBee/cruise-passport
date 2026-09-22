@@ -4,7 +4,8 @@ import { DAYS, DECKS, VENUES, VENUE_KEYS, deckLabel, menuFor, type Drink } from 
 import { useAllDrinks, useStore } from '../../state/store'
 import { bestRatedBars, useSources } from '../../state/social'
 import { computeStats } from '../../state/stats'
-import { IconStar } from '../../ui/Icon'
+import { glassFamily } from '../../data/glass'
+import { GlassIcon, IconStar } from '../../ui/Icon'
 import { DrinkSheet } from '../drinks/DrinkSheet'
 import './stats.css'
 
@@ -110,6 +111,7 @@ function RatedRows({ drinks, entries, onOpen }: {
             type="button"
             onClick={() => onOpen(drink.id)}
           >
+            <GlassIcon family={glassFamily(drink)} className="row-lead" />
             <span className="row-copy">
               <span className="t-body">{drink.name}</span>
               <span className="t-meta">{VENUES[drink.venue]?.name || drink.venue}</span>

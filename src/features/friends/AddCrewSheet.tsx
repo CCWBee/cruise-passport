@@ -259,14 +259,13 @@ export function AddCrewSheet({ onClose, onDone }: {
         {online && (showJoin ? (
           <div className="friends-block">
             <label className="f-field">
-              <span className="f-label">Join a group</span>
+              <span className="f-label">Invite code or link</span>
               <input
                 value={invite}
                 maxLength={64}
                 autoCapitalize="characters"
                 autoCorrect="off"
                 spellCheck={false}
-                placeholder="Invite code or link"
                 // the tap that unfolded this unmounted the button holding focus; without this, focus
                 // falls to the page and a keyboard or screen-reader guest has to hunt for the field
                 autoFocus
