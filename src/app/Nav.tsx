@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { IconHome, IconDrinks, IconShip, IconSocial, IconStats } from '../ui/Icon'
 import './nav.css'
@@ -15,11 +14,10 @@ const TABS = [
 
 export function Nav() {
   const { pathname } = useLocation()
-  // /add, /join and /wrapped are not tabs: nothing lights and the lens hides
+  // /add, /join and /wrapped are not tabs: nothing lights
   const active = TABS.findIndex((t) => t.match(pathname))
   return (
     <nav className="nav glass-live glass-edge" aria-label="Sections">
-      <div className="nav-lens" style={{ '--i': Math.max(0, active), '--n': TABS.length } as CSSProperties} hidden={active < 0} aria-hidden />
       {TABS.map(({ to, label, Icon }, i) => {
         const on = i === active
         return (
