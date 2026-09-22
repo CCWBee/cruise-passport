@@ -1,10 +1,8 @@
 // The Social tab, top to bottom: who you are, how people get in, the crew, your groups, and what the
 // crew has found. Crew = direct friends plus group co-members, one roster, tagged by how you got them.
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { VENUES } from '../../data/model'
+import { useEffect, useRef, useState } from 'react'
 import { hasBackend } from '../../state/backend'
 import { useStore } from '../../state/store'
-import { useSources, undiscovered } from '../../state/social'
 import { useConfirm } from '../../ui/Confirm'
 import { FriendDot } from '../../ui/FriendDot'
 import { IconChevron } from '../../ui/Icon'
@@ -54,7 +52,6 @@ export function Social() {
   const groups = useStore((s) => s.groups)
   const profile = useStore((s) => s.profile)
   const removeFriend = useStore((s) => s.removeFriend)
-  const srcs = useSources()
   const [openId, setOpenId] = useState<string | null>(null)
   const [profileOpen, setProfileOpen] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
@@ -73,7 +70,6 @@ export function Social() {
     newTimer.current = setTimeout(() => setJustAdded(''), 4000)
   }
   useEffect(() => () => { if (newTimer.current) clearTimeout(newTimer.current) }, [])
-  const undisc = useMemo(() => undiscovered(srcs, 4), [srcs])
   const online = hasBackend()
   const named = Boolean(profile.name.trim())
 
@@ -110,15 +106,16 @@ export function Social() {
       <section className="section" aria-label="Sailing with">
         <div className="section-head"><h2 className="t-h2">Sailing with</h2></div>
         {friends.length === 0 ? (
-          <p className="t-meta social-empty">Nobody yet. Add someone with the button above.</p>
+          <p className="t-meta social-empty">Nobody yet.</p>
         ) : (
           <div className="friends-roster">
             {friends.map((friend) => {
               const via = groupName(friend.groupIds)
               // Counted on `tried`, as Ship, Stats and the venue sheet do, or the same person reads
-              // as two different numbers depending on the screen.
-              const logged = Object.values(friend.passport.entries).filter((e) => e.tried).length
-              const state = friend.pending ? 'Waiting to connect' : logged ? `${logged} logged` : 'Nothing logged yet'
+              // as two different numbers depending on the screen; and named "tried", the word
+              // Discover together uses for the same count further down this screen.
+              const tried = Object.values(friend.passport.entries).filter((e) => e.tried).length
+              const state = friend.pending ? 'Waiting to connect' : tried ? `${tried} tried` : 'Nothing tried yet'
               const sub = state + (via ? ` · ${via}` : '')
               return (
                 <div className={'row friend-row' + (friend.code && friend.code === justAdded ? ' friend-row-new' : '')} key={friend.id}>
@@ -157,11 +154,12 @@ export function Social() {
               <Chevron />
             </button>
           ))}
-          {/* Joining with a code someone read out lives in the add sheet, beside the other ways in. */}
+          {/* Joining with a code someone read out lives in the add sheet, beside the other ways in.
+              One line: what a group is for is the sheet's meta line, one tap away, and a row that
+              opens a sheet does not repeat it. */}
           <button type="button" className="row pressable" onClick={() => setGroupSheet({})} aria-haspopup="dialog">
             <span className="row-copy">
               <span className="t-body">Set up a group</span>
-              <span className="t-meta">One link, everyone joins</span>
             </span>
             <Chevron />
           </button>
@@ -169,22 +167,6 @@ export function Social() {
       )}
 
       <DiscoverTogether onOpen={setOpenId} />
-
-      {friends.length > 0 && undisc.length > 0 && (
-        <section className="section">
-          <div className="section-head"><h2 className="t-h2">Nobody has tried these yet</h2></div>
-          {undisc.map((d) => (
-            <button key={d.id} type="button" className="row pressable" onClick={() => setOpenId(d.id)}>
-              {/* a drink name is the object of the row, so it takes the heading role here exactly as
-                  it does on Drinks: the same thing must not read at two sizes across screens */}
-              <span className="row-copy">
-                <span className="t-h2">{d.name}</span>
-                <span className="t-meta">{VENUES[d.venue]?.name} · Deck {VENUES[d.venue]?.deck}</span>
-              </span>
-            </button>
-          ))}
-        </section>
-      )}
 
       {openId && <DrinkSheet id={openId} onClose={() => setOpenId(null)} onOpen={setOpenId} />}
       {profileOpen && <ProfileSheet onClose={() => setProfileOpen(false)} />}

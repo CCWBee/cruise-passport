@@ -103,7 +103,7 @@ export function GroupSheet({ groupId, onClose }: { groupId?: string; onClose: ()
         {/* Same fallback as createGroupFlow sends, or the heading changes under the guest when the
             pull lands. */}
         <h2 className="t-title sheet-title" id="group-title">{detail ? (group?.name || name.trim() || 'Our group') : 'Set up a group'}</h2>
-        <p className="sheet-meta">{detail ? `${shown.length} aboard` : 'One link, everyone joins. No codes to swap round the table.'}</p>
+        <p className="sheet-meta">{detail ? `${shown.length} aboard` : 'One link, everyone joins.'}</p>
 
         {!detail && (
           <>
@@ -149,9 +149,11 @@ export function GroupSheet({ groupId, onClose }: { groupId?: string; onClose: ()
               {shown.map((member) => (
                 <div className="row friend-row" role="listitem" key={member.code || member.name}>
                   <FriendDot name={member.name} colour={member.colour} size={28} />
+                  {/* the meta line already says "{n} aboard", so a member's row is their name alone
+                      and the host is the one row with a second line */}
                   <div className="row-copy">
                     <span className="t-body">{member.name}</span>
-                    <span className="t-meta">{member.role === 'owner' ? 'Hosts this group' : 'Aboard'}</span>
+                    {member.role === 'owner' && <span className="t-meta">Hosts this group</span>}
                   </div>
                 </div>
               ))}

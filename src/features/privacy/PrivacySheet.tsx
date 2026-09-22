@@ -50,7 +50,7 @@ export function PrivacySheet({ onClose }: { onClose: () => void }) {
           <section className="section">
             <div className="section-head"><h3 className="t-h2">Who can see it</h3></div>
             <p className="t-body">The people in your crew: anyone you have added, anyone who has added you, and the members of any group you join. They see your name, colour and code, and the drinks you have ticked, rated, recommended or commented on. They never see your notes, your favourites or your wishlist.</p>
-            <p className="t-body">Adding is not something you approve. Once you have set a name, anyone using the app can find you by name or by code, and adding you makes the crew mutual at once: from that moment they see your passport and you see theirs, with no request and no acceptance. The search itself returns your name, your colour and your code, and nothing else, and a guest who has set no name is not findable at all. Removing someone cuts both sides, and they stop seeing your passport from that moment.</p>
+            <p className="t-body">Nobody approves an add. Once you have set a name, anyone in the app can find you by name or code, and adding you is mutual at once: they see your passport and you see theirs. The search returns only your name, colour and code, and a guest with no name cannot be found. Removing someone cuts both sides at once.</p>
           </section>
         )}
 
@@ -74,7 +74,7 @@ export function PrivacySheet({ onClose }: { onClose: () => void }) {
         {server && (
           <section className="section">
             <div className="section-head"><h3 className="t-h2">Deleting it</h3></div>
-            <p className="t-body">Open Your details on the Crew tab and tap Delete my data. It removes your profile, your shared passport, your private restore copy, your own crew list and your group memberships from the server, and deletes any group you set up. Once your profile is gone, nobody can look your code up again and nobody who had added you can still see you. The copy on your phone stays until you clear it yourself. Nothing expires on its own: what is stored stays until you remove it.</p>
+            <p className="t-body">Open Your details on the Crew tab and tap Delete my data. It removes your profile, your shared passport, your private restore copy, your own crew list and your group memberships from the server, and deletes any group you set up. Once your profile is gone, nobody can look your code up again and nobody who had added you can still see you. The copy on your phone stays until you clear it yourself. Nothing expires on its own: what is stored stays until you remove it. The app then asks again before anything leaves this phone.</p>
             {PRIVACY_CONTACT && (
               <p className="t-body">If you signed in with Google, your email address stays with the sign-in service until the account itself is removed, which is done by hand. Ask at the address below and it will be.</p>
             )}
@@ -86,7 +86,7 @@ export function PrivacySheet({ onClose }: { onClose: () => void }) {
           <p className="t-body">This app is run by one person, not a company. The app is for adults; it is not aimed at anyone under eighteen.{PRIVACY_CONTACT ? ` Questions, or a request to see or remove your data: ${PRIVACY_CONTACT}.` : ''}</p>
         </section>
 
-        <p className="t-meta privacy-foot">Updated 10 September 2026.</p>
+        <p className="t-meta privacy-foot">Updated 22 September 2026.</p>
       </div>
     </Sheet>
   )

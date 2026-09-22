@@ -49,8 +49,11 @@
    than as the next group. Renamed from .addme-hint: it is the fourth member of the generic
    .friends-block / .friends-action / .friends-status family and two sheets now use it. */
 .friends-hint { margin-top: var(--s2); }
-/* the folded-away paste path is a .quiet-action (base.css): deliberately the quietest thing on the
-   sheet, but the only route left when the camera is refused, so it still has to be 44px of target */
+/* the folded-away join and paste paths are .quiet-actions (base.css): deliberately the quietest things
+   on the sheet, but each is the only route for whoever needs it, so each is 44px of target. Two
+   folded in a row sit 12 apart, as the Shake sheet's pair do, because they are one group of rare
+   routes; one that follows an unfolded block keeps its own 24. */
+.friends-sheet .quiet-action + .quiet-action { margin-top: var(--s3); }
 
 /* two-tap confirms live at the foot, well away from the thumb's resting path */
 .friends-danger { margin-top: var(--s6); }
@@ -92,10 +95,10 @@
    margin would not collapse with one here (24 and 16 would read as 40) */
 .addme-find { margin-top: var(--s5); }
 .addme-find + .addme-send { margin-top: var(--s5); }
-/* a heading sits 8 above its content (DESIGN.md, Geometry). Two 16s reach this seam: the field's own
-   margin, and a second global .f-label declared by the drinks filter panel (filterpanel.css) whose
-   16 collapses out through the label. Both are given up inside the find block, so the seam is the
-   section head's 8, as it is under every other heading in the app. */
+/* the block's own 24 is the seam above the field. Two 16s also reach it: the field's own margin, and
+   a second global .f-label declared by the drinks filter panel (filterpanel.css) whose 16 collapses
+   out through the label. Both are given up inside the find block, so the one value that sets the
+   seam is written once, on the block. */
 .addme-find > .f-field,
 .addme-find > .f-field > .f-label { margin-top: 0; }
 /* the results sit under a field rather than under a heading, so they need more air than a roster
@@ -133,6 +136,9 @@
   gap: var(--s3);
   margin-top: var(--s1);
 }
+/* on the add sheet the row has no label above it and sits straight in the block's grid, whose 12 is
+   the whole seam under the plate; the row's own 4 is for the group sheet's label */
+.addme > .addme-code-row { margin-top: 0; }
 .addme-code-val {
   flex: 1;
   font-size: var(--f-heading);
