@@ -1,9 +1,8 @@
 /* Home: the instrument's front panel. The sea poster carries the one primary action; below it,
    aboard, three facts, then what to try, the bar you are standing in, what is next, and Wrapped.
    Everything under the hero sits flat on the ground: no box, no card, no plate. */
-/* the masthead above Home now carries the safe-area inset, so the two do not stack. var(--s3) is
-   .page's own value (shell.css), which is what makes Home's masthead-to-greeting gap identical to
-   Crew's masthead-to-h1 gap. */
+/* .view carries the safe-area inset (shell.css); var(--s3) is .page's own value, so the greeting sits
+   exactly where every other tab's first line does. */
 .home { padding-top: var(--s3); }
 .home-hero { position: relative; }
 

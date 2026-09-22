@@ -27,7 +27,7 @@ export function VenueSheet({ venueKey, onClose }: { venueKey: string; onClose: (
   const done = menu.filter((d) => entries[d.id]?.tried).length
 
   if (openId) {
-    return <DrinkSheet id={openId} onClose={() => setOpenId(null)} onOpen={setOpenId} />
+    return <DrinkSheet id={openId} onClose={() => setOpenId(null)} />
   }
   // The form replaces this sheet rather than opening over it, exactly as the drink sheet does above.
   // A sheet over a sheet is glass on glass, which DESIGN.md's Material section forbids outright.

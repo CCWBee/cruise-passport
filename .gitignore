@@ -45,3 +45,6 @@ supabase/.temp/
 # design QA output (screenshots, chrome profiles, montages)
 tools/qa/shots*/
 tools/qa/profile-*/
+
+# workflow worktrees (each a checkout of this repo; their branches hold the work)
+.claude/

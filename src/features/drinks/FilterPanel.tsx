@@ -1,8 +1,8 @@
 import { Chip } from '../../ui/Chip'
 import { GlassButton } from '../../ui/GlassButton'
 import { Segmented, type SegOption } from '../../ui/Segmented'
-import { DECKS, SPIRITS, FLAVOURS, CATEGORIES, HAS_PACKAGES, deckLabel } from '../../data/model'
-import { useStore } from '../../state/store'
+import { DECKS, SPIRITS, FLAVOURS, CATEGORIES, HAS_PACKAGES, VENUES, deckLabel } from '../../data/model'
+import { useAllDrinks, useStore } from '../../state/store'
 import type { Filters } from '../../state/store'
 import { nChosen, type Counts } from './facets'
 import './filterpanel.css'
@@ -12,6 +12,10 @@ export function FilterPanel({ counts }: { counts: Counts }) {
   const setFilters = useStore((s) => s.setFilters)
   const clear = useStore((s) => s.clearFilters)
   const c = (g: string, key: string | number) => counts[g]?.[String(key)] || 0
+  // A deck none of the drinks is filed on (Deck 15/16 pours THE MIX's list, filed under THE MIX) would
+  // be a chip that can never be chosen: a structural zero, so it is not drawn. One that is chosen stays.
+  const all = useAllDrinks()
+  const decks = DECKS.filter((d) => f.decks.includes(d) || all.some((x) => VENUES[x.venue]?.deck === d))
 
   const toggleMulti = <K extends 'decks' | 'spirits' | 'flavors' | 'cats'>(g: K, val: Filters[K][number]) => {
     const arr = [...(f[g] as Array<Filters[K][number]>)]
@@ -77,7 +81,7 @@ export function FilterPanel({ counts }: { counts: Counts }) {
       <details className="fgrp" open={f.decks.length > 0}>
         <summary><span>Where</span><span className="fsum">{whereSummary}</span></summary>
         <div className="fcloud">
-          {DECKS.map((d) => (
+          {decks.map((d) => (
             <Chip key={d} label={'Deck ' + deckLabel(d)} count={c('decks', d)} on={f.decks.includes(d)} disabled={c('decks', d) === 0} onClick={() => toggleMulti('decks', d)} />
           ))}
         </div>

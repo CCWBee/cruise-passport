@@ -62,7 +62,6 @@ h1, h2, h3, p { margin: 0; }
 
 .wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 var(--inset); }
 .hide { display: none !important; }
-.center { text-align: center; }
 .tnum { font-variant-numeric: tabular-nums; }
 
 /* ── type roles: five sizes, two weights, three inks ── */
@@ -117,6 +116,10 @@ h1, h2, h3, p { margin: 0; }
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+/* Two in a row sit 12 apart, not 24: they are one group of rare routes (the add sheet's join and
+   paste paths, the Shake sheet's Shake again and sound toggle). One that follows anything else keeps
+   its own 24. */
+.quiet-action + .quiet-action { margin-top: var(--s3); }
 /* ── Liquid glass: the material of the chrome layer. It reads as glass because content moves
    beneath it, so it lives only where that is true: nav, sheet, the hero chips and floating action,
    the toast, the Wrapped certificate. Never in the content layer, never glass on glass. ── */
@@ -153,7 +156,6 @@ h1, h2, h3, p { margin: 0; }
   .glass-mint { background: var(--mint-ink); -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 
-.card { padding: var(--s4); margin-bottom: var(--s3); }
 
 /* a row on the ground: 48px minimum, a hairline between siblings. .row is tappable (press tint);
    .line is the same shape for read-only lists. The press tint is square inside a list and rounded

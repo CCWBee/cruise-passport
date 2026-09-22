@@ -168,7 +168,7 @@ export function Social() {
 
       <DiscoverTogether onOpen={setOpenId} />
 
-      {openId && <DrinkSheet id={openId} onClose={() => setOpenId(null)} onOpen={setOpenId} />}
+      {openId && <DrinkSheet id={openId} onClose={() => setOpenId(null)} />}
       {profileOpen && <ProfileSheet onClose={() => setProfileOpen(false)} />}
       {addOpen && (
         <AddCrewSheet

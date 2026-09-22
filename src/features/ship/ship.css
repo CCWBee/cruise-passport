@@ -33,7 +33,7 @@
 .venue-rule { margin-top: var(--s4); }
 .venue-form-remove { margin-top: var(--s4); }
 
-/* ── the empty ship: the action is the state (Badges does it the same way), two lines and the one
+/* ── the empty ship: the action is the state (the You segments' .empty-state takes the same shape), two lines and the one
       filled control the screen otherwise never spends ── */
 .ship-empty { margin-top: var(--s5); }
 .ship-empty .t-meta { margin-top: var(--s2); }

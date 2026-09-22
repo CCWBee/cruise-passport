@@ -1,6 +1,6 @@
 import { useId, useMemo } from 'react'
 import { Sheet } from '../../ui/Sheet'
-import { DRINK_BY_ID, money, pkgOf, VENUES, START, END, today, type Drink } from '../../data/model'
+import { DRINK_BY_ID, ingredientsOf, money, pkgOf, VENUES, START, END, today, type Drink } from '../../data/model'
 import { useStore, useAllDrinks } from '../../state/store'
 import { commentsFor, groupRating, recommendationsFor, useSources } from '../../state/social'
 import { IconStar } from '../../ui/Icon'
@@ -40,9 +40,7 @@ function factsLine(d: Drink): string {
   return [price, notes].filter(Boolean).join(' · ')
 }
 
-// `onOpen` fed the "Also at" row, which is gone; it stays optional only until every caller stops
-// passing it, and nothing reads it.
-export function DrinkSheet({ id, onClose }: { id: string; onClose: () => void; onOpen?: (id: string) => void }) {
+export function DrinkSheet({ id, onClose }: { id: string; onClose: () => void }) {
   const all = useAllDrinks()
   const d: Drink | undefined = DRINK_BY_ID[id] || all.find((x) => x.id === id)
   const e = useStore((s) => s.me.entries[id]) || {}
@@ -83,7 +81,7 @@ export function DrinkSheet({ id, onClose }: { id: string; onClose: () => void; o
       <h2 className="t-title sheet-title" id={titleId}>{d.name}</h2>
       <p className="sheet-meta">{v ? `${v.name} · Deck ${v.deck} · ` : ''}{d.category}</p>
 
-      {d.ingredients && <p className="ds-ing t-body">{d.ingredients}</p>}
+      {ingredientsOf(d) && <p className="ds-ing t-body">{ingredientsOf(d)}</p>}
       {d.desc && !custom && <p className="ds-desc t-meta">{d.desc}</p>}
       {facts && <p className="ds-facts t-meta">{facts}</p>}
       {!d.verified && <p className="ds-warn t-meta">Not on a published menu. Check at the bar.</p>}

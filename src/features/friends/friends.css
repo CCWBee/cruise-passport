@@ -51,9 +51,8 @@
 .friends-hint { margin-top: var(--s2); }
 /* the folded-away join and paste paths are .quiet-actions (base.css): deliberately the quietest things
    on the sheet, but each is the only route for whoever needs it, so each is 44px of target. Two
-   folded in a row sit 12 apart, as the Shake sheet's pair do, because they are one group of rare
-   routes; one that follows an unfolded block keeps its own 24. */
-.friends-sheet .quiet-action + .quiet-action { margin-top: var(--s3); }
+   folded in a row sit 12 apart by base.css's own pair rule; one that follows an unfolded block keeps
+   its own 24. */
 
 /* two-tap confirms live at the foot, well away from the thumb's resting path */
 .friends-danger { margin-top: var(--s6); }

@@ -7,7 +7,8 @@ import { Sheet } from '../../ui/Sheet'
 import { DrinkSheet } from '../drinks/DrinkSheet'
 import { RECENT_KEPT, shake, type ShakeResult } from './pick'
 import { startRattle, type Rattle } from './rattle'
-import { SHAKER, Shaker, type ShakePhase } from './Shaker'
+import { Shaker, type ShakePhase } from './Shaker'
+import { SHAKER } from './timing'
 import './shake.css'
 
 // The app's one moment of theatre, and the only place it is allowed: on demand, inside a sheet, for
@@ -15,7 +16,7 @@ import './shake.css'
 // crew like) or the theatre would be the whole of it.
 
 // The shake's own timings (how long it shakes, the knocks, the pop, the landing, the reverse) belong
-// to the drawing, so they come from SHAKER in Shaker.tsx. This one is the sheet's.
+// to the drawing, so they come from SHAKER in timing.ts. This one is the sheet's.
 const REDUCED_MS = 300  // no shake and no sound: long enough to read as an answer being found
 
 const QUIET_KEY = 'spcc-shake-quiet'
@@ -155,7 +156,7 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
   // with it, so the region does not come back already holding the sentence it has said, which is
   // the case the comment above it warns is announced unreliably.
   const goGet = (id: string) => { setStill(true); setAnnounce(''); setOpenDrink(id) }
-  if (openDrink) return <DrinkSheet id={openDrink} onClose={() => setOpenDrink(null)} onOpen={setOpenDrink} />
+  if (openDrink) return <DrinkSheet id={openDrink} onClose={() => setOpenDrink(null)} />
 
   // Shut, shaking or opening, the control is the same ghost reading Shaking: the answer is not on
   // screen until the glass has landed, and a button that says Go get it before then has nothing to go

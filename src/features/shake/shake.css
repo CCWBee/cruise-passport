@@ -24,10 +24,9 @@
 }
 /* Shake again keeps its line before a reveal, unseen and out of the focus order */
 .shake-again.is-held { visibility: hidden; }
-/* the two quiet actions sit 12 apart. .quiet-action carries 24 of its own margin, which is what the
-   grid above is already providing, so it is dropped here rather than doubled to 48. */
-.shake-quiets { display: grid; gap: var(--s3); }
-.shake-quiets .quiet-action { margin-top: 0; }
+/* the two quiet actions sit 12 apart by base.css's pair rule. The first drops .quiet-action's own 24,
+   which the grid above already provides, rather than doubling it to 48. */
+.shake-quiets > .quiet-action:first-child { margin-top: 0; }
 
 /* The stage: one fixed box, 300 by 275, in every phase. No panel: the sheet is the container, and a
    box around the only thing present is the fourth banned tell. The shaker stands centred at its
@@ -52,7 +51,7 @@
 .shaker .shaker-rig, .shaker .shaker-cap, .shaker .shaker-glass, .shaker .shaker-ray { transform-origin: 0 0; }
 
 /* ── The shake and the held beat: one timeline of popMs (2300), so the tin, the cap and the rattle
-   cannot drift apart. In ms from the press, from SHAKER in Shaker.tsx:
+   cannot drift apart. In ms from the press, from SHAKER in timing.ts:
 
      0 to 110      the wind-up: a 3px dip and a tilt the wrong way
      240 to 1700   the strokes: up the tin's own axis over the shoulder and back, gentle to 460,
@@ -152,7 +151,7 @@
 .shake-again.is-still { animation: none; }
 
 /* ── computed: node src/features/shake/keyframes.mjs writes everything from here to the end marker,
-   from SHAKER in Shaker.tsx and the tables in that script. Edit there, not here. ── */
+   from SHAKER in timing.ts and the tables in that script. Edit there, not here. ── */
 @keyframes shaker-shake {
   0% { transform: translate(0px, 0px) rotate(0deg); }
   4.78% { transform: translate(0px, 3px) rotate(-3deg); }

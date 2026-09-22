@@ -110,6 +110,12 @@ export const deckLabel = (deck: number): string => DECK_LABELS?.[deck] ?? String
 const BASE_CATEGORIES = ['Classic', 'Signature', 'Martini', 'Margarita', 'Spritz', 'Frozen', 'Coffee', 'Dessert', 'Mocktail', 'Wine', 'Beer']
 export const CATEGORIES = Array.from(new Set([...DRINKS.map((d) => d.category), ...BASE_CATEGORIES])).sort()
 
+/** What a drink's ingredients line shows. A drink the guest added before 22 September carries the
+ *  words the add sheet used to write in place of nothing; they were never the guest's, so they read
+ *  as empty, as a drink added now is. */
+const NO_INGREDIENTS = 'Ingredients not recorded'
+export const ingredientsOf = (d: Drink): string => (d.ingredients === NO_INGREDIENTS ? '' : d.ingredients)
+
 /** Package tier — the one place price classification lives. null price = 'unknown'. */
 export function pkgOf(d: Drink): PkgTier {
   // A drink can carry a price and still have no tier: on a sailing that declares no packages every

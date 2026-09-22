@@ -9,6 +9,7 @@ import {
 } from '../../state/stats'
 import { useSources, pickedForYou } from '../../state/social'
 import { DAYS, START, today, nowHour, VENUES, VENUE_KEYS } from '../../data/model'
+import { badgeCount } from '../../data/badges'
 import { useCountUp } from '../../ui/useCountUp'
 import { FriendDot } from '../../ui/FriendDot'
 // the flat coin, the Suspense fallback for the 3D one: the same object the Badges grid draws
@@ -327,7 +328,7 @@ export function Home() {
               to={`/badges?badge=${nb.badge.id}`}
               className="row pressable"
               viewTransition
-              aria-label={`${nb.badge.name}, ${nb.cur} of ${nb.need}`}
+              aria-label={`${nb.badge.name}, ${badgeCount(nb.badge, nb.cur, nb.need)}`}
             >
               <span className="row-copy">
                 <span className="t-strong">{nb.badge.name}</span>
@@ -337,7 +338,7 @@ export function Home() {
                 <span
                   className="meter"
                   role="progressbar"
-                  aria-label={`${nb.cur} of ${nb.need}`}
+                  aria-label={badgeCount(nb.badge, nb.cur, nb.need)}
                   aria-valuemin={0}
                   aria-valuemax={nb.need}
                   aria-valuenow={Math.min(nb.cur, nb.need)}
@@ -386,7 +387,7 @@ export function Home() {
 
       <WrappedTeaser />
 
-      {openId && <DrinkSheet id={openId} onClose={() => setOpenId(null)} onOpen={setOpenId} />}
+      {openId && <DrinkSheet id={openId} onClose={() => setOpenId(null)} />}
       {openVenue && <VenueSheet venueKey={openVenue} onClose={() => setOpenVenue(null)} />}
       {shakeOpen && <ShakeSheet onClose={() => setShakeOpen(false)} />}
     </div>

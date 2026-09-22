@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { money, type Drink } from '../../data/model'
+import { ingredientsOf, money, type Drink } from '../../data/model'
 import { useStore } from '../../state/store'
 import { IconCheck, IconStar } from '../../ui/Icon'
 
@@ -12,7 +12,8 @@ export const DrinkCard = memo(function DrinkCard({ d, onOpen }: { d: Drink; onOp
   // sheet's meta line and the Type filter: within a venue group it is usually the same row after row,
   // and the ingredients need the room. The unconfirmed warning belongs to the sheet too.
   const price = d.price !== null ? money(d.price) : ''
-  const meta = d.ingredients || price
+  const ingredients = ingredientsOf(d)
+  const meta = ingredients || price
 
   return (
     <article className="dcard">
@@ -27,7 +28,7 @@ export const DrinkCard = memo(function DrinkCard({ d, onOpen }: { d: Drink; onOp
         </span>
         {meta && (
           <span className="d-meta">
-            <span className="d-ing">{d.ingredients}</span>
+            <span className="d-ing">{ingredients}</span>
             {price && <span className="d-fold tnum">{price}</span>}
           </span>
         )}

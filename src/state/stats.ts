@@ -54,7 +54,6 @@ export interface Stats {
   rated: Drink[]
   avg: number
   bars: number; barsTotal: number
-  rest: number; restTotal: number
   venues: number
   best: Drink | null
   favVenue: string | null
@@ -133,8 +132,6 @@ export function computeStats(drinks: Drink[], p: Passport): Stats {
     avg: rated.length ? rated.reduce((a, d) => a + (E(d.id).rating || 0), 0) / rated.length : 0,
     bars: vkeys.filter((k) => !isRestaurant(k)).length,
     barsTotal: VENUE_KEYS.filter((k) => !isRestaurant(k)).length,
-    rest: vkeys.filter((k) => isRestaurant(k)).length,
-    restTotal: VENUE_KEYS.filter((k) => isRestaurant(k)).length,
     venues: vkeys.length, best, favVenue, favVenueN: favVenue ? byVenue[favVenue] : 0, favSpirit,
     byVenue, bySpirit, byCategory, byDay, badgeStat,
   }
@@ -215,14 +212,6 @@ export function biggestBar(drinks: Drink[]): string | null {
   const keys = Object.keys(n)
   if (!keys.length) return null
   return keys.sort((a, b) => n[b] - n[a] || VENUES[a].name.localeCompare(VENUES[b].name))[0]
-}
-
-/** How many decks carry a venue. The Ship screen's landmarks are its decks, so Home counts them
- *  off the venue list the way Ship groups them rather than reading the DECKS constant beside it. */
-export function deckCount(): number {
-  const on: Record<number, 1> = {}
-  VENUE_KEYS.forEach((k) => { on[VENUES[k].deck] = 1 })
-  return Object.keys(on).length
 }
 
 // ── time of day: one set of boundaries for the sky palette and the greeting, so they agree ──

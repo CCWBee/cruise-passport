@@ -253,7 +253,7 @@ export function Stats() {
         <VoyageChart byDay={stats.byDay} />
       </section>
 
-      {openId && <DrinkSheet id={openId} onClose={() => setOpenId(null)} onOpen={setOpenId} />}
+      {openId && <DrinkSheet id={openId} onClose={() => setOpenId(null)} />}
     </div>
   )
 }

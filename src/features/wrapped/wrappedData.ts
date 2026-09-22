@@ -73,8 +73,12 @@ function deriveArchetype(stats: Stats): WrappedArchetype | null {
   const categories = countBy(cocktails.map((drink) => drink.category))
   const flavours = countBy(cocktails.flatMap((drink) => drink.flavors))
   const venues = countBy(cocktails.map((drink) => drink.venue))
-  const averageSweet = cocktails.reduce((sum, drink) => sum + drink.sweet, 0) / n
-  const averageStrength = cocktails.reduce((sum, drink) => sum + drink.strength, 0) / n
+  // A drink the guest added carries a placeholder 3 for each, never a measurement, so it is left out of
+  // the averages; with nothing measured they sit at the scale's middle, which moves no archetype.
+  const measured = cocktails.filter((drink) => drink.id[0] !== 'c')
+  const averageOf = (pick: (drink: Drink) => number) => (measured.length ? measured.reduce((sum, drink) => sum + pick(drink), 0) / measured.length : 3)
+  const averageSweet = averageOf((drink) => drink.sweet)
+  const averageStrength = averageOf((drink) => drink.strength)
   const classicShare = cocktails.filter((drink) => drink.category === 'Classic' || drink.category === 'Martini').length / n
   const frozenShare = cocktails.filter((drink) => drink.frozen).length / n
   const mocktailShare = cocktails.filter((drink) => drink.category === 'Mocktail').length / n

@@ -1,4 +1,4 @@
-// Writes the shaker's computed keyframes into shake.css. Run it after changing SHAKER in Shaker.tsx
+// Writes the shaker's computed keyframes into shake.css. Run it after changing SHAKER in timing.ts
 // or any table below:   node src/features/shake/keyframes.mjs
 //
 // Two kinds of keyframes come out of it, and both are here for the same reason: a hand-typed
@@ -17,7 +17,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 
 const here = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'))
-const tsx = readFileSync(path.join(here, 'Shaker.tsx'), 'utf8')
+const tsx = readFileSync(path.join(here, 'timing.ts'), 'utf8')
 const block = tsx.match(/export const SHAKER = \{([\s\S]*?)\n\}/)[1]
 const num = (k) => Number(block.match(new RegExp(`${k}:\\s*(\\d+)`))[1])
 const S = {
@@ -226,7 +226,7 @@ else console.log(`the cap clears the glass by ${r(tightest, 1)} at its closest`)
 
 const out = [
   '/* ── computed: node src/features/shake/keyframes.mjs writes everything from here to the end marker,',
-  '   from SHAKER in Shaker.tsx and the tables in that script. Edit there, not here. ── */',
+  '   from SHAKER in timing.ts and the tables in that script. Edit there, not here. ── */',
   table('shaker-shake', RIG, ([, x, y, d]) => `translate(${x}px, ${y}px) rotate(${d}deg)`, 's'),
   table('shaker-beat', CAP, ([, y, d]) => `translateY(${y}px) rotate(${d}deg)`, 'o'),
   sampled('shaker-cap-off', CAP_OFF.rise + CAP_OFF.fall, 20, capAt),

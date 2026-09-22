@@ -93,7 +93,7 @@ export function Log() {
         </p>
       ) : null}
 
-      {openId && <DrinkSheet id={openId} onClose={() => setOpenId(null)} onOpen={setOpenId} />}
+      {openId && <DrinkSheet id={openId} onClose={() => setOpenId(null)} />}
     </>
   )
 }
