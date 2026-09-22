@@ -7,8 +7,8 @@ import { GUEST_HONESTY, PrivacySheet, PRIVACY_SUBTITLE } from '../privacy/Privac
 import { ConfirmButton } from './ConfirmButton'
 import './friends.css'
 
-// Who you are to the crew: the name and colour that ride on every shared drink, your code, whether
-// this passport is kept anywhere but this phone, how the sync and any restore are getting on, and
+// Who you are to the crew: the name and colour that ride on every shared drink, whether this passport
+// is kept anywhere but this phone, how the sync and any restore are getting on, and
 // the one way out. Signing in is optional and sits below identity: the sheet's five-second read is
 // still "who am I to the crew", and a guest never has to sign in to log a drink.
 export function ProfileSheet({ onClose }: { onClose: () => void }) {
@@ -36,7 +36,7 @@ export function ProfileSheet({ onClose }: { onClose: () => void }) {
     ? 'Sign-in is not available yet. Your passport stays on this phone.'
     : sync.restore === 'failed-signin' ? 'That did not work. Try again in a moment.'
       : offline ? 'You are offline. Sign in when you are back.'
-        : 'Sign in and your passport comes back on any phone. We use Google only to know it is you.'
+        : 'We use Google only to know it is you.'
 
   // Restore wins the status line while it has something to say, because it is the answer to the tap
   // the guest just made; the sync line comes back when it falls to 'idle'. One line, never two.
@@ -78,7 +78,11 @@ export function ProfileSheet({ onClose }: { onClose: () => void }) {
       <Sheet onClose={onClose} labelledBy="profile-title">
         <div className="friends-sheet">
           <h2 className="t-title sheet-title" id="profile-title">Your details</h2>
-          <p className="sheet-meta">The name and colour your crew sees on everything you share.</p>
+          {/* The one meta line says what the sheet is for rather than reading out the two field
+              labels beneath it. The longer "and where your passport is kept" wrapped to a one-word
+              widow at 390px, and it was untrue in a build with no Keep block. The code is not
+              repeated here either: it is on the Crew header behind this sheet and under Show my code. */}
+          <p className="sheet-meta">How your crew sees you.</p>
 
           <label className="f-field">
             <span className="f-label">Your name</span>
@@ -86,7 +90,6 @@ export function ProfileSheet({ onClose }: { onClose: () => void }) {
               value={profile.name}
               maxLength={24}
               autoComplete="name"
-              placeholder="Your name"
               onChange={(event) => setProfile({ name: event.target.value })}
             />
           </label>
@@ -107,13 +110,6 @@ export function ProfileSheet({ onClose }: { onClose: () => void }) {
               ))}
             </div>
           </div>
-
-          {profile.code && (
-            <div className="f-field">
-              <span className="f-label">Your code</span>
-              <code className="tnum addme-code-val">{profile.code}</code>
-            </div>
-          )}
 
           {/* Rank 5: will I lose this. Above the sync line because it outranks "is the crew up to
               date", and directly above it because the restore result is reported on that line. An

@@ -50,7 +50,7 @@ export function PrivacySheet({ onClose }: { onClose: () => void }) {
           <section className="section">
             <div className="section-head"><h3 className="t-h2">Who can see it</h3></div>
             <p className="t-body">The people in your crew: anyone you have added, anyone who has added you, and the members of any group you join. They see your name, colour and code, and the drinks you have ticked, rated, recommended or commented on. They never see your notes, your favourites or your wishlist.</p>
-            <p className="t-body">Adding is not something you approve. Once you have set a name, anyone using the app can find you by name or by code, and adding you makes the crew mutual at once: from that moment they see your passport and you see theirs, with no request and no acceptance. The search itself returns your name, your colour and your code, and nothing else, and a guest who has set no name is not findable at all. Removing someone cuts both sides, and they stop seeing your passport from that moment.</p>
+            <p className="t-body">Nobody approves an add. Once you have set a name, anyone in the app can find you by name or code, and adding you is mutual at once: they see your passport and you see theirs. The search returns only your name, colour and code, and a guest with no name cannot be found. Removing someone cuts both sides at once.</p>
           </section>
         )}
 

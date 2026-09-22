@@ -29,5 +29,5 @@
 /* 3. the crew: rows, not a stack of boxes (the row itself is in friends.css) */
 .social-empty { margin-top: var(--s1); }
 
-/* 4-6. rows that open something: a drawn chevron, sized by the icon grid, not by a font */
+/* 4. rows that open something: a drawn chevron, sized by the icon grid, not by a font */
 .social-go { flex: none; color: var(--ink-3); }

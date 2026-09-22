@@ -22,7 +22,6 @@ export function NameFields({ draft, onDraft }: { draft: string; onDraft: (v: str
           value={draft}
           maxLength={24}
           autoComplete="name"
-          placeholder="Your name"
           onChange={(event) => onDraft(event.target.value)}
         />
       </label>

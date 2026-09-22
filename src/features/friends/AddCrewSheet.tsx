@@ -42,6 +42,7 @@ export function AddCrewSheet({ onClose, onDone }: {
   const [showCode, setShowCode] = useState(false)
   const [invite, setInvite] = useState('')
   const [joining, setJoining] = useState(false)
+  const [showJoin, setShowJoin] = useState(false)
   const [showPaste, setShowPaste] = useState(false)
   const [paste, setPaste] = useState('')
   const [status, setStatus] = useState('')
@@ -147,15 +148,16 @@ export function AddCrewSheet({ onClose, onDone }: {
 
   // One line under the field, and always the same element: a live region inserted with its text
   // already in it is not announced, only a change inside one that was already there. Idle it says
-  // what to type; searching, nobody and no connection are three different answers and never share a
-  // line. Once rows are on screen the rows are the answer, so the line becomes the count and hides
-  // itself rather than repeating in ink what the list already shows.
+  // where their code is, the one thing the label above it does not; searching, nobody and no
+  // connection are three different answers and never share a line. Once rows are on screen the rows
+  // are the answer, so the line becomes the count and hides itself rather than repeating in ink what
+  // the list already shows.
   const rows = found.length
   const note = find === 'searching' ? 'Searching…'
-    : find === 'offline' ? 'No connection, so the search cannot run. Your link still works.'
+    : find === 'offline' ? 'No connection. Send your link instead.'
     : find === 'ready' && rows === 0 ? 'Nobody by that name yet. They may not have set a name.'
     : rows > 0 ? (rows === 1 ? '1 person found' : `${rows} people found`)
-    : 'Their name, or the code at the top of their Crew page.'
+    : 'Their code is at the top of their Crew page.'
 
   return (
     <Sheet onClose={onClose} labelledBy="add-crew-title">
@@ -164,10 +166,10 @@ export function AddCrewSheet({ onClose, onDone }: {
         {/* what the sheet is for, not the privacy trade: the one line under the field carries that */}
         <p className="sheet-meta">{online ? 'Find them by name, or send them your link.' : 'Send them your link, or scan their code.'}</p>
 
-        {/* 1. the front door: the server knows who is aboard, so start by typing who you want */}
+        {/* 1. the front door: the server knows who is aboard, so start by typing who you want. No
+            heading: the meta line above and the field's label already say it. */}
         {online && (
           <div className="addme-find">
-            <div className="section-head"><h3 className="t-h2">Find them</h3></div>
             <label className="f-field">
               <span className="f-label">Their name or code</span>
               <input
@@ -223,7 +225,7 @@ export function AddCrewSheet({ onClose, onDone }: {
         <button type="button" className="btn btn-wide addme-send" onClick={share} disabled={!link}>
           {online && find !== 'offline' ? 'Or send your link' : 'Send your link'}
         </button>
-        <p className="t-meta friends-hint">Standing together? AirDrop or Nearby Share it from the share sheet. Otherwise message it.</p>
+        <p className="t-meta friends-hint">Beside them? AirDrop or Nearby Share it.</p>
 
         {/* 3. the two quiet routes for the phone that will not take a link */}
         <div className="addme-actions">
@@ -239,20 +241,22 @@ export function AddCrewSheet({ onClose, onDone }: {
         {showCode && (
           <div className="addme" data-noswipe>
             <div className="panel qr-plate">{link ? <Qr value={link} size={200} /> : <div className="addme-qr-skel" aria-hidden />}</div>
+            {/* no visible label: the toggle above now reads "Hide my code", so the code is named by
+                the tap that showed it; the sr-only one keeps it named for a screen reader */}
             {profile.code && (
-              <div className="addme-code">
-                <span className="f-label">Your code</span>
-                <div className="addme-code-row">
-                  <code className="tnum addme-code-val">{profile.code}</code>
-                  <button type="button" className="mini pressable" onClick={() => copy(profile.code!, 'Code copied')}>Copy</button>
-                </div>
+              <div className="addme-code-row">
+                <span className="sr-only">Your code</span>
+                <code className="tnum addme-code-val">{profile.code}</code>
+                <button type="button" className="mini pressable" onClick={() => copy(profile.code!, 'Code copied')}>Copy</button>
               </div>
             )}
           </div>
         )}
 
-        {/* 4. a group someone else has already made */}
-        {online && (
+        {/* 4. a group someone else has already made. Folded like the paste path below: most joins
+            arrive as a tapped /join link, so a field for a code read out at the table is the rare
+            route, and it unfolds in place into the same label, field and button. */}
+        {online && (showJoin ? (
           <div className="friends-block">
             <label className="f-field">
               <span className="f-label">Join a group</span>
@@ -268,7 +272,9 @@ export function AddCrewSheet({ onClose, onDone }: {
             </label>
             <button type="button" className="btn btn-wide friends-action" onClick={join} disabled={joining || !invite.trim()}>{joining ? 'Joining…' : 'Join group'}</button>
           </div>
-        )}
+        ) : (
+          <button type="button" className="quiet-action" onClick={() => setShowJoin(true)}>Join a group with a code</button>
+        ))}
 
         {/* 5. the last resort, when the camera is refused and there is no signal for the search */}
         {showPaste ? (
