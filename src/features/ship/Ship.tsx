@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { activeCruiseId } from '../../data/cruises'
-import { DECKS, VENUES, VENUE_KEYS, deckLabel, menuFor, type Drink } from '../../data/model'
+import { DECKS, VENUES, VENUE_KEYS, deckLabel, menuFor } from '../../data/model'
 import { sailingById } from '../../data/sailings'
 import { useAllDrinks, useStore } from '../../state/store'
 import { SailingSheet } from '../cruise/SailingSheet'
@@ -13,10 +13,6 @@ import { VenueSheet } from './VenueSheet'
 // second chevron class doing the same job is the divergent sibling canonical-patterns stops.
 import '../social/social.css'
 import './ship.css'
-
-function uniqueMenu(keys: string[], drinks: Drink[]) {
-  return Array.from(new Map(keys.flatMap((key) => menuFor(key, drinks)).map((d) => [d.id, d])).values())
-}
 
 export function Ship() {
   const drinks = useAllDrinks()
@@ -35,16 +31,14 @@ export function Ship() {
     const k = new URLSearchParams(location.search).get('venue')
     if (k && VENUES[k]) setOpenVenue(k)
   }, [])
-  const decks = useMemo(() => DECKS.slice().reverse().map((deck) => {
-    const keys = VENUE_KEYS.filter((key) => VENUES[key].deck === deck)
-    const menu = uniqueMenu(keys, drinks)
-    return { deck, keys, total: menu.length, done: menu.filter((d) => entries[d.id]?.tried).length }
-  }), [drinks, entries])
+  const decks = useMemo(() => DECKS.slice().reverse().map((deck) => ({
+    deck,
+    keys: VENUE_KEYS.filter((key) => VENUES[key].deck === deck),
+  })), [])
 
   return (
     <div className="wrap page ship-page">
       <h1 className="t-title">The ship</h1>
-      <p className="page-lead t-meta">Bars and cafés, from the top deck down.</p>
       {/* The empty state is the action, as the Badges screen does it (Badges.tsx). Two lines rather
           than one, because Badges' list fills itself as a side effect of using the app and nothing
           fills this screen except this control, so the second line says what a venue is for; and a
@@ -63,35 +57,39 @@ export function Ship() {
         </div>
       )}
       <div className="ship-decks" aria-label="Venues by deck, highest to lowest">
-        {decks.map(({ deck, keys, total, done }) => (
+        {decks.map(({ deck, keys }) => (
           <section className="section" key={deck} aria-labelledby={`deck-${deck}`}>
-            {/* the deck heading is one plain line, per DESIGN.md: "Deck 17 · 6 of 65". The unit is
-                carried in text a screen reader reads rather than an aria-label on a bare span. */}
-            <h2 className="t-h2 tnum" id={`deck-${deck}`}>
-              Deck {deckLabel(deck)} · {done} of {total}<span className="sr-only"> drinks tried</span>
-            </h2>
+            {/* the deck heading is the deck alone, per DESIGN.md: "Deck 17". The rows beneath carry
+                the counts and Stats' "Where you have been" carries completion by deck; a count here
+                also counted a shared list once while the rows beneath counted it twice. */}
+            <h2 className="t-h2" id={`deck-${deck}`}>Deck {deckLabel(deck)}</h2>
             {keys.map((key) => {
               const venue = VENUES[key]
               const menu = menuFor(key, drinks)
               const tried = menu.filter((d) => entries[d.id]?.tried).length
-              const pct = menu.length ? (tried / menu.length) * 100 : 0
+              // A venue with no drinks shows its name alone, because "0 of 0" is a structural zero.
+              // The bar draws only once something is tried: an empty track says nothing the count at
+              // the right does not.
+              const count = menu.length ? `, ${tried} of ${menu.length} tried` : ''
               return (
                 <button
                   key={key}
                   className="row venue-row"
                   onClick={() => setOpenVenue(key)}
-                  aria-label={`${venue.name}, ${tried} of ${menu.length} tried${visits[key]?.visited ? ', visited' : ''}`}
+                  aria-label={`${venue.name}${count}${visits[key]?.visited ? ', visited' : ''}`}
                 >
                   <span className="row-copy">
                     <span className="venue-line">
                       <span className="t-body venue-name">{venue.name}</span>
                       {visits[key]?.visited && <IconCheck className="venue-visited" size={15} filled />}
                     </span>
-                    <span className="meter" aria-hidden>
-                      <span style={{ width: `${pct}%` }} />
-                    </span>
+                    {tried > 0 && (
+                      <span className="meter" aria-hidden>
+                        <span style={{ width: `${(tried / menu.length) * 100}%` }} />
+                      </span>
+                    )}
                   </span>
-                  <span className="t-meta tnum venue-count">{tried} of {menu.length}</span>
+                  {menu.length > 0 && <span className="t-meta tnum venue-count">{tried} of {menu.length}</span>}
                 </button>
               )
             })}
@@ -115,7 +113,6 @@ export function Ship() {
           >
             <span className="row-copy">
               <span className="t-body">Add a venue</span>
-              <span className="t-meta">Bars, cafés and restaurants on this ship</span>
             </span>
             <IconChevron className="social-go" />
           </button>

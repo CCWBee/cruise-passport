@@ -39,7 +39,6 @@ export function VenueForm({ cruiseId, venueKey, venue, onClose }: {
   const [hours, setHours] = useState(venue?.hours ?? '')
   const [notes, setNotes] = useState(venue?.blurb ?? '')
   const [deckErr, setDeckErr] = useState('')
-  const [dirty, setDirty] = useState(false)
 
   // VENUES, VENUE_KEYS, DECKS and CATEGORIES are module constants resolved once at load, so a
   // catalogue change reloads the page: the app's own mechanism for exactly this (enterCruise,
@@ -51,7 +50,6 @@ export function VenueForm({ cruiseId, venueKey, venue, onClose }: {
     if (saved.current && typeof location !== 'undefined') location.reload()
   }
 
-  const edited = (set: (v: string) => void) => (v: string) => { setDirty(true); set(v) }
   const cleanName = name.trim().slice(0, NAME_MAX)
 
   /** The venue as it would be written, or null with the Deck field's error set. The error is the
@@ -99,7 +97,6 @@ export function VenueForm({ cruiseId, venueKey, venue, onClose }: {
     setKind(VENUE_TYPES[0])
     setHours('')
     setNotes('')
-    setDirty(false)
     document.getElementById('venue-name')?.focus()
   }
 
@@ -122,10 +119,9 @@ export function VenueForm({ cruiseId, venueKey, venue, onClose }: {
   return (
     <Sheet onClose={close} labelledBy="venue-form-title">
       <h2 className="t-title sheet-title" id="venue-form-title">{editing ? venue?.name : 'Add a venue'}</h2>
+      {/* the one fact the fields below do not show: what is required, or what an edit leaves alone */}
       <p className="sheet-meta">
-        {editing
-          ? 'Change how this venue reads. The drinks logged here stay logged.'
-          : 'Where you will be drinking. Deck and name are what the app groups by.'}
+        {editing ? 'The drinks logged here stay logged.' : 'Only the deck and name are needed.'}
       </p>
       <form onSubmit={submit} autoComplete="off">
         <TextField
@@ -136,7 +132,7 @@ export function VenueForm({ cruiseId, venueKey, venue, onClose }: {
           autoFocus
           maxLength={NAME_MAX}
           value={name}
-          onChange={(event) => edited(setName)(event.target.value)}
+          onChange={(event) => setName(event.target.value)}
         />
         <NumberField
           id="venue-deck"
@@ -148,7 +144,7 @@ export function VenueForm({ cruiseId, venueKey, venue, onClose }: {
           inputMode="numeric"
           error={deckErr || undefined}
           value={deck}
-          onChange={(event) => { setDeckErr(''); edited(setDeck)(event.target.value) }}
+          onChange={(event) => { setDeckErr(''); setDeck(event.target.value) }}
         />
         {/* AddSheet's own Select wrapper, verbatim: a plain span.field-label inside div.field. Which
             of the two label shapes in the app is right is not this sheet's to settle. "Kind" rather
@@ -158,7 +154,7 @@ export function VenueForm({ cruiseId, venueKey, venue, onClose }: {
           <span className="field-label" id="venue-kind-label">Kind</span>
           <Select
             value={kind}
-            onChange={edited(setKind)}
+            onChange={setKind}
             options={VENUE_TYPES.map((type) => ({ value: type, label: type }))}
             ariaLabel="Kind"
           />
@@ -167,24 +163,20 @@ export function VenueForm({ cruiseId, venueKey, venue, onClose }: {
           id="venue-hours"
           label="Hours"
           name="hours"
-          hint="Optional. For example, 4pm to late."
+          placeholder="4pm to late"
           maxLength={HOURS_MAX}
           value={hours}
-          onChange={(event) => edited(setHours)(event.target.value)}
+          onChange={(event) => setHours(event.target.value)}
         />
         <TextArea
           id="venue-notes"
           label="Notes"
           name="notes"
           rows={3}
-          hint="Optional. Anything you want to remember about it."
           maxLength={NOTES_MAX}
           value={notes}
-          onChange={(event) => edited(setNotes)(event.target.value)}
+          onChange={(event) => setNotes(event.target.value)}
         />
-        {/* "the app" and not "your passport": the passport is the drinks the guest logged, which is
-            exactly what does not change here. */}
-        {dirty && <p className="t-meta venue-form-note">Saving reloads the app, so the change shows on every screen.</p>}
         {/* Disabled rather than an early return on submit: a button that does nothing when tapped is
             the state DESIGN.md's "Every control ships default, pressed, focus-visible, disabled"
             exists to prevent. */}
@@ -193,7 +185,7 @@ export function VenueForm({ cruiseId, venueKey, venue, onClose }: {
         </GlassButton>
         {!editing && (
           <GlassButton variant="secondary" block type="button" className="venue-form-again" disabled={!cleanName} onClick={addAnother}>
-            Save and add another
+            Add another
           </GlassButton>
         )}
       </form>
