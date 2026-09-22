@@ -67,8 +67,8 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
   // is all that is true about where to find it
   const where = drink ? (venue ? `${venue.name} · Deck ${venue.deck}` : drink.category) : ''
   // What the card beneath the shaker says, spoken as one sentence: the middle dot is gone in
-  // speech, so the deck needs its word back. It waits for the drop to land, so the announcement and
-  // the card arrive together rather than the reader hearing the answer while the lid is still going.
+  // speech, so the deck needs its word back. It waits for the prize to land, so the announcement and
+  // the card arrive together rather than the reader hearing the answer while the cap is still flying.
   const spoken = drink && phase === 'revealed'
     ? (venue ? `Try ${venue.name}'s ${drink.name}, Deck ${venue.deck}` : `Try ${drink.name}`)
     : ''

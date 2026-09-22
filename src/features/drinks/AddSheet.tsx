@@ -8,11 +8,12 @@ import { Select } from '../../ui/Select'
 import { Sheet } from '../../ui/Sheet'
 import './addsheet.css'
 
-export function AddSheet({ onClose }: { onClose: () => void }) {
+/** `venue` presets the bar, when the sheet is opened from that bar's own empty list */
+export function AddSheet({ onClose, venue: preset }: { onClose: () => void; venue?: string }) {
   const addCustom = useStore((s) => s.addCustom)
   const titleId = useId()
   const [name, setName] = useState('')
-  const [venue, setVenue] = useState(VENUE_KEYS[0] ?? '')
+  const [venue, setVenue] = useState(preset && VENUES[preset] ? preset : VENUE_KEYS[0] ?? '')
   const [category, setCategory] = useState(CATEGORIES[0] || 'Cocktail')
   const [spirits, setSpirits] = useState('')
   const [ingredients, setIngredients] = useState('')

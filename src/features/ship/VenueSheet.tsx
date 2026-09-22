@@ -4,6 +4,7 @@ import { VENUES, menuFor } from '../../data/model'
 import { isUserVenue } from '../../data/sailings'
 import { useAllDrinks, useStore } from '../../state/store'
 import { DrinkCard } from '../drinks/DrinkCard'
+import { AddSheet } from '../drinks/AddSheet'
 import { DrinkSheet } from '../drinks/DrinkSheet'
 import { Sheet } from '../../ui/Sheet'
 import { Switch } from '../../ui/Switch'
@@ -19,6 +20,7 @@ export function VenueSheet({ venueKey, onClose }: { venueKey: string; onClose: (
   const toggleVisit = useStore((s) => s.toggleVisit)
   const [openId, setOpenId] = useState<string | null>(null)
   const [editing, setEditing] = useState(false)
+  const [adding, setAdding] = useState(false)
   const titleId = useId()
   if (!venue) return null
   const menu = menuFor(venueKey, drinks)
@@ -33,6 +35,11 @@ export function VenueSheet({ venueKey, onClose }: { venueKey: string; onClose: (
   // A sheet over a sheet is glass on glass, which DESIGN.md's Material section forbids outright.
   if (editing) {
     return <VenueForm cruiseId={activeCruiseId()} venueKey={venueKey} venue={venue} onClose={() => setEditing(false)} />
+  }
+  // the add sheet, preset to this venue, replaces this one the same way; closing it comes back here,
+  // where the drink just added is the list's first row
+  if (adding) {
+    return <AddSheet venue={venueKey} onClose={() => setAdding(false)} />
   }
 
   return (
@@ -87,7 +94,12 @@ export function VenueSheet({ venueKey, onClose }: { venueKey: string; onClose: (
           </div>
         </>
       ) : (
-        <p className="t-meta venue-progress">No drinks here yet.</p>
+        // an empty list ships the one action that fills it (DESIGN.md States), in the shape every
+        // empty list takes
+        <div className="empty-state venue-progress">
+          <p className="t-body">No drinks here yet.</p>
+          <button type="button" className="btn btn-coral pressable" onClick={() => setAdding(true)}>Add a drink</button>
+        </div>
       )}
     </Sheet>
   )

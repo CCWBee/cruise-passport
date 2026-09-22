@@ -267,6 +267,9 @@ export function AddCrewSheet({ onClose, onDone }: {
                 autoCorrect="off"
                 spellCheck={false}
                 placeholder="Invite code or link"
+                // the tap that unfolded this unmounted the button holding focus; without this, focus
+                // falls to the page and a keyboard or screen-reader guest has to hunt for the field
+                autoFocus
                 onChange={(event) => { setInvite(event.target.value); setStatus('') }}
               />
             </label>
@@ -288,6 +291,7 @@ export function AddCrewSheet({ onClose, onDone }: {
                 onChange={(event) => { setPaste(event.target.value); setStatus('') }}
                 placeholder="SPP…"
                 spellCheck={false}
+                autoFocus
               />
             </label>
             <button type="button" className="btn btn-wide friends-action" onClick={add} disabled={!paste.trim()}>Add</button>

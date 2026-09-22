@@ -1,7 +1,7 @@
 // Faceted filter engine. OR within a group, AND across groups; per-option counts are
 // SELF-EXCLUDED (picking one Spirit never zeros the others) in a single O(drinks×groups) pass.
 // See REVIEW/reports/facet-engine.md.
-import { pkgOf, VENUES, type Drink } from '../../data/model'
+import { ingredientsOf, pkgOf, VENUES, type Drink } from '../../data/model'
 import type { Filters } from '../../state/store'
 import type { Entry } from '../../state/stats'
 
@@ -19,7 +19,7 @@ export function matchQuery(d: Drink, q: string): boolean {
   if (!q) return true
   // Guarded: a drink can carry a venue key this sailing does not hold, and the name of a venue that
   // is not there is simply nothing to search on.
-  const hay = (d.name + ' ' + d.ingredients + ' ' + (VENUES[d.venue]?.name || '') + ' ' +
+  const hay = (d.name + ' ' + ingredientsOf(d) + ' ' + (VENUES[d.venue]?.name || '') + ' ' +
     d.category + ' ' + d.spirits.join(' ') + ' ' + d.flavors.join(' ')).toLowerCase()
   return hay.indexOf(q) > -1
 }
