@@ -17,7 +17,6 @@ export function SailingSheet({ sailing, onClose }: { sailing?: Sailing; onClose:
   const [start, setStart] = useState(sailing?.start ?? '')
   const [end, setEnd] = useState(sailing?.end ?? '')
   const [endErr, setEndErr] = useState('')
-  const [dirty, setDirty] = useState(false)
 
   // The same reload contract the venue form keeps: START, END and the whole catalogue are module
   // constants resolved at load, so a change to them reloads, once, from the one close handler, and
@@ -28,7 +27,6 @@ export function SailingSheet({ sailing, onClose }: { sailing?: Sailing; onClose:
     if (saved.current && typeof location !== 'undefined') location.reload()
   }
 
-  const edited = (set: (v: string) => void) => (v: string) => { setDirty(true); set(v) }
   const cleanShip = ship.trim()
   // Every required field gates the button rather than failing on tap, for the reason DESIGN.md gives
   // under States: a control that does nothing when pressed is the state the disabled state exists to
@@ -76,10 +74,12 @@ export function SailingSheet({ sailing, onClose }: { sailing?: Sailing; onClose:
   return (
     <Sheet onClose={close} labelledBy="sailing-sheet-title">
       <h2 className="t-title sheet-title" id="sailing-sheet-title">Your sailing</h2>
+      {/* the one fact the fields below do not show: what is required, or what an edit leaves alone.
+          Saying what is required here is what lets the cruise line carry no "Optional." hint. */}
       <p className="sheet-meta">
         {editing
-          ? 'Change the ship or the dates. Your logged drinks stay where they are.'
-          : 'The ship, the line and the dates. You add the bars next.'}
+          ? 'Your logged drinks stay where they are.'
+          : 'Only the ship and dates are needed. You add the bars next.'}
       </p>
       <form onSubmit={submit} autoComplete="off">
         <TextField
@@ -89,15 +89,14 @@ export function SailingSheet({ sailing, onClose }: { sailing?: Sailing; onClose:
           required
           autoFocus
           value={ship}
-          onChange={(event) => edited(setShip)(event.target.value)}
+          onChange={(event) => setShip(event.target.value)}
         />
         <TextField
           id="sailing-line"
           label="Cruise line"
           name="line"
-          hint="Optional."
           value={line}
-          onChange={(event) => edited(setLine)(event.target.value)}
+          onChange={(event) => setLine(event.target.value)}
         />
         <TextField
           id="sailing-start"
@@ -106,7 +105,7 @@ export function SailingSheet({ sailing, onClose }: { sailing?: Sailing; onClose:
           type="date"
           required
           value={start}
-          onChange={(event) => { setEndErr(''); edited(setStart)(event.target.value) }}
+          onChange={(event) => { setEndErr(''); setStart(event.target.value) }}
         />
         {/* the error is the Field primitive's own error prop, which replaces the hint and wires
             aria-invalid and aria-describedby: one error style on the screen, not two */}
@@ -118,20 +117,17 @@ export function SailingSheet({ sailing, onClose }: { sailing?: Sailing; onClose:
           required
           error={endErr || undefined}
           value={end}
-          onChange={(event) => { setEndErr(''); edited(setEnd)(event.target.value) }}
+          onChange={(event) => { setEndErr(''); setEnd(event.target.value) }}
         />
-        {editing && dirty && (
-          <p className="t-meta sailing-note">Saving reloads the app, so the change shows on every screen.</p>
-        )}
         <GlassButton variant="primary" block type="submit" className="sailing-submit" disabled={!ready}>
           {editing ? 'Save' : 'Start your passport'}
         </GlassButton>
       </form>
-      {/* Said once, before the sailing exists, rather than found out after it is built. Every sailing
-          has its own id and the crew feeds are scoped to it, and a sailing cannot yet be handed to
-          another phone, so in practice a sailing you set up has no crew. It sits above the hairline
-          so the last thing on the sheet is still the destructive control. */}
-      <p className="t-meta sailing-crew">Crew and groups need a sailing you are both on, so for now they work on the published sailings.</p>
+      {/* Said once, before the sailing exists, rather than found out after it is built, and so not
+          on the returning sheet. Every sailing has its own id and the crew feeds are scoped to it,
+          and a sailing cannot yet be handed to another phone, so in practice a sailing you set up has
+          no crew. */}
+      {!editing && <p className="t-meta sailing-crew">Crew and groups only work on the published sailings for now.</p>}
       {editing && (
         <>
           <hr className="hairline sailing-rule" />

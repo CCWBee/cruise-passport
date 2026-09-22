@@ -1,7 +1,5 @@
-/* Ship: a plain section per deck, one row per venue, a 3px ink bar under the name.
-   No plates, no deck colours, no boxes. See docs/DESIGN.md. */
-.ship-page > h1 { margin-bottom: var(--s1); }
-.ship-decks > .section:first-child { margin-top: 0; }
+/* Ship: a plain section per deck, one row per venue, a 3px ink bar under the name once a drink
+   there is tried. No plates, no deck colours, no boxes. See docs/DESIGN.md. */
 
 /* a venue row: name (with its state glyphs), the bar under it, the count at the right */
 .venue-line { display: flex; align-items: center; gap: var(--s2); min-width: 0; }
@@ -11,28 +9,28 @@
 /* a fixed measure column: every count right-aligned, so every bar ends at the same x */
 .venue-count { flex: none; min-width: 64px; text-align: right; }
 
-/* progress: a hairline track with an ink fill. The track keeps every row the same measure, so a
-   short fill reads as a bar rather than an underline on the name. No transition: this is the same
-   measure as .badge-fill and .stats-deck-bar, and none of the three grows in. */
+/* progress: a hairline track with an ink fill, drawn only once a drink at the venue is tried. The
+   track keeps every drawn bar the same measure, so a short fill reads as a bar rather than an
+   underline on the name. No transition: this is the same measure as .badge-fill and
+   .stats-deck-bar, and none of the three grows in. */
 
-/* ── the venue sheet: title, meta, blurb, the visited switch, progress, then the list ── */
+/* ── the venue sheet: title, meta, blurb, the visited switch, the count line, then the list.
+      Space alone separates the groups; no hairline fences the switch ── */
 .venue-blurb { margin-top: var(--s3); }
 .venue-shared { margin-top: var(--s2); }
-.venue-rule { margin-top: var(--s4); }
 /* the edit row sits with the block above it, at the same distance the shared-list line keeps */
 .venue-edit { margin-top: var(--s3); }
-.venue-visit { margin: var(--s4) 0; }
-.venue-progress { display: grid; gap: var(--s2); margin-top: var(--s4); }
+.venue-visit { margin-top: var(--s5); }
+.venue-progress { margin-top: var(--s4); }
 .venue-drinks { margin-top: var(--s4); font-variant-numeric: tabular-nums; }
 
 /* ── the venue form: AddSheet's shape, with a second button and a remove path ── */
-/* the note that saving reloads, directly above the primary it warns about */
-.venue-form-note { margin-top: var(--s4); }
 .venue-form-submit { margin-top: var(--s5); }
-.venue-form-note + .venue-form-submit { margin-top: var(--s2); }
 /* two stacked buttons: venues are entered in a batch on the day the sailing is set up, drinks one
    at a time at a bar. One filled control, one outline, so the coral budget still holds. */
 .venue-form-again { margin-top: var(--s3); }
+/* the hairline above the remove, which the registry requires above every delete */
+.venue-rule { margin-top: var(--s4); }
 .venue-form-remove { margin-top: var(--s4); }
 
 /* ── the empty ship: the action is the state (Badges does it the same way), two lines and the one

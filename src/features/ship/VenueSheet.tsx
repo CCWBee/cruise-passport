@@ -25,7 +25,6 @@ export function VenueSheet({ venueKey, onClose }: { venueKey: string; onClose: (
   const sharesWith = venue.shares ? VENUES[venue.shares] : undefined
   const mine = isUserVenue(venueKey)
   const done = menu.filter((d) => entries[d.id]?.tried).length
-  const pct = menu.length ? (done / menu.length) * 100 : 0
 
   if (openId) {
     return <DrinkSheet id={openId} onClose={() => setOpenId(null)} onOpen={setOpenId} />
@@ -46,7 +45,7 @@ export function VenueSheet({ venueKey, onClose }: { venueKey: string; onClose: (
           off the miss was one of the four lookups that used to be a white screen. With no venue to
           name there is no sentence to write, so the line goes rather than half-renders. */}
       {sharesWith && (
-        <p className="t-meta venue-shared">Same list as {sharesWith.name}, shared across the ship.</p>
+        <p className="t-meta venue-shared">Same list as {sharesWith.name}.</p>
       )}
       {/* A venue the guest made can be changed, and the control sits directly under the block that
           states what this venue is, because that is exactly what editing changes; under the drink
@@ -66,7 +65,8 @@ export function VenueSheet({ venueKey, onClose }: { venueKey: string; onClose: (
         </div>
       )}
 
-      <hr className="hairline venue-rule" />
+      {/* Space separates the switch from the facts above and the list below; a hairline in a sheet
+          is for rows in a list, never for fencing a group. */}
       <div className="venue-visit">
         <Switch
           checked={visited}
@@ -75,28 +75,19 @@ export function VenueSheet({ venueKey, onClose }: { venueKey: string; onClose: (
           labelId="venue-visit-label"
         />
       </div>
-      <hr className="hairline venue-rule" />
 
-      <div className="venue-progress">
-        <p className="t-meta tnum">{done} of {menu.length} tried from this list</p>
-        <div
-          className="meter"
-          role="progressbar"
-          aria-label="Drinks tried from this list"
-          aria-valuemin={0}
-          aria-valuemax={menu.length}
-          aria-valuenow={done}
-        >
-          <span style={{ width: `${pct}%` }} />
-        </div>
-      </div>
-
+      {/* The count is text alone: the row behind this sheet shows it and every drink below carries
+          its own tried check, so a meter would be the same number a third time. With no drinks there
+          is no count to give, because "0 of 0" is a structural zero. */}
       {menu.length ? (
-        <div className="dlist venue-drinks">
-          {menu.map((d) => <DrinkCard key={d.id} d={d} onOpen={setOpenId} />)}
-        </div>
+        <>
+          <p className="t-meta tnum venue-progress">{done} of {menu.length} tried</p>
+          <div className="dlist venue-drinks">
+            {menu.map((d) => <DrinkCard key={d.id} d={d} onOpen={setOpenId} />)}
+          </div>
+        </>
       ) : (
-        <p className="t-meta">No published drinks for this venue yet.</p>
+        <p className="t-meta venue-progress">No drinks here yet.</p>
       )}
     </Sheet>
   )
