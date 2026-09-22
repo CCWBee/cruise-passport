@@ -276,7 +276,7 @@ try {
   check('body lock released on close', !released.present && released.bodyPos === '', `body.style.position=${JSON.stringify(released.bodyPos)}`)
 
   // ── the other two sheets: width only ─────────────────────────────────────────────────────────
-  for (const [label, route, sel] of [['venue', 'ship', '.venue-row'], ['add', 'social', '.social-add']]) {
+  for (const [label, route, sel] of [['venue', 'ship', '.venue-row'], ['add', 'social', '.crew-add']]) {
     await open(route, sel)
     const t = await state()
     check(`${label} sheet: no horizontal play`, t.present && t.docW === W && t.scrollW === t.clientW,

@@ -41,7 +41,7 @@ try {
   await u.shot(`${PREFIX}-venue-sheet`)
   await u.goto(`${BASE}/social?nosync`); await u.sleep(2500)
   await shot('social')
-  await u.eval(`(() => { const b = document.querySelector('.social-add'); if (b) b.click(); return !!b })()`)
+  await u.eval(`(() => { const b = document.querySelector('.crew-add'); if (b) b.click(); return !!b })()`)
   await u.sleep(3200)
   await u.shot(`${PREFIX}-add-sheet`)
   await u.goto(`${BASE}/stats?nosync`); await u.sleep(2500)

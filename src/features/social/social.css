@@ -1,33 +1,37 @@
 /* Crew. Everything sits flat on the ground as headings, rows and hairlines; the name card is the
    one panel, because it is a form with its own boundary. See docs/DESIGN.md. */
-.social-page { padding-top: var(--s3); }
+/* The classes are crew-*, never social-*: Brave's content blocking hides elements whose class names
+   look like social-media widgets, and on 23 September 2026 it hid .social-head, the heading and the
+   profile control, which is the only door onto Your details. Keep new names clear of social, share,
+   ad, banner and promo for the same reason. */
+.crew-page { padding-top: var(--s3); }
 
 /* the name card: shown until there is a name, and on /join */
-.social-name { padding: var(--s4); margin-bottom: var(--s5); }
-.social-name-lead { margin-top: var(--s1); }
-.social-name-done { margin-top: var(--s5); }
+.crew-name { padding: var(--s4); margin-bottom: var(--s5); }
+.crew-name-lead { margin-top: var(--s1); }
+.crew-name-done { margin-top: var(--s5); }
 
 /* 1. the screen's heading, with the profile control beside it */
-.social-head {
+.crew-head {
   display: flex; align-items: center; justify-content: space-between;
   gap: var(--s3); margin-bottom: var(--s4);
 }
-.social-head h1 { flex: none; }
+.crew-head h1 { flex: none; }
 /* a 24-character name ellipsises here rather than pushing the heading into two lines */
-.social-me {
+.crew-me {
   display: flex; align-items: center; gap: var(--s2); min-width: 0;
   min-height: var(--ctl); padding: 0 var(--s2); margin-right: -8px;
   border-radius: var(--r-control); text-align: left;
   transition: background-color var(--t-press) var(--e-out);
 }
-.social-me:active { background-color: var(--press); }
-.social-me-copy { display: grid; min-width: 0; }
-.social-me-copy > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crew-me:active { background-color: var(--press); }
+.crew-me-copy { display: grid; min-width: 0; }
+.crew-me-copy > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* 2. the one filled control. The seam below it belongs to .section's 32px; it adds none of its own. */
 
 /* 3. the crew: rows, not a stack of boxes (the row itself is in friends.css) */
-.social-empty { margin-top: var(--s1); }
+.crew-empty { margin-top: var(--s1); }
 
 /* 4. rows that open something: a drawn chevron, sized by the icon grid, not by a font */
-.social-go { flex: none; color: var(--ink-3); }
+.crew-go { flex: none; color: var(--ink-3); }

@@ -26,15 +26,15 @@ export function NameCard({ lead }: { lead?: string }) {
   const Heading = lead ? 'h1' : 'h2'
 
   return (
-    <section className="panel social-name">
+    <section className="panel crew-name">
       <Heading className="t-h2">What should your crew call you?</Heading>
-      {lead && <p className="t-meta social-name-lead">{lead}</p>}
+      {lead && <p className="t-meta crew-name-lead">{lead}</p>}
       <NameFields draft={draft} onDraft={setDraft} />
       {/* the fill arrives with the name: an empty draft leaves a plain disabled control rather than
           coral text on a coral wash, which is the one thing on this card nobody could read */}
       <button
         type="button"
-        className={'btn btn-wide social-name-done' + (draft.trim() ? ' btn-coral' : '')}
+        className={'btn btn-wide crew-name-done' + (draft.trim() ? ' btn-coral' : '')}
         disabled={!draft.trim()}
         onClick={() => setProfile({ name: draft.trim() })}
       >
@@ -45,7 +45,7 @@ export function NameCard({ lead }: { lead?: string }) {
 }
 
 // a row's forward affordance, from the one icon set
-const Chevron = () => <IconChevron className="social-go" />
+const Chevron = () => <IconChevron className="crew-go" />
 
 export function Social() {
   const friends = useStore((s) => s.friends)
@@ -77,20 +77,20 @@ export function Social() {
     ids?.map((id) => groups.find((g) => g.id === id)?.name).find(Boolean) || ''
 
   return (
-    <div className="wrap page social-page">
+    <div className="wrap page crew-page">
       {!named && <NameCard />}
 
-      <div className="social-head">
+      <div className="crew-head">
         <h1 className="t-title">Your crew</h1>
         <button
           type="button"
-          className="social-me pressable"
+          className="crew-me pressable"
           onClick={() => setProfileOpen(true)}
           aria-haspopup="dialog"
           aria-label="Your details"
         >
           <FriendDot name={profile.name || '?'} colour={profile.colour} size={28} />
-          <span className="social-me-copy">
+          <span className="crew-me-copy">
             <span className="t-strong">{profile.name || 'You'}</span>
             {profile.code && <span className="t-meta tnum">{profile.code}</span>}
           </span>
@@ -99,14 +99,14 @@ export function Social() {
 
       {/* the one filled control on the screen: until there is a name, that is Done on the card above,
           because everything shared before it would go out as "A friend" */}
-      <button type="button" className={'btn btn-wide social-add' + (named ? ' btn-coral' : '')} onClick={() => setAddOpen(true)} aria-haspopup="dialog">
+      <button type="button" className={'btn btn-wide crew-add' + (named ? ' btn-coral' : '')} onClick={() => setAddOpen(true)} aria-haspopup="dialog">
         Add to your crew
       </button>
 
       <section className="section" aria-label="Sailing with">
         <div className="section-head"><h2 className="t-h2">Sailing with</h2></div>
         {friends.length === 0 ? (
-          <p className="t-meta social-empty">Nobody yet.</p>
+          <p className="t-meta crew-empty">Nobody yet.</p>
         ) : (
           <div className="friends-roster">
             {friends.map((friend) => {

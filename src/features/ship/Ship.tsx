@@ -8,7 +8,7 @@ import { GlassButton } from '../../ui/GlassButton'
 import { IconCheck, IconChevron } from '../../ui/Icon'
 import { VenueForm } from './VenueForm'
 import { VenueSheet } from './VenueSheet'
-// social.css owns .social-go, the chevron colour on the row this screen's foot action copies. Taken
+// social.css owns .crew-go, the chevron colour on the row this screen's foot action copies. Taken
 // rather than reproduced, exactly as NameFields takes friends.css for the classes it reuses: a
 // second chevron class doing the same job is the divergent sibling canonical-patterns stops.
 import '../social/social.css'
@@ -114,7 +114,7 @@ export function Ship() {
             <span className="row-copy">
               <span className="t-body">Add a venue</span>
             </span>
-            <IconChevron className="social-go" />
+            <IconChevron className="crew-go" />
           </button>
         </section>
       )}

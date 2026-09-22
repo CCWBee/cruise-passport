@@ -49,7 +49,7 @@ try {
   // 2. Crew, Your details, Delete my data twice
   await click('a[href$="/social"]')
   await sleep(1500)
-  await click('.social-me')
+  await click('.crew-me')
   await sleep(1500)
   const d1 = await click('.friends-danger .btn')
   await sleep(600)
@@ -84,7 +84,7 @@ try {
   const t2 = Date.now()
   await u.goto(BASE + '/social?nosync')
   await sleep(2000)
-  await click('.social-me')
+  await click('.crew-me')
   await sleep(1500)
   await click('.friends-danger .btn')
   await sleep(600)
