@@ -179,7 +179,8 @@ sheets returned to after a replacement.
 
 ## Next action
 
-Workflow A is running (resume handle below once it has a run id). When it returns: read the
+Workflow A is running, run `wf_e3866d7c-5a7`. Resume (completed agents replay from cache):
+`Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-shaker-v2-and-declutter-audit-wf_e3866d7c-5a7.js", resumeFromRunId: "wf_e3866d7c-5a7" })`. When it returns: read the
 judges and the audit, choose, write the fold and declutter specs, launch Workflow B. Everything
 else remaining is Charles's: two-step verification on the Google account for the OAuth client, the
 held spec rulings, the Cloudflare token roll, the QA-user purge.
