@@ -30,7 +30,13 @@ const POP = S.popMs
 
 const r = (n, d = 2) => { const v = Math.round(n * 10 ** d) / 10 ** d; return Object.is(v, -0) ? 0 : v }
 const pct = (ms, total) => `${r((ms / total) * 100)}%`
-const EASE = { s: 'var(--e-shake)', o: 'var(--e-out)', l: 'linear' }
+// A var() in a keyframe's animation-timing-function does not resolve (Chrome drops it and the segment
+// takes the animation's own easing, measured with getKeyframes() on 22 September), so the two tokens'
+// values are written in literally, read from tokens.css so they cannot drift from it. The allow list
+// carries the two literals with this reason.
+const tokens = readFileSync(path.join(here, '../../styles/tokens.css'), 'utf8')
+const token = (name) => tokens.match(new RegExp(name + ':\\s*(cubic-bezier\\([^)]+\\))'))[1]
+const EASE = { s: token('--e-shake'), o: token('--e-out'), l: 'linear' }
 
 // ── the rig, from the press: [ms, x, y, degrees, easing of the segment leaving this row] ──
 // The strokes, 0 to 1700, are travel up the tin's own axis and back, gentle, harder, violent, each on
@@ -134,11 +140,11 @@ const sampled = (name, ms, every, at) => {
   return lines.join('\n')
 }
 
-// ── the cap off, from the pop: thrown up off the neck on --e-out to its apex in 70ms (80 above, 72 on
+// ── the cap off, from the pop: thrown up off the neck on --e-out to its apex in 70ms (71 above, 64 on
 // screen, leaning 18 to the right so it is clear of the glass coming up behind it), then a fall on a
 // parabola, running right and tumbling, fading from 60ms after the apex and gone by 180 after it,
 // inside the 300 the spec allows. It starts from the press-down's 1.8, where the beat left it.
-export const CAP_OFF = { rise: 70, fall: 190, apex: -80, drift: 18, run: 0.8, g: 0.006, fadeFrom: 60, fadeFor: 120 }
+export const CAP_OFF = { rise: 70, fall: 190, apex: -71, drift: 18, run: 0.8, g: 0.006, fadeFrom: 60, fadeFor: 120 }
 const capAt = (t) => {
   const { rise, apex, drift, run, g } = CAP_OFF
   let x, y, deg, o
@@ -155,12 +161,12 @@ const capAt = (t) => {
 
 // ── the glass: its foot starts just under the neck at 0.6 of its size, which is the neck's width over
 // the glass's, so it is never wider than the mouth while it is in it; it keeps that size until its
-// foot reaches the neck (20 on the grid), grows to full size as it clears it, overshoots 8 past its
+// foot reaches the neck (20 on the grid), grows to full size as it clears it, overshoots 6 past its
 // hang at 62% of the landing and settles back onto it. The glass group's origin is the middle of its
 // foot, at the hang (4), so the transform is how far the foot is below its hang and the scale.
 const HANG = 4, NECK = 20, S0 = 0.6, BOX_H = 72
 const D0 = NECK + 1 + BOX_H * S0 - HANG   // the box's top 1 under the neck line
-const OVER = -8, PEAK = 0.62
+const OVER = -6, PEAK = 0.62
 // the glass starts 20ms behind the cap, so the cap is off the neck before the rim comes up under it;
 // it still shows inside 40ms of the cap leaving, because its first frames are its fastest
 export const GLASS_LAG = 20
@@ -197,6 +203,24 @@ for (let t = 0; t <= CAP_OFF.rise + CAP_OFF.fall; t += 5) {
   const gapY = Math.max(gy0 - (cy + hh), (cy - hh) - gy1)
   tightest = Math.min(tightest, Math.max(gapX, gapY))
 }
+// Nothing may leave the top of the stage except by fading: the stage's top is 81.1 above the
+// drawing's origin on the grid (Shaker.tsx: 275 - 4 - 198 = 73 on screen, over 0.9), and a stroke
+// reaches half its width past its path. The tallest drawn point of any glass is a straw, 4 above
+// its box (Glass.tsx).
+const STAGE_TOP = -73 / 0.9, HALF_STROKE = 2.4 / 0.9 / 2, STRAW = 4
+let highest = Infinity
+for (let t = 0; t <= CAP_OFF.rise + CAP_OFF.fall; t += 5) {
+  const m = capAt(t).match(/opacity: ([\d.]+); transform: translate\(([-\d.]+)px, ([-\d.]+)px\) rotate\(([-\d.]+)deg\)/)
+  if (Number(m[1]) < 0.35) continue
+  const a = (Number(m[4]) * Math.PI) / 180
+  highest = Math.min(highest, 11 + Number(m[3]) - (17 * Math.abs(Math.sin(a)) + 9 * Math.abs(Math.cos(a))))
+}
+for (let t = 0; t <= RISE; t += 5) {
+  const dy = riseDy(t)
+  highest = Math.min(highest, HANG + dy - (BOX_H + STRAW) * scaleAt(dy))
+}
+if (highest - HALF_STROKE < STAGE_TOP) console.warn(`WARNING: something reaches ${r(STAGE_TOP - highest + HALF_STROKE, 1)} above the stage`)
+else console.log(`the highest point stays ${r(highest - HALF_STROKE - STAGE_TOP, 1)} inside the stage's top`)
 if (tightest < 0) console.warn(`WARNING: the cap passes through the glass (by ${r(-tightest, 1)} on the grid)`)
 else console.log(`the cap clears the glass by ${r(tightest, 1)} at its closest`)
 

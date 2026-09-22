@@ -122,7 +122,7 @@ export function HurricaneGlass() {
   return (
     <>
       {/* the straw first, so the glass hides all of it but what stands above the lip */}
-      <path d="M32 50L47 -8" fill="none" />
+      <path d="M32 50L46 -4" fill="none" />
       <Bowl
         outline="M18 6C19 14 25 18 24 24C23 30 15 36 16 45C17 53 24 58 32 58C40 58 47 53 48 45C49 36 41 30 40 24C39 18 45 14 46 6Z"
         level={12}
@@ -136,7 +136,7 @@ export function HurricaneGlass() {
 export function HighballGlass({ fine }: { fine: number }) {
   return (
     <>
-      <path d="M36 30L52 -6" fill="none" />
+      <path d="M36 30L51 -4" fill="none" />
       <Bowl outline="M15 6H49V63A3 3 0 0 1 46 66H18A3 3 0 0 1 15 63Z" level={15} />
       <rect x="20" y="24" width="11" height="11" rx="2" transform="rotate(-10 25.5 29.5)" strokeWidth={fine} />
       <rect x="31" y="38" width="11" height="11" rx="2" transform="rotate(12 36.5 43.5)" strokeWidth={fine} />

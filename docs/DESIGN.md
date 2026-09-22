@@ -187,8 +187,8 @@ effect has its own fallback that keeps the state change visible; there is no glo
   tumbling, and is gone 190ms after its apex. Six ink strokes draw outward from the mouth over
   160ms and have faded by 280. The tin kicks down 2px as the pressure lets go. 20ms behind the cap,
   so the cap is clear before the rim comes up under it, the glass for the drink comes out of the
-  mouth at the neck's width, grows to its full size as it clears the neck, rises 8px past its hang
-  and settles on it at 2.84s, its foot 18px clear of the neck.
+  mouth at the neck's width, grows to its full size as it clears the neck, rises 5px past its hang
+  and settles on it at 2.84s, its foot at least 18px clear of the neck.
 - **The card**, from the landing. Its lines arrive in reading order, 80ms apart, each from 8px down
   and a 4px blur: the name at 2.84s, the place, then the reason when there is one, the last in by
   3.3s. "Shake again" fades in on the last line's clock.
@@ -198,9 +198,10 @@ The written exceptions, each with its reason beside the keyframes in `shake.css`
 - **The prize's one overshoot and settle.** The rule above bans overshoot on UI state; this is a
   glass thrown out of a tin rather than a state changing, and a linear arrival reads as two pictures
   being swapped. One overshoot, never a bounce.
-- **`--e-shake`** (`cubic-bezier(.77, 0, .175, 1)`, a strong ease-in-out) on the strokes of the shake
-  and nowhere else. The tin is travelling on screen and reversing at each end; on `--e-out` it leaves
-  every reversal at full speed and the strokes jump rather than turn.
+- **`--e-shake`** (`cubic-bezier(.77, 0, .175, 1)`, a strong ease-in-out) on the shaker's travel and
+  nowhere else: the strokes, and the tin and the cap settling back in the held beat. The tin is
+  travelling on screen and reversing at each end; on `--e-out` it leaves every reversal at full speed
+  and the strokes jump rather than turn.
 - **The linear set-down**, and the linear hops of the knocks. A tin put down hard does not slow
   before it meets the bar.
 - **Linear between samples.** The cap's flight and the glass's rise and sink are sampled from the
@@ -453,7 +454,7 @@ demand, and finite. Home stays an instrument.
    Princess brand names among them), a margarita glass with a wedge of lime (Margarita), a wine glass
    (Wine, Spritz), a pint with its head (Beer), a cup on a saucer (Coffee), a hurricane glass with a
    straw (Frozen) and a highball with ice and a straw (Mocktail). It is about 58 wide and 65 tall on
-   screen and hangs with its foot 18 clear of the neck. The shaker is the one dominant element.
+   screen and hangs with its foot at least 18 clear of the neck. The shaker is the one dominant element.
 3. **The answer**, empty until a reveal: the drink's name first, as `h3.t-h2`, in full and never
    clipped, because the one job of this moment is to name a drink and the glass carries no name of
    its own; then the venue and deck as `p.t-meta.tnum` ("THE MIX · Deck 17", one middle dot; a

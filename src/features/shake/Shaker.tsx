@@ -88,7 +88,6 @@ export function Shaker({ phase, still = false, drink }: ShakerProps) {
   const clock = {
     '--pop': `${SHAKER.popMs}ms`,
     '--land': `${SHAKER.landMs}ms`,
-    '--close': `${SHAKER.closeMs}ms`,
   } as CSSProperties
 
   return (

@@ -41,3 +41,8 @@ features/wrapped/wrapped.css :: wr-drift
 # TEMPORARY. The sheet's film is 88%, not the 58% tokens.css carries: a sheet opens over the sea
 # hero, where 58% leaves 13px --ink-2 at 3.10:1 over --sea-lo. The sheet shadows the token locally
 # until tokens.css and DESIGN.md carry 88%; delete this line with the shadow.
+# the shaker's computed keyframes (DESIGN.md Motion, the written exceptions): a var() in a keyframe's
+# animation-timing-function does not resolve in Chrome (the segment takes the animation's own easing),
+# so keyframes.mjs writes --e-out's and --e-shake's values in literally, read from tokens.css
+features/shake/shake.css :: animation-timing-function: cubic-bezier(.22, .9, .32, 1)
+features/shake/shake.css :: animation-timing-function: cubic-bezier(.77, 0, .175, 1)
