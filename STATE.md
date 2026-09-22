@@ -180,21 +180,31 @@ sheets returned to after a replacement.
   wobble, the lid hinges like a bin lid, the prize reads as a 7, no build-up into the pop, and the
   sheet grew twice mid-moment. `73537b9` fixes the growth (held answer slot, held Shake again) and
   makes the shaker a swappable variant (`src/features/shake/variants/`, `?shaker=a|b|c`).
-- Workflow A (running): three variant builders (cobbler cap-off, Boston tins, dice roll; spec
-  `docs/specs/2026-09-22-shaker-v2.md`), one film pass, three judges; in parallel a read-only
-  declutter audit of every screen. Nothing it writes is committed; the variants live only in
-  `src/features/shake/variants/{a,b,c}/`.
-- Then (me): pick the winner, write the fold and declutter specs; Workflow B folds the winner,
-  builds polish item 1 and the declutter, reviews, fixes; then gates, merge to `main`, deploy,
-  production probe.
+- Workflow A `wf_e3866d7c-5a7`, done: mid-run Charles sent a reference photograph of a polished
+  cobbler ("More what I conceptualise a cocktail shaker looking like"); I stopped the run, wrote its
+  proportions into the spec (the photo itself sits gitignored in `.qa/reference/`, the repo being
+  public), swapped the Boston-tins angle for "the top comes off", and resumed (five finished audit
+  lenses replayed from cache). Three cobbler variants were built and filmed (`4c8f764` keeps them),
+  and three judges scored them: motion A 8, B 7, C 6.5; drawing A 8, C 6, B 5.5; brief B 8, A 7.
+  I ruled A (its reveal keeps the shaker; B's leaves a tumbler under the glass), with grafts from B
+  and C: `docs/specs/2026-09-22-shaker-fold.md`. The audit found about 90 cuts on 17 surfaces; I
+  ruled its twelve open questions, each towards fewer elements: `docs/specs/2026-09-22-declutter.md`.
+- Workflow B `wf_d3288a12-b10`, running: the fold in the main tree against the 5173 dev server; six
+  declutter streams (home, drinks, ship, crew with polish item 1 first, you, shell) each in its own
+  git worktree with a production preview on 4181 to 4186; then a merge, a docs pass, four review
+  lenses with refuting verifiers, and a fix pass. Then (me): gates, my own look at the renders and
+  films, merge to `main`, deploy, production probe.
 
 ## Next action
 
-Workflow A is running, run `wf_e3866d7c-5a7`. Resume (completed agents replay from cache):
-`Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-shaker-v2-and-declutter-audit-wf_e3866d7c-5a7.js", resumeFromRunId: "wf_e3866d7c-5a7" })`. When it returns: read the
-judges and the audit, choose, write the fold and declutter specs, launch Workflow B. Everything
-else remaining is Charles's: two-step verification on the Google account for the OAuth client, the
-held spec rulings, the Cloudflare token roll, the QA-user purge.
+Workflow B is running, run `wf_d3288a12-b10`. Resume (completed agents replay from cache):
+`Workflow({ scriptPath: "C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-shaker-fold-and-declutter-wf_d3288a12-b10.js", resumeFromRunId: "wf_d3288a12-b10" })`.
+The six stream worktrees stay after the merge (their branches hold the work); remove them only
+once `main` carries it. When it returns: the gates myself, my own read of the sweep and the films,
+then merge `shake-declutter` to `main` (a deploy, on his "verify and push it") and probe
+production. Everything else remaining is Charles's: two-step verification on the Google account for
+the OAuth client, the held spec rulings, the Cloudflare token roll, the QA-user purge, and the QA
+harness's leaked Chrome profiles (thread above).
 
 ## Gotchas
 
