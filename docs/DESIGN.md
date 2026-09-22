@@ -156,31 +156,69 @@ The drawn set in `ui/Icon.tsx` (24px grid, 1.8 stroke) is the only icon system. 
 icon appears beside text only when it adds recognition the word lacks (tried, favourite, camera).
 The nav uses icon plus label at all times.
 
+The shaker (`Shaker`, `Glass`) is drawn in the same idiom but is not in the set, and it takes the one
+hero stroke: 2.4 on screen for the tin and every glass, whatever the drawing is scaled to. The cap's
+grooves are its one hairline, 1.2 in `--ink-3`, and the fine details inside a glass (a pick, the
+lime's segments, steam, ice) draw at 1.75.
+
 ## Motion
 
 Five authored moments and nothing else moves on its own: the ship bobbing on the sea (the sea itself,
 with its sky following the clock, is the app's one live effect), the SheetWave wash when a sheet
 opens, the hero count-up on first paint, the new-medal coin's single turn on Home (one rotation,
 then still), and the shaker in the Shake sheet. Everything else is feedback: press
-scale `.97` over 120ms, state colour over 200ms, sheet rise over 280ms. One easing, `--e-out`.
-No overshoot or spring curves on UI state, no reveal stagger on every screen, no chart grow-ins,
-no endless pulses. Under `prefers-reduced-motion` each effect has its own fallback that keeps the
-state change visible; there is no global animation kill.
+scale `.97` over 120ms, state colour over 200ms, sheet rise over 280ms. One easing, `--e-out`,
+with the shaker's written exceptions below. No overshoot or spring curves on UI state, no reveal
+stagger on every screen, no chart grow-ins, no endless pulses. Under `prefers-reduced-motion` each
+effect has its own fallback that keeps the state change visible; there is no global animation kill.
 
-**The shake** is the fifth, and the only one the guest starts themselves: 1.8s of shaking in three
-phases (gentle, then harder with 2px of jitter, then violent with 3px, and a hard stop upright), a
-300ms hold with the tin still shut, then the opening, in three beats. The lid turns -105° about the
-back edge of the rim over 320ms and stays open; 60ms behind it the drop rises 84px out of the mouth
-over 520ms and hangs there; and the card beneath the shaker resolves as the drop lands, 580ms after
-the lid went. The lid's turn overshoots 6% past open and the drop's rise 8px past its hang, each
-once and each settling: the two written exceptions to the no-overshoot rule above, because this is
-a tin being opened rather than a state changing, and a linear arrival reads as two pictures being
-swapped. Nothing spins, because a spinning token is the slot machine and not the crate. The reasons
-are in `shake.css` beside the keyframes. It is finite, it is user-triggered, it lives inside a sheet
-and nothing else on the sheet moves while it runs; "Shake again" runs the lid and the drop back in
-240ms first, so every shake starts from a closed shaker. Under `prefers-reduced-motion` the tin does
-not move, the rattle is silent, and the lid, the drop and the card fade to their end state over the
-same 200ms every other fallback here uses, so the reveal still lands.
+**The shake** is the fifth, and the only one the guest starts themselves. Every time in it comes from
+`SHAKER` in `Shaker.tsx`: the sheet runs its phases on it, the rattle lays its sound on it, and
+`keyframes.mjs` writes the CSS keyframes from it, so a timing changes in one place.
+
+- **The shake**, 0 to 1.8s. The tin is lifted and shaken end to end over the shoulder, the way a
+  cobbler is: a small dip the wrong way, then gentle, harder and violent strokes (travel of 16, then
+  26 to 30, then 38 to 40 on the drawing's grid, leaning 8 to 20 degrees), the cap chattering on the
+  strainer. It is set down hard on the bar at 1.8s, on the rattle's clack, with one rebound of 2.5px.
+- **The pressure**, 1.8 to 2.34s. The dice knock from inside twice, at 2.0 and 2.13s: the tin hops
+  3px, then 5px, sharper. The cap lifts off the neck on each, 7px and back, then 12px, quicker, and
+  held, and is then pressed 1.6px down into the neck for 75ms: the wind-up the pop is thrown from.
+- **The pop**, at 2.34s. The cap is thrown up off the neck, falls away over the right shoulder
+  tumbling, and is gone 190ms after its apex. Six ink strokes draw outward from the mouth over
+  160ms and have faded by 280. The tin kicks down 2px as the pressure lets go. 20ms behind the cap,
+  so the cap is clear before the rim comes up under it, the glass for the drink comes out of the
+  mouth at the neck's width, grows to its full size as it clears the neck, rises 8px past its hang
+  and settles on it at 2.88s, its foot 18px clear of the neck.
+- **The card**, from the landing. Its lines arrive in reading order, 80ms apart, each from 8px down
+  and a 4px blur: the name at 2.88s, the place, then the reason when there is one, the last in by
+  3.34s. "Shake again" fades in on the last line's clock.
+
+The written exceptions, each with its reason beside the keyframes in `shake.css`:
+
+- **The prize's one overshoot and settle.** The rule above bans overshoot on UI state; this is a
+  glass thrown out of a tin rather than a state changing, and a linear arrival reads as two pictures
+  being swapped. One overshoot, never a bounce.
+- **`--e-shake`** (`cubic-bezier(.77, 0, .175, 1)`, a strong ease-in-out) on the strokes of the shake
+  and nowhere else. The tin is travelling on screen and reversing at each end; on `--e-out` it leaves
+  every reversal at full speed and the strokes jump rather than turn.
+- **The linear set-down**, and the linear hops of the knocks. A tin put down hard does not slow
+  before it meets the bar.
+- **Linear between samples.** The cap's flight and the glass's rise and sink are sampled from the
+  motion every 20ms and joined linearly, which is how the cap's fall speeds up and how the glass's
+  size follows where its foot is.
+- **The glass enters at 0.6 of its size**, under the 0.9 floor for an entrance. It is an object
+  emerging from a container at the container's width, not an entrance from nothing, and it is inside
+  the tin, unseen, until then.
+
+Nothing spins, because a spinning prize is the slot machine and not the crate. It is finite, it is
+user-triggered, it lives inside a sheet and nothing else on the sheet moves while it runs. "Shake
+again" puts it back first: the glass sinks into the mouth in 180ms and the cap comes back onto the
+neck from 50ms, seated by 250, inside the 260 the sheet waits, so every shake starts from a closed
+shaker. Under `prefers-reduced-motion` the tin does not move, nothing is drawn bursting, and the
+rattle, the knocks and their taps are silent; at the pop the cap fades off in the first half of the
+same 200ms every other fallback here uses and the glass fades in where it hangs in the second, so the
+two are never on screen at once, and the card's lines and "Shake again" fade in together over the
+whole of it. The reveal still lands.
 
 ## States
 
@@ -402,25 +440,35 @@ demand, and finite. Home stays an instrument.
 
 1. **Title and meta.** `h2.t-title.sheet-title` "Shake", then one `p.sheet-meta`: "The shaker picks
    one you have not tried."
-2. **The shaker** (`Shaker`), centred, a drawing about 200px tall in a box 70 taller than it that
-   holds the lid's swing, `--ink` stroke on `--cream`, no panel: the sheet is the container and a
-   box around the only thing present is the fourth banned tell. It has no window, because a shaker
-   has none. It is three layers: the drop inside the mouth, the lid (cap and strainer top) hinged
-   at the back edge of the rim, and the tin over both, which is what hides the drop until the lid
-   comes off. The drop is a 44px disc in the same stroke with `IconDrinks` inside it and no
-   lettering. It is the one dominant element.
+2. **The shaker** (`Shaker`), centred on a stage 300 by 275 that is one fixed size in every phase.
+   It is the cobbler of Charles's photograph of 22 September, 198 tall and 79 wide: a grooved cap on
+   a short neck, a domed strainer, the band where the strainer's skirt overlaps the body's rim, and a
+   tall body tapering to its foot, at 9, 21, 7 and 63 per cent of the height. `--ink` stroke on
+   `--cream`, and polished steel as a strip of light in `--glass-rim` with a narrow `--line`
+   reflection beside it and `--line` down the far side; no engraving, which two judges read as a
+   liquid level through the tin. No panel: the sheet is the container and a box around the only
+   thing present is the fourth banned tell. It has no window, because a shaker has none. The prize
+   is a glass drawn for the drink's category (`Glass`), the drink in `--line`: a cocktail glass with
+   an olive on a pick (Martini, Classic, Signature, Dessert, and any category not listed, the two
+   Princess brand names among them), a margarita glass with a wedge of lime (Margarita), a wine glass
+   (Wine, Spritz), a pint with its head (Beer), a cup on a saucer (Coffee), a hurricane glass with a
+   straw (Frozen) and a highball with ice and a straw (Mocktail). It is about 58 wide and 65 tall on
+   screen and hangs with its foot 18 clear of the neck. The shaker is the one dominant element.
 3. **The answer**, empty until a reveal: the drink's name first, as `h3.t-h2`, in full and never
-   clipped, because the one job of this moment is to name a drink and the drop carries no name of
+   clipped, because the one job of this moment is to name a drink and the glass carries no name of
    its own; then the venue and deck as `p.t-meta.tnum` ("THE MIX · Deck 17", one middle dot; a
    drink with no venue prints its category), then the reason as `p.t-body` ("Because you love gin",
-   "Sam loved it", or "One you have not tried"). Centred, because it is the caption of a centred
-   object. It is rendered as the lid goes and fades in as the drop lands, so the sheet takes its
-   height once, under the flip, rather than jolting the drop as it settles.
+   "Sam loved it") when the pick has one. A pick with nothing personal behind it gives no reason
+   line: "One you have not tried" repeated the meta line above it on the same screen. Centred,
+   because it is the caption of a centred object. It is rendered as the cap goes, in a slot whose
+   height is held from the first frame, and its lines arrive in order as the glass lands (Motion
+   above), closing up when there is no reason rather than leaving a gap.
 4. **The one filled control**, `button.btn.btn-coral.btn-wide.shake-go`: "Shake", then "Shaking" as
-   a disabled ghost for the 2.7 seconds of the shake and the opening, then "Go get it". Tapping it
+   a disabled ghost for the 2.9 seconds of the shake and the opening, then "Go get it". Tapping it
    replaces this sheet with `DrinkSheet`, one `.sheet` at a time; closing that returns to the
-   reveal, with the lid open and the drop hanging, not to Home.
-5. **The quiet actions**, `.quiet-action`: "Shake again" on a reveal, and the sound toggle always,
+   reveal, with the cap off and the glass hanging, not to Home.
+5. **The quiet actions**, `.quiet-action`: "Shake again" on a reveal, fading in with the card's last
+   line and holding its line before then, and the sound toggle always,
    "Shake quietly" when sound is on and "Shake with sound" when it is off, persisted in
    `spcc-shake-quiet`. The label states the action, not the state, as every other quiet action does.
 
@@ -429,11 +477,20 @@ shaker, no glass anywhere on it: it sits in the content layer. No pill, no dot, 
 
 Sound is `startRattle` (Motion above, and the registry): synthesised, no asset, created inside the
 press handler so iOS allows it, and silent when the guest chose quiet or reduced motion is set. The
-opening has two sounds of its own, a cork as the lid goes and a thock as the drop lands. The landing
+held beat and the opening have sounds of their own, all laid on the same clock as the rattle: a low
+knock on each of the two knocks from inside, the second harder, a cork as the cap goes and a thock
+as the glass lands. Each knock also fires `haptic('tap')` from the sheet's own timer; the knocks and
+their taps are silent under quiet and reduced motion alike. The landing
 fires `haptic('success')` and no `Confirm` tick: the answer is on the screen, which is this
 document's own test for when a confirmation is owed. An `aria-live="polite"` region says what the
 card beneath the shaker says, as one sentence ("Try THE MIX's Red Stripe, Deck 17"), once, when the
 card shows it.
+
+**The sheet must not scroll after a reveal.** At 390×844 headless, with a three-line card, the
+sheet is 709 tall of the 742 (88svh) it may take, and `.sheet-scroll`'s scrollHeight equals its
+clientHeight, 688, so there are 33 to spare; the stage is 275 in every phase, which is what bought
+them. Measure `.sheet-scroll`, and skip `.sr-only` if you walk its children for the last one: the
+live region is the sheet's last child and measures nothing a guest sees.
 
 When every drink on the sailing has been tried the shake still runs, the reveal names the guest's
 highest-rated drink, the reason reads "You have tried them all. Have another." and the button reads
@@ -622,11 +679,12 @@ colour, are how that happens again. Read it before any change that renders.
 | `seenMedals`, `markMedalsSeen()` | `src/state/store.ts` (persist v8) | which badges' "new medal" moment Home has shown; seeded on upgrade with what was already earned |
 | `SeaHero` (`level`, `hour`, `chips`) | `src/features/home/SeaHero.tsx` | the sea; the sky follows `hour`, the shader lenses the water under the `chips` rectangles |
 | `pickedForYou()` | `src/state/social.ts` | the "For you" shelf: honest picks (taste-matched crew, or your top spirit); empty when there is no personal basis |
-| `Shaker` | `src/features/shake/Shaker.tsx` | the cobbler shaker, drawn on a 168 by 176 grid in `Icon.tsx`'s stroke idiom and rendered a seventh larger. It is not in the icon set because it is not an icon: it is the one object on its screen, and an icon there would be a 24px glyph blown up. Three layers in one box, painted back to front: the drop, the lid hinged at the back edge of the rim, and the tin over both, which is what hides the drop in the mouth. It has no window, and adding one back would be drawing a shaker that does not exist |
-| `ShakeSheet` | `src/features/shake/ShakeSheet.tsx` | the Shake sheet and its five phases, opened by `.shake-open` on Home and from nowhere else. It returns `DrinkSheet` on "Go get it" rather than stacking one, the same replacement `ProfileSheet` and `VenueSheet` use |
+| `Shaker`, `SHAKER` | `src/features/shake/Shaker.tsx` | the cobbler shaker, drawn on an 88 by 220 grid in `Icon.tsx`'s idiom, shown at 0.9 on a 300 by 275 stage at the hero stroke (Iconography). It is not in the icon set because it is not an icon: it is the one object on its screen, and an icon there would be a 24px glyph blown up. One SVG, painted back to front in one rig: the burst, the prize glass inside the tin, the tin over it, the cap. `SHAKER` is its timings (the shake, the knocks, the pop, the landing, the reverse), exported beside the drawing and read by the sheet and the rattle; `keyframes.mjs` writes the CSS keyframes from it and checks that the cap clears the glass, so a timing changes in one place. It has no window, and adding one back would be drawing a shaker that does not exist |
+| `Glass` | `src/features/shake/Glass.tsx` | the prize: one glass per family of drink (cocktail, margarita, wine, pint, cup, hurricane, highball) on a 64 by 72 box, the drink in `--line` and the outline painted three times so the drink never crosses the stroke. The category-to-family map lives here and nowhere else, and `data-glass` names the family for the QA probes. Never `IconDrinks`, which draws one side of a glass |
+| `ShakeSheet` | `src/features/shake/ShakeSheet.tsx` | the Shake sheet and its five phases, opened by `.shake-open` on Home and from nowhere else, timed by `SHAKER`. The card's lines carry their own start as `--at`, so a card without a reason closes up. It returns `DrinkSheet` on "Go get it" rather than stacking one, the same replacement `ProfileSheet` and `VenueSheet` use |
 | `shake()` | `src/features/shake/pick.ts` | what the shaker surfaces: untried only, never one of this sitting's last six, weight 4 for a drink the "For you" shelf already vouches for, 2 for the guest's top spirit, 1 for the rest, each weight carrying the line that explains it. Pure, with `random` injected, tested in `pick.test.ts` |
-| `startRattle()` | `src/features/shake/rattle.ts` | the dice in the tin: WebAudio, synthesised, no asset, the whole schedule laid down in one pass at press time. `reveal()` carries the opening, a cork at the lid and the thock 580ms later as the drop lands, laid down against the same clock rather than on a timer. A silent no-op when the guest chose quiet, under reduced motion, or where there is no `AudioContext` |
-| `haptic('shake')` | `src/ui/haptic.ts` | the third pattern, a rising series mirroring the rattle's acceleration. Its first pulse is the press tap, so the press fires this one and not both |
+| `startRattle()` | `src/features/shake/rattle.ts` | the dice in the tin: WebAudio, synthesised, no asset, the whole schedule laid down in one pass at press time, with a low knock at each of `SHAKER.knocks`. `reveal()` carries the opening, a cork at the cap and the thock `landMs` later as the glass lands, laid down against the same clock rather than on a timer. A silent no-op when the guest chose quiet, under reduced motion, or where there is no `AudioContext` |
+| `haptic('shake')` | `src/ui/haptic.ts` | the third pattern, a rising series mirroring the rattle's acceleration. Its first pulse is the press tap, so the press fires this one and not both. The two knocks from inside are `haptic('tap')`, fired from the sheet's own timer and never under quiet or reduced motion |
 | `DrinkCard` | `src/features/drinks/DrinkCard.tsx` | the drink row everywhere a drink is listed (Drinks, venue sheet) |
 | `Medallion` | `src/features/badges/Medallion.tsx` | the badge disc, grid and sheet |
 | `SeaHero`, `SheetWave`, the hero count-up | `src/features/home/`, `src/ui/SheetWave.tsx` | the three authored motions; do not add a fourth without amending Motion above |
