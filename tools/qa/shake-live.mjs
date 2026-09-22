@@ -16,7 +16,7 @@ import { launch, OUT } from './cdp.mjs'
 
 const BASE = process.argv[2] || 'https://cruise.charlesbee.org'
 const W = 390, H = 844
-// press to the card's last line: popMs 2340 + landMs 540 + two 80ms staggers + a 300ms line, with room
+// press to the card's last line: popMs 2300 + landMs 540 + two 80ms staggers + a 300ms line, with room
 const SETTLED = 5000
 
 const READ = `(() => {

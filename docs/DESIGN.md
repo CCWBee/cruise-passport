@@ -180,18 +180,18 @@ effect has its own fallback that keeps the state change visible; there is no glo
   cobbler is: a small dip the wrong way, then gentle, harder and violent strokes (travel of 16, then
   26 to 30, then 38 to 40 on the drawing's grid, leaning 8 to 20 degrees), the cap chattering on the
   strainer. It is set down hard on the bar at 1.8s, on the rattle's clack, with one rebound of 2.5px.
-- **The pressure**, 1.8 to 2.34s. The dice knock from inside twice, at 2.0 and 2.13s: the tin hops
+- **The pressure**, 1.8 to 2.3s. The dice knock from inside twice, at 1.97 and 2.1s: the tin hops
   3px, then 5px, sharper. The cap lifts off the neck on each, 7px and back, then 12px, quicker, and
   held, and is then pressed 1.6px down into the neck for 75ms: the wind-up the pop is thrown from.
-- **The pop**, at 2.34s. The cap is thrown up off the neck, falls away over the right shoulder
+- **The pop**, at 2.3s. The cap is thrown up off the neck, falls away over the right shoulder
   tumbling, and is gone 190ms after its apex. Six ink strokes draw outward from the mouth over
   160ms and have faded by 280. The tin kicks down 2px as the pressure lets go. 20ms behind the cap,
   so the cap is clear before the rim comes up under it, the glass for the drink comes out of the
   mouth at the neck's width, grows to its full size as it clears the neck, rises 8px past its hang
-  and settles on it at 2.88s, its foot 18px clear of the neck.
+  and settles on it at 2.84s, its foot 18px clear of the neck.
 - **The card**, from the landing. Its lines arrive in reading order, 80ms apart, each from 8px down
-  and a 4px blur: the name at 2.88s, the place, then the reason when there is one, the last in by
-  3.34s. "Shake again" fades in on the last line's clock.
+  and a 4px blur: the name at 2.84s, the place, then the reason when there is one, the last in by
+  3.3s. "Shake again" fades in on the last line's clock.
 
 The written exceptions, each with its reason beside the keyframes in `shake.css`:
 
@@ -464,7 +464,7 @@ demand, and finite. Home stays an instrument.
    height is held from the first frame, and its lines arrive in order as the glass lands (Motion
    above), closing up when there is no reason rather than leaving a gap.
 4. **The one filled control**, `button.btn.btn-coral.btn-wide.shake-go`: "Shake", then "Shaking" as
-   a disabled ghost for the 2.9 seconds of the shake and the opening, then "Go get it". Tapping it
+   a disabled ghost for the 2.8 seconds of the shake and the opening, then "Go get it". Tapping it
    replaces this sheet with `DrinkSheet`, one `.sheet` at a time; closing that returns to the
    reveal, with the cap off and the glass hanging, not to Home.
 5. **The quiet actions**, `.quiet-action`: "Shake again" on a reveal, fading in with the card's last

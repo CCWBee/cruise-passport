@@ -43,8 +43,8 @@ export interface ShakerProps {
  *    closeMs       Shake again: the glass sinks and the cap goes back on before the next shake */
 export const SHAKER = {
   shakeMs: 1800,
-  knocks: [2000, 2130],
-  popMs: 2340,
+  knocks: [1970, 2100],
+  popMs: 2300,
   landMs: 540,
   closeMs: 260,
 }

@@ -51,7 +51,7 @@
    (Shaker.tsx says why), so each turns about its own origin. */
 .shaker .shaker-rig, .shaker .shaker-cap, .shaker .shaker-glass, .shaker .shaker-ray { transform-origin: 0 0; }
 
-/* ── The shake and the held beat: one timeline of popMs (2340), so the tin, the cap and the rattle
+/* ── The shake and the held beat: one timeline of popMs (2300), so the tin, the cap and the rattle
    cannot drift apart. In ms from the press, from SHAKER in Shaker.tsx:
 
      0 to 110      the wind-up: a 3px dip and a tilt the wrong way
@@ -59,10 +59,10 @@
                    harder to 1200, violent to 1700, each on --e-shake so the tin turns at each end
      1700 to 1800  set down on the bar, linear, and stopped: the clack
      1800 to 1890  one rebound of 2.5, and still
-     2000, 2130    the dice knock from inside: the tin hops 3, then 5, sharper; the cap lifts off the
+     1970, 2100    the dice knock from inside: the tin hops 3, then 5, sharper; the cap lifts off the
                    neck on each, 7 and back, then 12, quicker, and held
-     2265 to 2340  the cap is pressed down into the neck, the wind-up the pop is thrown from
-     2340          the pop
+     2235 to 2300  the cap is pressed down into the neck, the wind-up the pop is thrown from
+     2300          the pop
 
    The amplitudes are the one place a literal is right: they are how hard a tin is shaken, not a
    measure of the layout. The keyframes are computed (the block at the foot of this file). ── */
@@ -155,56 +155,56 @@
    from SHAKER in Shaker.tsx and the tables in that script. Edit there, not here. ── */
 @keyframes shaker-shake {
   0% { transform: translate(0px, 0px) rotate(0deg); }
-  4.7% { transform: translate(0px, 3px) rotate(-3deg); }
-  10.26% { transform: translate(5px, -16px) rotate(8deg); }
-  19.66% { transform: translate(1px, -3px) rotate(3deg); }
-  25.64% { transform: translate(9px, -26px) rotate(13deg); }
-  32.05% { transform: translate(1px, -2px) rotate(6deg); }
-  38.46% { transform: translate(10px, -28px) rotate(14deg); }
-  44.87% { transform: translate(1px, -2px) rotate(6deg); }
-  51.28% { transform: translate(11px, -30px) rotate(15deg); }
-  55.56% { transform: translate(0px, -1px) rotate(8deg); }
-  58.97% { transform: translate(14px, -38px) rotate(19deg); }
-  62.39% { transform: translate(-2px, -1px) rotate(9deg); }
-  65.81% { transform: translate(15px, -40px) rotate(20deg); }
-  69.23% { transform: translate(2px, -2px) rotate(8deg); }
-  72.65% { transform: translate(14px, -38px) rotate(19deg); animation-timing-function: linear; }
-  76.92% { transform: translate(0px, 0px) rotate(0deg); animation-timing-function: var(--e-out); }
-  78.63% { transform: translate(0px, -2.8px) rotate(0deg); }
-  80.77% { transform: translate(0px, 0px) rotate(0deg); animation-timing-function: var(--e-out); }
-  85.47% { transform: translate(0px, 0px) rotate(0deg); animation-timing-function: var(--e-out); }
-  86.54% { transform: translate(0px, -3.4px) rotate(0deg); animation-timing-function: linear; }
-  88.03% { transform: translate(0px, 0px) rotate(0deg); animation-timing-function: var(--e-out); }
-  91.03% { transform: translate(0px, 0px) rotate(0deg); animation-timing-function: var(--e-out); }
-  91.79% { transform: translate(0px, -5.6px) rotate(0deg); animation-timing-function: linear; }
-  93.16% { transform: translate(0px, 0px) rotate(0deg); animation-timing-function: var(--e-out); }
+  4.78% { transform: translate(0px, 3px) rotate(-3deg); }
+  10.43% { transform: translate(5px, -16px) rotate(8deg); }
+  20% { transform: translate(1px, -3px) rotate(3deg); }
+  26.09% { transform: translate(9px, -26px) rotate(13deg); }
+  32.61% { transform: translate(1px, -2px) rotate(6deg); }
+  39.13% { transform: translate(10px, -28px) rotate(14deg); }
+  45.65% { transform: translate(1px, -2px) rotate(6deg); }
+  52.17% { transform: translate(11px, -30px) rotate(15deg); }
+  56.52% { transform: translate(0px, -1px) rotate(8deg); }
+  60% { transform: translate(14px, -38px) rotate(19deg); }
+  63.48% { transform: translate(-2px, -1px) rotate(9deg); }
+  66.96% { transform: translate(15px, -40px) rotate(20deg); }
+  70.43% { transform: translate(2px, -2px) rotate(8deg); }
+  73.91% { transform: translate(14px, -38px) rotate(19deg); animation-timing-function: linear; }
+  78.26% { transform: translate(0px, 0px) rotate(0deg); animation-timing-function: var(--e-out); }
+  80% { transform: translate(0px, -2.8px) rotate(0deg); }
+  82.17% { transform: translate(0px, 0px) rotate(0deg); animation-timing-function: var(--e-out); }
+  85.65% { transform: translate(0px, 0px) rotate(0deg); animation-timing-function: var(--e-out); }
+  86.74% { transform: translate(0px, -3.4px) rotate(0deg); animation-timing-function: linear; }
+  88.26% { transform: translate(0px, 0px) rotate(0deg); animation-timing-function: var(--e-out); }
+  91.3% { transform: translate(0px, 0px) rotate(0deg); animation-timing-function: var(--e-out); }
+  92.09% { transform: translate(0px, -5.6px) rotate(0deg); animation-timing-function: linear; }
+  93.48% { transform: translate(0px, 0px) rotate(0deg); animation-timing-function: var(--e-out); }
   100% { transform: translate(0px, 0px) rotate(0deg); }
 }
 @keyframes shaker-beat {
   0% { transform: translateY(0px) rotate(0deg); }
-  11.11% { transform: translateY(-1px) rotate(0deg); }
-  19.66% { transform: translateY(0px) rotate(0deg); }
-  26.5% { transform: translateY(-2px) rotate(3deg); }
-  32.05% { transform: translateY(0px) rotate(0deg); }
-  39.32% { transform: translateY(-2px) rotate(-3deg); }
-  44.87% { transform: translateY(0px) rotate(0deg); }
-  52.14% { transform: translateY(-2px) rotate(3deg); }
-  55.56% { transform: translateY(0px) rotate(0deg); }
-  59.62% { transform: translateY(-3px) rotate(-4deg); }
-  62.39% { transform: translateY(0px) rotate(0deg); }
-  66.45% { transform: translateY(-3px) rotate(4deg); }
-  69.23% { transform: translateY(0px) rotate(0deg); }
-  73.29% { transform: translateY(-3px) rotate(-4deg); }
-  76.92% { transform: translateY(0px) rotate(0deg); }
-  77.99% { transform: translateY(-2px) rotate(2deg); }
-  79.49% { transform: translateY(0px) rotate(0deg); }
-  85.68% { transform: translateY(0px) rotate(0deg); }
-  87.82% { transform: translateY(-7.8px) rotate(2deg); animation-timing-function: var(--e-shake); }
-  90.17% { transform: translateY(0px) rotate(0deg); }
-  91.11% { transform: translateY(0px) rotate(0deg); }
-  92.52% { transform: translateY(-13.3px) rotate(-2deg); }
-  94.66% { transform: translateY(-12.4px) rotate(1deg); }
-  96.79% { transform: translateY(-13px) rotate(0deg); animation-timing-function: var(--e-shake); }
+  11.3% { transform: translateY(-1px) rotate(0deg); }
+  20% { transform: translateY(0px) rotate(0deg); }
+  26.96% { transform: translateY(-2px) rotate(3deg); }
+  32.61% { transform: translateY(0px) rotate(0deg); }
+  40% { transform: translateY(-2px) rotate(-3deg); }
+  45.65% { transform: translateY(0px) rotate(0deg); }
+  53.04% { transform: translateY(-2px) rotate(3deg); }
+  56.52% { transform: translateY(0px) rotate(0deg); }
+  60.65% { transform: translateY(-3px) rotate(-4deg); }
+  63.48% { transform: translateY(0px) rotate(0deg); }
+  67.61% { transform: translateY(-3px) rotate(4deg); }
+  70.43% { transform: translateY(0px) rotate(0deg); }
+  74.57% { transform: translateY(-3px) rotate(-4deg); }
+  78.26% { transform: translateY(0px) rotate(0deg); }
+  79.35% { transform: translateY(-2px) rotate(2deg); }
+  80.87% { transform: translateY(0px) rotate(0deg); }
+  85.87% { transform: translateY(0px) rotate(0deg); }
+  88.04% { transform: translateY(-7.8px) rotate(2deg); animation-timing-function: var(--e-shake); }
+  90.43% { transform: translateY(0px) rotate(0deg); }
+  91.39% { transform: translateY(0px) rotate(0deg); }
+  92.83% { transform: translateY(-13.3px) rotate(-2deg); }
+  95% { transform: translateY(-12.4px) rotate(1deg); }
+  97.17% { transform: translateY(-13px) rotate(0deg); animation-timing-function: var(--e-shake); }
   100% { transform: translateY(1.8px) rotate(0deg); }
 }
 @keyframes shaker-cap-off {

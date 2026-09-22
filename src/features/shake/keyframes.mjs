@@ -2,7 +2,7 @@
 // or any table below:   node src/features/shake/keyframes.mjs
 //
 // Two kinds of keyframes come out of it, and both are here for the same reason: a hand-typed
-// percentage of a 2340ms timeline is how a knock ends up 20ms off its sound.
+// percentage of a 2300ms timeline is how a knock ends up 20ms off its sound.
 //
 //   the shake and the held beat, one timeline of popMs, written as a table in ms from the press with
 //   the easing of the segment that leaves each row, so the tin and the cap cannot drift off the
