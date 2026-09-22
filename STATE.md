@@ -59,6 +59,17 @@ architecture in `docs/specs/2026-09-10-product-brief.md`, one spec per workstrea
 
 ## Open threads
 
+### QA harness leaks a Chrome profile per run (found 22 September, not fixed)
+
+`tools/qa/cdp.mjs` makes `%TEMP%\cruise-qa-profile-<pid>-<ms>` on every launch and `close()` only
+taskkills Chrome, so the profile stays. Each is about 1,160 files and 47 MB; on 22 September there
+were 886 of them, about 40 GB. Their first appearance (3 September, 23:02) lines up with Windows
+logon on this PC going from about 40 s to about 7 minutes (the User Profile Service step, which now
+spends over five minutes of CPU on a per-file pass), and the growth follows each batch. Proposed fix, held for
+Charles: in `close()`, wait for the Chrome process to exit, then `rmSync(profile, { recursive:
+true, force: true })` with a few retries, as `design/tools/qa/cdp.mjs` already does; and sweep stale
+`cruise-qa-profile-*` at launch so a crashed run cannot leak. Removing the existing 886 is his call.
+
 ### Polish pass: items 2 and 3 done, item 1 held for Charles
 
 Spec `docs/specs/2026-09-17-polish.md`. Done in the main loop 17 September (`91240ba`): item 2, a
