@@ -4,7 +4,7 @@ Open work for the Cocktail Passport. One-line status lives in `E:\claude-project
 agent context in `CLAUDE.md`; the reconciled checklist in `docs/PRODUCTIONISATION.md`; the product
 architecture in `docs/specs/2026-09-10-product-brief.md`, one spec per workstream beside it.
 
-## Where it stands (18 September 2026)
+## Where it stands (22 September 2026)
 
 - Charles ruled the fork: (b), a product for any sailing, and later "complete anything remaining".
   The whole any-sailing build is on branch `product`, done with workflows and subagents one
@@ -155,15 +155,34 @@ Run `wf_dc5809ec-9c7`. Resume (only if something must be re-run):
 If a fix agent dies on the spend cap with the review done, apply the findings in the main loop as
 the BYO fix was; if the builder dies, its commits are on `shake`, run review and fix separately.
 
+### In flight (22 September): shaker second pass, declutter, polish item 1 (branch `shake-declutter`)
+
+Charles, 22 September: "The shaker animation isn't there yet like it doesn't look great also check
+out any pending work and verify and push it, also make sure we've declutterred the ui as it's a bit
+dense wordy", pointing at `jakubkrehel/skills` and `emilkowalski/skills` on skills.sh (read from
+shallow clones in the session scratchpad; the rules taken from them are written into the specs).
+His "verify and push it" is the go for the pending work, which is polish item 1 (erasure re-asks
+consent, `docs/specs/2026-09-17-polish.md`), the drop's glyph and the DESIGN.md sentence on
+sheets returned to after a replacement.
+
+- Filmed the shipped shaker (`tools/qa/film.mjs`, new): it reads as a pedal bin, the shake is a
+  wobble, the lid hinges like a bin lid, the prize reads as a 7, no build-up into the pop, and the
+  sheet grew twice mid-moment. `73537b9` fixes the growth (held answer slot, held Shake again) and
+  makes the shaker a swappable variant (`src/features/shake/variants/`, `?shaker=a|b|c`).
+- Workflow A (running): three variant builders (cobbler cap-off, Boston tins, dice roll; spec
+  `docs/specs/2026-09-22-shaker-v2.md`), one film pass, three judges; in parallel a read-only
+  declutter audit of every screen. Nothing it writes is committed; the variants live only in
+  `src/features/shake/variants/{a,b,c}/`.
+- Then (me): pick the winner, write the fold and declutter specs; Workflow B folds the winner,
+  builds polish item 1 and the declutter, reviews, fixes; then gates, merge to `main`, deploy,
+  production probe.
+
 ## Next action
 
-Nothing is in flight. The shaker with its lid revision is live at `33cbe50` and probed on
-production. Everything remaining is Charles's: whether the drop's glyph goes to 24px (one CSS value
-and a spec line), enable two-step verification on the Google account so the OAuth client can be
-created, the dashboard gates for sign-in, the held spec rulings, polish item 1's go (one small change
-built to the spec's default), the Cloudflare token roll, and the QA-user purge. Nothing else is
-buildable without him: the whole any-sailing product, the two ruling-free polish items and the
-shaker are on `main`, green.
+Workflow A is running (resume handle below once it has a run id). When it returns: read the
+judges and the audit, choose, write the fold and declutter specs, launch Workflow B. Everything
+else remaining is Charles's: two-step verification on the Google account for the OAuth client, the
+held spec rulings, the Cloudflare token roll, the QA-user purge.
 
 ## Gotchas
 
