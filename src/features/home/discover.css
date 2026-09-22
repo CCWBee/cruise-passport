@@ -3,4 +3,3 @@
 .disc-twin b { font-weight: 600; }
 .disc-reach { margin-top: var(--s2); margin-bottom: var(--s2); }
 .disc-reach b { color: var(--ink); font-weight: 600; }
-.disc-rec-dots { flex: none; }

@@ -18,9 +18,10 @@ export function WrappedTeaser() {
       viewTransition
       aria-label={seen ? 'Open your Cruise Wrapped again' : 'Open your Cruise Wrapped'}
     >
+      {/* one line: the row renders only when Wrapped is unlocked, so "Ready to open" beneath it told
+          the guest nothing the row being there does not. The label keeps the "again" distinction. */}
       <span className="row-copy">
         <span className="t-strong">Your voyage, wrapped</span>
-        <span className="t-meta">{seen ? 'Ready to open again' : 'Ready to open'}</span>
       </span>
     </Link>
   )
