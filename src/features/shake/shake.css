@@ -14,6 +14,14 @@
 /* the answer is the shaker's caption, so it takes the shaker's centring rather than the sheet's
    left edge: two lines hung off the left of a centred object read as belonging to nothing */
 .shake-answer { display: grid; gap: var(--s1); text-align: center; }
+/* The answer's place, held from the first frame: two lines of name, the meta line and the reason,
+   with the answer's two gaps. Held rather than grown into, so the sheet never changes height while
+   the shaker is moving; a longer name than two lines is the one case that still grows it. */
+.shake-slot {
+  min-height: calc(2 * 1.3 * var(--f-heading) + 1.4 * var(--f-meta) + 1.5 * var(--f-body) + 2 * var(--s1));
+}
+/* Shake again keeps its line before a reveal, unseen and out of the focus order */
+.shake-again.is-held { visibility: hidden; }
 /* the two quiet actions sit 12 apart. .quiet-action carries 24 of its own margin, which is what the
    grid above is already providing, so it is dropped here rather than doubled to 48. */
 .shake-quiets { display: grid; gap: var(--s3); }

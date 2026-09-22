@@ -76,5 +76,7 @@ export async function launch({ width = 500, height = 900 } = {}) {
     }
     return u
   }
-  return { user, send, close: () => { try { ws.close() } catch {} ; spawn('taskkill', ['/PID', String(child.pid), '/T', '/F'], { stdio: 'ignore' }) } }
+  // raw protocol events (a screencast's frames, say); returns the function that unsubscribes
+  const on = (fn) => { listeners.push(fn); return () => { const i = listeners.indexOf(fn); if (i >= 0) listeners.splice(i, 1) } }
+  return { user, send, on, close: () => { try { ws.close() } catch {} ; spawn('taskkill', ['/PID', String(child.pid), '/T', '/F'], { stdio: 'ignore' }) } }
 }

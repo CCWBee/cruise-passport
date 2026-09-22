@@ -1,5 +1,7 @@
 // Screenshot every screen of the live app at phone width, viewport + full page.
 // usage: node shots.mjs [baseUrl] [prefix]
+// Every URL carries ?nosync, so a sweep never signs a throwaway user in to the live backend, which a
+// sweep without it did on every run (the purge ledger in STATE.md is the cost of that).
 import { launch, OUT } from './cdp.mjs'
 import { writeFileSync } from 'node:fs'
 import path from 'node:path'
@@ -25,30 +27,30 @@ try {
   }
   const shot = async (label) => { await u.shot(`${PREFIX}-${label}`); await full(label) }
 
-  await u.goto(`${BASE}/?seed`); await u.sleep(3500)
+  await u.goto(`${BASE}/?seed&nosync`); await u.sleep(3500)
   await shot('home')
-  await u.goto(`${BASE}/drinks`); await u.sleep(2500)
+  await u.goto(`${BASE}/drinks?nosync`); await u.sleep(2500)
   await shot('drinks')
   await u.eval(`(() => { const b = document.querySelector('.dcard .d-open'); if (b) b.click(); return !!b })()`)
   await u.sleep(3200)
   await u.shot(`${PREFIX}-drink-sheet`)
-  await u.goto(`${BASE}/ship`); await u.sleep(2500)
+  await u.goto(`${BASE}/ship?nosync`); await u.sleep(2500)
   await shot('ship')
   await u.eval(`(() => { const b = document.querySelector('.venue-row'); if (b) b.click(); return b && b.className })()`).then((c) => console.log('venue click', c))
   await u.sleep(3200)
   await u.shot(`${PREFIX}-venue-sheet`)
-  await u.goto(`${BASE}/social`); await u.sleep(2500)
+  await u.goto(`${BASE}/social?nosync`); await u.sleep(2500)
   await shot('social')
   await u.eval(`(() => { const b = document.querySelector('.social-add'); if (b) b.click(); return !!b })()`)
   await u.sleep(3200)
   await u.shot(`${PREFIX}-add-sheet`)
-  await u.goto(`${BASE}/stats`); await u.sleep(2500)
+  await u.goto(`${BASE}/stats?nosync`); await u.sleep(2500)
   await shot('stats')
-  await u.goto(`${BASE}/badges`); await u.sleep(2500)
+  await u.goto(`${BASE}/badges?nosync`); await u.sleep(2500)
   await shot('badges')
-  await u.goto(`${BASE}/log`); await u.sleep(2500)
+  await u.goto(`${BASE}/log?nosync`); await u.sleep(2500)
   await shot('log')
-  await u.goto(`${BASE}/wrapped`); await u.sleep(3000)
+  await u.goto(`${BASE}/wrapped?nosync`); await u.sleep(3000)
   await shot('wrapped')
   console.log('logs:', u.logs.slice(0, 20).join('\n'))
 } finally { chrome.close() }

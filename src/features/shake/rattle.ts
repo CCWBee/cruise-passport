@@ -8,8 +8,8 @@
 export interface Rattle {
   /** Cut it short: the sheet closed, or the guest shook again. */
   stop(): void
-  /** The tin opening: the cork as the lid goes, then the thock as the drop lands. */
-  reveal(): void
+  /** The tin opening: the cork now, then the thock `landMs` later as the prize lands. */
+  reveal(landMs?: number): void
 }
 
 const SILENT: Rattle = { stop() { /* nothing was started */ }, reveal() { /* nothing to sound */ } }
@@ -37,7 +37,8 @@ const THOCK_FROM = 220, THOCK_TO = 150, THOCK_MS = 0.11, THOCK_GAIN = 0.1
 // The lid coming off: a cork, which is a burst whose band falls rather than sits. That fall is why
 // it cannot go through burst(), and it is what makes it a cork instead of one more die.
 const POP_FROM = 1400, POP_TO = 700, POP_DECAY = 0.055, POP_GAIN = 0.18
-// the drop's 60ms of lead and its 520ms rise: the thock lands on the hang, not on the lid
+// the drop's 60ms of lead and its 520ms rise: the thock lands on the hang, not on the lid. The
+// default only; the sheet passes the landing time of whichever shaker it is drawing.
 const SETTLE_AT = 0.58
 
 type Ctor = { new(): AudioContext }
@@ -85,7 +86,7 @@ const quietWanted = (): boolean => {
  * A no-op, silently, when the guest chose quiet, when reduced motion is set, or when there is no
  * AudioContext to build on.
  */
-export function startRattle(quiet: boolean): Rattle {
+export function startRattle(quiet: boolean, shakeMs = STOP_AT * 1000): Rattle {
   if (quiet || quietWanted()) return SILENT
   const c = context()
   if (!c) return SILENT
@@ -100,6 +101,9 @@ export function startRattle(quiet: boolean): Rattle {
     master.connect(c.destination)
     const sources: AudioScheduledSourceNode[] = []
     const t0 = c.currentTime
+    // The schedule is written against the 1.8s shake; a shaker with a longer or shorter one stretches
+    // it to fit, so the ticks still accelerate across the whole shake and the clack lands on its stop.
+    const k = Math.max(0.2, shakeMs / 1000) / STOP_AT
 
     const burst = (at: number, gain: number, hz: number, decay: number) => {
       const src = c.createBufferSource()
@@ -160,10 +164,10 @@ export function startRattle(quiet: boolean): Rattle {
         const rise = GAIN_FROM + (GAIN_TO - GAIN_FROM) * (t / STOP_AT)
         const hz = BAND_LOW + Math.random() * (BAND_HIGH - BAND_LOW)
         const decay = DECAY_LOW + Math.random() * (DECAY_HIGH - DECAY_LOW)
-        burst(t0 + t, rise, hz, decay)
+        burst(t0 + t * k, rise, hz, decay)
       }
     }
-    burst(t0 + STOP_AT, CLACK_GAIN, CLACK_HZ, CLACK_DECAY)
+    burst(t0 + STOP_AT * k, CLACK_GAIN, CLACK_HZ, CLACK_DECAY)
 
     const hush = () => {
       try {
@@ -176,15 +180,15 @@ export function startRattle(quiet: boolean): Rattle {
 
     return {
       stop: hush,
-      reveal() {
+      reveal(landMs = SETTLE_AT * 1000) {
         try {
           // Both sounds of the opening, laid down in one pass like the rattle itself: the cork as the
-          // lid goes, the thock 580ms later as the drop settles onto its hang. The sheet calls this
+          // lid goes, the thock `landMs` later as the prize settles. The sheet calls this
           // once, when the lid starts, and the clock keeps the thock on the picture; a timer would
           // let a busy main thread put it somewhere the eye is not.
           const at = c.currentTime
           pop(at)
-          thock(at + SETTLE_AT)
+          thock(at + landMs / 1000)
         } catch { /* a sound is never worth an exception */ }
       },
     }

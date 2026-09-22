@@ -7,17 +7,16 @@ import { Sheet } from '../../ui/Sheet'
 import { DrinkSheet } from '../drinks/DrinkSheet'
 import { RECENT_KEPT, shake, type ShakeResult } from './pick'
 import { startRattle, type Rattle } from './rattle'
-import { Shaker, type ShakePhase } from './Shaker'
+import type { ShakePhase } from './Shaker'
+import { activeVariant } from './variants'
 import './shake.css'
 
 // The app's one moment of theatre, and the only place it is allowed: on demand, inside a sheet, for
 // two seconds. The pick behind it is genuinely useful (untried, weighted by what the guest and their
 // crew like) or the theatre would be the whole of it.
 
-const SHAKE_MS = 1800   // the three phases, ending upright
-const HOLD_MS = 300     // the anticipation beat, the tin still shut
-const SETTLE_MS = 580   // the lid at 0, the drop 60 behind it, its rise 520: the drop lands here
-const CLOSE_MS = 240    // the lid back on and the drop back in, before a second shake
+// The shake's own timings (how long it shakes, the held beat, the landing, the reverse) belong to
+// the shaker being drawn, so they come from its variant (./variants). This one is the sheet's.
 const REDUCED_MS = 300  // no shake and no sound: long enough to read as an answer being found
 
 const QUIET_KEY = 'spcc-shake-quiet'
@@ -40,6 +39,8 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
   const me = useStore((s) => s.me)
   const srcs = useSources()
   const titleId = useId()
+  // read once per sheet: a QA load can ask for a variant, every guest gets the default
+  const v = useMemo(() => activeVariant(), [])
   const [phase, setPhase] = useState<ShakePhase>('idle')
   const [result, setResult] = useState<ShakeResult | null>(null)
   // this sitting's reveals, so the shaker does not say the same thing twice. Not persisted: a new
@@ -89,14 +90,14 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
     // one pattern, not a tap and then a series: on Android a second vibrate() replaces the first,
     // and this one opens with the press tap anyway
     haptic('shake')
-    rattle.current = startRattle(quiet)
+    rattle.current = startRattle(quiet, v.shakeMs)
     setPhase('shaking')
     const reduced = reducedMotion()
     timer.current = window.setTimeout(() => {
       // the lid goes here, and the cork with it. The result is set at the same moment, so the sheet
       // takes the card's height while the lid is flipping; the card itself is held back in CSS to
       // the drop's landing, which is the one thing that would jolt if it arrived late.
-      rattle.current?.reveal()
+      rattle.current?.reveal(v.landMs)
       setResult(pick)
       setRecent((r) => [...r, pick.id].slice(-RECENT_KEPT))
       setPhase('opening')
@@ -105,8 +106,8 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
         setPhase('revealed')
         // no Confirm tick: the answer is on the screen, which is DESIGN.md's own test for when a
         // confirmation is owed and when it is noise
-      }, reduced ? 0 : SETTLE_MS)
-    }, reduced ? REDUCED_MS : SHAKE_MS + HOLD_MS)
+      }, reduced ? 0 : v.landMs)
+    }, reduced ? REDUCED_MS : v.popMs)
   }
 
   const press = () => {
@@ -124,7 +125,7 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
     // from a closed shaker rather than from an open one snapping shut as it begins to move.
     if (phase === 'opening' || phase === 'revealed') {
       setPhase('closing')
-      timer.current = window.setTimeout(() => run(pick), CLOSE_MS)
+      timer.current = window.setTimeout(() => run(pick), v.closeMs)
       return
     }
     run(pick)
@@ -159,24 +160,29 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
 
   return (
     <Sheet onClose={onClose} labelledBy={titleId}>
-      <div className="shake">
+      <div className="shake" data-shaker={v.id}>
         <h2 className="t-title sheet-title" id={titleId}>Shake</h2>
         <p className="sheet-meta">The shaker picks one you have not tried.</p>
 
         <div className="shake-body">
-          <Shaker phase={phase} still={still} />
+          <v.Shaker phase={phase} still={still} drink={drink} />
 
-          {/* data-drink names what the card is naming, which is what the QA reveal check reads
-              back against the store to prove the pick was a drink the guest has not tried */}
-          {result && drink && (
-            <div className={'shake-answer' + (still ? ' is-still' : '')} data-drink={drink.id}>
-              {/* the name first and in full: the one job of this moment is to name a drink, and the
-                  drop that came out of the tin carries no lettering of its own */}
-              <h3 className="t-h2">{drink.name}</h3>
-              <p className="t-meta tnum">{where}</p>
-              <p className="t-body">{result.reason}</p>
-            </div>
-          )}
+          {/* The answer's place is held from the first frame, empty until a reveal, so the sheet is
+              the same height shut, shaking and open: a sheet that grows as the card arrives lifts
+              the whole drawing up the screen at the very moment the eye is on it. */}
+          <div className="shake-slot">
+            {/* data-drink names what the card is naming, which is what the QA reveal check reads
+                back against the store to prove the pick was a drink the guest has not tried */}
+            {result && drink && (
+              <div className={'shake-answer' + (still ? ' is-still' : '')} data-drink={drink.id}>
+                {/* the name first and in full: the one job of this moment is to name a drink, and
+                    the prize that came out of the tin carries no lettering of its own */}
+                <h3 className="t-h2">{drink.name}</h3>
+                <p className="t-meta tnum">{where}</p>
+                <p className="t-body">{result.reason}</p>
+              </div>
+            )}
+          </div>
 
           <button
             type="button"
@@ -188,9 +194,16 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
           </button>
 
           <div className="shake-quiets">
-            {phase === 'revealed' && (
-              <button type="button" className="quiet-action shake-again" onClick={press}>Shake again</button>
-            )}
+            {/* in the layout from the start and shown at the reveal, for the same reason as the slot:
+                visibility, not mounting, so its line never pushes the sheet taller mid-moment */}
+            <button
+              type="button"
+              className={'quiet-action shake-again' + (phase === 'revealed' ? '' : ' is-held')}
+              disabled={phase !== 'revealed'}
+              onClick={press}
+            >
+              Shake again
+            </button>
             <button type="button" className="quiet-action" onClick={toggleQuiet}>
               {/* the label states the action, not the state, as every other quiet action does */}
               {quiet ? 'Shake with sound' : 'Shake quietly'}
