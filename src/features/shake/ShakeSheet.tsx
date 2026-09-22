@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { VENUES } from '../../data/model'
 import { pickedForYou, useSources } from '../../state/social'
 import { useAllDrinks, useStore } from '../../state/store'
@@ -7,16 +7,15 @@ import { Sheet } from '../../ui/Sheet'
 import { DrinkSheet } from '../drinks/DrinkSheet'
 import { RECENT_KEPT, shake, type ShakeResult } from './pick'
 import { startRattle, type Rattle } from './rattle'
-import type { ShakePhase } from './Shaker'
-import { activeVariant } from './variants'
+import { SHAKER, Shaker, type ShakePhase } from './Shaker'
 import './shake.css'
 
 // The app's one moment of theatre, and the only place it is allowed: on demand, inside a sheet, for
 // two seconds. The pick behind it is genuinely useful (untried, weighted by what the guest and their
 // crew like) or the theatre would be the whole of it.
 
-// The shake's own timings (how long it shakes, the held beat, the landing, the reverse) belong to
-// the shaker being drawn, so they come from its variant (./variants). This one is the sheet's.
+// The shake's own timings (how long it shakes, the knocks, the pop, the landing, the reverse) belong
+// to the drawing, so they come from SHAKER in Shaker.tsx. This one is the sheet's.
 const REDUCED_MS = 300  // no shake and no sound: long enough to read as an answer being found
 
 const QUIET_KEY = 'spcc-shake-quiet'
@@ -39,8 +38,6 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
   const me = useStore((s) => s.me)
   const srcs = useSources()
   const titleId = useId()
-  // read once per sheet: a QA load can ask for a variant, every guest gets the default
-  const v = useMemo(() => activeVariant(), [])
   const [phase, setPhase] = useState<ShakePhase>('idle')
   const [result, setResult] = useState<ShakeResult | null>(null)
   // this sitting's reveals, so the shaker does not say the same thing twice. Not persisted: a new
@@ -54,6 +51,9 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
   const [announce, setAnnounce] = useState('')
   const rattle = useRef<Rattle | null>(null)
   const timer = useRef(0)
+  // the knocks' taps, on their own handles so a second shake or a close can clear them
+  const knockTimers = useRef<number[]>([])
+  const clearKnocks = () => { knockTimers.current.forEach((t) => window.clearTimeout(t)); knockTimers.current = [] }
 
   const picks = useMemo(() => pickedForYou(me, srcs), [me, srcs])
 
@@ -82,6 +82,7 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
 
   useEffect(() => () => {
     window.clearTimeout(timer.current)
+    knockTimers.current.forEach((t) => window.clearTimeout(t))
     rattle.current?.stop()
   }, [])
 
@@ -90,14 +91,19 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
     // one pattern, not a tap and then a series: on Android a second vibrate() replaces the first,
     // and this one opens with the press tap anyway
     haptic('shake')
-    rattle.current = startRattle(quiet, v.shakeMs)
+    rattle.current = startRattle(quiet, SHAKER.shakeMs, SHAKER.knocks)
     setPhase('shaking')
     const reduced = reducedMotion()
+    // a tap the hand feels on each knock from inside, on the drawing's own times; like the knocks'
+    // sound, nothing under quiet or reduced motion, where the tin does not knock at all
+    if (!quiet && !reduced) {
+      knockTimers.current = SHAKER.knocks.map((ms) => window.setTimeout(() => haptic('tap'), ms))
+    }
     timer.current = window.setTimeout(() => {
-      // the lid goes here, and the cork with it. The result is set at the same moment, so the sheet
-      // takes the card's height while the lid is flipping; the card itself is held back in CSS to
-      // the drop's landing, which is the one thing that would jolt if it arrived late.
-      rattle.current?.reveal(v.landMs)
+      // the cap goes here, and the cork with it. The result is set at the same moment, so the card
+      // is rendered while the glass comes out; its lines are held back in CSS to the glass's
+      // landing, and the slot has held their room from the first frame, so nothing jolts.
+      rattle.current?.reveal(SHAKER.landMs)
       setResult(pick)
       setRecent((r) => [...r, pick.id].slice(-RECENT_KEPT))
       setPhase('opening')
@@ -106,8 +112,8 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
         setPhase('revealed')
         // no Confirm tick: the answer is on the screen, which is DESIGN.md's own test for when a
         // confirmation is owed and when it is noise
-      }, reduced ? 0 : v.landMs)
-    }, reduced ? REDUCED_MS : v.popMs)
+      }, reduced ? 0 : SHAKER.landMs)
+    }, reduced ? REDUCED_MS : SHAKER.popMs)
   }
 
   const press = () => {
@@ -115,17 +121,18 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
     // nothing to shake: the row on Home is hidden in that case, so this is the defence behind it
     if (!pick) return
     window.clearTimeout(timer.current)
+    clearKnocks()
     rattle.current?.stop()
     setAnnounce('')
     setResult(null)
     // the drawing moves again from here, and it has to be released before the reverse below rather
-    // than when the shake itself starts, or the lid and the drop would snap shut instead of closing
+    // than when the shake itself starts, or the cap and the glass would snap back instead of going
     setStill(false)
-    // Shake again puts the lid back on and the drop back in the mouth first, so every shake starts
-    // from a closed shaker rather than from an open one snapping shut as it begins to move.
+    // Shake again sinks the glass and puts the cap back on first, so every shake starts from a
+    // closed shaker rather than from an open one snapping shut as it begins to move.
     if (phase === 'opening' || phase === 'revealed') {
       setPhase('closing')
-      timer.current = window.setTimeout(() => run(pick), v.closeMs)
+      timer.current = window.setTimeout(() => run(pick), SHAKER.closeMs)
       return
     }
     run(pick)
@@ -142,30 +149,37 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
   // guest can shake again from where they were.
   //
   // That replacement unmounts this subtree, so the return is a fresh mount at phase 'revealed' and
-  // every part of the opening would run again on the new elements: the lid flipping and the drop
-  // popping with no shake behind them, and the answer just read blanking while its fade waits out
-  // the drop. `still` holds the drawing and the card at the end state instead. The live line goes
+  // every part of the opening would run again on the new elements: the cap flying and the glass
+  // rising with no shake behind them, and the answer just read blanking while its lines wait out
+  // the landing. `still` holds the drawing and the card at the end state instead. The live line goes
   // with it, so the region does not come back already holding the sentence it has said, which is
   // the case the comment above it warns is announced unreliably.
   const goGet = (id: string) => { setStill(true); setAnnounce(''); setOpenDrink(id) }
   if (openDrink) return <DrinkSheet id={openDrink} onClose={() => setOpenDrink(null)} onOpen={setOpenDrink} />
 
   // Shut, shaking or opening, the control is the same ghost reading Shaking: the answer is not on
-  // screen until the drop has landed, and a button that says Go get it before then has nothing to go
+  // screen until the glass has landed, and a button that says Go get it before then has nothing to go
   // and get.
   const busy = phase === 'shaking' || phase === 'opening' || phase === 'closing'
   const label = busy ? 'Shaking'
     : phase === 'revealed' ? (result?.allTried ? 'Go again' : 'Go get it')
       : 'Shake'
 
+  // The card's lines each carry their own start, --at: the landing, then 80 more per line before it.
+  // The reason is left out when there is none, so the stagger closes up rather than leaving a hole,
+  // and Shake again comes in on the last line's clock, counted from the reveal it waits for.
+  const at = (ms: number) => ({ '--at': `${ms}ms` }) as CSSProperties
+  const lines = result?.reason ? 3 : 2
+  const revealed = phase === 'revealed'
+
   return (
     <Sheet onClose={onClose} labelledBy={titleId}>
-      <div className="shake" data-shaker={v.id}>
+      <div className="shake">
         <h2 className="t-title sheet-title" id={titleId}>Shake</h2>
         <p className="sheet-meta">The shaker picks one you have not tried.</p>
 
         <div className="shake-body">
-          <v.Shaker phase={phase} still={still} drink={drink} />
+          <Shaker phase={phase} still={still} drink={drink} />
 
           {/* The answer's place is held from the first frame, empty until a reveal, so the sheet is
               the same height shut, shaking and open: a sheet that grows as the card arrives lifts
@@ -177,9 +191,9 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
               <div className={'shake-answer' + (still ? ' is-still' : '')} data-drink={drink.id}>
                 {/* the name first and in full: the one job of this moment is to name a drink, and
                     the prize that came out of the tin carries no lettering of its own */}
-                <h3 className="t-h2">{drink.name}</h3>
-                <p className="t-meta tnum">{where}</p>
-                <p className="t-body">{result.reason}</p>
+                <h3 className="t-h2" style={at(SHAKER.landMs)}>{drink.name}</h3>
+                <p className="t-meta tnum" style={at(SHAKER.landMs + 80)}>{where}</p>
+                {result.reason && <p className="t-body" style={at(SHAKER.landMs + 160)}>{result.reason}</p>}
               </div>
             )}
           </div>
@@ -198,8 +212,9 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
                 visibility, not mounting, so its line never pushes the sheet taller mid-moment */}
             <button
               type="button"
-              className={'quiet-action shake-again' + (phase === 'revealed' ? '' : ' is-held')}
-              disabled={phase !== 'revealed'}
+              className={'quiet-action shake-again' + (revealed ? ' is-shown' : ' is-held') + (still ? ' is-still' : '')}
+              style={at((lines - 1) * 80)}
+              disabled={!revealed}
               onClick={press}
             >
               Shake again

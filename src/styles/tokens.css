@@ -102,6 +102,10 @@
 
   /* motion: one easing, three durations */
   --e-out: cubic-bezier(.22, .9, .32, 1);
+  /* the shaker's strokes only (DESIGN.md Motion, a written exception): a tin travelling on screen
+     and reversing at each end, which --e-out would throw off at full speed after every turn.
+     Kowalski's strong ease-in-out. */
+  --e-shake: cubic-bezier(.77, 0, .175, 1);
   --e-io: var(--e-out);
   --e-spring: var(--e-out);
   --spring: var(--e-out);

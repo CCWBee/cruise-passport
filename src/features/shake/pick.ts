@@ -18,7 +18,9 @@ export interface ShakeResult { id: string; reason: string; allTried: boolean }
 export const RECENT_KEPT = 6
 
 const ALL_TRIED_REASON = 'You have tried them all. Have another.'
-const UNIFORM_REASON = 'One you have not tried'
+// A pick with nothing personal behind it gives no reason: "One you have not tried" repeated the
+// sheet's own meta line on the same screen, and the card shows no line rather than an empty one.
+const UNIFORM_REASON = ''
 
 /** The guest's top spirit, by the same rule `pickedForYou` uses: a spirit they have rated 4 or more
  *  at least three times. Wine and beer are not spirits, and "because you love wine" over a cocktail

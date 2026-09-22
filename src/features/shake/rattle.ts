@@ -8,7 +8,7 @@
 export interface Rattle {
   /** Cut it short: the sheet closed, or the guest shook again. */
   stop(): void
-  /** The tin opening: the cork now, then the thock `landMs` later as the prize lands. */
+  /** The cap coming off: the cork now, then the thock `landMs` later as the prize lands. */
   reveal(landMs?: number): void
 }
 
@@ -34,12 +34,16 @@ const DECAY_LOW = 0.022, DECAY_HIGH = 0.035
 const ATTACK = 0.002
 const CLACK_HZ = 1900, CLACK_DECAY = 0.08, CLACK_GAIN = 0.2
 const THOCK_FROM = 220, THOCK_TO = 150, THOCK_MS = 0.11, THOCK_GAIN = 0.1
-// The lid coming off: a cork, which is a burst whose band falls rather than sits. That fall is why
+// The dice knocking from inside the still tin before the pop: low and dull, the tin's body rather
+// than a die on steel, and the second harder than the first. A phone speaker gives almost nothing
+// under 500Hz, so "low" is 800, well under the dice's 3.2k.
+const KNOCK_HZ = 800, KNOCK_Q = 2, KNOCK_DECAY = 0.05, KNOCK_GAIN = [0.2, 0.28]
+// The cap coming off: a cork, which is a burst whose band falls rather than sits. That fall is why
 // it cannot go through burst(), and it is what makes it a cork instead of one more die.
 const POP_FROM = 1400, POP_TO = 700, POP_DECAY = 0.055, POP_GAIN = 0.18
-// the drop's 60ms of lead and its 520ms rise: the thock lands on the hang, not on the lid. The
-// default only; the sheet passes the landing time of whichever shaker it is drawing.
-const SETTLE_AT = 0.58
+// the thock lands on the prize's hang, not on the cap. The default only; the sheet passes the
+// landing time from SHAKER.
+const SETTLE_AT = 0.54
 
 type Ctor = { new(): AudioContext }
 type Win = { AudioContext?: Ctor; webkitAudioContext?: Ctor }
@@ -86,7 +90,7 @@ const quietWanted = (): boolean => {
  * A no-op, silently, when the guest chose quiet, when reduced motion is set, or when there is no
  * AudioContext to build on.
  */
-export function startRattle(quiet: boolean, shakeMs = STOP_AT * 1000): Rattle {
+export function startRattle(quiet: boolean, shakeMs = STOP_AT * 1000, knocks: number[] = []): Rattle {
   if (quiet || quietWanted()) return SILENT
   const c = context()
   if (!c) return SILENT
@@ -105,13 +109,13 @@ export function startRattle(quiet: boolean, shakeMs = STOP_AT * 1000): Rattle {
     // it to fit, so the ticks still accelerate across the whole shake and the clack lands on its stop.
     const k = Math.max(0.2, shakeMs / 1000) / STOP_AT
 
-    const burst = (at: number, gain: number, hz: number, decay: number) => {
+    const burst = (at: number, gain: number, hz: number, decay: number, q = BAND_Q) => {
       const src = c.createBufferSource()
       src.buffer = noiseBuffer(c)
       const band = c.createBiquadFilter()
       band.type = 'bandpass'
       band.frequency.value = hz
-      band.Q.value = BAND_Q
+      band.Q.value = q
       const amp = c.createGain()
       amp.gain.setValueAtTime(0.0001, at)
       amp.gain.exponentialRampToValueAtTime(Math.max(gain, 0.0002), at + ATTACK)
@@ -140,7 +144,7 @@ export function startRattle(quiet: boolean, shakeMs = STOP_AT * 1000): Rattle {
       sources.push(src)
     }
 
-    // The drop landing: a sine falling a fifth in a tenth of a second. The only oscillator in the
+    // The prize landing: a sine falling a fifth in a tenth of a second. The only oscillator in the
     // piece, and the last sound in it.
     const thock = (at: number) => {
       const osc = c.createOscillator()
@@ -168,6 +172,9 @@ export function startRattle(quiet: boolean, shakeMs = STOP_AT * 1000): Rattle {
       }
     }
     burst(t0 + STOP_AT * k, CLACK_GAIN, CLACK_HZ, CLACK_DECAY)
+    // The knocks are laid on the same clock, at the times the drawing hops (SHAKER.knocks, ms from
+    // the press), so the ear and the eye get them together whatever the main thread is doing.
+    knocks.forEach((ms, i) => burst(t0 + ms / 1000, KNOCK_GAIN[Math.min(i, KNOCK_GAIN.length - 1)], KNOCK_HZ, KNOCK_DECAY, KNOCK_Q))
 
     const hush = () => {
       try {
@@ -183,8 +190,8 @@ export function startRattle(quiet: boolean, shakeMs = STOP_AT * 1000): Rattle {
       reveal(landMs = SETTLE_AT * 1000) {
         try {
           // Both sounds of the opening, laid down in one pass like the rattle itself: the cork as the
-          // lid goes, the thock `landMs` later as the prize settles. The sheet calls this
-          // once, when the lid starts, and the clock keeps the thock on the picture; a timer would
+          // cap goes, the thock `landMs` later as the prize settles. The sheet calls this
+          // once, at the pop, and the clock keeps the thock on the picture; a timer would
           // let a busy main thread put it somewhere the eye is not.
           const at = c.currentTime
           pop(at)

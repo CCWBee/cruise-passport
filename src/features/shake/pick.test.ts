@@ -84,17 +84,17 @@ test('wine and beer are never the top spirit', () => {
     random: () => 0,
   }))
   assert.equal(out?.id, 'a')
-  assert.equal(out?.reason, 'One you have not tried')
+  assert.equal(out?.reason, '')
 })
 
-test('two of a spirit is not a taste: the fallback reason stands', () => {
+test('two of a spirit is not a taste: no reason is given', () => {
   const out = shake(input({
     drinks: [drink('g1'), drink('g2'), drink('a', ['Gin'])],
     entries: { g1: { rating: 5 }, g2: { rating: 4 } },
     random: () => 0,
   }))
   assert.equal(out?.id, 'a')
-  assert.equal(out?.reason, 'One you have not tried')
+  assert.equal(out?.reason, '')
 })
 
 test('the draw walks the weighted bands: 4 for the shelf, 2 for the spirit, 1 for the rest', () => {

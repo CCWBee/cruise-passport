@@ -1,6 +1,7 @@
 /* The shaker: the app's one moment of theatre, and the fifth authored motion (docs/DESIGN.md,
-   Motion). It is silent and still until the guest asks for it, it runs for 2.1 seconds and it stops.
-   Nothing here loops, nothing here is ambient, and it lives inside a sheet, never on a screen. */
+   Motion). It is silent and still until the guest asks for it, it runs for under three seconds and
+   it stops. Nothing here loops, nothing here is ambient, and it lives inside a sheet, never on a
+   screen. */
 
 /* Home's door onto the shaker, at the foot of "For you". 16 below the shelf, which is the gap
    between two groups inside one section; with no shelf the row follows the heading and takes the
@@ -16,7 +17,8 @@
 .shake-answer { display: grid; gap: var(--s1); text-align: center; }
 /* The answer's place, held from the first frame: two lines of name, the meta line and the reason,
    with the answer's two gaps. Held rather than grown into, so the sheet never changes height while
-   the shaker is moving; a longer name than two lines is the one case that still grows it. */
+   the shaker is moving; a longer name than two lines is the one case that still grows it. The reason
+   may be absent (a pick with nothing personal behind it says nothing), and the slot keeps its room. */
 .shake-slot {
   min-height: calc(2 * 1.3 * var(--f-heading) + 1.4 * var(--f-meta) + 1.5 * var(--f-body) + 2 * var(--s1));
 }
@@ -27,135 +29,243 @@
 .shake-quiets { display: grid; gap: var(--s3); }
 .shake-quiets .quiet-action { margin-top: 0; }
 
-/* the tin sits on the ground, no panel: the sheet is the container, and a box around the only thing
-   present is the fourth banned tell. The box is 70 taller than the drawing and the drawing sits at
-   the foot of it: that air is the lid's swing space. The lid is 116 long from its hinge, so passing
-   upright it reaches 62 above the tin, and the drop hangs in the same band. Nothing else is ever
-   drawn up there, and it is reserved rather than borrowed so an open lid never lands on the meta
-   line above. */
+/* The stage: one fixed box, 300 by 275, in every phase. No panel: the sheet is the container, and a
+   box around the only thing present is the fourth banned tell. The shaker stands centred at its
+   foot; the 73 above the cap is the room the shake's travel, the cap's flight and the glass's hang
+   take, and whatever leaves the drawing fades before it reaches the stage's edge, so nothing paints
+   over the title above or the answer below. */
 .shaker {
-  position: relative;
   justify-self: center;
-  width: 196px; height: 275px;
+  width: 300px; height: 275px;
   color: var(--ink);
-  /* the hand is round the body, not the cap, so the tin pivots low: 41 up from its base */
-  transform-origin: 50% calc(100% - 41px);
 }
-/* the three layers of the drawing, painted back to front in the order they are written: the token
-   inside the mouth, the lid, then the tin over both of them */
-.shaker-tin, .shaker-lid { display: block; position: absolute; left: 0; bottom: 0; }
-/* the drop at rest, 80 up from the base: far enough down the mouth that the tin's cream fill covers
-   it whole, which is what makes it invisible until it rises out */
-.shaker-token {
-  position: absolute; left: 50%; bottom: 80px;
-  width: 44px; height: 44px; margin-left: -22px;
-  display: grid; place-items: center;
+.shaker svg { display: block; overflow: visible; }
+
+/* Steel, in the app's idiom: a strip of light left of centre in the glass chrome's own specular, and
+   --line down the far side as the only shade. Nothing else on the drawing is coloured. */
+.shaker .shaker-light { fill: var(--glass-rim); }
+.shaker .shaker-shade { fill: var(--line); }
+.shaker .shaker-ray { opacity: 0; }
+
+/* The pivots. The rig, the cap, the glass and each ray are drawn round their pivots in the markup
+   (Shaker.tsx says why), so each turns about its own origin. */
+.shaker .shaker-rig, .shaker .shaker-cap, .shaker .shaker-glass, .shaker .shaker-ray { transform-origin: 0 0; }
+
+/* ── The shake and the held beat: one timeline of popMs (2340), so the tin, the cap and the rattle
+   cannot drift apart. In ms from the press, from SHAKER in Shaker.tsx:
+
+     0 to 110      the wind-up: a 3px dip and a tilt the wrong way
+     240 to 1700   the strokes: up the tin's own axis over the shoulder and back, gentle to 460,
+                   harder to 1200, violent to 1700, each on --e-shake so the tin turns at each end
+     1700 to 1800  set down on the bar, linear, and stopped: the clack
+     1800 to 1890  one rebound of 2.5, and still
+     2000, 2130    the dice knock from inside: the tin hops 3, then 5, sharper; the cap lifts off the
+                   neck on each, 7 and back, then 12, quicker, and held
+     2265 to 2340  the cap is pressed down into the neck, the wind-up the pop is thrown from
+     2340          the pop
+
+   The amplitudes are the one place a literal is right: they are how hard a tin is shaken, not a
+   measure of the layout. The keyframes are computed (the block at the foot of this file). ── */
+.shaker.is-shaking .shaker-rig { animation: shaker-shake var(--pop) var(--e-shake) both; }
+.shaker.is-shaking .shaker-cap { animation: shaker-beat var(--pop) var(--e-out) both; }
+
+/* ── The pop, from popMs. The cap goes straight up off the neck and falls away over the right
+   shoulder, tumbling, gone within 250ms of its apex. The six strokes of the burst draw outward from
+   the mouth as it goes and fade by 280. The glass comes out of the mouth at the neck's width, grows
+   to its size as it clears the neck, overshoots its hang once and settles on it at landMs: the
+   thrown-not-eased exception DESIGN.md Motion writes for the prize. The tin kicks down 2 as the
+   pressure lets go and stands again. The end values are static, so `still` can take the paths away
+   and leave the reveal where it was. ── */
+.shaker.is-open .shaker-cap {
   opacity: 0;
-  pointer-events: none;
+  animation: shaker-cap-off 350ms linear both;
 }
-.shaker-token > * { grid-area: 1 / 1; }
-
-/* ── The reveal, in three beats: the lid off at 0, the drop out at 60, the card under it at 580.
-   Each beat is finite, none of them loops, and the whole thing runs once per shake. ── */
-
-/* The hinge is the back edge of the rim, where the strainer top seats on it: (34, 46) on the
-   drawing's grid, which is 40 by 54 once the drawing is rendered a seventh larger. It is the left
-   end of that line rather than the right, because a lid hinged on the right turns through -105 by
-   falling across the body; hinged here the same turn throws it up and back off the mouth, which is
-   what a lid coming off looks like. Seating it where the lid meets the rim rather than at the rim's
-   own end keeps the two touching: pivot 19 further out and the open lid floats away from the tin. */
-.shaker-lid { transform-origin: 40px 54px; }
-.shaker.is-open .shaker-lid {
-  transform: rotate(-105deg);
-  animation: lid-open 320ms var(--e-out) both;
+.shaker.is-open .shaker-glass { animation: shaker-glass-rise var(--land) linear both; }
+.shaker.is-open .shaker-ray { animation: shaker-ray 280ms var(--e-out) both; }
+.shaker.is-open .shaker-rig { animation: shaker-recoil 220ms var(--e-out) both; }
+@keyframes shaker-recoil {
+  from { transform: translateY(0); }
+  30% { transform: translateY(2px); }
+  to { transform: translateY(0); }
 }
-.shaker.is-open .shaker-token {
-  opacity: 1;
-  transform: translateY(-84px);
-  animation: token-pop 520ms var(--e-out) 60ms both;
+/* drawn outward from the inner end over 160, then carried on out and faded by 280 */
+@keyframes shaker-ray {
+  from { opacity: 1; transform: translateX(0) scaleX(.2); }
+  57% { opacity: 1; transform: translateX(3px) scaleX(1); }
+  to { opacity: 0; transform: translateX(8px) scaleX(1); }
 }
 
-/* Thrown, not eased: the lid carries one overshoot of 6% past open and settles back, and the drop
-   rises 8 past its hang and settles onto it. DESIGN.md Motion bans overshoot on UI state, and this
-   is the written reason for the exception: this is not a state changing, it is a tin being opened,
-   and a linear arrival reads as two pictures being swapped. One overshoot each, never a bounce. */
-@keyframes lid-open {
-  from { transform: rotate(0); }
-  75% { transform: rotate(-111deg); }
-  to { transform: rotate(-105deg); }
-}
-@keyframes token-pop {
-  from { opacity: 0; transform: translateY(0); }
-  /* solid before it clears the rim, or it comes out of the mouth as a ghost */
-  30% { opacity: 1; }
-  70% { transform: translateY(-92px); }
-  to { opacity: 1; transform: translateY(-84px); }
-}
-
-/* Shake again puts the shaker back together first, both at once and faster than they opened, so
-   every shake starts from a closed tin. */
-.shaker.is-closing .shaker-lid { animation: lid-close 240ms var(--e-out) both; }
-.shaker.is-closing .shaker-token { animation: token-drop 240ms var(--e-out) both; }
-@keyframes lid-close {
-  from { transform: rotate(-105deg); }
-  to { transform: rotate(0); }
-}
-@keyframes token-drop {
-  from { opacity: 1; transform: translateY(-84px); }
+/* Shake again puts it back first, in closeMs (260), softer and faster than it opened: the glass
+   sinks into the mouth in 180, and the cap comes down onto the neck from 50, once the glass is most
+   of the way in, so it seats on an empty neck. */
+.shaker.is-closing .shaker-glass { animation: shaker-glass-sink 180ms linear both; }
+.shaker.is-closing .shaker-cap { animation: shaker-cap-back 200ms var(--e-out) 50ms both; }
+@keyframes shaker-cap-back {
+  from { opacity: 0; transform: translateY(-14px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* The card is rendered the moment the lid goes and held back to the drop's settle, so the sheet
-   changes height once, under the flip, instead of jolting the hanging token as it lands. */
-.shake-answer { animation: shake-fade 260ms var(--e-out) 580ms both; }
-
-/* Three phases and a hard stop: gentle to 0.6s, harder to 1.3s, violent to 1.8s, then upright and
-   still for the 300ms hold before the lid goes. The rotations and the 2 to 3px of jitter are
-   the one place in this file a literal is right: they are the amplitude of a physical movement, not
-   a measure of the layout, and there is no spacing scale for how hard a tin is shaken. */
-.shaker.is-shaking { animation: shake-tin 1800ms var(--e-out) both; }
-@keyframes shake-tin {
-  0% { transform: rotate(0); }
-  5.6% { transform: rotate(3deg); }
-  11.1% { transform: rotate(-3deg); }
-  16.7% { transform: rotate(3deg); }
-  22.2% { transform: rotate(-3deg); }
-  27.8% { transform: rotate(3deg); }
-  33.3% { transform: rotate(-3deg); }
-  41.1% { transform: translate(2px, -2px) rotate(8deg); }
-  48.9% { transform: translate(-2px, 2px) rotate(-8deg); }
-  56.7% { transform: translate(2px, 2px) rotate(8deg); }
-  64.4% { transform: translate(-2px, -2px) rotate(-8deg); }
-  72.2% { transform: translate(2px, -2px) rotate(8deg); }
-  77.2% { transform: translate(-3px, 3px) rotate(-12deg); }
-  82.2% { transform: translate(3px, -3px) rotate(12deg); }
-  87.2% { transform: translate(-3px, -3px) rotate(-12deg); }
-  92.2% { transform: translate(3px, 3px) rotate(12deg); }
-  97.2% { transform: translate(-3px, 3px) rotate(-12deg); }
-  100% { transform: translate(0, 0) rotate(0); }
+/* ── The card, which ShakeSheet renders at the pop: its lines arrive in reading order as the glass
+   lands, the name, then the place, then the reason when there is one, 80 apart, each from 8 down and
+   a 4px blur. One rule: each line carries its own --at (the landing plus 80 per line before it), set
+   from SHAKER, so a card without a reason has no hole in its stagger. Shake again comes in with the
+   card's last line, on the same clock. ── */
+.shake-answer > * { animation: shake-line 300ms var(--e-out) var(--at, 0ms) both; }
+.shake-again.is-shown { animation: shake-fade 300ms var(--e-out) var(--at, 0ms) both; }
+@keyframes shake-line {
+  from { opacity: 0; transform: translateY(8px); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
 }
-
 @keyframes shake-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes shake-fade-out { from { opacity: 1; } to { opacity: 0; } }
 
-/* Reduced motion: nothing turns and nothing travels. The tin stays still, the lid and the drop take
-   their open and hanging positions and fade there, and the card arrives with them rather than
-   waiting for a settle that no longer happens. The reveal still lands, which is the point. */
+/* Reduced motion: gentler, not nothing. Nothing travels and nothing turns, the burst is not drawn
+   and the rattle is already silent. At the pop the cap fades off in the first half of --t-panel and
+   the glass fades in where it hangs in the second, so the two are never on screen at once; the card's
+   lines and Shake again fade in together over the whole of it. The reveal still lands. */
 @media (prefers-reduced-motion: reduce) {
-  .shaker.is-shaking { animation: none; }
-  .shaker.is-open .shaker-lid,
-  .shaker.is-open .shaker-token,
-  .shaker.is-closing .shaker-lid,
-  .shaker.is-closing .shaker-token { animation: shake-fade var(--t-panel) var(--e-out) both; }
-  .shake-answer { animation-delay: 0s; animation-duration: var(--t-panel); }
+  .shaker.is-shaking .shaker-rig,
+  .shaker.is-shaking .shaker-cap,
+  .shaker.is-open .shaker-rig,
+  .shaker.is-open .shaker-ray { animation: none; }
+  .shaker.is-open .shaker-cap { animation: shake-fade-out calc(var(--t-panel) / 2) var(--e-out) both; }
+  .shaker.is-open .shaker-glass { animation: shake-fade calc(var(--t-panel) / 2) var(--e-out) calc(var(--t-panel) / 2) both; }
+  .shaker.is-closing .shaker-glass { animation: shake-fade-out calc(var(--t-panel) / 2) var(--e-out) both; }
+  .shaker.is-closing .shaker-cap { animation: shake-fade calc(var(--t-panel) / 2) var(--e-out) calc(var(--t-panel) / 2) both; }
+  .shake-answer > *,
+  .shake-again.is-shown { animation: shake-fade var(--t-panel) var(--e-out) both; }
 }
 
 /* Going to the drink sheet replaces this sheet, so coming back is a fresh mount already at the
    reveal: on a new element every animation above would run again from its first frame, which is a
-   lid thrown open and a drop popping with no shake behind them, and the answer the guest had just
-   read blanking for two-thirds of a second. `is-still` takes the paths away and leaves the end
-   values .is-open already carries, so the reveal is simply where it was left. It sits last in the
-   file, after the reduced-motion block, because the rules it has to beat carry the same
-   specificity and source order is the whole of what decides between them. */
-.shaker.is-still .shaker-lid,
-.shaker.is-still .shaker-token,
-.shake-answer.is-still { animation: none; }
+   cap thrown off and a glass rising with no shake behind them, and the answer the guest had just read
+   blanking. `is-still` takes the paths away and leaves the end values .is-open already carries, so
+   the reveal is simply where it was left. Last in the file before the computed block, after the
+   reduced-motion one, because the rules it has to beat carry the same specificity and source order
+   is the whole of what decides between them. */
+.shaker.is-still .shaker-rig,
+.shaker.is-still .shaker-cap,
+.shaker.is-still .shaker-glass,
+.shaker.is-still .shaker-ray,
+.shake-answer.is-still > *,
+.shake-again.is-still { animation: none; }
+
+/* ── computed: node src/features/shake/keyframes.mjs writes everything from here to the end marker,
+   from SHAKER in Shaker.tsx and the tables in that script. Edit there, not here. ── */
+@keyframes shaker-shake {
+  0% { transform: translate(0px, 0px) rotate(0deg); }
+  4.7% { transform: translate(0px, 3px) rotate(-3deg); }
+  10.26% { transform: translate(5px, -16px) rotate(8deg); }
+  19.66% { transform: translate(1px, -3px) rotate(3deg); }
+  25.64% { transform: translate(9px, -26px) rotate(13deg); }
+  32.05% { transform: translate(1px, -2px) rotate(6deg); }
+  38.46% { transform: translate(10px, -28px) rotate(14deg); }
+  44.87% { transform: translate(1px, -2px) rotate(6deg); }
+  51.28% { transform: translate(11px, -30px) rotate(15deg); }
+  55.56% { transform: translate(0px, -1px) rotate(8deg); }
+  58.97% { transform: translate(14px, -38px) rotate(19deg); }
+  62.39% { transform: translate(-2px, -1px) rotate(9deg); }
+  65.81% { transform: translate(15px, -40px) rotate(20deg); }
+  69.23% { transform: translate(2px, -2px) rotate(8deg); }
+  72.65% { transform: translate(14px, -38px) rotate(19deg); animation-timing-function: linear; }
+  76.92% { transform: translate(0px, 0px) rotate(0deg); animation-timing-function: var(--e-out); }
+  78.63% { transform: translate(0px, -2.8px) rotate(0deg); }
+  80.77% { transform: translate(0px, 0px) rotate(0deg); animation-timing-function: var(--e-out); }
+  85.47% { transform: translate(0px, 0px) rotate(0deg); animation-timing-function: var(--e-out); }
+  86.54% { transform: translate(0px, -3.4px) rotate(0deg); animation-timing-function: linear; }
+  88.03% { transform: translate(0px, 0px) rotate(0deg); animation-timing-function: var(--e-out); }
+  91.03% { transform: translate(0px, 0px) rotate(0deg); animation-timing-function: var(--e-out); }
+  91.79% { transform: translate(0px, -5.6px) rotate(0deg); animation-timing-function: linear; }
+  93.16% { transform: translate(0px, 0px) rotate(0deg); animation-timing-function: var(--e-out); }
+  100% { transform: translate(0px, 0px) rotate(0deg); }
+}
+@keyframes shaker-beat {
+  0% { transform: translateY(0px) rotate(0deg); }
+  11.11% { transform: translateY(-1px) rotate(0deg); }
+  19.66% { transform: translateY(0px) rotate(0deg); }
+  26.5% { transform: translateY(-2px) rotate(3deg); }
+  32.05% { transform: translateY(0px) rotate(0deg); }
+  39.32% { transform: translateY(-2px) rotate(-3deg); }
+  44.87% { transform: translateY(0px) rotate(0deg); }
+  52.14% { transform: translateY(-2px) rotate(3deg); }
+  55.56% { transform: translateY(0px) rotate(0deg); }
+  59.62% { transform: translateY(-3px) rotate(-4deg); }
+  62.39% { transform: translateY(0px) rotate(0deg); }
+  66.45% { transform: translateY(-3px) rotate(4deg); }
+  69.23% { transform: translateY(0px) rotate(0deg); }
+  73.29% { transform: translateY(-3px) rotate(-4deg); }
+  76.92% { transform: translateY(0px) rotate(0deg); }
+  77.99% { transform: translateY(-2px) rotate(2deg); }
+  79.49% { transform: translateY(0px) rotate(0deg); }
+  85.68% { transform: translateY(0px) rotate(0deg); }
+  87.82% { transform: translateY(-7.8px) rotate(2deg); animation-timing-function: var(--e-shake); }
+  90.17% { transform: translateY(0px) rotate(0deg); }
+  91.11% { transform: translateY(0px) rotate(0deg); }
+  92.52% { transform: translateY(-13.3px) rotate(-2deg); }
+  94.66% { transform: translateY(-12.4px) rotate(1deg); }
+  96.79% { transform: translateY(-13px) rotate(0deg); animation-timing-function: var(--e-shake); }
+  100% { transform: translateY(1.8px) rotate(0deg); }
+}
+@keyframes shaker-cap-off {
+  0% { opacity: 1; transform: translate(0px, 1.8px) rotate(0deg); animation-timing-function: linear; }
+  5.71% { opacity: 1; transform: translate(4px, -41.8px) rotate(4.5deg); animation-timing-function: linear; }
+  11.43% { opacity: 1; transform: translate(8px, -60.7px) rotate(9.1deg); animation-timing-function: linear; }
+  17.14% { opacity: 1; transform: translate(12px, -67.1px) rotate(13.6deg); animation-timing-function: linear; }
+  22.86% { opacity: 1; transform: translate(16px, -69.3px) rotate(18.2deg); animation-timing-function: linear; }
+  28.57% { opacity: 1; transform: translate(20px, -69.9px) rotate(22.7deg); animation-timing-function: linear; }
+  34.29% { opacity: 1; transform: translate(27px, -69.8px) rotate(34.5deg); animation-timing-function: linear; }
+  40% { opacity: 1; transform: translate(37px, -68.1px) rotate(53.5deg); animation-timing-function: linear; }
+  45.71% { opacity: 1; transform: translate(47px, -64.7px) rotate(72.5deg); animation-timing-function: linear; }
+  51.43% { opacity: 1; transform: translate(57px, -59.7px) rotate(91.5deg); animation-timing-function: linear; }
+  57.14% { opacity: 1; transform: translate(67px, -53px) rotate(110.5deg); animation-timing-function: linear; }
+  62.86% { opacity: 0.87; transform: translate(77px, -44.6px) rotate(129.5deg); animation-timing-function: linear; }
+  68.57% { opacity: 0.73; transform: translate(87px, -34.5px) rotate(148.5deg); animation-timing-function: linear; }
+  74.29% { opacity: 0.6; transform: translate(97px, -22.7px) rotate(167.5deg); animation-timing-function: linear; }
+  80% { opacity: 0.47; transform: translate(107px, -9.3px) rotate(186.5deg); animation-timing-function: linear; }
+  85.71% { opacity: 0.33; transform: translate(117px, 5.8px) rotate(205.5deg); animation-timing-function: linear; }
+  91.43% { opacity: 0.2; transform: translate(127px, 22.6px) rotate(224.5deg); animation-timing-function: linear; }
+  100% { opacity: 0; transform: translate(142px, 51px) rotate(253deg); }
+}
+@keyframes shaker-glass-rise {
+  0% { transform: translate(0, 60.2px) scale(0.6); animation-timing-function: linear; }
+  3.7% { transform: translate(0, 44.2px) scale(0.6); animation-timing-function: linear; }
+  7.41% { transform: translate(0, 30.3px) scale(0.6); animation-timing-function: linear; }
+  11.11% { transform: translate(0, 19.2px) scale(0.6); animation-timing-function: linear; }
+  14.81% { transform: translate(0, 11px) scale(0.748); animation-timing-function: linear; }
+  18.52% { transform: translate(0, 5.2px) scale(0.988); animation-timing-function: linear; }
+  22.22% { transform: translate(0, 1.2px) scale(1); animation-timing-function: linear; }
+  25.93% { transform: translate(0, -1.7px) scale(1); animation-timing-function: linear; }
+  29.63% { transform: translate(0, -3.7px) scale(1); animation-timing-function: linear; }
+  33.33% { transform: translate(0, -5.1px) scale(1); animation-timing-function: linear; }
+  37.04% { transform: translate(0, -6.1px) scale(1); animation-timing-function: linear; }
+  40.74% { transform: translate(0, -6.8px) scale(1); animation-timing-function: linear; }
+  44.44% { transform: translate(0, -7.3px) scale(1); animation-timing-function: linear; }
+  48.15% { transform: translate(0, -7.6px) scale(1); animation-timing-function: linear; }
+  51.85% { transform: translate(0, -7.8px) scale(1); animation-timing-function: linear; }
+  55.56% { transform: translate(0, -7.9px) scale(1); animation-timing-function: linear; }
+  59.26% { transform: translate(0, -8px) scale(1); animation-timing-function: linear; }
+  62.96% { transform: translate(0, -7.2px) scale(1); animation-timing-function: linear; }
+  66.67% { transform: translate(0, -4.4px) scale(1); animation-timing-function: linear; }
+  70.37% { transform: translate(0, -2.5px) scale(1); animation-timing-function: linear; }
+  74.07% { transform: translate(0, -1.4px) scale(1); animation-timing-function: linear; }
+  77.78% { transform: translate(0, -0.8px) scale(1); animation-timing-function: linear; }
+  81.48% { transform: translate(0, -0.4px) scale(1); animation-timing-function: linear; }
+  85.19% { transform: translate(0, -0.2px) scale(1); animation-timing-function: linear; }
+  88.89% { transform: translate(0, -0.1px) scale(1); animation-timing-function: linear; }
+  92.59% { transform: translate(0, 0px) scale(1); animation-timing-function: linear; }
+  96.3% { transform: translate(0, 0px) scale(1); animation-timing-function: linear; }
+  100% { transform: translate(0, 0px) scale(1); }
+}
+@keyframes shaker-glass-sink {
+  0% { transform: translate(0, 0px) scale(1); animation-timing-function: linear; }
+  11.11% { transform: translate(0, 24.8px) scale(0.6); animation-timing-function: linear; }
+  22.22% { transform: translate(0, 41.6px) scale(0.6); animation-timing-function: linear; }
+  33.33% { transform: translate(0, 50.8px) scale(0.6); animation-timing-function: linear; }
+  44.44% { transform: translate(0, 55.5px) scale(0.6); animation-timing-function: linear; }
+  55.56% { transform: translate(0, 58px) scale(0.6); animation-timing-function: linear; }
+  66.67% { transform: translate(0, 59.2px) scale(0.6); animation-timing-function: linear; }
+  77.78% { transform: translate(0, 59.9px) scale(0.6); animation-timing-function: linear; }
+  88.89% { transform: translate(0, 60.1px) scale(0.6); animation-timing-function: linear; }
+  100% { transform: translate(0, 60.2px) scale(0.6); }
+}
+/* ── end of computed keyframes ── */
