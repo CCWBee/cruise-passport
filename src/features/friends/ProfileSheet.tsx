@@ -59,6 +59,9 @@ export function ProfileSheet({ onClose }: { onClose: () => void }) {
 
   // The only promise the app makes about the server. Forgetting the identity when the erasure failed
   // would leave every row on the server under a code no phone can reach again, and say nothing.
+  // On success resetSocialIdentity() also clears enteredCruise, so App swaps to the entry screen and
+  // this sheet unmounts before the status line below can show: the entry screen, whose consent line
+  // says what Done will do, is the confirmation.
   const erase = async () => {
     setStatus('Deleting…')
     if (!(await deleteMyData())) { setStatus('Could not delete your data. Try again when you are online.'); return }

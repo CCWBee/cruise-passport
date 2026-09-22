@@ -74,7 +74,7 @@ export function PrivacySheet({ onClose }: { onClose: () => void }) {
         {server && (
           <section className="section">
             <div className="section-head"><h3 className="t-h2">Deleting it</h3></div>
-            <p className="t-body">Open Your details on the Crew tab and tap Delete my data. It removes your profile, your shared passport, your private restore copy, your own crew list and your group memberships from the server, and deletes any group you set up. Once your profile is gone, nobody can look your code up again and nobody who had added you can still see you. The copy on your phone stays until you clear it yourself. Nothing expires on its own: what is stored stays until you remove it.</p>
+            <p className="t-body">Open Your details on the Crew tab and tap Delete my data. It removes your profile, your shared passport, your private restore copy, your own crew list and your group memberships from the server, and deletes any group you set up. Once your profile is gone, nobody can look your code up again and nobody who had added you can still see you. The copy on your phone stays until you clear it yourself. Nothing expires on its own: what is stored stays until you remove it. The app then asks again before anything leaves this phone.</p>
             {PRIVACY_CONTACT && (
               <p className="t-body">If you signed in with Google, your email address stays with the sign-in service until the account itself is removed, which is done by hand. Ask at the address below and it will be.</p>
             )}
@@ -86,7 +86,7 @@ export function PrivacySheet({ onClose }: { onClose: () => void }) {
           <p className="t-body">This app is run by one person, not a company. The app is for adults; it is not aimed at anyone under eighteen.{PRIVACY_CONTACT ? ` Questions, or a request to see or remove your data: ${PRIVACY_CONTACT}.` : ''}</p>
         </section>
 
-        <p className="t-meta privacy-foot">Updated 10 September 2026.</p>
+        <p className="t-meta privacy-foot">Updated 22 September 2026.</p>
       </div>
     </Sheet>
   )

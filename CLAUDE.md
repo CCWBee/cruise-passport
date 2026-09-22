@@ -98,12 +98,17 @@ Accepted exceptions live in `tools/qa/design-allow.txt` with their reasons.
   anonymous users; purge only anonymous sessions created that day with profile name Alex and zero
   edges or memberships. Real users have existed since 3 September, so never blanket-purge. Pass
   `?seed&nosync` to keep a headless run off the backend entirely.
-  **Tap Delete my data on a page loaded with `?nosync`, or the QA user you just erased is replaced by
-  one you cannot reach.** `deleteMyData` signs the session out and `resetSocialIdentity()` mints a new
-  local identity, so with sync live the next round trip immediately signs in a *fresh* anonymous user
-  and republishes `profiles`, `passports` and `backups` under it, name and all. That is right for a
-  real guest and wrong for a QA run: close the browser context and its rows are orphaned, because
-  own-row RLS means only that session could have deleted them. Measured on 10 September, both ways.
+  **Delete my data no longer replaces the erased user with one you cannot reach.** Until 22 September
+  `deleteMyData` signed the session out and `resetSocialIdentity()` minted a new local identity, so
+  with sync live the next round trip signed in a *fresh* anonymous user and republished `profiles`,
+  `passports` and `backups` under it, name and all; close the browser context and those rows were
+  orphaned, because own-row RLS means only that session could have deleted them (measured on 10
+  September, both ways). `resetSocialIdentity()` now also sets `enteredCruise` false, so the app
+  returns to the entry screen with the name prefilled and `sync.ts`'s `mode()` stays `'off'` until
+  Done: a stranger is asked again before anything leaves the phone, and erasing on a live-sync page
+  leaves nothing behind. Tapping Done after that does sign in a new anonymous user, so a QA run that
+  goes past the entry screen still owes a second erase. The check is the live run in
+  `docs/specs/2026-09-17-polish.md` item 1.
 - **Accounts:** guest first, and signing in stays optional. "Keep your passport" in the Profile sheet
   offers Google: an anonymous session upgrades through `linkIdentity`, so the user id and every row
   under it survive. The merge is pure and tested (`src/state/restore.ts`, `npm test`); `sync.ts` owns

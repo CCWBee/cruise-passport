@@ -392,9 +392,15 @@ export const useStore = create<State>()(
         return { me: r.me, custom: r.custom, profile: r.profile, friends, seenMedals }
       }),
       // After a server-side erasure: come back as a stranger, so nothing left behind resolves to me.
+      // A stranger has not consented to anything, so the first-open screen asks again before the
+      // new identity leaves the phone: enteredCruise goes false in the same set as the new code, so
+      // the store subscription in sync.ts sees mode() already 'off' and schedules nothing. Without
+      // it the next round trip signed in a fresh anonymous user and republished the name under it.
+      // Delete my data is the only caller; the kept name prefills the entry screen's field.
       resetSocialIdentity: () => set((s) => ({
         friends: [], groups: [], pendingInvites: [], pendingUnfriends: [],
         profile: { ...s.profile, id: ensureMyId({ ...s.profile, id: '' }), code: genCode() },
+        enteredCruise: false,
       })),
 
       setFilters: (f) => set((s) => ({ filters: { ...s.filters, ...f } })),
