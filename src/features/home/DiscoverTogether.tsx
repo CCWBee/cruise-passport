@@ -43,11 +43,10 @@ export function DiscoverTogether({ onOpen }: { onOpen: (id: string) => void }) {
         {reach.onlyFriends > 0 && <> · <b className="tnum">{reach.onlyFriends}</b> that only they have tried</>}
       </p>
 
+      {/* no dots on these rows: the meta line already names the friend, and the drink names sit on
+          the section's own left edge */}
       {recs.map((p) => (
         <button key={p.drink.id} type="button" className="row pressable" onClick={() => onOpen(p.drink.id)}>
-          <span className="fstack disc-rec-dots">
-            {p.by.slice(0, 2).map((s) => <FriendDot key={s.id} name={s.name} colour={s.colour} size={28} />)}
-          </span>
           <span className="row-copy">
             {/* the drink is the object of the row, so it reads at the heading size Drinks uses */}
             <span className="t-h2">{p.drink.name}</span>

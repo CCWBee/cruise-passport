@@ -1,6 +1,6 @@
 /* Home: the instrument's front panel. The sea poster carries the one primary action; below it,
-   three facts, the bar you are standing in, what is next, and Wrapped. Everything under the hero
-   sits flat on the ground: no box, no card, no plate. */
+   aboard, three facts, then what to try, the bar you are standing in, what is next, and Wrapped.
+   Everything under the hero sits flat on the ground: no box, no card, no plate. */
 /* the masthead above Home now carries the safe-area inset, so the two do not stack. var(--s3) is
    .page's own value (shell.css), which is what makes Home's masthead-to-greeting gap identical to
    Crew's masthead-to-h1 gap. */
@@ -15,9 +15,6 @@
 .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s3); }
 .fact-v { font-size: var(--f-title); font-weight: 600; line-height: 1.2; letter-spacing: -.01em; }
 .fact-l { margin-top: var(--s1); font-size: var(--f-meta); line-height: 1.4; color: var(--ink-2); }
-
-/* the stars sit on a meta line as a flex run, so they keep the line's height */
-.home-stars { display: inline-flex; align-items: center; vertical-align: -2px; color: var(--gold); }
 
 /* ── the new medal: the coin beside the line that names it ──
    The coin is the same Medallion the badge sheet turns, at row scale, with the flat disc the

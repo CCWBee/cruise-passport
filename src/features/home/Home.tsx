@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { SeaHero } from './SeaHero'
 import { useStore, useAllDrinks } from '../../state/store'
 import {
-  computeStats, nextBadge, countOn, lastVenueOn, venueProgress, biggestBar, deckCount,
+  computeStats, nextBadge, countOn, lastVenueOn, venueProgress, biggestBar,
   dayPart, greetingWord, firstName, newMedals, topMedal, crewToday, syncedAgo,
   type NextBadge,
 } from '../../state/stats'
@@ -11,7 +11,6 @@ import { useSources, pickedForYou } from '../../state/social'
 import { DAYS, START, today, nowHour, VENUES, VENUE_KEYS } from '../../data/model'
 import { useCountUp } from '../../ui/useCountUp'
 import { FriendDot } from '../../ui/FriendDot'
-import { IconStar } from '../../ui/Icon'
 // the flat coin, the Suspense fallback for the 3D one: the same object the Badges grid draws
 import { MedalDisc } from '../badges/Badges'
 import { DrinkSheet } from '../drinks/DrinkSheet'
@@ -32,7 +31,7 @@ const drinkVenue = (key: string) => VENUES[key]?.name || key
 function countdown(): { text: ReactNode } {
   const i = DAYS.indexOf(today())
   // DAYS.length, not 15: a ten-day sailing says ten, and the Sun Princess still says fifteen.
-  if (i > -1) return { text: <>Day <b>{i + 1}</b> of {DAYS.length} aboard</> }
+  if (i > -1) return { text: <>Day <b>{i + 1}</b> of {DAYS.length}</> }
   const d = Math.ceil((+new Date(START + 'T00:00:00') - +new Date(today() + 'T00:00:00')) / 86400000)
   if (d > 0) return { text: <>Sails in <b>{d}</b> day{d === 1 ? '' : 's'}</> }
   return { text: <>Voyage complete</> }
@@ -97,8 +96,6 @@ export function Home() {
   // themselves stay HTML, so the CSS-glass fallback is unchanged when there is no WebGL.
   const readoutRef = useRef<HTMLDivElement>(null)
   const countRef = useRef<HTMLParagraphElement>(null)
-  const best = s.best
-  const bestRating = best ? me.entries[best.id]?.rating || 0 : 0
 
   // ── the bar module. Aboard it is the venue of the last drink written today; with nothing
   // written today it falls back to the bar with most logged, and before sailing to the longest
@@ -113,8 +110,6 @@ export function Home() {
 
   // ── up next: the badge nearest to earned, measured the way the Badges screen measures it
   const nb = useMemo(() => nextBadge(s.badgeStat), [s.badgeStat])
-  // the top bar row is dropped when the module above already names that venue
-  const showTopBar = !!s.favVenue && s.favVenue !== barKey
 
   // ── the new medal: earned since the guest last looked. One module, the highest tier of the
   // batch, the rest counted in its meta.
@@ -162,28 +157,10 @@ export function Home() {
   // loved it, or it is in the spirit you rate highest). Renders only when there is a real basis.
   const picks = useMemo(() => pickedForYou(me, srcs), [me, srcs])
 
-  // Module 2's three facts are true only when there is something to count. With no venues at all
-  // before sailing, and with no bars aboard, every one of them is zero.
+  // Aboard, module 2's three facts are true only when there is a bar to count; with none, every
+  // one of them is zero. Before sailing the module is only the way to a first venue, so it renders
+  // only when there is no venue at all.
   const shipZero = aboard ? s.barsTotal === 0 : VENUE_KEYS.length === 0
-
-  // the top drink: a row either way. With a rating it opens the sheet; empty, it goes to the
-  // list that fills it, so the empty state ships the one action that ends it.
-  const topDrink = (
-    <span className="row-copy">
-      <span className="t-strong">{best ? best.name : 'No top drink yet'}</span>
-      <span className="t-meta">
-        {best ? (
-          <>
-            <span className="home-stars" aria-label={`${bestRating} out of 5`}>
-              {Array.from({ length: bestRating }, (_, i) => <IconStar key={i} size={13} filled />)}
-            </span>
-            {' · '}
-            {drinkVenue(best.venue)}
-          </>
-        ) : 'Rate a drink and it appears here'}
-      </span>
-    </span>
-  )
 
   return (
     <div className="wrap page home">
@@ -209,45 +186,35 @@ export function Home() {
         </Link>
       </div>
 
-      <section className="section">
-        <div className="section-head"><h2 className="t-h2">{aboard ? 'Today' : 'The ship'}</h2></div>
-        {/* The heading stays either way; what changes is the row beneath, in the two cases where
-            the three facts would all be structural zeros, which DESIGN.md forbids outright. Aboard
-            the test is barsTotal and not the venue count, because a sailing whose venues are all
-            restaurants has venues and no bars. It is Home's own empty-state row (the "No top drink
-            yet" row below) and needs no wrapper: Home's rows sit as siblings of a .section-head and
-            are already squared, so a wrapper would make this the one rounded thing on the screen. */}
-        {shipZero ? (
-          <Link to="/ship" className="row pressable" viewTransition>
-            <span className="row-copy">
-              <span className="t-strong">{aboard ? 'Add a bar' : 'Add your first venue'}</span>
-              <span className="t-meta">{aboard ? 'Nothing to check in at on this sailing yet' : 'Bars, cafés and restaurants you will drink at'}</span>
-            </span>
-          </Link>
-        ) : (
-        <div className="facts">
-          {aboard ? (
-            // Aboard, three numbers that move by the day. "Day n of 15" is not among them: the
-            // hero chip already says it.
-            <>
-              <Fact value={countOn(me, day)} label="logged today" />
+      {/* Module 2. Aboard it is Today, three numbers that move by the day. Before sailing there is
+          no day, no streak and nothing logged, and the ship's own counts do not change between
+          opens or say what to do now (Ship holds them), so the module is only the way to a first
+          venue and is absent once there is one: For you moves up into its place. The empty row is
+          the one case where the facts would all be structural zeros, which DESIGN.md forbids
+          outright; aboard the test is barsTotal and not the venue count, because a sailing whose
+          venues are all restaurants has venues and no bars. The row needs no wrapper: Home's rows
+          sit as siblings of a .section-head and are already squared, so a wrapper would make this
+          the one rounded thing on the screen. */}
+      {(aboard || shipZero) && (
+        <section className="section">
+          <div className="section-head"><h2 className="t-h2">{aboard ? 'Today' : 'The ship'}</h2></div>
+          {shipZero ? (
+            <Link to="/ship" className="row pressable" viewTransition>
+              <span className="row-copy">
+                <span className="t-strong">{aboard ? 'Add a bar' : 'Add your first venue'}</span>
+                <span className="t-meta">{aboard ? 'Nothing to check in at on this sailing yet' : 'Bars, cafés and restaurants you will drink at'}</span>
+              </span>
+            </Link>
+          ) : (
+            // "Day n of 15" is not among the three: the hero chip already says it
+            <div className="facts">
+              <Fact value={countOn(me, day)} label="logged" />
               <Fact value={s.streak} label="day streak" />
               <Fact value={`${s.bars} of ${s.barsTotal}`} label="bars visited" />
-            </>
-          ) : (
-            // Before sailing there is no day, no streak and nothing logged, and "drinks to go"
-            // is only the hero's own "58 of 214" turned round. So the row describes the ship:
-            // three counts that are true and useful on a cold open with an empty passport, and
-            // that lead into "Where to start" below.
-            <>
-              <Fact value={s.barsTotal} label="bars" />
-              <Fact value={s.restTotal} label="restaurants" />
-              <Fact value={deckCount()} label="decks" />
-            </>
+            </div>
           )}
-        </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* The section renders for the shelf or for the shaker alone: for a guest with no ratings and
           no crew there is no shelf, and the shaker is then the most useful thing on the screen, so
@@ -270,7 +237,11 @@ export function Home() {
                   >
                     <span className="rec-reason">{p.reason}</span>
                     <span className="rec-name t-strong">{p.drink.name}</span>
-                    <span className="rec-meta t-meta">{drinkVenue(p.drink.venue)} · {p.drink.spirits[0] || p.drink.category}</span>
+                    {/* a taste pick's reason already names the spirit, so its meta is the venue
+                        alone; a crew pick's reason names a person, so the spirit is new there */}
+                    <span className="rec-meta t-meta">
+                      {p.kind === 'taste' ? drinkVenue(p.drink.venue) : `${drinkVenue(p.drink.venue)} · ${p.drink.spirits[0] || p.drink.category}`}
+                    </span>
                   </button>
                 </li>
               ))}
@@ -278,7 +249,9 @@ export function Home() {
           )}
           {/* the playful last item of the section that already exists to suggest drinks, so it
               borrows that heading and adds none. Ink only: Log a drink keeps the screen's coral.
-              Its own wrapper, so .row:not(:only-child) leaves a row that stands alone at radius 12. */}
+              Its own wrapper, so .row:not(:only-child) leaves a row that stands alone at radius 12.
+              One line: the Shake sheet's meta line says what the shaker does, and a row that
+              opens a sheet does not repeat that sheet's meta line. */}
           {drinks.length > 0 && (
             <div className="shake-row">
               <button
@@ -289,7 +262,6 @@ export function Home() {
               >
                 <span className="row-copy">
                   <span className="t-strong">Shake for a drink</span>
-                  <span className="t-meta">The shaker picks one you have not tried</span>
                 </span>
               </button>
             </div>
@@ -343,100 +315,74 @@ export function Home() {
         </section>
       )}
 
-      <section className="section">
-        <div className="section-head"><h2 className="t-h2">Up next</h2></div>
+      {/* What comes next: the nearest badge and the crew's day. The top drink and the top bar are
+          retrospective, and Stats shows both, so they are not here; with no badge in reach and
+          nobody logging today the section has nothing to say and does not render. */}
+      {(nb || crew.length > 0) && (
+        <section className="section">
+          <div className="section-head"><h2 className="t-h2">Up next</h2></div>
 
-        {nb && (
-          <Link
-            to={`/badges?badge=${nb.badge.id}`}
-            className="row pressable"
-            viewTransition
-            aria-label={`${nb.badge.name}, ${nb.cur} of ${nb.need}`}
-          >
-            <span className="row-copy">
-              <span className="t-strong">{nb.badge.name}</span>
-              <span className="t-meta">{badgeRemainder(nb)}</span>
-              {/* the remainder is already in words above, so the bar carries the count for
-                  assistive technology only; the row never says the same number twice */}
-              <span
-                className="meter"
-                role="progressbar"
-                aria-label={`${nb.cur} of ${nb.need}`}
-                aria-valuemin={0}
-                aria-valuemax={nb.need}
-                aria-valuenow={Math.min(nb.cur, nb.need)}
-              >
-                <span style={{ width: `${nb.pct}%` }} />
-              </span>
-            </span>
-          </Link>
-        )}
-
-        {best ? (
-          <button type="button" className="row pressable" onClick={() => setOpenId(best.id)}>
-            {topDrink}
-          </button>
-        ) : (
-          <Link
-            to="/drinks"
-            className="row pressable"
-            viewTransition
-            aria-label="No top drink yet, rate a drink"
-          >
-            {topDrink}
-          </Link>
-        )}
-
-        {/* a bar name opens that bar, here as in the module above: two rows that look the same
-            on one screen must not do two different things */}
-        {showTopBar && (
-          <button
-            type="button"
-            className="row pressable"
-            onClick={() => setOpenVenue(s.favVenue!)}
-            aria-label={`${drinkVenue(s.favVenue!)}, ${s.favVenueN} drinks logged`}
-          >
-            <span className="row-copy">
-              <span className="t-strong">{drinkVenue(s.favVenue!)}</span>
-              <span className="t-meta tnum">{s.favVenueN} drinks logged</span>
-            </span>
-          </button>
-        )}
-
-        {/* one line per crew member who logged today: the same dot, name and meta line the crew
-            screen's "Sailing with" rows use, so a person reads the same way on both */}
-        {crew.map((c) => {
-          // "at" when every one of today's drinks was there, "mostly" when more than half were, and
-          // nothing at all when the day was spread: a hedge where the data is exact would be as
-          // dishonest as a fact where it is not, and "mostly" on a three-way tie is neither
-          const where = !c.venue ? ''
-            : c.onlyVenue ? ` at ${drinkVenue(c.venue)}`
-              : `, mostly ${drinkVenue(c.venue)}`
-          const synced = c.syncedAt ? syncedAgo(c.syncedAt) : ''
-          const line = `${c.n} today${where}${synced ? ` · synced ${synced}` : ''}`
-          // spoken, the middle dot is gone and "synced" needs its verb, so the clauses are written
-          // out rather than the printed line read aloud
-          const spoken = [c.name, `${c.n} today${where}`, synced && `last synced ${synced}`, 'open your crew']
-            .filter(Boolean).join(', ')
-          return (
+          {nb && (
             <Link
-              key={c.id}
-              to="/social"
+              to={`/badges?badge=${nb.badge.id}`}
               className="row pressable"
               viewTransition
-              aria-label={spoken}
+              aria-label={`${nb.badge.name}, ${nb.cur} of ${nb.need}`}
             >
-              <FriendDot name={c.name} colour={c.colour} size={28} />
               <span className="row-copy">
-                {/* .t-strong, not Social's .t-body: inside one list the primary line reads one way,
-                    and the badge, drink and bar rows above are 17/600 */}
-                <span className="t-strong">{c.name}</span>
-                <span className="t-meta tnum">{line}</span>
+                <span className="t-strong">{nb.badge.name}</span>
+                <span className="t-meta">{badgeRemainder(nb)}</span>
+                {/* the remainder is already in words above, so the bar carries the count for
+                    assistive technology only; the row never says the same number twice */}
+                <span
+                  className="meter"
+                  role="progressbar"
+                  aria-label={`${nb.cur} of ${nb.need}`}
+                  aria-valuemin={0}
+                  aria-valuemax={nb.need}
+                  aria-valuenow={Math.min(nb.cur, nb.need)}
+                >
+                  <span style={{ width: `${nb.pct}%` }} />
+                </span>
               </span>
             </Link>
-          )
-        })}
-      </section>
+          )}
+
+          {/* one line per crew member who logged today: the same dot, name and meta line the crew
+              screen's "Sailing with" rows use, so a person reads the same way on both */}
+          {crew.map((c) => {
+            // "at" when every one of today's drinks was there, "mostly" when more than half were, and
+            // nothing at all when the day was spread: a hedge where the data is exact would be as
+            // dishonest as a fact where it is not, and "mostly" on a three-way tie is neither
+            const where = !c.venue ? ''
+              : c.onlyVenue ? ` at ${drinkVenue(c.venue)}`
+                : `, mostly ${drinkVenue(c.venue)}`
+            const synced = c.syncedAt ? syncedAgo(c.syncedAt) : ''
+            const line = `${c.n} today${where}${synced ? ` · synced ${synced}` : ''}`
+            // spoken, the middle dot is gone and "synced" needs its verb, so the clauses are written
+            // out rather than the printed line read aloud
+            const spoken = [c.name, `${c.n} today${where}`, synced && `last synced ${synced}`, 'open your crew']
+              .filter(Boolean).join(', ')
+            return (
+              <Link
+                key={c.id}
+                to="/social"
+                className="row pressable"
+                viewTransition
+                aria-label={spoken}
+              >
+                <FriendDot name={c.name} colour={c.colour} size={28} />
+                <span className="row-copy">
+                  {/* .t-strong, not Social's .t-body: inside one list the primary line reads one way,
+                      and the badge row above is 17/600 */}
+                  <span className="t-strong">{c.name}</span>
+                  <span className="t-meta tnum">{line}</span>
+                </span>
+              </Link>
+            )
+          })}
+        </section>
+      )}
 
       <WrappedTeaser />
 
