@@ -45,6 +45,10 @@
 @media (prefers-reduced-motion: reduce) {
   .sea-ship { animation: none; transform: translateY(-86%); }
 }
+/* Where the shader runs, the ship rides its swell instead: SeaHero sets the transform every frame
+   from the water height at the stern and the bow, so the clock above stands down, and it pitches
+   about its waterline rather than its middle */
+.sea-ship.is-riding { animation: none; transform-origin: 50% 90%; }
 
 /* The three things floating on the water are the chrome layer: the water moves under them, so
    they are the app's small liquid glass. Contrast is bought with film, not by darkening the ink,

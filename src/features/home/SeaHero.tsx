@@ -34,6 +34,16 @@ float noise(vec2 p){
              mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x), f.y);
 }
 
+// The water's height above the tide line, in canvas units. One long swell carries the ship, about one
+// and a half crests across the hero and a tenth of its height from trough to crest; a shorter wave
+// rides on it and a little chop keeps the line from reading as a drawn curve. swell() in the script
+// below is this function term for term, which is how the liner rides the water the guest sees.
+float swell(float x, float t){
+  return 0.034*sin(x*9.0  - t*0.90)
+       + 0.010*sin(x*17.0 + t*1.30 + 1.3)
+       + 0.004*sin(x*41.0 - t*2.10);
+}
+
 vec3 scene(vec2 uv, float horizon, float t, float asp){
   vec2  sunP = vec2(uSunP.x, uSunP.y);
   float ds   = length((uv - sunP) * vec2(asp, 1.0));
@@ -45,10 +55,7 @@ vec3 scene(vec2 uv, float horizon, float t, float asp){
   col += uSunC * smoothstep(uSunP.z, uSunP.z * uSunQ.x, ds) * uSunP.w;
   col += uSunC * smoothstep(uSunP.z * 2.5, 0.0, ds) * uSunQ.y;
 
-  float surf = horizon
-             + 0.012*sin(uv.x*22.0 + t*0.9)
-             + 0.008*sin(uv.x*47.0 - t*1.3)
-             + 0.006*(noise(vec2(uv.x*9.0, t*0.4)) - 0.5);
+  float surf = horizon + swell(uv.x, t);
 
   if(uv.y < surf){
     vec3 water = mix(uSeaLo, uSeaHi, clamp((uv.y-(horizon-0.42))/0.42, 0.0, 1.0));
@@ -116,6 +123,17 @@ void main(){
 }`
 
 const VERT = `attribute vec2 p; void main(){ gl_Position = vec4(p,0.0,1.0); }`
+
+/** The shader's swell() in JS, term for term: the ship reads the water height at its stern and its
+ *  bow off this, so it lifts on a crest and pitches down its face rather than bobbing on a clock of
+ *  its own. Change one, change both. */
+function swell(x: number, t: number): number {
+  return 0.034 * Math.sin(x * 9.0 - t * 0.90)
+    + 0.010 * Math.sin(x * 17.0 + t * 1.30 + 1.3)
+    + 0.004 * Math.sin(x * 41.0 - t * 2.10)
+}
+/** how much of the water's slope the liner takes as pitch (the reason is beside ride()) */
+const PITCH = 0.3
 
 function compile(gl: WebGLRenderingContext, type: number, src: string) {
   const sh = gl.createShader(type)!
@@ -251,6 +269,7 @@ export interface SeaHeroProps {
 export function SeaHero({ level, hour, chips }: SeaHeroProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
+  const shipRef = useRef<SVGSVGElement>(null)
   const targetRef = useRef(level)
   targetRef.current = level
   const hourRef = useRef(hour)
@@ -336,6 +355,33 @@ export function SeaHero({ level, hour, chips }: SeaHeroProps) {
     let raf = 0, onScreen = true, running = false, dpr = 1
     const t0 = performance.now()
 
+    // The liner rides the swell. Its stern and bow, as fractions of the hero's width, are read from
+    // its laid-out box (computed left and width, which a transform does not move) whenever the hero
+    // is sized, and each frame sets its lift and pitch from the water at those two points. The CSS
+    // bob in sea.css is the fallback where there is no shader, so it is switched off here.
+    const ship = shipRef.current
+    let stern = 0.6, bow = 0.8
+    function measureShip() {
+      if (!ship) return
+      const cs = getComputedStyle(ship), w = wrap!.clientWidth
+      const left = parseFloat(cs.left), width = parseFloat(cs.width)
+      // the hull runs from 6 to 144 of the drawing's 150
+      if (w > 0 && width > 0) { stern = (left + width * 0.04) / w; bow = (left + width * 0.96) / w }
+    }
+    function ride(t: number) {
+      if (!ship) return
+      const w = wrap!.clientWidth, h = wrap!.clientHeight
+      const ys = swell(stern, t), yb = swell(bow, t)
+      const lift = ((ys + yb) / 2) * h
+      // A liner does not lie flat along the face of a swell: its length and its mass take the edge
+      // off, so it pitches a third of the water's slope, at most about 5 degrees, while it lifts by
+      // the full height (about 6px either way). Taken whole, the slope tipped it 16 degrees, which
+      // reads as a ship foundering rather than riding.
+      const pitch = PITCH * Math.atan2((yb - ys) * h, (bow - stern) * w) * 180 / Math.PI
+      ship.style.transform = `translateY(-86%) translateY(${(-lift).toFixed(2)}px) rotate(${(-pitch).toFixed(2)}deg)`
+    }
+    if (ship) { ship.classList.add('is-riding'); measureShip() }
+
     function size() {
       dpr = Math.min(devicePixelRatio || 1, 2)
       const w = Math.round(wrap!.clientWidth * dpr), h = Math.round(wrap!.clientHeight * dpr)
@@ -371,6 +417,8 @@ export function SeaHero({ level, hour, chips }: SeaHeroProps) {
 
     function draw(now: number) {
       size(); setSky(); setChips()
+      const t = reduced ? 8 : (now - t0) / 1000
+      ride(t)
       gl!.uniform1f(uTime, (now - t0) / 1000)
       gl!.uniform1f(uLevel, shown)
       gl!.drawArrays(gl!.TRIANGLES, 0, 3)
@@ -397,7 +445,7 @@ export function SeaHero({ level, hour, chips }: SeaHeroProps) {
     io.observe(cv)
     const onVis = () => { document.hidden ? stop() : start() }
     document.addEventListener('visibilitychange', onVis)
-    const onResize = () => { readRadius(); draw(performance.now()) }
+    const onResize = () => { readRadius(); measureShip(); draw(performance.now()) }
     addEventListener('resize', onResize)
     // the chips change width as the count-up runs and as the countdown copy changes
     // width only: the count-up changes it many times a second and a radius does not move with it
@@ -413,6 +461,7 @@ export function SeaHero({ level, hour, chips }: SeaHeroProps) {
       document.removeEventListener('visibilitychange', onVis)
       removeEventListener('resize', onResize)
       els.forEach((el) => el.classList.remove('sea-gl'))
+      if (ship) { ship.classList.remove('is-riding'); ship.style.transform = '' }
       gl.deleteProgram(prog); gl.deleteShader(vs); gl.deleteShader(fs); gl.deleteBuffer(buf)
       // The GPU context is freed on a real unmount only. SheetWave drops loseContext() outright
       // because a StrictMode remount re-getContext()s the same canvas and a lost context poisons
@@ -450,7 +499,7 @@ export function SeaHero({ level, hour, chips }: SeaHeroProps) {
       <div className="sea-floor" style={cssStyle} aria-hidden />
       <canvas className="sea-canvas" ref={canvasRef} aria-hidden />
       {/* a liner riding the tide: its waterline is completion, so it rises as you sip through */}
-      <svg className="sea-ship" style={{ top: `${waterTop}%` }} viewBox="0 0 150 52" preserveAspectRatio="xMidYMax meet" aria-hidden>
+      <svg className="sea-ship" ref={shipRef} style={{ top: `${waterTop}%` }} viewBox="0 0 150 52" preserveAspectRatio="xMidYMax meet" aria-hidden>
         <path className="ship-hull" d="M6 33 H144 L133 47 Q131 49 126 49 H24 Q19 49 17 47 Z" />
         <path className="ship-deck" d="M31 33 V24 H119 V33 Z M45 24 V17 H105 V24 Z M74 17 V12 H102 V17 Z" />
         <path className="ship-window" d="M39 27h4v3h-4z M49 27h4v3h-4z M59 27h4v3h-4z M69 27h4v3h-4z M79 27h4v3h-4z M89 27h4v3h-4z M99 27h4v3h-4z" />

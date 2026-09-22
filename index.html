@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
     <meta name="theme-color" content="#FBF3E2" />
+    <!-- The app is light by design, and inverted it breaks: the glass chips and the sea hero come out as
+         black boxes. "only light" stops a browser's forced dark mode (Chrome's and Samsung Internet's
+         darken-websites settings); darkreader-lock stops the Dark Reader extension, which rewrote every
+         colour on the page in Brave on 23 September 2026. -->
+    <meta name="color-scheme" content="only light" />
+    <meta name="darkreader-lock" />
     <title>Sun Princess Cocktail Passport</title>
     <meta name="description" content="Tick off, rate and log all 214 cocktails aboard the Sun Princess (3 to 17 October 2026). Earn badges, unlock a Cruise Wrapped finale, and see what your crew loved. Works offline." />
 
