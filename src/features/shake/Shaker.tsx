@@ -107,7 +107,7 @@ export function Shaker({ phase, still = false, drink }: ShakerProps) {
           {shown && (open || phase === 'closing') && (
             <g transform={`translate(44 ${HANG})`}><g className="shaker-glass">
               <g transform={`translate(${-GLASS_W / 2} ${-GLASS_H})`}>
-                <Glass category={shown.category} fine={STROKE * 0.73} />
+                <Glass drink={shown} fine={STROKE * 0.73} />
               </g>
             </g></g>
           )}

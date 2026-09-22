@@ -26,6 +26,9 @@
 .shake-again.is-held { visibility: hidden; }
 /* the two quiet actions sit 12 apart by base.css's pair rule. The first drops .quiet-action's own 24,
    which the grid above already provides, rather than doubling it to 48. */
+/* a grid, so each button spans the sheet's width and its label centres under the answer; in block flow
+   a button shrinks to its text and sits at the left edge */
+.shake-quiets { display: grid; }
 .shake-quiets > .quiet-action:first-child { margin-top: 0; }
 
 /* The stage: one fixed box, 300 by 275, in every phase. No panel: the sheet is the container, and a

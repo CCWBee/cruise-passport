@@ -1,7 +1,8 @@
 import { useId } from 'react'
+import { glassFamily } from './glassFamily'
 
 // The prize: a glass drawn for the kind of drink, so the guest can tell what is coming before the card
-// names it. Seven families, each drawn once on a 64 by 72 box in the shaker's own idiom: one ink
+// names it. Eight families, each drawn once on a 64 by 72 box in the shaker's own idiom: one ink
 // stroke over a cream fill, and the drink itself in --line, the one shade the drawing is allowed. No
 // colour, no lettering, never IconDrinks (that glyph is the brand's funnel and draws one side of a
 // glass). They are SVG groups, not whole images, because they are painted inside the shaker's drawing,
@@ -11,17 +12,8 @@ import { useId } from 'react'
 // weight on screen whatever it is scaled to; the fine lines (a pick, the lime's segments, steam, ice)
 // are `fine`, which the caller passes in the same units.
 
-/** The families. The two Princess brand names and any category not listed take the cocktail glass. */
-const FAMILY: Record<string, Family> = {
-  Margarita: 'margarita',
-  Wine: 'wine',
-  Spritz: 'wine',
-  Beer: 'pint',
-  Coffee: 'cup',
-  Frozen: 'hurricane',
-  Mocktail: 'highball',
-}
-type Family = 'cocktail' | 'margarita' | 'wine' | 'pint' | 'cup' | 'hurricane' | 'highball'
+// Which family a drink takes is glassFamily.ts's decision (its name first, then frozen, then its
+// category), kept apart from the drawings so it can be tested.
 
 const BOX_W = 64, BOX_H = 72
 
@@ -144,10 +136,23 @@ export function HighballGlass({ fine }: { fine: number }) {
   )
 }
 
-/** The glass for a category, drawn on its 64 by 72 box. `data-glass` names the family, which is what
+/** Negronis, an Old Fashioned, a Carajillo: a short heavy tumbler, one big cube, a twist of peel on the
+ *  rim. The weight of its base is what says rocks rather than a highball cut short. */
+export function RocksGlass({ fine }: { fine: number }) {
+  return (
+    <>
+      <Bowl outline="M11 28H53L50.4 62.5Q50 66 46.5 66H17.5Q14 66 13.6 62.5Z" level={38} />
+      <path d="M14.6 58H49.4" fill="none" strokeWidth={fine} />
+      <rect x="22" y="33" width="19" height="19" rx="3" transform="rotate(-8 31.5 42.5)" strokeWidth={fine} />
+      <path d="M45 28C49 21 56 21 55 27" fill="none" />
+    </>
+  )
+}
+
+/** The glass for a drink, drawn on its 64 by 72 box. `data-glass` names the family, which is what
  *  the QA probes read back to prove the prize matched the drink. */
-export function Glass({ category, fine }: { category: string; fine: number }) {
-  const family = FAMILY[category] ?? 'cocktail'
+export function Glass({ drink, fine }: { drink: { name: string; category: string; frozen?: boolean }; fine: number }) {
+  const family = glassFamily(drink)
   return (
     <g data-glass={family}>
       {family === 'cocktail' && <CocktailGlass fine={fine} />}
@@ -157,6 +162,7 @@ export function Glass({ category, fine }: { category: string; fine: number }) {
       {family === 'cup' && <CoffeeCup fine={fine} />}
       {family === 'hurricane' && <HurricaneGlass />}
       {family === 'highball' && <HighballGlass fine={fine} />}
+      {family === 'rocks' && <RocksGlass fine={fine} />}
     </g>
   )
 }
