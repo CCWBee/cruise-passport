@@ -104,6 +104,10 @@ has to be right:
   iOS, restored on close), the sheet's scroller contains its overscroll so a pull at its top never
   reaches the page (no pull-to-refresh), `touchmove` is prevented during a drag, and the scroller
   never scrolls sideways.
+- **Coming back.** A sheet returned to after a replacement is a fresh mount, so any phase it comes
+  back to must be a still state, its end values held with nothing left to replay: ShakeSheet's
+  `is-still`, which returns from the drink sheet to the reveal with the cap off and the glass hanging
+  rather than throwing the cap again, is the worked case.
 
 ## Colour
 
@@ -127,6 +131,11 @@ Colour is semantic. A colour that means something in one place may not decorate 
 Accent area: coral covers at most one control per screen plus the active nav item. The sea hero's
 palette is its own (mirrors the GLSL) and is the poster exception.
 
+The app is light only. `color-scheme: only light` (in `base.css` and `index.html`) stops a
+browser's forced dark mode, and `darkreader-lock` stops the Dark Reader extension, which rewrote
+every colour on the page in Brave on 23 September 2026: inverted, the glass chips and the sea hero
+came out as black boxes. There is no dark palette.
+
 Retired: the fruit set as a general palette, gradient progress fills, coloured deck numbers, the
 eight-colour donut, per-toggle colours (tried is mint, everything else is ink on and off), the
 yellow glow behind the Wrapped seal.
@@ -148,22 +157,31 @@ One family (the platform's rounded or system sans; no webfont), two weights, fiv
 - No uppercase tracked labels anywhere. A section is introduced by a plain heading; a field by a
   sentence-case label at meta size; a sheet by its title and one meta line beneath it.
 - Numbers are tabular everywhere they can be compared.
-- Headings `text-wrap: balance`; body `pretty`. Clickable text never wraps to two lines.
+- Headings `text-wrap: balance`; body `pretty`, except the Wrapped crew card's facts, which balance
+  so a list of drink names never leaves one alone on its second line. Clickable text never wraps to
+  two lines.
 
 ## Iconography
 
 The drawn set in `ui/Icon.tsx` (24px grid, 1.8 stroke) is the only icon system. No emoji as UI. An
-icon appears beside text only when it adds recognition the word lacks (tried, favourite, camera).
-The nav uses icon plus label at all times.
+icon appears beside text only when it adds recognition the word lacks (tried, favourite, camera, the
+glass a drink is served in). The nav uses icon plus label at all times.
+
+The set holds a glass for each of the nine families in `src/data/glass.ts` (`IconGlassCocktail` and
+the rest, chosen by `GlassIcon`), every bowl drawn whole, both sides. `IconDrinks` is the brand's
+funnel and draws one side of a glass, which is right for the tab and wrong for a drink. The glass
+leads the drink row (`DrinkCard`, on Drinks and in the venue sheet), in `--ink-3` because it is an
+icon-only glyph, and never in a state colour: it says what kind of drink it is before a word is
+read.
 
 The shaker (`Shaker`, `Glass`) is drawn in the same idiom but is not in the set, and it takes the one
 hero stroke: 2.4 on screen for the tin and every glass, whatever the drawing is scaled to. The cap's
 grooves are its one hairline, 1.2 in `--ink-3`, and the fine details inside a glass (a pick, the
-lime's segments, steam, ice) draw at 1.75.
+lime's segments, steam, ice, the flute's bubbles, the rocks glass's heavy base) draw at 1.75.
 
 ## Motion
 
-Five authored moments and nothing else moves on its own: the ship bobbing on the sea (the sea itself,
+Five authored moments and nothing else moves on its own: the ship riding the sea (the sea itself,
 with its sky following the clock, is the app's one live effect), the SheetWave wash when a sheet
 opens, the hero count-up on first paint, the new-medal coin's single turn on Home (one rotation,
 then still), and the shaker in the Shake sheet. Everything else is feedback: press
@@ -172,9 +190,19 @@ with the shaker's written exceptions below. No overshoot or spring curves on UI 
 stagger on every screen, no chart grow-ins, no endless pulses. Under `prefers-reduced-motion` each
 effect has its own fallback that keeps the state change visible; there is no global animation kill.
 
+**The ship** rides the water rather than a clock of its own. The sea's surface is one long swell,
+about one and a half crests across the hero and a tenth of its height from trough to crest, with a
+shorter wave and a little chop on it. Each frame the liner reads the water's height at its stern and
+its bow from `swell()` in `SeaHero.tsx`, which is the shader's function term for term (change one,
+change both), and lifts by the full height, about 6px either way, while it pitches a third of the
+slope, at most about 5 degrees: taken whole, the slope tipped it 16 degrees, which read as a ship
+foundering rather than riding. Where there is no shader the CSS bob in `sea.css` is the fallback;
+under reduced motion the ship holds one position.
+
 **The shake** is the fifth, and the only one the guest starts themselves. Every time in it comes from
-`SHAKER` in `Shaker.tsx`: the sheet runs its phases on it, the rattle lays its sound on it, and
-`keyframes.mjs` writes the CSS keyframes from it, so a timing changes in one place.
+`SHAKER` in `timing.ts`: the sheet runs its phases on it and hands the rattle its times, `Shaker`
+sets the CSS durations from it, and `keyframes.mjs` writes the CSS keyframes from it, so a timing
+changes in one place.
 
 - **The shake**, 0 to 1.8s. The tin is lifted and shaken end to end over the shoulder, the way a
   cobbler is: a small dip the wrong way, then gentle, harder and violent strokes (travel of 16, then
@@ -182,7 +210,8 @@ effect has its own fallback that keeps the state change visible; there is no glo
   strainer. It is set down hard on the bar at 1.8s, on the rattle's clack, with one rebound of 2.5px.
 - **The pressure**, 1.8 to 2.3s. The dice knock from inside twice, at 1.97 and 2.1s: the tin hops
   3px, then 5px, sharper. The cap lifts off the neck on each, 7px and back, then 12px, quicker, and
-  held, and is then pressed 1.6px down into the neck for 75ms: the wind-up the pop is thrown from.
+  held, and is then pressed 1.6px down into the neck over the last 65ms: the wind-up the pop is
+  thrown from.
 - **The pop**, at 2.3s. The cap is thrown up off the neck, falls away over the right shoulder
   tumbling, and is gone 190ms after its apex. Six ink strokes draw outward from the mouth over
   160ms and have faded by 280. The tin kicks down 2px as the pressure lets go. 20ms behind the cap,
@@ -241,6 +270,28 @@ House rules apply. In addition: sentence case throughout; ration the middle dot 
 labels name the thing ("Tried", "Deck 7", "8 of 18 bars"), never the mood; no version, no "beta",
 no exclamation marks. "Tried" not "sipped".
 
+Each thing is said once. These rules come from the 22 September declutter
+(`docs/specs/2026-09-22-declutter.md`) and bind every screen and sheet:
+
+- **A row that opens a sheet does not repeat that sheet's meta line.** Home's "Shake for a drink"
+  and Crew's "Set up a group" are one line each; the sheet they open says what it is for.
+- **A sheet's meta line carries the one fact its controls do not show**, never a list of the fields
+  below it: "Only the deck and name are needed.", "Your logged drinks stay where they are.", "How
+  your crew sees you.". Every sheet keeps its one meta line; this rule chooses its wording.
+- **Placeholders are examples, never labels.** A field whose label already says what it is carries
+  none ("Your name"); where an example helps, the placeholder is the example ("Gin, liqueur", "4pm
+  to late"), and no hint repeats it.
+- **A hairline separates rows in a list and never groups inside a sheet.** Groups inside a sheet are
+  separated by space. The one hairline a sheet keeps is the one above a remove or delete in the
+  venue and sailing forms, which the registry requires.
+- **No structural zero, on any screen.** A count, chip, bar or row that can only read zero is not
+  drawn: no "0 of 0" on a venue with no drinks, no empty meter track on a venue with nothing tried,
+  no deck chip that no drink is filed on, no "0 of 18" beside an empty Earned list.
+- **A number is shown once per screen, and not on a tab another tab already covers.** The filter
+  panel carries no count because the count line beneath it is one; Ship's deck headings carry none
+  because Stats' "Where you have been" has completion by deck; the Wrapped footer carries no
+  position because the rail at the top shows it.
+
 ## Navigation
 
 Five tabs, icon and label: **Home · Drinks · Ship · Crew · You**. "You" holds Stats, Badges and Log
@@ -251,7 +302,7 @@ icon and label; there is no indicator pill and no icon lift.
 ## Screens
 
 Each screen has a five-second read, its modules in rank order, and what must be visible at
-390×844 with the nav in place (about 740px of content). Modules below the fold are still present;
+390×844 with the nav in place (about 770px of content). Modules below the fold are still present;
 they are simply not the reason the screen exists.
 
 ### Entry
@@ -264,34 +315,39 @@ it carries its own ground and its own masthead and has no nav.
    without it the screen falls back to flat `--cream` from `body` and loses the two washes and the
    grain. The screen itself is a `<main className="entry">`, so it has one landmark, as `main.view`
    does everywhere else.
-1. **Masthead** (chrome). The same component every other screen carries, pinned to the top of the
+1. **Masthead** (chrome). The same component the landing carries, pinned to the top of the
    viewport rather than part of the centred block.
 2. **The sailing.** `h1.t-title` with the ship, then one `p.t-meta` line: line, middle dot, dates.
    Sibling: a sheet's title and its one meta line. With more than one sailing in the registry the h1
    becomes "Choose your sailing" and `Select` answers it under a "Your sailing" label. The registry
    holds the published sailing plus any the guest has set up for themselves, so that branch renders
    from the moment they make one, and "Set up your own sailing" sits as one `button.row.pressable.cruise-byo`
-   beneath module 2 in either branch, in the privacy row's shape and its wrapper, with no chevron.
+   beneath module 2 in either branch, a one-line row in the privacy row's shape and its wrapper, with
+   no chevron. It has no second line: "your own sailing" says what it is, and on the single-sailing
+   branch there is no list for a second line to point at.
 3. **Name and colour.** `NameFields` inside `div.entry-fields`. On the ground, not in a `.panel`: the
    sibling is `ProfileSheet`, whose identical pair sits flat on the sheet. `NameCard` keeps its panel
    on Crew because it sits among other content there; here the form is the screen, and a box around
    the only thing present is the fourth banned tell.
 4. **What this is**, one `p.t-body`.
 5. **The consent line**, one `p.t-meta`, then the privacy note as `button.row.pressable.privacy-open`
-   with a two-line `.row-copy` and no chevron (sibling: Home's Up next rows). It sits in its own
-   wrapper, so `.row:not(:only-child)` leaves an isolated row at radius 12. The identical row is in
-   `ProfileSheet`, so the note is reached the same way from both.
+   with a one-line `.row-copy` reading "Privacy note" and no chevron. It sits in its own wrapper, so
+   `.row:not(:only-child)` leaves an isolated row at radius 12. The same row is in `ProfileSheet`, so
+   the note is reached the same way from both, with one written divergence: there it keeps
+   `PRIVACY_SUBTITLE` as a second line, and here it does not, because the consent line directly above
+   already says what leaves the phone and how to remove it.
 6. **Done**, `button.btn.btn-wide.btn-coral.pressable.entry-done`: the screen's one filled accent.
 
 24 between every one of modules 2 to 6, one rule with no exception; 8 from a heading to its content;
 16 between the two fields. No new token, no new radius, no shadow and no `backdrop-filter`, because
 the entry screen is not chrome and carries no glass.
 
-**The screen must not scroll, and the shot is the only check that counts.** At 390×844 headless
-`.entry-in` measures 643 of the 737 the body offers below the masthead on the single-sailing branch and
-669 on the multi-sailing branch (the "Set up your own sailing" row and, on the multi branch, the sailing
-Select add to it; the multi branch drops the Select's field label to stay off the scroll, its h1 being the
-label). Both leave room to spare headless. A real
+**The screen must not scroll, and a render is the only check that counts.** Measured headless at
+390×844 on 22 September, `.entry-in` is 608 of the 738 the body offers below the masthead on the
+single-sailing branch and 634 on the multi-sailing branch (572 and 598 on a build with no server);
+the "Set up your own sailing" row and, on the multi branch, the sailing Select add to it, and the
+multi branch drops the Select's field label to stay off the scroll, its h1 being the label. Both
+leave room to spare there. A real
 iPhone's insets take about 49 of that: `.app-head` carries `--safe-t`, and the body's bottom padding
 is `max(var(--s6), var(--safe-b))`. Past that the copy has to come down instead. Measure `.entry-in`
 against the body, never the document height: `.entry` is `min-height: 100dvh`, so 844 of 844 is what
@@ -315,7 +371,7 @@ genuinely is a desktop visitor for this purpose.
 
 Desktop branch, in rank order:
 
-1. **Masthead** (chrome). The same component every other screen carries, pinned to the top of the
+1. **Masthead** (chrome). The same component the entry screen carries, pinned to the top of the
    viewport rather than part of the centred block.
 2. **Title and lead.** `h1.t-title`, then one `p.muted.t-body`: Entry's "what this is" sentence
    character for character, so the two screens a cold visitor can land on answer that question
@@ -354,14 +410,13 @@ film on source order, because a code has to read under a camera on any ground. T
 `--coral-ink` anywhere on the screen: the budget is one filled control per screen and this screen has
 none, because its primary action happens on a different device.
 
-Fold, desktop, at **1280×800**: modules 1 to 3, the plate included, ending at about 502. The install
-steps and the way on sit below it on a short window, and that is the intended shape rather than a
-defect: the code is the reason the screen exists and the steps are what you read after you have
-scanned it. The whole screen is about 816, so it runs past an 800px window, which is why the shot
-asserts the plate against the fold and not a document height. 390×844 is not a viewport this branch
-can be seen at, since `(min-width: 900px)` excludes it; it is shot there only to prove nothing
-overflows when it is squeezed. Fold, phone, at **390×844**: all four rendered modules, about 470 of
-844, nothing below the fold.
+Fold, desktop, at **1280×800**: modules 1 to 3, the plate included. The install steps and the way on
+may sit below it on a short window, and that is the intended shape rather than a defect: the code is
+the reason the screen exists and the steps are what you read after you have scanned it. That is why
+the plate is checked against the fold and not against a document height. 390×844 is not a viewport
+this branch can be seen at, since `(min-width: 900px)` excludes it; it is rendered there only to
+prove nothing overflows when it is squeezed. Fold, phone, at **390×844**: all four rendered modules,
+nothing below the fold.
 
 Nothing on this screen collects, sends or stores anything, so it carries no consent line and no
 privacy row: the way on leads to Entry, which asks properly. It makes no network request either, so
@@ -370,10 +425,9 @@ there is no offline state to write and none may be added.
 ### Home
 
 Read: what day is it, where am I, what do I do now. Home is the instrument's front panel, not a
-summary; every module either answers one of those or leads to the screen that does. The masthead sits
-above it as chrome, as it does on every other screen, so a visitor arriving cold on the landing
-screen is told what the app is; the rank order is unchanged by it, and the greeting is still Home's
-first content line.
+summary; every module either answers one of those or leads to the screen that does. Nothing sits
+above it: the greeting, when the guest has a name, is the screen's first line, and otherwise the
+hero is.
 
 1. **The sea hero** (the poster, kept): countdown or day chip top right, the percentage readout
    bottom left, and bottom right the one primary action on the app, **"Log a drink"**, a
@@ -390,9 +444,11 @@ first content line.
    before it says what.
 2. **Today**, one row on the ground, three facts. Aboard, three numbers that move by the day:
    drinks today, day streak, bars visited. "Day 3 of 15" is not among them; the hero chip already
-   says it. Before sailing there is no day, no streak and nothing logged, and "drinks to go" is only
-   the hero's "58 of 214" turned round, so the row becomes **The ship**: bars, restaurants, decks.
-   Never a number the hero shows, and never a structural zero.
+   says it. Before sailing there is no day, no streak and nothing logged, so the module is only the
+   way to a first venue: with no venue it is one row, "Add your first venue", under "The ship"; with
+   any venue it is absent and For you takes its place. The ship's own counts do not change between
+   opens and do not say what to do now, and Ship holds them. Never a number the hero shows, and never
+   a structural zero.
 3. **For you**, a horizontal shelf of up to six drinks to try next, each an independently opened,
    swipe-snapped card (the one boxed thing in the content layer, earning its boundary as an
    interactive unit). It sits here, above Last bar, because "what should I drink next" is the
@@ -403,9 +459,10 @@ first content line.
    whiskey", three-plus of your own fives). The shelf renders only when there is a real personal
    basis, so it is absent for a fresh guest with no ratings and no crew: never a generic "you might
    like". At the foot of the section, after the shelf, one `button.row.pressable.shake-open` in its
-   own wrapper, no chevron, `aria-haspopup="dialog"`, reading "Shake for a drink" over "The shaker
-   picks one you have not tried", which opens the Shake sheet. It borrows this heading and adds
-   none, because this is the section that already exists to suggest drinks, and it is ink only: Log
+   own wrapper, no chevron, `aria-haspopup="dialog"`, reading "Shake for a drink" on one line, which
+   opens the Shake sheet; what the shaker does is that sheet's meta line, and the row does not repeat
+   it (Copy). It borrows this heading and adds none, because this is the section that already exists
+   to suggest drinks, and it is ink only: Log
    a drink keeps the screen's coral. When there is no shelf the section still renders, the heading
    and this one row, because for that guest the shaker is the most useful thing on the screen. With
    no catalogue at all there is nothing to shake and nothing to suggest, and the section goes.
@@ -418,18 +475,22 @@ first content line.
    tapping to the badge sheet. It is the app's reward moment and the one place Home may be
    spectacular; it shows once per medal (a seen-set in the store) and then folds back into Up next.
 6. **Up next**: the badge nearest to earned as a row with a 3px bar ("2 more gins for Gin
-   Explorer"), the top drink and top bar rows as today, and, when there is a crew, one line per
-   crew member who logged today, "Sam · 3 today, mostly Crooners · synced 20 min ago" (entries carry
-   a date, not a time, so the venue is where most of today's drinks were, and the time is their
-   passport's `exportedAt`, which is honest as "last synced"), opening Crew. Where the family is,
-   as far as the data can say, without asking.
+   Explorer") and, when there is a crew, one line per crew member who logged today, "Sam · 3 today,
+   mostly Crooners · synced 20 min ago" (entries carry a date, not a time, so the venue is where
+   most of today's drinks were, and the time is their passport's `exportedAt`, which is honest as
+   "last synced"), opening Crew. Where the family is, as far as the data can say, without asking.
+   There is no top drink row and no top bar row: both
+   look back under a heading that says "Up next", Stats shows both, and Last bar's "Your top bar"
+   already names the top bar when nothing is logged today. With no badge in reach and nobody logging
+   today the section has nothing to say and does not render.
 7. The Wrapped row, only when unlocked.
 
-Fold: the greeting, the hero and Today. The seed data is pre-sailing, so both states are verified by
-rendering the aboard branch with the date pinned (`?day=2026-10-05`, a QA override in `today()`). "Log a drink" is the
-only control with that intent: the Drinks page's catalogue action is "Add a missing drink". Opening
-Drinks from it focuses the search field and shows the ring; the keyboard is the platform's to
-raise, and it will not from a route change on iOS.
+Fold: the greeting, the hero, and Today aboard or For you before sailing. The seed data is
+pre-sailing, so both states are verified by rendering the aboard branch with the date pinned
+(`?day=2026-10-05`, a QA override in `today()`). "Log a drink" is the only control with that
+intent: the Drinks page's catalogue action is "Add a missing drink". Opening Drinks from it focuses
+the search field and shows the ring; the keyboard is the platform's to raise, and it will not from a
+route change on iOS.
 
 ### Shake sheet
 
@@ -449,12 +510,15 @@ demand, and finite. Home stays an instrument.
    reflection beside it and `--line` down the far side; no engraving, which two judges read as a
    liquid level through the tin. No panel: the sheet is the container and a box around the only
    thing present is the fourth banned tell. It has no window, because a shaker has none. The prize
-   is a glass drawn for the drink's category (`Glass`), the drink in `--line`: a cocktail glass with
-   an olive on a pick (Martini, Classic, Signature, Dessert, and any category not listed, the two
-   Princess brand names among them), a margarita glass with a wedge of lime (Margarita), a wine glass
-   (Wine, Spritz), a pint with its head (Beer), a cup on a saucer (Coffee), a hurricane glass with a
-   straw (Frozen) and a highball with ice and a straw (Mocktail). It is about 58 wide and 65 tall on
-   screen and hangs with its foot at least 18 clear of the neck. The shaker is the one dominant element.
+   is a glass drawn for the drink (`Glass`), the drink in `--line`, in one of nine families: a
+   cocktail glass with an olive on a pick, a margarita glass with a wedge of lime, a wine glass, a
+   flute with bubbles rising in it, a pint with its head, a cup on a saucer, a hurricane glass with a
+   straw, a highball with ice and a straw, and a rocks glass with one big cube and a twist of peel.
+   It is the same family the drink's row on Drinks leads with, chosen once by `glassFamily()` in
+   `src/data/glass.ts` (the registry says how), because the category is too coarse to say it: a
+   Mojito filed as "Signature" would rise in a martini glass and tell the guest something false
+   before the card names it. It is about 58 wide and 65 tall on screen and hangs with its foot at
+   least 18 clear of the neck. The shaker is the one dominant element.
 3. **The answer**, empty until a reveal: the drink's name first, as `h3.t-h2`, in full and never
    clipped, because the one job of this moment is to name a drink and the glass carries no name of
    its own; then the venue and deck as `p.t-meta.tnum` ("THE MIX · Deck 17", one middle dot; a
@@ -472,9 +536,11 @@ demand, and finite. Home stays an instrument.
    line and holding its line before then, and the sound toggle always,
    "Shake quietly" when sound is on and "Shake with sound" when it is off, persisted in
    `spcc-shake-quiet`. The label states the action, not the state, as every other quiet action does.
+   The two sit in a grid, so each spans the sheet and its label centres under the answer.
 
-24 between modules 2 to 5, 12 between the two quiet actions. Radius 12 on the button, none on the
-shaker, no glass anywhere on it: it sits in the content layer. No pill, no dot, no rule, no emoji.
+24 between modules 2 to 5, 12 between the two quiet actions (`.quiet-action`'s pair rule). Radius
+12 on the button, none on the shaker, no glass anywhere on it: it sits in the content layer. No
+pill, no dot, no rule, no emoji.
 
 Sound is `startRattle` (Motion above, and the registry): synthesised, no asset, created inside the
 press handler so iOS allows it, and silent when the guest chose quiet or reduced motion is set. The
@@ -487,11 +553,12 @@ document's own test for when a confirmation is owed. An `aria-live="polite"` reg
 card beneath the shaker says, as one sentence ("Try THE MIX's Red Stripe, Deck 17"), once, when the
 card shows it.
 
-**The sheet must not scroll after a reveal.** At 390×844 headless, with a three-line card, the
-sheet is 709 tall of the 742 (88svh) it may take, and `.sheet-scroll`'s scrollHeight equals its
-clientHeight, 688, so there are 33 to spare; the stage is 275 in every phase, which is what bought
-them. Measure `.sheet-scroll`, and skip `.sr-only` if you walk its children for the last one: the
-live region is the sheet's last child and measures nothing a guest sees.
+**The sheet must not scroll after a reveal.** Measured headless at 390×844 on 22 September, with a
+three-line card, the sheet is 709 tall of the 742 (88svh) it may take, and `.sheet-scroll`'s
+scrollHeight equals its clientHeight, 688, so there are 33 to spare; the stage is 275 in every
+phase, which is what bought them. Measure `.sheet-scroll`, and skip `.sr-only` if you walk its
+children for the last one: the live region is the sheet's last child and measures nothing a guest
+sees.
 
 When every drink on the sailing has been tried the shake still runs, the reveal names the guest's
 highest-rated drink, the reason reads "You have tried them all. Have another." and the button reads
@@ -502,10 +569,21 @@ to be added.
 
 Read: find it, have I had it, log it. Modules: (1) search with the filter control beside it, one
 row; (2) the count line; (3) the list, grouped under venue headings ("Good Spirits at Sea · Deck 7")
-so the page has landmarks and the bar you are standing in is one scroll away. A row is name and
-stars on the first line, one meta line (ingredients, one line, clamped), a tried check at the right
-that is a 44px target. Favourite, wishlist and the rest live in the sheet. Tags become part of the
-meta line ("Signature · £12"), not pills. Fold: search, count, the first heading and four rows.
+so the page has landmarks and the bar you are standing in is one scroll away. A row leads with the
+glass the drink is served in (`GlassIcon`, 24px, `--ink-3`: Iconography), then name and stars on
+the first line, one meta line (ingredients, one line, clamped), and a tried check at the right that
+is a 44px target. Favourite, wishlist and the rest live in the sheet. The price becomes part of
+the meta line ("$12"), not a pill; a drink with no published price shows none, and a row with
+neither ingredients nor a price has no meta line at all. The category stays in the sheet's meta
+line and the Type filter: within a venue group it is usually the same row after row, and the
+ingredients need the room. Fold: search, count, the first heading and four rows.
+
+The filter panel holds Status, Package (on a sailing that declares packages), the quick chips, then
+Where, Spirit, Flavour and Type as folded groups. Where is the deck chips alone, and a deck no drink
+is filed on is not drawn: a bar is found by typing its name (search matches it) or from its sheet
+on Ship, and a chip per venue was a fourth route to one place and a wall of identical rounded boxes.
+The panel carries no count of its own: the count line beneath it is the one count, and the panel's
+head holds Clear all only when something is chosen.
 
 With no catalogue at all (a sailing the guest set up and has not yet added a drink to), modules 1 and
 2 go with module 3: a search over nothing, a filter over nothing and a count line reading "0 drinks"
@@ -519,30 +597,48 @@ an empty catalogue says "No drink matches that search" and offers a Reset with n
 ### Drink sheet
 
 Title, one meta line ("Good Spirits at Sea · Deck 7 · Signature"), ingredients as body, the blurb as
-meta. Then rating (stars, 44px each), then the toggles as one row of compact chips (Tried in mint
-when on; Favourite, Wishlist, Order again, Recommend in ink when on), then date and notes as fields,
-then crew opinions as rows. No eyebrow, no coloured toggle boxes, no gradient meters: sweetness and
-strength are five ink dots. The chip row wraps to a second line at 390px (five labelled chips do
-not fit one line); that is the intended shape, not a defect.
+meta, then the facts line (tier and price, then flavours; an unpublished price prints nothing, and a
+price with no package tier is the price alone), and for a drink not on a published menu the one line
+"Not on a published menu. Check at the bar." Then sweetness and strength as five ink dots each, with
+no sentence beneath except "Alcohol free" at strength 0, since five empty rings cannot say none.
+Then rating (stars, 44px each) with the crew average beside its label and "Recommended by" beneath,
+then the toggles as one row of compact chips, on one line at 390px (Tried in mint when on;
+Favourite, Wishlist, Recommend in ink when on), then the date once tried, then "Private notes" and
+"Comment for your crew" as fields with no hints and no placeholders (the labels say who sees each),
+then what the crew said as rows. Groups are separated by space, never a hairline. No eyebrow, no
+coloured toggle boxes, no gradient meters. There is no "Order again" (Favourite already says "I would
+have it again"; `restore.ts` still merges the field from old backups) and no "Also at" row (the
+bar's group and its venue sheet list its other drinks).
+
+A drink the guest added renders its title, meta line, whatever the guest typed (ingredients, price),
+rating, Tried, Favourite, Wishlist, date and notes, and nothing else: `share.ts` never sends a custom
+drink to the crew, so Recommend and the crew comment would promise sharing that does not happen, and
+its sweetness and strength are defaults nobody measured.
 
 ### Ship
 
-Read: which bars, what is done, where next. A plain section per deck: heading "Deck 17 · 6 of 65",
-number in ink, then one row per venue: name, "n of m", a thin ink progress bar 3px tall. Visited is
-a mint check after the name. The deck's own label comes from `deckLabel()`, so a ship that calls a
-deck something other than its number says so here, in Stats and in the filter panel alike. Fold: the
-top two decks.
+Read: which bars, what is done, where next. A plain section per deck: heading "Deck 17", then one row
+per venue: name, "n of m", and a thin ink progress bar 3px tall once a drink there is tried; a venue
+with no drinks shows its name alone. The heading carries no count: completion by deck is Stats'
+"Where you have been", and a shared list was counted once in the heading and twice in the rows
+beneath it, so the heading contradicted its own rows. There is no lead line under the title; the
+deck headings already read from the top down. Visited is a mint check after the name. The deck's own
+label comes from `deckLabel()`, so a ship that calls a deck something other than its number says so
+here, in Stats and in the filter panel alike. Fold: the top two decks.
 
 A guest can add venues of their own, so the screen has two more states and one quiet door:
 
 - **Populated**, one `button.row.pressable.ship-add` after the last deck, in Crew's "Set up a group"
-  shape, chevron and all, alone in a bare `.section` with no heading. It is the one rounded row on
-  Ship and that is deliberate: `.row:not(:only-child)` squares the venue rows inside each deck
-  section, and this row is not another venue. Ink only; the coral budget stays unspent.
+  shape, one line, chevron and all, alone in a bare `.section` with no heading. It has no meta line:
+  the guest has just scrolled past every venue, so the list already says what a venue is. It is the
+  one rounded row on Ship and that is deliberate: `.row:not(:only-child)` squares the venue rows
+  inside each deck section, and this row is not another venue. Ink only; the coral budget stays
+  unspent.
 - **Empty** (a sailing with no venues yet), where the action is the state, as on Badges: one
   `p.t-body`, one `p.t-meta` and a filled `GlassButton variant="primary".ship-add`. Two lines rather
-  than Badges' one, because nothing else fills this screen; a filled control rather than Badges' text
-  link, because this is the only way to make the screen exist. The two never render together.
+  than Badges' one, because nothing else fills this screen; a filled control, as the You segments'
+  `.empty-state` now also uses, because this is the only way to make the screen exist. The two never
+  render together.
 - **Change this sailing**, one `.quiet-action` at the foot, on a sailing the guest set up only. The
   sailing's name and dates are what this screen is about and changing them is rare, so it takes the
   registered shape for the quietest text action at a screen's foot and spends no colour. It is the
@@ -551,30 +647,43 @@ A guest can add venues of their own, so the screen has two more states and one q
 
 ### Venue sheet
 
-Title, meta line (deck, kind, hours), blurb, the visited switch as one row, the progress line, then
-the venue's drinks as the same rows Drinks uses.
+Title, meta line (deck, kind, hours), blurb, the shared-list line ("Same list as THE MIX.") when the
+venue pours another's list, "Edit this venue" as one row on a venue the guest added, the visited
+switch as one row, the count line as text ("6 of 44 tried", or "No drinks here yet." when the venue
+has none), then the venue's drinks as the same rows Drinks uses. Space separates the groups; there
+is no hairline and no meter. The same number was in the text, the meter and the row behind the
+sheet, and every drink below carries its own tried check.
 
 ### Crew (Social)
 
 Read: who is with me, add someone. Modules: (1) heading "Your crew" with the profile control at the
 right (dot, name, code); (2) the one coral button, "Add to your crew", full width; (3) "Sailing
-with" rows; (4) "Groups" rows with "Set up a group" as a text action; (5) "Discover together" rows;
-(6) "Nobody's tried these yet" rows. The name card, when shown, is a panel (a form with its own
-boundary) and the only panel on the screen. Fold: 1 to 3.
+with" rows, each counting what that person has tried ("8 tried"); (4) "Groups" rows with "Set up a
+group" as a one-line row; (5) "Discover together" rows. There is no sixth module: its picks had no
+personal basis, and Discover together above and the Shake sheet on Home already suggest untried
+drinks with a reason. The name card, when shown, is a panel (a form with its own boundary) and the
+only panel on the screen. Fold: 1 to 3.
 
 **Add to your crew** is server-first: the backend can find a person and make the friendship mutual
 in one call (`find_profiles` then `befriend`, which writes both edges), so the phone-to-phone routes
-are the fallback, not the front door. (1) **Find them**: one field, "Their name or code", searching
-the server as you type (two characters on, whole-word prefixes, eight results, never yourself):
+are the fallback, not the front door. (1) **Find them**, with no heading of its own (the sheet's meta
+line and the field's label already say it): one field, "Their name or code", with one idle line
+beneath it, "Their code is at the top of their Crew page.", the one fact nothing else on the sheet
+gives, searching the server as you type (two characters on, whole-word prefixes, eight results,
+never yourself):
 each match is a `.row` with their dot, name and code, and a 44px "Add" at the right (someone
 already held reads "In your crew" with no Add); Add lands on the `Confirm` tick and the row joins
 "Sailing with", holding the row-highlight tint for about four seconds so the name on the tick can
 be found in the list. A full code pasted or typed matches exactly.
-Offline, the field says so and the link route takes over. (2) **Or send your link**, a secondary
-button opening the native share sheet, which is also the nearby route (AirDrop on iPhone, Nearby
-Share on Android; the web has no contact-tap of its own); its meta line says so. (3) One row of two
-quiet controls, "Scan their code" and "Show my code" (the QR and code unfold inline). (4) "Join a
-group" as today. Every success, on either phone, ends in the `Confirm` tick; the other side gets a
+Offline, the field says so ("No connection. Send your link instead.") and the link route takes over.
+(2) **Or send your link**, a secondary button opening the native share sheet, which is also the
+nearby route (AirDrop on iPhone, Nearby Share on Android; the web has no contact-tap of its own); its
+meta line says so ("Beside them? AirDrop or Nearby Share it."). (3) One row of two quiet controls,
+"Scan their code" and "Show my code" (the QR and the code with Copy unfold inline, the code with no
+visible label, because the toggle above it now reads "Hide my code"). (4) "Join a group with a
+code", a `.quiet-action` folded like the paste path and 12 above it, unfolding in place to the
+label, field and "Join group" button: most joins arrive as a tapped `/join` link, so the field is
+the rare route. Every success, on either phone, ends in the `Confirm` tick; the other side gets a
 toast "Sam added you" on the next pull. The privacy trade is stated in `0003_find_profiles.sql`:
 anyone in the app can find anyone who has set a name, and nothing beyond name, colour and code is
 returned.
@@ -590,12 +699,18 @@ added itself, which still carries `needsEdge`) and never on a pull whose previou
 
 A segmented control (Stats · Badges · Log) under the title, then the segment. Stats answers three
 questions under three headings: "Where you have been" (completion by deck as ink bars with no track,
-most visited bars as a ranked list), "What you drink" (categories and spirits as ranked lists with
-counts, no donut), "Best and worst" (highest rated, lowest rated, best rated bars as rows). "Across
-the voyage" survives only with labelled axes at 12px and a title that names the question ("Drinks
-logged per day"). Badges: earned medals as a row of discs with names beneath, then "Close" as rows
-with a thin progress bar and "58 of 100", then "Locked" as plain rows. No card per badge. Log: a
-section per day, heading "Day 1 · Sat 3 Oct" with the count at the right, rows with hairlines.
+most visited bars as a ranked list), "What you drink" (the top five categories and the top five
+spirits as ranked lists with counts, no donut), "Best and worst" (highest rated, lowest rated, best
+rated bars as rows). "Across the voyage" survives only with labelled axes at 12px and a title that
+names the question ("Drinks logged per day"). Badges: earned medals as a row of discs with names
+beneath, the heading carrying "6 of 18" at the right and nothing while none is earned, then "Close"
+as one-line rows (the name, then "58 of 100" and a thin progress bar side by side at the right; a
+percentage badge reads "27% of 50%"; the hint is the badge sheet's meta line), then "Locked" as plain
+rows with the hint, which is the only statement there of what earns the badge. No card per badge.
+Log: a section per day, heading "Day 1 · Sat 3 Oct" with the count at the right, rows with
+hairlines, each row the drink and its rating on one line (the bar is the drink sheet's meta line, one
+tap away). Empty, each of the three segments is the same `.empty-state`: one short line and a filled
+"Log a drink".
 
 ### Wrapped
 
@@ -606,17 +721,42 @@ mode's one ambient motion and stops under reduced motion.
 
 ## Verification
 
-A screen is done when a fresh screenshot at 390×844 from the running dev server (`?seed`) shows the
-modules in rank order with the fold respected, and a scan of its CSS finds: no font-size below 12px
-and none off the scale; no spacing literal off the scale; no radius outside 20/12/999; no
+A screen is done when a render in Brave at 390×844 from the running dev server (`?seed&nosync`)
+shows the modules in rank order with the fold respected, and a scan of its CSS finds: no font-size
+below 12px and none off the scale; no spacing literal off the scale; no radius outside 20/12/999; no
 `box-shadow` on content; no `backdrop-filter` outside nav, sheet and hero chips; no
-`text-transform: uppercase` with tracking; no easing other than `--e-out`; every colour a token.
+`text-transform: uppercase` with tracking; no easing other than `--e-out` outside the shaker's
+written exceptions (Motion); every colour a token.
 
-The tools for this live in `tools/qa/` (see its README): `shot.mjs` renders one screen or sheet,
-`shots.mjs` sweeps them all, `scan.mjs` is the mechanical check, `gestures.mjs` drives the sheet's
-gesture contract with real touch events and asserts it, and `npm run design:check` is the same
-scan as a hard gate, run in CI before every build. A genuine exception goes in
-`tools/qa/design-allow.txt` with its reason, never into the scanner.
+**The render is Brave's, not headless Chrome's.** Charles, 22 September 2026: "use brave to verify
+stuff not headless chrome it nukes performance" (`OPERATING_RULES.md`, "Verify in Brave, not headless
+Chrome"). Open your own tab through the browser extension on the dev server, loaded with
+`?seed&nosync`, then write an iframe wrapper into that tab on the same origin, 390 by 844, pointing at
+the route with `?seed&nosync`: the frame is a true phone viewport, and its layout can be measured
+from outside it. Take each screenshot twice, because the automation tab only renders when one is
+taken, and read overflow from the frame's `scrollWidth` rather than by eye. Always pass `nosync`:
+the dev server's `.env` carries the live project's keys, so a load without it signs a throwaway
+anonymous user in. The page is light only (Colour), so a browser's forced dark mode and the Dark
+Reader extension in Brave leave it as a phone draws it. Brave's content blocking hides elements
+whose class names look like social-media widgets: on 23 September 2026 it hid `.social-head`, the
+Crew heading and the only door onto Your details, which is why Crew's classes are `crew-*`. Keep
+class names clear of social, share, ad, banner and promo, and treat a module missing from a Brave
+render as a possible block before a bug. A timed sequence does not advance between the extension's
+calls, so an animated phase (a sheet's wave, the shake) is judged at its end state, never watched.
+The method and Brave's other quirks are in the visual-verify skill
+(`C:\Users\Charles\.claude\skills\visual-verify\SKILL.md`).
+
+`tools/qa/scan.mjs` is the mechanical check, and `npm run design:check` is the same scan as a hard
+gate, run in CI before every build. Neither opens a browser, and nor do `npm test`, `npm run lint` or
+`npx tsc`, so they run at any time. A genuine exception goes in `tools/qa/design-allow.txt` with its
+reason, never into the scanner.
+
+The headless tools in `tools/qa/` (see its README) are kept, and run only when Charles asks for a
+headless run: `shot.mjs` renders one screen or sheet, `shots.mjs` sweeps them all, `film.mjs` films
+an interaction as a contact sheet and a flipbook (how the shaker's timing is judged frame by
+frame), and `gestures.mjs` drives the sheet's gesture contract with real touch events and asserts it;
+`shake-live.mjs`, `first-open.mjs` and `update.mjs` assert the shaker's reveal and return, the
+first-open sync gate and the deploy reload.
 
 ## Working on this design
 
@@ -634,8 +774,9 @@ colour, are how that happens again. Read it before any change that renders.
 2. **Place it before you draw it.** For a new feature or module, write its five-second read, which
    screen it belongs on and where it sits in that screen's rank order, and what it displaces or
    merges with. A feature is not isolated: it reinforces or dilutes what is already on the screen.
-   If it needs a number the hero already shows, it does not show the number again. If it needs a
-   state colour, it uses the one that already means that state.
+   If it needs a number the hero already shows, or one another tab already covers, it does not show
+   the number again (Copy). If it needs a state colour, it uses the one that already means that
+   state.
 3. **Fit the form, then diverge for a reason.** Compose from the registry. A list is `.row`s with
    hairlines under a `.section-head`; a sheet is `Sheet` with a title and a `.sheet-meta` line; a
    control is one of `ui/`. Copy how the neighbouring screen does the same job. Depart from it only
@@ -644,10 +785,12 @@ colour, are how that happens again. Read it before any change that renders.
    once in `src/styles/base.css` or `src/ui/`, add it to the registry below in the same change, and
    sweep every existing sibling to use it (grep finds them). A second, slightly different version of
    an existing primitive is the failure this process is for.
-5. **Verify with a render, not by reasoning about the CSS.** `npm run dev`, then `tools/qa/shot.mjs`
-   at 390×844 for the screen and each sheet it opens (settled, `--after 3000`), the full-page shot,
-   `tools/qa/scan.mjs` on the files you touched, `npm run design:check`, `npx tsc -p tsconfig.app.json
-   --noEmit`. Look at the PNGs honestly: rank order, fold, boxes, caps, wrapping, contrast.
+5. **Verify with a render, not by reasoning about the CSS.** `npm run dev`, then render the screen
+   and each sheet it opens in Brave at 390×844, as Verification says: settled, and scrolled through
+   the frame for the whole page. Then `tools/qa/scan.mjs` on the files you touched, `npm run
+   design:check`, `npx tsc -p tsconfig.app.json --noEmit`. Look at the screenshots honestly: rank
+   order, fold, boxes, caps, wrapping, contrast. `shot.mjs` and the other headless tools run only
+   when Charles asks for a headless run.
 6. **Keep this document true.** A rule that changes changes here first, with the reason, then in the
    code. A screen section that no longer describes the screen is a bug.
 
@@ -655,41 +798,57 @@ colour, are how that happens again. Read it before any change that renders.
 
 | Primitive | Home | Rule |
 | --- | --- | --- |
-| Tokens (`--ink*`, `--line`, `--coral*`, `--mint*`, `--gold*`, `--sea-ink`, `--s1..6`, `--r-*`, `--f-*`, `--e-out`, `--t-*`) | `src/styles/tokens.css` | every colour, space, radius, size and easing is a token; a literal in feature CSS is a defect |
+| Tokens (`--ink*`, `--line`, `--coral*`, `--mint*`, `--gold*`, `--sea-ink`, `--s1..6`, `--r-*`, `--f-*`, `--e-out`, `--e-shake`, `--t-*`) | `src/styles/tokens.css` | every colour, space, radius, size and easing is a token; a literal in feature CSS is a defect. The one written exception: the shaker's computed keyframes carry `--e-out`'s and `--e-shake`'s values written in, read from this file by `keyframes.mjs`, because a `var()` in a keyframe's timing function does not resolve; `design-allow.txt` carries both with that reason |
 | Type roles `.t-display .t-title .t-h2 .t-body .t-strong .t-meta .t-micro .eyebrow` | `src/styles/base.css` | never a local `font-size`; `.eyebrow` is a sentence-case label, not caps |
 | `.section`, `.section-head` | `base.css` | a section is a plain `h2.t-h2`, 32px above, 8px to its content, count or meta at the right |
+| `.page`, `.page-act` | `src/app/shell.css` | a routed screen's wrapper: `.page > h1` sets 16 under the screen's title, and nothing sits between the title and the first module, since no screen has a lead line. `.page-act` is the one button under an invite route's line, 16 below it, in place of an inline margin. The safe-area inset is on `.view`, because no masthead sits above the tabs |
 | `.row` (tappable), `.line` (static), `.row-copy` | `base.css` | every list is rows with hairlines on the ground; never a box per item |
 | `.panel` | `base.css` | the one container, for a bounded interactive module only; never nested |
 | `.qr-plate` | `base.css` | the white plate under any `Qr`, because a code has to read under a camera whatever the ground is: the add sheet, the group sheet and the landing. It hides itself when empty, which is how `Qr` returning null for a value it cannot encode is caught at every call site at once |
 | `.glass-live`, `.glass-edge`, `.glass-coral` | `base.css` | liquid glass for chrome: nav, sheet, hero chips and the floating action, toast, Wrapped certificate. Nothing in the content layer |
 | `Confirm`, `haptic()` | `src/ui/Confirm.tsx`, `src/ui/haptic.ts` | the one success confirmation (tick on glass, label, haptic); silent where the result is already visible |
-| `.btn .btn-coral .btn-wide`, `GlassButton` | `base.css`, `src/ui/GlassButton.tsx` | one filled coral control per screen; a disabled control drops its fill to a ghost (transparent, hairline, `--ink-2`) so it never reads as an active one |
-| `.quiet-action` | `base.css` | the quietest text action on a screen: a block, 44px of target, meta size at weight 600 in `--ink-2`, underlined, 24 above. Swept from `.friends-quiet`; the paste path and the guest line on Your details, and the landing's way on |
+| `.btn .btn-coral .btn-wide`, `GlassButton` | `base.css`, `src/ui/GlassButton.tsx` | one filled coral control per screen; a disabled control drops its fill to a ghost (transparent, hairline, `--ink-2`) so it never reads as an active one. The fill, the edge and the label colour change on one transition, so a change between disabled and enabled never passes a frame of white on a pale ground |
+| `.quiet-action` | `base.css` | the quietest text action on a screen: a block, 44px of target, meta size at weight 600 in `--ink-2`, underlined, 24 above. Swept from `.friends-quiet`; the join and paste paths on the add sheet, the guest line on Your details, the Shake sheet's pair, the landing's way on and Ship's "Change this sailing". Two in a row sit 12 apart, not 24, by one rule here (`.quiet-action + .quiet-action`), because they are one group of rare routes; one that follows anything else keeps its own 24. A screen that sets the pair's spacing locally is the divergence this rule replaced |
 | `.tag`, `.mini` | `base.css` | small outline tags inside a meta line; compact 36px secondary control |
-| `Sheet` + `.sheet-meta` | `src/ui/Sheet.tsx`, `sheet.css` | title then one meta line; no eyebrow; the SheetWave is its opening |
+| `Sheet` + `.sheet-meta` | `src/ui/Sheet.tsx`, `sheet.css` | title then one meta line, which carries the one fact the controls do not show (Copy); no eyebrow; the SheetWave is its opening |
 | `Field`, `SearchField`, `Select`, `Switch`, `Segmented`, `Chip`, `Toast`, `FriendDot` | `src/ui/` | the controls; restyle them there, never locally |
 | Icons (`Icon.tsx`: `IconStar`, `IconCheck`, `IconChevron`, ...) | `src/ui/Icon.tsx` | the only icon system; no glyph characters, no emoji; add to the set, do not draw inline |
+| `GlassIcon` (`IconGlassCocktail` and the other eight) | `src/ui/Icon.tsx` | the glass a drink is served in, one per family of `src/data/glass.ts`, on the icon grid with both sides of every bowl drawn. `GlassIcon` picks by family; the drink row shows it at the leading edge in `--ink-3`. The shaker's prize is the same families drawn large (`Glass`) |
 | `.sr-only` | `base.css` | visually hidden, still announced |
-| `.meter` | `base.css` | the 3px measure beside a count out of a total (venue rows, the Home bar row); Stats' 6px deck bars and the badge rows keep their own shapes |
+| `.empty-state` | `base.css` | an empty list: one short `p.t-body` and the one filled `.btn.btn-coral` that fills it, flush to the leading edge, 16 apart. Stats, Badges and Log use it (ruling 9 of the 22 September declutter, which retired `.stats-empty` and `.badge-empty-action`); a new empty list on another screen reuses it |
+| `.meter` | `base.css` | the 3px measure beside a count out of a total (a Ship venue row once something there is tried, Home's nearest-badge row); Stats' 6px deck bars and the badge rows keep their own shapes. Never an empty track: with nothing to fill it, it is not drawn |
 | `dayPart()`, `greetingWord()` | `src/state/stats.ts` | the six parts of the day and the greeting word; the sea's sky palette and Home's greeting both key off them, never off their own boundaries |
 | `nowHour()`, `today()`, `qaFirstOpen()`, `qaLanding()`, `isDesktopVisitor()` | `src/data/model.ts` | the clock, with `?hour=` and `?day=` QA overrides; `?entry` forces the first-open screen over any store, and does not gate sync; `?landing=desktop\|phone` pins the landing's branch, and `desktop` also forces the root gate open, since `?seed` has always migrated the store to entered; `isDesktopVisitor()` is the width-plus-pointer test that chooses the landing's branch, kept here so `Landing.tsx` only exports its component |
-| `Masthead` | `src/app/Masthead.tsx` | the app's name above every screen, `Shell`'s, the entry screen's and the landing's alike. Chrome: never part of a screen's rank order |
+| `ingredientsOf()` | `src/data/model.ts` | what a drink's ingredients line shows. A drink the guest added before 22 September carries "Ingredients not recorded", which the add sheet used to write in place of nothing; it reads as empty, as a drink added now is. Whatever prints ingredients (the list row, the drink sheet) reads them through it, never `d.ingredients` directly |
+| `badgeCount()` | `src/data/badges.ts` | a badge's progress in words: "58 of 100", or "27% of 50%" for a badge marked `percent` (Cocktail Master and the ship's Champion), because everywhere else "n of m" counts drinks. The Close rows, the badge sheet and the labels on Home's nearest-badge row all use it |
+| `Masthead` | `src/app/Masthead.tsx` | the app's name above the entry screen and the landing, the two screens a cold visitor meets. Chrome: never part of a screen's rank order. `Shell` does not render it |
 | `Landing` | `src/features/landing/Landing.tsx` | the desktop install path: what this is, the code of the live address, the two steps to a home screen, and the price slot when there is one. Which branch renders is decided by `isDesktopVisitor()`, which lives in `src/data/model.ts` beside the QA overrides (so this file only exports its component) and is the only reader of the media query; the way on's label is a prop, because the caller knows which path it is on |
 | `NameFields` | `src/features/social/NameFields.tsx` | the name and colour pair wherever it is asked for (`NameCard`, the entry screen). It imports `friends/friends.css`, which owns `.f-field input`, `.fpick` and `.fpick-dot`. `ProfileSheet` keeps its own copy on purpose: it writes to the store on every keystroke with no draft, so it has nothing to hand `draft` and `onDraft`. A fourth site gets an uncontrolled mode on `NameFields`, never a fourth copy |
 | `PrivacySheet`, `PRIVACY_SUBTITLE`, `GUEST_HONESTY` | `src/features/privacy/PrivacySheet.tsx` | the privacy note, one text, opened by the same `.privacy-open` row from the entry screen and from Your details; `GUEST_HONESTY` is the one wording of what a guest stands to lose |
 | `seenMedals`, `markMedalsSeen()` | `src/state/store.ts` (persist v8) | which badges' "new medal" moment Home has shown; seeded on upgrade with what was already earned |
-| `SeaHero` (`level`, `hour`, `chips`) | `src/features/home/SeaHero.tsx` | the sea; the sky follows `hour`, the shader lenses the water under the `chips` rectangles |
+| `SeaHero` (`level`, `hour`, `chips`) | `src/features/home/SeaHero.tsx` | the sea; the sky follows `hour`, the shader lenses the water under the `chips` rectangles, and the liner rides the swell (Motion): `swell()` in the script is the shader's function term for term, so change one and change both. The CSS bob in `sea.css` is the fallback where there is no shader |
 | `pickedForYou()` | `src/state/social.ts` | the "For you" shelf: honest picks (taste-matched crew, or your top spirit); empty when there is no personal basis |
-| `Shaker`, `SHAKER` | `src/features/shake/Shaker.tsx` | the cobbler shaker, drawn on an 88 by 220 grid in `Icon.tsx`'s idiom, shown at 0.9 on a 300 by 275 stage at the hero stroke (Iconography). It is not in the icon set because it is not an icon: it is the one object on its screen, and an icon there would be a 24px glyph blown up. One SVG, painted back to front in one rig: the burst, the prize glass inside the tin, the tin over it, the cap. `SHAKER` is its timings (the shake, the knocks, the pop, the landing, the reverse), exported beside the drawing and read by the sheet and the rattle; `keyframes.mjs` writes the CSS keyframes from it and checks that the cap clears the glass, so a timing changes in one place. It has no window, and adding one back would be drawing a shaker that does not exist |
-| `Glass` | `src/features/shake/Glass.tsx` | the prize: one glass per family of drink (cocktail, margarita, wine, pint, cup, hurricane, highball) on a 64 by 72 box, the drink in `--line` and the outline painted three times so the drink never crosses the stroke. The category-to-family map lives here and nowhere else, and `data-glass` names the family for the QA probes. Never `IconDrinks`, which draws one side of a glass |
-| `ShakeSheet` | `src/features/shake/ShakeSheet.tsx` | the Shake sheet and its five phases, opened by `.shake-open` on Home and from nowhere else, timed by `SHAKER`. The card's lines carry their own start as `--at`, so a card without a reason closes up. It returns `DrinkSheet` on "Go get it" rather than stacking one, the same replacement `ProfileSheet` and `VenueSheet` use |
+| `Shaker` | `src/features/shake/Shaker.tsx` | the cobbler shaker, drawn on an 88 by 220 grid in `Icon.tsx`'s idiom, shown at 0.9 on a 300 by 275 stage at the hero stroke (Iconography). It is not in the icon set because it is not an icon: it is the one object on its screen, and an icon there would be a 24px glyph blown up. One SVG, painted back to front in one rig: the burst, the prize glass inside the tin, the tin over it, the cap. The file exports only the component (and its types), so it keeps fast refresh; its timings are `SHAKER`. It has no window, and adding one back would be drawing a shaker that does not exist |
+| `SHAKER` | `src/features/shake/timing.ts` | the shaker's timings (the shake, the knocks, the pop, the landing, the reverse), in a module of their own beside the drawing, because a component file that exports anything else loses fast refresh. The sheet runs its phases on them and hands the rattle its times, and `Shaker` sets the CSS durations from them, so a timing changes in one place |
+| `keyframes.mjs` | `src/features/shake/keyframes.mjs` | writes the computed keyframes at the foot of `shake.css` (the shake and the held beat as one timeline, and the cap's flight and the glass's rise and sink sampled every 20ms) from `SHAKER` and its own tables, and prints whether the cap clears the glass and whether anything leaves the top of the stage. Edit `SHAKER` in `timing.ts` or a table here, then run `node src/features/shake/keyframes.mjs`; never edit the computed block by hand. Node only, not imported by the app; it refuses to run on a shake other than 1800ms, which its stroke table is drawn against |
+| `Glass` | `src/features/shake/Glass.tsx` | the prize: one glass per family of drink (cocktail, margarita, wine, flute, pint, cup, hurricane, highball, rocks) on a 64 by 72 box, the drink in `--line` and the outline painted three times so the drink never crosses the stroke. `data-glass` names the family for the QA probes. Never `IconDrinks`, which draws one side of a glass |
+| `GlassFamily`, `glassFamily()`, `ruleFamily()`, `GLASS_FAMILIES`, `GLASS_NAME` | `src/data/glass.ts` | which of the nine glasses a drink is served in, the one place that is decided: the drink row's icon and the shaker's prize both read it. A drink on the published catalogue takes its glass from `GLASS_BY_DRINK`; a drink the guest added (it carries a `cruise`), even one sharing a published name, takes `ruleFamily()`: its name first (a Mojito, a Mule or a Tonic is a highball, a Paloma a margarita glass, a Colada a hurricane, a Negroni or an Old Fashioned a rocks glass, Champagne or a Bellini a flute), then whether it is frozen, then its category, and the cocktail glass for the rest. The rules are pure and tested in `glass.test.ts` |
+| `GLASS_BY_DRINK` | `src/data/glassByDrink.ts` | generated, never edited: the published catalogue's glass for every drink, keyed by name, written by `tools/glass-classify.mjs`. Wines and beers are decided in code there (sparkling wine and Champagne a flute); each cocktail was put to Jev (TypeSafe, `jev-1.13.0`) as one choice among the nine glasses over its name, category, spirits, ingredients, flavours, frozen flag and menu note. A person's rulings, where Jev was unsure or wrong, live in `tools/glass-classify.overrides.json` and are applied last; each answer's probability is in `tools/glass-classify.report.json`. A changed glass is a ruling in that file, not an edit here; it takes effect when the script next runs, which asks Jev again |
+| `ShakeSheet` | `src/features/shake/ShakeSheet.tsx` | the Shake sheet and its five phases, opened by `.shake-open` on Home and from nowhere else, timed by `SHAKER`. The card's lines carry their own start as `--at`, so a card without a reason closes up. It returns `DrinkSheet` on "Go get it" rather than stacking one, the same replacement `ProfileSheet` and `VenueSheet` use, and it comes back from it as a fresh mount that `still` holds at the reveal (Sheets, Coming back) |
 | `shake()` | `src/features/shake/pick.ts` | what the shaker surfaces: untried only, never one of this sitting's last six, weight 4 for a drink the "For you" shelf already vouches for, 2 for the guest's top spirit, 1 for the rest, each weight carrying the line that explains it. Pure, with `random` injected, tested in `pick.test.ts` |
-| `startRattle()` | `src/features/shake/rattle.ts` | the dice in the tin: WebAudio, synthesised, no asset, the whole schedule laid down in one pass at press time, with a low knock at each of `SHAKER.knocks`. `reveal()` carries the opening, a cork at the cap and the thock `landMs` later as the glass lands, laid down against the same clock rather than on a timer. A silent no-op when the guest chose quiet, under reduced motion, or where there is no `AudioContext` |
+| `startRattle()` | `src/features/shake/rattle.ts` | the dice in the tin: WebAudio, synthesised, no asset, the whole schedule laid down in one pass at press time, with a low knock at each knock time the sheet passes it from `SHAKER.knocks`. `reveal()` carries the opening, a cork at the cap and the thock `landMs` later as the glass lands, laid down against the same clock rather than on a timer. A silent no-op when the guest chose quiet, under reduced motion, or where there is no `AudioContext` |
 | `haptic('shake')` | `src/ui/haptic.ts` | the third pattern, a rising series mirroring the rattle's acceleration. Its first pulse is the press tap, so the press fires this one and not both. The two knocks from inside are `haptic('tap')`, fired from the sheet's own timer and never under quiet or reduced motion |
-| `DrinkCard` | `src/features/drinks/DrinkCard.tsx` | the drink row everywhere a drink is listed (Drinks, venue sheet) |
+| `DrinkCard` | `src/features/drinks/DrinkCard.tsx` | the drink row everywhere a drink is listed (Drinks, venue sheet): the glass, then name and stars, one meta line, the tried check |
 | `Medallion` | `src/features/badges/Medallion.tsx` | the badge disc, grid and sheet |
-| `SeaHero`, `SheetWave`, the hero count-up | `src/features/home/`, `src/ui/SheetWave.tsx` | the three authored motions; do not add a fourth without amending Motion above |
+| `SeaHero`, `SheetWave`, the hero count-up | `src/features/home/`, `src/ui/SheetWave.tsx` | three of the five authored motions (Motion above; the new-medal coin and the shaker are the other two); do not add a sixth without amending Motion |
 | `You` | `src/features/you/You.tsx` | Stats, Badges and Log render inside it; they carry no page wrapper of their own |
 | `Sailing`, `allSailings()`, `venuesFor()` | `src/data/sailings.ts` | the sailings a guest sets up and every venue they add, in `spcc-sailings` beside `spcc-cruise`. It holds no drinks, entries or visits, so removing a sailing or a venue is two calls, the store's `forgetSailing()` or `forgetVenue()` first. The catalogue is resolved at module load, so a change to it reloads the page, once, from the sheet's own close handler and only when something was saved |
 | `VenueForm` | `src/features/ship/VenueForm.tsx` | the add-and-edit sheet for a venue, and `SailingSheet` (`src/features/cruise/`) its twin for a sailing. Both are `AddSheet`'s skeleton: `Sheet`, title, one `.sheet-meta` line, the `ui/` fields, one block primary. Every inline error is the `Field` primitive's own `error` prop, never a hand-written meta line; a remove or delete is a `ConfirmButton` below a hairline, as `ProfileSheet` places delete-my-data |
 | Seed data | `index.html` (`?seed`) | how every screen is populated for a render |
+
+Retired by the 22 September declutter, and not to be rebuilt: `.page-lead` (a lead line under a
+screen's title; Ship had the only one), `.center` and `.card` (the box round the invite route's
+line, the fourth banned tell), and the nav's sliding indicator plate (`.nav-lens`, the indicator
+pill Navigation already rules out, and a sixth motion outside the five). `.stats-empty` and
+`.badge-empty-action` went into `.empty-state`, and the add sheet's and the Shake sheet's own
+spacing for two quiet actions went into `.quiet-action`'s pair rule.

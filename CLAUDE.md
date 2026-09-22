@@ -18,11 +18,45 @@ it so you recognise the tells when they creep back. The short version of the pro
    that repeats a number, invents a colour or brings its own container dilutes the rest.
 3. Compose from the registry. Diverge only with a written reason. Mint a new primitive in
    `src/styles/base.css` or `src/ui/`, register it in `DESIGN.md`, sweep the siblings, all in one change.
-4. Verify with a render: `npm run dev`, then `node tools/qa/shot.mjs <label> <route>` at 390×844
-   (routes without the leading slash), `node tools/qa/scan.mjs <files>`, `npm run design:check`,
-   `npm run lint` (0 errors required; the 28 warnings are known) and
-   `npx tsc -p tsconfig.app.json --noEmit`. `tools/qa/README.md` has the loop. `tools/qa/gestures.mjs`
-   warms the dev server itself before it starts timing, so a cold server no longer fails the first run.
+4. Verify with a render in Brave, not headless Chrome (Charles, 22 September 2026: "use brave to
+   verify stuff not headless chrome it nukes performance"; `OPERATING_RULES.md`, "Verify in Brave,
+   not headless Chrome"). `npm run dev`, then in your own tab through the browser extension load the
+   dev server with `?seed&nosync`, write an iframe wrapper into that tab on the same origin, 390 by
+   844, pointing at the route with `?seed&nosync`, screenshot twice (the automation tab only renders
+   when a screenshot is taken) and read overflow from the frame's `scrollWidth`. The visual-verify
+   skill (`C:\Users\Charles\.claude\skills\visual-verify\SKILL.md`) has the method and
+   `docs/DESIGN.md` Verification this app's version of it. Always pass `nosync`: the dev server's
+   `.env` carries the live project's keys, so a load without it signs a throwaway anonymous user in.
+   Brave's content blocking hides elements whose class names look like social-media widgets (it hid
+   `.social-head` on 23 September 2026, so Crew's classes are `crew-*`): keep class names clear of
+   social, share, ad, banner and promo. Then `node tools/qa/scan.mjs <files>`, `npm run
+   design:check`, `npm run lint` (0 errors required; the 28 warnings are known), `npm test` and
+   `npx tsc -p tsconfig.app.json --noEmit`, none of which opens a browser. `tools/qa/README.md` has
+   the loop.
+
+`npm run design:check` also runs in CI before the build, so an off-system value fails the deploy.
+Accepted exceptions live in `tools/qa/design-allow.txt` with their reasons.
+
+### Headless tools, run only when Charles asks for a headless run
+
+Every script in `tools/qa/` except `scan.mjs` launches headless Chrome through `cdp.mjs`. They are
+kept, `tools/qa/README.md` lists them, and none of them runs unless Charles asks for a headless run.
+Beyond `shot.mjs`, the one-screen shot:
+
+- `tools/qa/film.mjs` films an interaction: a contact sheet with a tile every `--every` ms from the
+  press, cropped to one element, and a flipbook that plays the frames at real speed and at a quarter
+  speed, which is how the shaker's timing is judged. It always appends `?seed&nosync`.
+- `tools/qa/shots.mjs` sweeps every screen and its main sheet and passes `nosync` on every load, so a
+  sweep never signs a throwaway user in to the live backend.
+- `tools/qa/erase-live.mjs` is polish item 1's live check (Seed, below). By hand only, and never in a
+  sweep: it signs two anonymous users in to the live backend and deletes both itself.
+- `tools/qa/gestures.mjs` warms the dev server itself before it starts timing, so a cold server no
+  longer fails the first run.
+
+The traps, all still true of `shot.mjs`:
+
+`shot.mjs` appends `?seed` to the route but not `nosync`. Put it in the route (`drinks?nosync`), or
+the run signs a throwaway user in to the live project.
 
 `shot.mjs` reads `--after` once and reuses it for both clicks, so a command carrying two of them
 waits the first value after each: a shot meant to land 900ms after the second click waits 2200 and
@@ -33,9 +67,7 @@ that suits the shot you want, and read the state back in `--eval` beside the pic
 `document.querySelector('[aria-live]')` in a `--eval` finds the toast region, which is mounted
 empty on every screen, and not the live line of the sheet you are looking at. Select the region you
 mean (`.sr-only[aria-live]`), or a passing shot will report an announcement that never happened.
-
-`npm run design:check` also runs in CI before the build, so an off-system value fails the deploy.
-Accepted exceptions live in `tools/qa/design-allow.txt` with their reasons.
+The same holds for a probe of the page from Brave.
 
 ## Where things are
 
@@ -56,9 +88,29 @@ Accepted exceptions live in `tools/qa/design-allow.txt` with their reasons.
   The three QA fixtures the BYO screens are shot from (`?seed&fixture=byo-new|byo-empty|byo`) are in
   the same inline block in `index.html` as the demo seed.
 - `src/features/shake/`: the shaker, opened from the foot of Home's "For you". `pick.ts` is the
-  decision (pure, tested), `rattle.ts` the synthesised dice, `Shaker.tsx` the drawing and
-  `ShakeSheet.tsx` the states; the fifth authored moment, written up in `docs/DESIGN.md`.
-- `tools/qa/`: the screenshot and scan harness (zero dependencies).
+  decision (pure, tested), `rattle.ts` the synthesised dice, `Shaker.tsx` the drawing, `Glass.tsx`
+  the nine prize glasses, `timing.ts` the timings (`SHAKER`) and `ShakeSheet.tsx` the states; the
+  fifth authored moment, written up in `docs/DESIGN.md`. `keyframes.mjs` writes the computed
+  keyframes at the foot of `shake.css` from `SHAKER`: to change a timing, edit `SHAKER` in
+  `timing.ts`, then run `node src/features/shake/keyframes.mjs`, and read the two lines it prints
+  (whether the cap clears the glass, whether anything leaves the top of the stage), because it warns
+  rather than fails.
+- `src/data/glass.ts`: which of the nine glasses a drink is served in, read by the drink row's icon
+  (`GlassIcon` in `src/ui/Icon.tsx`) and the shaker's prize alike. A published drink takes its glass
+  from `src/data/glassByDrink.ts`, a generated table never edited by hand; a drink the guest added
+  takes the rules in `glass.ts` (name, then frozen, then category; pure, tested in `glass.test.ts`).
+  `tools/glass-classify.mjs` writes the table: wines and beers in code, each cocktail put to Jev
+  (TypeSafe, `jev-1.13.0`) as one choice among the nine glasses, the rulings in
+  `tools/glass-classify.overrides.json` applied last, the probabilities in
+  `tools/glass-classify.report.json`. It calls a paid API with `TYPESAFE_API_KEY` from
+  `E:\claude-projects\jev-lab\.env` (the first run cost $0.0054), so ask Charles before running it;
+  `--dry` asks and prints without writing. A changed glass is a ruling in the overrides file,
+  applied on the next run.
+- `tools/qa/`: the screenshot and scan harness (zero dependencies). All but `scan.mjs` are headless,
+  so they run only when Charles asks (above).
+- `.claude/`: the workflow worktrees (`.claude/worktrees/<run id>`), each a checkout of this repo
+  whose branch holds one stream's work. Gitignored, and not the main tree: edit and commit in the
+  repo root.
 - `redirect/`: the GitHub Pages redirector for the old address.
 
 ## Operating notes
@@ -77,16 +129,19 @@ Accepted exceptions live in `tools/qa/design-allow.txt` with their reasons.
   and `src/features/cruise/Entry.tsx` is what sets it. Until it is true `sync.ts`'s `mode()` is
   `'off'`, so a cold first open signs in to nothing and writes nothing: the consent line on that
   screen would be false otherwise. `tools/qa/first-open.mjs` is the check, and it is the one thing
-  `shot.mjs` cannot see, because it always appends `?seed` and a seeded store is already entered.
+  `shot.mjs` cannot see, because it always appends `?seed` and a seeded store is already entered. It
+  needs a browser context with nothing stored, which a Brave tab on the dev server is not (it carries
+  whatever that origin has stored), so it runs headless, when Charles asks.
 - **Landing and install:** `/get` is the install path (what this is, a code of the live address, the
   two steps to a home screen, and a price slot that is empty until Charles rules), and the same screen
   also renders at `/` for a desktop first open, above the entry gate, so a laptop visitor is never
   handed a name-and-colour card. `isDesktopVisitor()` (`src/data/model.ts`, beside the QA overrides so
   `Landing.tsx` only exports its component) decides it on width, hover and pointer together. It
   collects nothing and asks the network for nothing.
-- **Rendering it headlessly:** `?landing=desktop|phone` pins the branch, and `desktop` also forces the
-  root gate open, because `?seed` has always migrated the store to entered; `SHOT_W`/`SHOT_H` move
-  `shot.mjs` off 390×844, which is the only way to see the desktop branch at the size it is for.
+- **Rendering the landing:** `?landing=desktop|phone` pins the branch, and `desktop` also forces the
+  root gate open, because `?seed` has always migrated the store to entered. In Brave, an iframe
+  wrapper 1280 by 800 shows the desktop branch at the size it is for; in a headless run,
+  `SHOT_W`/`SHOT_H` move `shot.mjs` off 390×844 to do the same.
 - **Seed:** `?seed` loads sample data and two friends from the inline block in `index.html`. It needs
   the exact `?seed` parameter, not the substring, and a production build only seeds a passport nobody
   has touched: any entry, visit, friend, group, custom drink or profile name and it returns without
@@ -108,7 +163,10 @@ Accepted exceptions live in `tools/qa/design-allow.txt` with their reasons.
   Done: a stranger is asked again before anything leaves the phone, and erasing on a live-sync page
   leaves nothing behind. Tapping Done after that does sign in a new anonymous user, so a QA run that
   goes past the entry screen still owes a second erase. The check is the live run in
-  `docs/specs/2026-09-17-polish.md` item 1.
+  `docs/specs/2026-09-17-polish.md` item 1. `tools/qa/erase-live.mjs` is that run: by hand, once,
+  when erasure or the sync gate changes, never in a sweep. It signs two anonymous users in to the
+  live backend, erases both itself (the second on a `nosync` load) and prints their uids and codes
+  for the purge ledger; it is headless, so it also waits for Charles to ask.
 - **Accounts:** guest first, and signing in stays optional. "Keep your passport" in the Profile sheet
   offers Google: an anonymous session upgrades through `linkIdentity`, so the user id and every row
   under it survive. The merge is pure and tested (`src/state/restore.ts`, `npm test`); `sync.ts` owns
@@ -135,6 +193,8 @@ Accepted exceptions live in `tools/qa/design-allow.txt` with their reasons.
   signed in, so the whole restore path can be run against real rows with no Google account.
 - **Do not push to Isabel's repo** (`isabelgillam21-sketch/Princess-Cruise-Drinks`). This is
   `CCWBee/cruise-passport`.
-- **Headless screenshots** show the CSS fallback sea, not the WebGL one; the sea hero needs a real
-  device for a final look. Everything else is what a phone renders.
+- **The sea hero in a render:** a headless shot shows the CSS fallback sea, not the WebGL one, unless
+  `CDP_GPU=1`. Brave paints WebGL on the real GPU, but the sea's motion does not advance between the
+  extension's calls, so the sea hero still needs a real phone for a final look. Everything else is
+  what a phone renders.
 - Copy: British English, no em dashes, sentence case, dry. See `docs/DESIGN.md` Copy.
