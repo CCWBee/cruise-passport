@@ -6,6 +6,23 @@ architecture in `docs/specs/2026-09-10-product-brief.md`, one spec per workstrea
 
 ## Where it stands (23 September 2026)
 
+- **LIVE 23 September about 16:10 at `d16ded8`** (deploy green, shell `index-BQ-BYNVL.js`): the
+  night-bar redesign (prototype C with every A and B graft; day, evening and night rooms by the
+  clock; the floating dock with Log and its search; two-height glass sheets; the struck SVG medals
+  on Home and in the case; three.js gone), the recovery code with its screens ("Save your passport",
+  "Bring back a passport", the moved and demo statuses), and the hardening (one identity kept on
+  patchy Wi-Fi, request timeouts, the erase race closed, demo loads and demo stores never sync, an
+  error screen, persistent storage, CI running the tests on Node 22, a keep-awake health check).
+  Migrations 0004 (recovery), 0005 (friends and memberships SELECT and DELETE only) and 0006
+  (explicit grants) are live. Checked: a live two-phone recovery test headless inside the CPU cap,
+  34 of 34 PASS, its users deleted; a capped headless sweep of 105 states reviewed by five agents,
+  39 defects, every blocker and major fixed and re-swept; 91 tests and every gate green. Live users
+  33 (C, Isabel, Isabel Gillam, Charles Bee named; 2 recovery codes registered). Open for Charles:
+  roll the Cloudflare token; two wording calls ("Diary" for You's third segment, and whether the
+  medal name "Twenty Five" gains its hyphen); one look on a real iPhone at the dock's foot over the
+  home indicator (checked by arithmetic only). `tools/qa/erase-live.mjs` needs rewriting on the
+  `recovery-live.mjs` pattern before it is next run. Deploy freeze from 3 to 17 October.
+
 - **LIVE 23 September at `6f54560`** (deploy run 35797903930 green, shell `index-B8nC17Lm.js`), on
   Charles's "verify and push it" and "continue ... sexy up, declutter": the shaker second pass (a
   cobbler from his reference photograph, cap off, the drink's glass rising out of the neck), the
