@@ -5,12 +5,14 @@
 //   - off     (guest): nothing.
 import { create } from 'zustand'
 import {
-  befriend, ensureSession, fetchBackup, fetchProfile, friendFeed, groupFeed, hasBackend, joinGroup,
-  listBackups, myGroups, oauthError, publishBackup, publishPassport, sessionKind, signInWithGoogle,
-  unfriend, upsertProfile, type SessionKind,
+  befriend, bindSync, claimRecovery, clearMoved, ensureSession, fetchBackup, fetchProfile, friendFeed,
+  groupFeed, hasBackend, identityMoved, joinGroup, listBackups, myGroups, oauthError, publishBackup,
+  publishPassport, sessionKind, setRecovery, signInWithGoogle, unfriend, upsertProfile,
+  type SessionKind,
 } from './backend'
-import { qaNoSync } from '../data/model'
+import { qaDemo, qaNoSync } from '../data/model'
 import { exportAll, importSailings } from '../data/sailings'
+import { formatSecret, generateSecret, hashSecret, isSecret, normaliseSecret } from './recovery'
 import {
   isUntouched, mergeProfile, mergeRestore, mergeSailings, readBackup,
   type BackupState, type SailingExport,
@@ -19,16 +21,23 @@ import { buildPayload } from './share'
 import type { Friend, Profile } from './stats'
 import { useStore } from './store'
 
-export type SyncStatus = 'off' | 'idle' | 'syncing' | 'held' | 'error'
+// 'local': a `?seed` or `?fixture` load, which never syncs (data/model.ts, qaDemo). 'moved': the
+// identity this phone synced under was claimed on another phone or deleted; nothing syncs until the
+// guest brings it back with the recovery code (claimPassport) or starts again (startAgain).
+export type SyncStatus = 'off' | 'idle' | 'syncing' | 'held' | 'error' | 'local' | 'moved'
 export type AccountState = 'off' | 'guest' | 'saved'
 export type RestoreState =
   'idle' | 'working' | 'done' | 'empty' | 'failed' | 'linked' | 'unavailable' | 'failed-signin'
+/** Bringing a passport back with a recovery code (claimPassport). 'done' clears itself after a few
+ *  seconds, as a restore's does; the others stay until the next attempt. */
+export type ClaimState = 'idle' | 'working' | 'done' | 'wrong' | 'offline' | 'failed'
 
 interface SyncState {
   status: SyncStatus; lastSyncedAt: number | null; pending: boolean
   account: AccountState
   restore: RestoreState
   restored: number
+  claim: ClaimState
 }
 // account starts at the truthful default for almost everyone: a build with no backend has nothing to
 // sign in to, and everyone else is a guest until the launch check says otherwise. That check finishes
@@ -39,6 +48,7 @@ export const useSyncStore = create<SyncState>()(() => ({
   account: hasBackend() ? 'guest' : 'off',
   restore: 'idle',
   restored: 0,
+  claim: 'idle',
 }))
 
 const BACKOFF_MS = [5_000, 15_000, 60_000]
@@ -51,28 +61,39 @@ let localRevision = 0
 // Set between discardGuestRows() and the browser actually leaving for Google; see runSync. Cleared
 // only when the sign-in did not redirect, because a page that is leaving has no later state to keep.
 let leaving = false
+// Set while an erase or a claim changes who this phone is on the server (pauseSync). A round checks
+// it at the top and between its steps, so nothing it was about to write lands after the change.
+let paused = false
 let doneTimer: ReturnType<typeof setTimeout> | undefined
+let claimTimer: ReturnType<typeof setTimeout> | undefined
 
 type Mode = 'backend' | 'off'
 // Nothing signs in, nothing publishes and nothing pulls before Done on the first-open screen. The
 // consent line there says what sync does, and it would be false if this file published at module
 // load as it used to. Safe to read at load: the persist middleware hydrates synchronously from
 // localStorage, which is why store.ts can call ensureIdentity() at module scope.
-// ?nosync (QA) keeps a headless run off the backend: see qaNoSync() in data/model.ts
+// ?nosync (QA) keeps a headless run off the backend: see qaNoSync() in data/model.ts. ?seed and
+// ?fixture (qaDemo()) do the same whatever the store says, because both mark the store entered.
 function mode(): Mode {
   if (!useStore.getState().enteredCruise) return 'off'
-  return hasBackend() && !qaNoSync() ? 'backend' : 'off'
+  return hasBackend() && !qaNoSync() && !qaDemo() ? 'backend' : 'off'
 }
+/** What 'off' is called on screen: a demo or fixture load says it is local on purpose. */
+const offStatus = (): SyncStatus => (hasBackend() && qaDemo() ? 'local' : 'off')
 
 // ── QA overrides ──
-// ?qa=account:saved,restore:done,restored:58,sync:held,signedin:1. Comma-separated key:value pairs,
-// parsed once. The same family as ?day= and ?hour= in data/model.ts, and it changes nothing for a
-// real session. Values off the lists below are ignored rather than trusted.
+// ?qa=account:saved,restore:done,restored:58,sync:held,claim:wrong,code:1,signedin:1. Comma-separated
+// key:value pairs, parsed once. The same family as ?day= and ?hour= in data/model.ts, and it changes
+// nothing for a real session. Values off the lists below are ignored rather than trusted.
 const ACCOUNTS: readonly string[] = ['off', 'guest', 'saved']
 const RESTORES: readonly string[] = ['idle', 'working', 'done', 'empty', 'failed', 'linked', 'unavailable', 'failed-signin']
-const STATUSES: readonly string[] = ['off', 'idle', 'syncing', 'held', 'error']
+const STATUSES: readonly string[] = ['off', 'idle', 'syncing', 'held', 'error', 'local', 'moved']
+const CLAIMS: readonly string[] = ['idle', 'working', 'done', 'wrong', 'offline', 'failed']
 
-interface QaOverrides { account?: AccountState; restore?: RestoreState; restored?: number; sync?: SyncStatus; signedin?: boolean }
+interface QaOverrides {
+  account?: AccountState; restore?: RestoreState; restored?: number; sync?: SyncStatus; claim?: ClaimState
+  signedin?: boolean; code?: boolean
+}
 function qaOverrides(): QaOverrides {
   const out: QaOverrides = {}
   if (typeof location === 'undefined') return out
@@ -86,16 +107,20 @@ function qaOverrides(): QaOverrides {
     if (key === 'account' && ACCOUNTS.includes(value)) out.account = value as AccountState
     else if (key === 'restore' && RESTORES.includes(value)) out.restore = value as RestoreState
     else if (key === 'sync' && STATUSES.includes(value)) out.sync = value as SyncStatus
+    else if (key === 'claim' && CLAIMS.includes(value)) out.claim = value as ClaimState
     else if (key === 'restored' && /^\d+$/.test(value)) out.restored = Number(value)
     else if (key === 'signedin') out.signedin = value === '1'
+    else if (key === 'code') out.code = value === '1'
   }
   return out
 }
 const QA = qaOverrides()
-// The four that are written into the store. When any of them is present the whole sync goes inert,
+// The five that are written into the store. When any of them is present the whole sync goes inert,
 // so nothing the app does afterwards can overwrite the state being screenshotted: without it the
 // first markPending() after hydration resets status and sync:held would never survive to the shutter.
-const qaFrozen = QA.account !== undefined || QA.restore !== undefined || QA.restored !== undefined || QA.sync !== undefined
+// code:1 is not one of them: it only makes useRecoveryCode() show a sample code on a nosync load.
+const qaFrozen = QA.account !== undefined || QA.restore !== undefined || QA.restored !== undefined
+  || QA.sync !== undefined || QA.claim !== undefined
 function applyQaState(): void {
   if (!qaFrozen) return
   const patch: Partial<SyncState> = {}
@@ -103,10 +128,11 @@ function applyQaState(): void {
   if (QA.restore !== undefined) patch.restore = QA.restore
   if (QA.restored !== undefined) patch.restored = QA.restored
   if (QA.sync !== undefined) patch.status = QA.sync
+  if (QA.claim !== undefined) patch.claim = QA.claim
   useSyncStore.setState(patch)
 }
 
-/** signedin:1 is the opposite of the four above: it leaves sync running and makes the session read
+/** signedin:1 is the opposite of the five above: it leaves sync running and makes the session read
  *  as signed in, so the whole restore path runs against the anonymous user's own rows. It is what
  *  makes the launch order testable against the real backend with no Google account. Both
  *  restoreOnLaunch and restoreNow go through here, not just the first: restoreNow re-checks the
@@ -131,18 +157,21 @@ function clearSignIn(): void { try { sessionStorage.removeItem(SIGNIN_KEY) } cat
 // ── scheduling machinery ──
 function clearBackoff() { if (backoffTimer) clearTimeout(backoffTimer); backoffTimer = undefined; backoffAttempt = 0 }
 function scheduleBackoff() {
-  if (backoffTimer || mode() === 'off') return
+  if (backoffTimer || paused || mode() === 'off') return
   const delay = BACKOFF_MS[Math.min(backoffAttempt, BACKOFF_MS.length - 1)]
   backoffAttempt++
   backoffTimer = setTimeout(() => { backoffTimer = undefined; void syncNow() }, delay)
 }
 function holdPending() { useSyncStore.setState({ status: 'held', pending: true }); scheduleBackoff() }
+// The identity is gone (session.ts): retrying cannot help, so no backoff, and the last-synced time
+// goes with it, since "synced just now" would no longer be true of anything.
+function showMoved() { clearBackoff(); useSyncStore.setState({ status: 'moved', pending: true, lastSyncedAt: null }) }
 
 function markPending() {
   if (qaFrozen) return // the screenshot's state is the point; nothing may write over it
   localRevision++
   if (mode() === 'off') {
-    clearBackoff(); updateVisibleInterval(); useSyncStore.setState({ status: 'off', pending: false }); return
+    clearBackoff(); updateVisibleInterval(); useSyncStore.setState({ status: offStatus(), pending: false }); return
   }
   updateVisibleInterval()
   useSyncStore.setState((s) => ({ pending: true, status: s.status === 'syncing' ? 'syncing' : 'idle' }))
@@ -150,10 +179,29 @@ function markPending() {
   debounceTimer = setTimeout(() => { void syncNow() }, 2_000)
 }
 
+/** Stop starting rounds and wait for the one in flight to finish, its backup write included. The
+ *  erase and the claim both change who this phone is on the server, and a round that straddled the
+ *  change would write the old identity's rows back, or the fresh phone's over the claimed ones. */
+async function pauseSync(): Promise<void> {
+  paused = true
+  if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = undefined }
+  clearBackoff()
+  if (activeSync) await activeSync // never rejects: syncNow catches into holdPending
+}
+/** Start rounds again, and run one now if there is anything to send. */
+function resumeSync(): void {
+  if (!paused) return
+  paused = false
+  if (mode() !== 'off' && useSyncStore.getState().pending) void syncNow()
+}
+
 // ── backend (Supabase) transport ──
 async function publishBackend(): Promise<boolean> {
+  // One user for the whole round, resolved here and handed to each step, which writes only while it
+  // is still the session's (backend.ts). None of the steps can mint a session of its own.
+  const uid = await ensureSession()
+  if (!uid || paused) return false
   const s = useStore.getState()
-  if (!(await ensureSession())) return false
   // `code` is unique, so a blank one is never worth writing; every real profile has one (the store
   // stamps it at hydrate). A failed profile write is a failed sync: the feeds are authoritative for
   // name and colour, so silently reporting success would leave the crew on a stale name for ever.
@@ -164,13 +212,37 @@ async function publishBackend(): Promise<boolean> {
   // share.ts 92 still puts the literal in passports.payload.n, which no SQL reads and parseFriend
   // normalises on receipt: deliberate, and out of this workstream's scope.
   const profileOk = s.profile.code
-    ? await upsertProfile(s.profile.code, s.profile.name, s.profile.colour || 'aqua')
+    ? await upsertProfile(uid, s.profile.code, s.profile.name, s.profile.colour || 'aqua')
     : true
-  const ok = await publishPassport(s.cruiseId, buildPayload(s.me, s.profile))
+  if (paused) return false
   // The sailings ride in every backup row, the published sailing's included, so a phone restoring
-  // the default cruise id learns the guest's own sailings too. A few kilobytes, still unawaited.
-  void publishBackup(s.cruiseId, { me: s.me, custom: s.custom, profile: s.profile, sailings: exportAll() }) // best-effort
-  return ok && profileOk
+  // the default cruise id learns the guest's own sailings too. A few kilobytes. The backup is awaited
+  // and counted now, where it was once fire-and-forget: it is what a recovery code brings back, so a
+  // failed write is retried like any other, and an erase that waits for this round waits for it too.
+  const [ok, backupOk] = await Promise.all([
+    publishPassport(uid, s.cruiseId, buildPayload(s.me, s.profile)),
+    publishBackup(uid, s.cruiseId, { me: s.me, custom: s.custom, profile: s.profile, sailings: exportAll() }),
+  ])
+  return ok && profileOk && backupOk
+}
+
+/** Register this passport's recovery code once the server holds something to bring back: after a
+ *  round whose publish went through. The secret is made here the first time, kept in the store, and
+ *  only its hash is sent (recovery.ts). Confirmed once, never asked again; unconfirmed, asked every
+ *  round, which is what "idempotent" buys. A failure here does not hold the round. */
+async function registerRecovery(): Promise<void> {
+  const held = useStore.getState().recovery
+  if (held.secret && held.confirmed) return
+  let secret = held.secret
+  if (!secret) {
+    secret = generateSecret()
+    useStore.getState().setRecovery({ secret, confirmed: false })
+  }
+  const uid = await ensureSession()
+  if (!uid || paused) return
+  const ok = await setRecovery(uid, await hashSecret(secret))
+  // A claim or an erase may have replaced the secret while this was in flight.
+  if (ok && useStore.getState().recovery.secret === secret) useStore.getState().setRecovery({ confirmed: true })
 }
 
 /** Replay invites tapped while offline. A code the server rejects outright is dropped rather than
@@ -214,6 +286,9 @@ async function pullBackend(): Promise<boolean> {
   // A call that did not answer is not "you have nobody": hold and retry rather than writing an
   // empty roster over a good one and calling it a successful sync.
   if (!friends || !coMembers || !groups) return false
+  // An erase or a claim began while the feeds were in flight: their answer is about an identity
+  // this phone may no longer be, so it is not applied.
+  if (paused) return false
   // Snapshot the roster as it stands at this instant (not `s`, which was read several awaits ago),
   // so the merge below can tell a friend the server introduced from one this phone asked for.
   const before = useStore.getState().friends
@@ -244,9 +319,11 @@ async function runSync() {
   // A 'fresh' sign-in has just deleted this session's rows and the browser has not left yet. Three
   // timers can fire into that window (the 2s debounce, the 60s visible interval, the backoff) and
   // pending is almost always true, so without this publishBackend would write the profile, passport
-  // and backup straight back and the real account would sign in over a live guest.
-  if (leaving) return
-  if (mode() === 'off') { clearBackoff(); useSyncStore.setState({ status: 'off', pending: false }); return }
+  // and backup straight back and the real account would sign in over a live guest. `paused` is the
+  // same guard for an erase or a claim.
+  if (leaving || paused) return
+  if (mode() === 'off') { clearBackoff(); useSyncStore.setState({ status: offStatus(), pending: false }); return }
+  if (identityMoved()) { showMoved(); return }
   // Restore reads the server before anything of ours is published over it. restoreNow calls nothing
   // that leads back here, so this can never wait on itself.
   await booting
@@ -257,13 +334,22 @@ async function runSync() {
     await restoreNow()
     if (useSyncStore.getState().restore === 'failed') { holdPending(); return }
   }
+  if (paused) return
   useSyncStore.setState({ status: 'syncing' })
   const publishedRevision = localRevision
   // Publish first: `befriend` and both feeds resolve me through my own profiles row, so on a first
   // run the pull would do nothing at all if the row did not exist yet.
   const published = useSyncStore.getState().pending ? await publishBackend() : true
+  // Abandoned for an erase or a claim: nothing more is sent and nothing is said; the work is still
+  // pending and the next round, if there is one, starts from the store as it then stands.
+  if (paused) { useSyncStore.setState({ status: 'idle', pending: true }); return }
+  // A failed publish is not followed by a pull. If the failure is a lost identity, a pull under
+  // whatever session answers now would read an empty crew and applyFeed would clear the roster.
+  if (!published) { if (identityMoved()) showMoved(); else holdPending(); return }
+  await registerRecovery()
   const pulled = await pullBackend()
-  if (!pulled || !published) { holdPending(); return }
+  if (paused) { useSyncStore.setState({ status: 'idle', pending: true }); return }
+  if (!pulled) { if (identityMoved()) showMoved(); else holdPending(); return }
   clearBackoff()
   const changedWhilePublishing = localRevision !== publishedRevision
   useSyncStore.setState({ status: 'idle', pending: changedWhilePublishing, lastSyncedAt: Date.now() })
@@ -301,6 +387,66 @@ function settle(restore: 'done' | 'empty', restored: number): void {
   }, 8_000)
 }
 
+/** Fold a passport off the server into whatever is on this phone: the sailings every backup row
+ *  carries, the passport through mergeRestore, and the profile through mergeProfile with the
+ *  server's code as the canonical one. Shared by the Google restore (restoreNow) and the recovery
+ *  code (claimPassport), so there is one merge. `identity` is where the name and colour come from:
+ *  'local' keeps this phone's where it has one (a restore onto a phone in use), 'server' takes the
+ *  claimed profile's (the guest has just said that passport is theirs). Returns 'empty' when there
+ *  was no passport to fold in, with the code still adopted, and 'done' with the drinks it brought. */
+function applyBackup(
+  server: { code: string; name: string; colour: string } | null,
+  state: unknown,
+  backups: { state: unknown }[] | null,
+  identity: 'local' | 'server',
+): { result: 'done' | 'empty'; adopted: number } {
+  // The sailings, folded in once for both exits below. A null list means that call did not answer,
+  // and nothing is adopted, but the passport merge still goes ahead. Nothing here reloads: CRUISES
+  // is memoised at module load, so a sailing that arrives from the server appears on the next open,
+  // and the reload contract covers only a change the guest has just made themselves.
+  if (Array.isArray(backups)) {
+    let merged = exportAll()
+    for (const row of backups) {
+      const carried = row.state && typeof row.state === 'object'
+        ? (row.state as { sailings?: unknown }).sailings
+        : undefined
+      if (carried && typeof carried === 'object') merged = mergeSailings(merged, carried as SailingExport)
+    }
+    importSailings(merged)
+  }
+
+  const s = useStore.getState()
+  const canonicalCode = server && server.code ? server.code : undefined
+  const local: BackupState = { me: s.me, custom: s.custom, profile: s.profile }
+  const fromServer = (p: Profile): Profile => (identity === 'server' && server
+    ? { ...p, name: server.name || p.name, colour: server.colour || p.colour }
+    : p)
+  // A malformed row is treated as no backup at all (readBackup returns null), which is what 'empty'
+  // says: there is nothing here worth acting on.
+  const remote = state === null || state === undefined ? null : readBackup(state)
+
+  if (!remote) {
+    // Nothing to bring back, but the canonical code still has to be adopted. profiles is global
+    // across sailings while backups is not, so an account with friends from a previous sailing and
+    // no backup on this one is exactly the case where skipping the rename orphans every edge. The
+    // server's name and colour come with it, and mergeProfile takes them only when local is empty.
+    if (server) {
+      const serverProfile: Profile = { ...local.profile, name: server.name || '', colour: server.colour || local.profile.colour }
+      const profile = fromServer(mergeProfile(local.profile, serverProfile, canonicalCode))
+      useStore.getState().applyRestore({
+        me: s.me, custom: s.custom, profile,
+        adopted: 0, codeChanged: profile.code !== local.profile.code,
+      })
+    }
+    return { result: 'empty', adopted: 0 }
+  }
+
+  const merged = mergeRestore(local, remote, { untouched: isUntouched(s), canonicalCode })
+  const profile = fromServer(merged.profile)
+  useStore.getState().applyRestore({ ...merged, profile, codeChanged: profile.code !== local.profile.code })
+  return { result: 'done', adopted: merged.adopted }
+}
+
 /** Bring the passport back and fold it into whatever is on this phone. Makes no sync call of its
  *  own: applyRestore changes the profile, the subscription below marks the sync pending, and the
  *  pull that booting.then fires brings the crew back under the canonical code. */
@@ -314,51 +460,15 @@ async function restoreNow(): Promise<void> {
   // A call that did not answer is the one unrecoverable case here: writing a possibly empty passport
   // over a backup we could not read cannot be undone, so the publish gate stays shut.
   if (profileRow === null || backupRow === null) { useSyncStore.setState({ restore: 'failed' }); return }
-
-  // The sailings, folded in once for both exits below. listBackups() is deliberately out of the null
-  // test above: a null list means that one call did not answer, and nothing is adopted, but the
-  // passport merge did answer and shutting the publish gate over the sailings would cost the guest
-  // their next publish. Nothing here reloads: CRUISES is memoised at module load, so a sailing that
-  // arrives from the server appears on the next open, and the reload contract covers only a change
-  // the guest has just made themselves.
-  if (Array.isArray(backups)) {
-    let merged = exportAll()
-    for (const row of backups) {
-      const carried = row.state && typeof row.state === 'object'
-        ? (row.state as { sailings?: unknown }).sailings
-        : undefined
-      if (carried && typeof carried === 'object') merged = mergeSailings(merged, carried as SailingExport)
-    }
-    importSailings(merged)
-  }
-
-  const server = profileRow === 'none' ? null : profileRow
-  const canonicalCode = server && server.code ? server.code : undefined
-  const local: BackupState = { me: s.me, custom: s.custom, profile: s.profile }
-  // A malformed row is treated as no backup at all (readBackup returns null), which is what 'empty'
-  // says: there is nothing here worth acting on.
-  const remote = backupRow === 'none' ? null : readBackup(backupRow.state)
-
-  if (!remote) {
-    // Nothing to bring back, but the canonical code still has to be adopted. profiles is global
-    // across sailings while backups is not, so an account with friends from a previous sailing and
-    // no backup on this one is exactly the case where skipping the rename orphans every edge. The
-    // server's name and colour come with it, and mergeProfile takes them only when local is empty.
-    if (server) {
-      const fromServer: Profile = { ...local.profile, name: server.name || '', colour: server.colour || local.profile.colour }
-      const profile = mergeProfile(local.profile, fromServer, canonicalCode)
-      useStore.getState().applyRestore({
-        me: s.me, custom: s.custom, profile,
-        adopted: 0, codeChanged: profile.code !== local.profile.code,
-      })
-    }
-    settle('empty', 0)
-    return
-  }
-
-  const result = mergeRestore(local, remote, { untouched: isUntouched(s), canonicalCode })
-  useStore.getState().applyRestore(result)
-  settle('done', result.adopted)
+  // listBackups() is deliberately out of the null test above: a null list means that one call did
+  // not answer, and nothing is adopted, but the passport merge did answer and shutting the publish
+  // gate over the sailings would cost the guest their next publish.
+  const { result, adopted } = applyBackup(
+    profileRow === 'none' ? null : profileRow,
+    backupRow === 'none' ? null : backupRow.state,
+    backups, 'local',
+  )
+  settle(result, adopted)
 }
 
 /** The launch check, in order. The whole body is one try/catch that never rethrows: booting must
@@ -419,9 +529,84 @@ export function keepAsGuest(): void {
   useSyncStore.setState({ restore: 'idle' })
 }
 
+// ── the recovery code ──
+
+/** This passport's recovery code, grouped for reading (K7QM-3XPA-9RTC-W2HD-6NBF), or null until
+ *  the server has confirmed it: before the first sync there is nothing there to bring back, so
+ *  there is nothing to show. ?qa=code:1 shows a sample, for a render on a nosync load. */
+export function useRecoveryCode(): string | null {
+  const recovery = useStore((s) => s.recovery)
+  if (QA.code) return 'K7QM-3XPA-9RTC-W2HD-6NBF'
+  return recovery.confirmed && recovery.secret ? formatSecret(recovery.secret) : null
+}
+
+function finishClaim(claim: ClaimState): ClaimState {
+  useSyncStore.setState({ claim })
+  if (claimTimer) clearTimeout(claimTimer)
+  if (claim === 'done') {
+    claimTimer = setTimeout(() => {
+      if (useSyncStore.getState().claim === 'done') useSyncStore.setState({ claim: 'idle' })
+    }, 8_000)
+  }
+  return claim
+}
+
+/** Bring a passport back with its recovery code, on this phone: from the entry screen, from Your
+ *  details, or on a copy whose identity has moved. The code is checked for shape first, so a typo
+ *  costs no request ('wrong'). Sync is paused and the round in flight awaited, then claim_recovery
+ *  moves the identity onto this phone's session (minting one if there is none) and answers its
+ *  profile and backups. The backup for this sailing is folded in through the restore merge, the
+ *  friend code, name and colour are taken from the claimed profile, the code is kept (the same code
+ *  keeps working), and the phone enters and publishes. Nothing changes on 'wrong', 'offline' or
+ *  'failed'. The state is also written to useSyncStore().claim. */
+export async function claimPassport(typed: string): Promise<ClaimState> {
+  if (qaFrozen) return useSyncStore.getState().claim
+  const secret = normaliseSecret(typed)
+  if (!isSecret(secret)) return finishClaim('wrong')
+  // A build with no backend, or a load kept off it, has nowhere to bring anything back from.
+  if (!hasBackend() || qaNoSync() || qaDemo()) return finishClaim('failed')
+  useSyncStore.setState({ claim: 'working' })
+  await pauseSync()
+  try {
+    const got = await claimRecovery(secret)
+    if (typeof got === 'string') return finishClaim(got)
+    const s = useStore.getState()
+    const here = got.backups.find((b) => b.cruiseId === s.cruiseId)
+    const { adopted } = applyBackup(got.profile, here ? here.state : null, got.backups, 'server')
+    const st = useStore.getState()
+    st.setSyncUid(got.uid)
+    st.setRecovery({ secret, confirmed: true })
+    useSyncStore.setState({ restored: adopted, pending: true, status: 'idle' })
+    // Last, because entering fires the store subscription below, which lifts the pause.
+    if (!st.enteredCruise) st.enterCruise(st.cruiseId)
+    return finishClaim('done')
+  } catch {
+    return finishClaim('failed')
+  } finally {
+    resumeSync()
+  }
+}
+
+/** Give up an identity that has moved and start as a new guest: a new friend code and a new
+ *  recovery code on the next sync, the entry screen first (resetSocialIdentity). The drinks on this
+ *  phone stay. */
+export function startAgain(): void {
+  clearMoved()
+  useStore.getState().resetSocialIdentity()
+  useSyncStore.setState({ status: 'off', pending: false, claim: 'idle', lastSyncedAt: null })
+}
+
 // One promise, named, created once, and created after backend.ts has been evaluated (it is imported
 // at the top of this file), so oauthError() has already captured the URL.
 const booting: Promise<void> = restoreOnLaunch()
+
+// What backend.ts needs from this file for the session and the erase (backend.ts, SyncBinding).
+bindSync({
+  pause: pauseSync,
+  resume: resumeSync,
+  knownUid: () => useStore.getState().syncUid,
+  rememberUid: (uid) => { if (!useStore.getState().syncUid) useStore.getState().setSyncUid(uid) },
+})
 
 // Work the server has not seen yet: a friend added by QR, link or paste needs an edge, and a queued
 // invite or removal needs replaying. Counted, not compared by reference, because the pull's own
@@ -437,7 +622,9 @@ useStore.subscribe((state, previous) => {
   // markPending() alone is enough and is what to write: it calls updateVisibleInterval() itself, so
   // the 60-second interval starts from the same call. Nothing is lost by publishing late, because
   // publishBackend reads the whole current store rather than a diff.
-  if (state.enteredCruise && !previous.enteredCruise) { markPending(); return }
+  // An erase leaves sync paused (backend.ts, deleteMyData) until this moment: Done is the consent the
+  // new identity needs before anything leaves the phone.
+  if (state.enteredCruise && !previous.enteredCruise) { paused = false; markPending(); return }
   if (state.me !== previous.me || state.profile !== previous.profile || unsent(state) > unsent(previous)) markPending()
 })
 
@@ -458,6 +645,8 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     // would publish this phone's passport, backup included, and on a new phone that overwrites a
     // good backup with an empty one before anything has read it.
     void booting.then(() => syncNow())
+  } else {
+    useSyncStore.setState({ status: offStatus() })
   }
   // Last in the block, after the setState above, which also runs at module load and would otherwise
   // clobber sync:held before the shutter. Outside the mode() check on purpose: every screenshot

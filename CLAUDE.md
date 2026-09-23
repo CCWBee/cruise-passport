@@ -161,6 +161,10 @@ The same holds for a probe of the page from Brave.
   anonymous users; purge only anonymous sessions created that day with profile name Alex and zero
   edges or memberships. Real users have existed since 3 September, so never blanket-purge. Pass
   `?seed&nosync` to keep a headless run off the backend entirely.
+  Since 23 September a load whose URL carries `seed` or `fixture` never syncs, whatever the store
+  says (`qaDemo()` in `src/data/model.ts`, read by `mode()` in `sync.ts`; the status reads `'local'`),
+  because both mark the store entered and that is how 124 of the live project's 166 accounts were
+  made. `nosync` is still the rule for any other QA load against the dev server.
   **Delete my data no longer replaces the erased user with one you cannot reach.** Until 22 September
   `deleteMyData` signed the session out and `resetSocialIdentity()` minted a new local identity, so
   with sync live the next round trip signed in a *fresh* anonymous user and republished `profiles`,
@@ -194,11 +198,52 @@ The same holds for a probe of the page from Brave.
   rows are overwritten with an empty name the next time each of those users syncs. The four
   client-side display fallbacks are unchanged, and `share.ts` still puts the literal in
   `passports.payload.n`, which no SQL reads.
+- **The recovery code** (23 September 2026, `docs/specs/2026-09-23-recovery-and-hardening.md`,
+  migration `0004_recovery.sql`) is how a passport comes back while Google is off
+  (`googleSignInEnabled` is false in `backend.ts`; the Google paths stay, unreachable). The secret is
+  pure and tested (`src/state/recovery.ts`): 20 Crockford characters, 100 bits, made on the phone,
+  kept in the store (`recovery: { secret, confirmed }`), and registered as its SHA-256 through
+  `set_recovery` after a round whose publish went through, every round until confirmed.
+  `useRecoveryCode()` returns it grouped (`K7QM-3XPA-9RTC-W2HD-6NBF`) once confirmed, else null.
+  `claimPassport(code)` pauses sync, awaits the round in flight, calls `claim_recovery` (which moves
+  the whole identity onto this phone's session and deletes the old auth user), folds the backup in
+  through the same `applyBackup()` the Google restore uses, takes the friend code, name and colour
+  from the claimed profile, keeps the secret, enters and publishes. Its states are in
+  `useSyncStore().claim`: `working`, `done` (clears after 8 s), `wrong`, `offline`, `failed`. The
+  UI is added on night-bar after the merge; its copy is in the spec's section 1.
+- **One identity on patchy Wi-Fi.** auth-js removes a session whose refresh it counts as final, and
+  answers null for a minute after a retryable failure; the old `ensureSession()` minted a new
+  anonymous user either way, which then fought the old one for the friend code. `supabase.ts` now
+  gives the client a storage adapter that keeps a copy of the session unless the app itself signed
+  out (`forgetSession()`), and `backend.ts`'s `resolveSession()` acts on the pure, tested decision in
+  `src/state/session.ts`: use a live session; hold while the library still stores one; put the kept
+  copy back with `setSession`; mint only on a phone that never had a user (the store's `syncUid`).
+  Only a definite "gone" (`refresh_token_not_found`, `user_not_found`, `session_not_found`, a 401,
+  or a profile write refused on the friend code or the auth.users foreign key and confirmed by
+  `getUser()` on the session's own token) retires the
+  identity: sync stops with status `'moved'` and nothing new is minted until the guest claims the
+  code back or calls `startAgain()`. A failed publish is no longer followed by a pull, so a lost
+  identity cannot empty the crew list.
+- **Timeouts and the erase.** Every Supabase request has a time limit (`src/state/timeout.ts`, 15 s,
+  20 s for the claim), so a stalled request fails into the backoff instead of holding every later
+  round. `deleteMyData()` pauses sync and awaits the round in flight, backup included, before
+  `delete_my_data`; it never creates a session to erase (no session means nothing on the server);
+  the pause lifts at the next Done. The three publish steps take the round's user id and write only
+  while it is still the session's. The backup is awaited and counted in the round now.
+- **Migrations are dry-run before they are applied:** `node supabase/tests/dryrun.mjs <nnnn>` runs
+  the migration's own text and its assertions against the live project inside a DO block that ends
+  by raising, so nothing persists, then confirms that with a read-only query (`docs/BACKEND_SETUP.md`
+  step 3). Symptom it caught on the first run: a JavaScript `String.replace` with a string
+  replacement read the migration's `$'` as its own pattern and spliced text into the SQL; the
+  builder passes a function.
 - **`?qa=` overrides** (QA only, `src/state/sync.ts`, the same family as `?seed`, `?nosync`, `?day=`
   and `?hour=`): `?qa=account:saved,restore:done,restored:58,sync:held` puts any sign-in or restore
   state on screen, and any of those four freezes the sync so nothing overwrites the state before the
   shutter. `?qa=signedin:1` is the opposite: it leaves sync running and makes the session read as
   signed in, so the whole restore path can be run against real rows with no Google account.
+  For the recovery UI: `claim:working|done|wrong|offline|failed` (frozen, like the four),
+  `sync:moved` and `sync:local`, and `code:1`, which makes `useRecoveryCode()` show a sample code on
+  a nosync load without freezing anything.
 - **Do not push to Isabel's repo** (`isabelgillam21-sketch/Princess-Cruise-Drinks`). This is
   `CCWBee/cruise-passport`.
 - **The sea hero in a render:** a headless shot shows the CSS fallback sea, not the WebGL one, unless

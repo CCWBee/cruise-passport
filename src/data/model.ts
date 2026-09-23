@@ -188,6 +188,14 @@ export function nowHour(): number {
 export function qaNoSync(): boolean {
   return typeof location !== 'undefined' && new URLSearchParams(location.search).has('nosync')
 }
+/** A demo (`?seed`) or fixture (`?fixture=`) load never syncs, whatever the store says: both mark
+ *  the store entered, so before this they published a fake passport to the live project, which is
+ *  where 124 of its 166 accounts came from. sync.ts reads it in mode() and reports status 'local'. */
+export function qaDemo(): boolean {
+  if (typeof location === 'undefined') return false
+  const q = new URLSearchParams(location.search)
+  return q.has('seed') || q.has('fixture')
+}
 /** ?landing=desktop|phone (QA only) pins which branch of the landing screen renders. `desktop` also
  *  forces the root gate open, because shot.mjs always appends ?seed and a seeded store has already
  *  migrated to entered, so the gate could never be reached otherwise. `phone` forces nothing: it

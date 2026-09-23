@@ -25,6 +25,9 @@ export interface Filters {
   wish: boolean
   top: boolean
 }
+export interface Recovery { secret: string; confirmed: boolean }
+const noRecovery = (): Recovery => ({ secret: '', confirmed: false })
+
 export const emptyFilters = (): Filters => ({
   venues: [], decks: [], spirits: [], flavors: [], cats: [],
   pkg: 'any', tried: null, frozen: false, fav: false, wish: false, top: false,
@@ -41,6 +44,12 @@ interface State {
   pendingInvites: string[] // join codes tapped offline; replayed on the next successful pull
   pendingUnfriends: string[] // removals the server has not confirmed; replayed, and their feed rows ignored
   seenMedals: string[] // badge ids whose "new medal" moment Home has already shown
+  /** The Supabase user this phone's rows were published under ('' until the first sync). What tells
+   *  a phone that has had an identity from one that never did (state/session.ts). */
+  syncUid: string
+  /** The recovery code (state/recovery.ts) and whether the server has confirmed its hash. It is
+   *  shown only once confirmed: before that there is nothing on the server to bring back. */
+  recovery: Recovery
   filters: Filters
   showFilters: boolean
 
@@ -50,6 +59,8 @@ interface State {
   queueInvite: (code: string) => void
   setPendingInvites: (codes: string[]) => void
   setPendingUnfriends: (codes: string[]) => void
+  setSyncUid: (uid: string) => void
+  setRecovery: (r: Partial<Recovery>) => void
 
   // entry mutations (self)
   patch: (id: string, o: Partial<Entry>) => void
@@ -155,10 +166,16 @@ export const useStore = create<State>()(
       pendingInvites: [],
       pendingUnfriends: [],
       seenMedals: [],
+      // Both new in this version and additive, so no migrate step: persist merges the stored state
+      // over these defaults, and a store written before them reads as "never synced, no code yet".
+      syncUid: '',
+      recovery: noRecovery(),
       filters: emptyFilters(),
       showFilters: false,
 
       setGroups: (g) => set({ groups: g }),
+      setSyncUid: (uid) => set({ syncUid: uid }),
+      setRecovery: (r) => set((s) => ({ recovery: { ...s.recovery, ...r } })),
       markMedalsSeen: (ids) => set((s) => {
         const add = ids.filter((id) => !s.seenMedals.includes(id))
         return add.length ? { seenMedals: [...s.seenMedals, ...add] } : {}
@@ -396,11 +413,16 @@ export const useStore = create<State>()(
       // new identity leaves the phone: enteredCruise goes false in the same set as the new code, so
       // the store subscription in sync.ts sees mode() already 'off' and schedules nothing. Without
       // it the next round trip signed in a fresh anonymous user and republished the name under it.
-      // Delete my data is the only caller; the kept name prefills the entry screen's field.
+      // Delete my data is one caller and starting again after a move (sync.ts, startAgain) the
+      // other; the kept name prefills the entry screen's field. The recovery code and the synced
+      // user go too: the server row for the one is erased or belongs to another phone, and a new
+      // identity gets a new code on its first sync.
       resetSocialIdentity: () => set((s) => ({
         friends: [], groups: [], pendingInvites: [], pendingUnfriends: [],
         profile: { ...s.profile, id: ensureMyId({ ...s.profile, id: '' }), code: genCode() },
         enteredCruise: false,
+        syncUid: '',
+        recovery: noRecovery(),
       })),
 
       setFilters: (f) => set((s) => ({ filters: { ...s.filters, ...f } })),
@@ -476,6 +498,7 @@ export const useStore = create<State>()(
         me: s.me, custom: s.custom, friends: s.friends, profile: s.profile,
         cruiseId: s.cruiseId, enteredCruise: s.enteredCruise, groups: s.groups,
         pendingInvites: s.pendingInvites, pendingUnfriends: s.pendingUnfriends, seenMedals: s.seenMedals,
+        syncUid: s.syncUid, recovery: s.recovery,
       }),
     },
   ),

@@ -156,3 +156,34 @@ it is applied only when Charles says yes.
 migrations dry-run against the live project in a rolled-back transaction with their assertions
 passing; nothing applied; `docs/DESIGN.md`'s registry, `docs/BACKEND_SETUP.md`, `MAINTENANCE.md`
 (the runbook: install to the home screen first, save the recovery code) and `CLAUDE.md` updated.
+
+## For the UI pass: what `src/state/` exports
+
+Built on `hardening` on 23 September 2026. The screens call these and nothing lower.
+
+- `useRecoveryCode(): string | null` (`sync.ts`, a hook). The code grouped for reading
+  (`K7QM-3XPA-9RTC-W2HD-6NBF`), or null until the server has confirmed it, which is the "appears once
+  the phone has synced at least once" rule: render "Save your passport" only when it is a string.
+  Copy it as shown; Share it with `navigator.share({ text })`.
+- `claimPassport(typed: string): Promise<ClaimState>` (`sync.ts`). Takes the code as typed (case,
+  spaces and dashes do not matter, and O, I and L read as 0, 1 and 1). The same state is written to
+  `useSyncStore().claim`:
+  - `'working'`: in flight. Disable the button.
+  - `'done'`: the `Confirm` tick, "Passport back". The passport, friend code, name and colour are
+    already on screen; on the entry screen the phone has entered. Clears to `'idle'` after 8 s.
+  - `'wrong'`: "That code does not match a passport." Nothing changed. A code that is not 20
+    characters of the alphabet answers this at once, with no request.
+  - `'offline'`: "No connection. Try again with a signal." Nothing changed.
+  - `'failed'`: not in the copy above; proposed "That did not work. Try again in a moment.", the
+    sign-in hint's wording. It covers a refusal by the server and a load kept off it (`?nosync`,
+    `?seed`, `?fixture`, or a build with no backend).
+- `useSyncStore().status === 'moved'`: this copy's identity was claimed on another phone or its user
+  deleted, and sync has stopped. Your details says "This passport moved to another phone or app.
+  Bring it back with your recovery code, or start again." "Bring it back" is the same field and
+  `claimPassport`; "start again" calls `startAgain(): void`, which gives this copy a new friend code
+  and returns it to the entry screen, keeping its drinks.
+- `useSyncStore().status === 'local'`: a `?seed` or `?fixture` load, which never syncs. Proposed line
+  in place of the sync line: "A demo. Nothing leaves this phone."
+- `googleSignInEnabled` (`backend.ts`) is `false`: gate the "Keep it with Google" block on it.
+- `?qa=claim:wrong` (and the other claim states), `?qa=sync:moved`, `?qa=sync:local` and `?qa=code:1`
+  put each state on screen for a render on a `nosync` load.

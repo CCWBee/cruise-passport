@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { Component, StrictMode, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { registerSW } from 'virtual:pwa-register'
 import './styles/tokens.css'
@@ -7,6 +7,62 @@ import './styles/craft.css'
 import './state/sync' // side-effect: attach sync triggers (launch/online/visibility) at startup, not on first Friends open
 import './ui/avatarSpring' // side-effect: avatar-group hover spring on friend-dot stacks (hover-capable devices)
 import App from './app/App'
+import { GlassButton } from './ui/GlassButton'
+import { keepStorageOnceEntered } from './state/keep'
+
+// ── A screen instead of a blank page ──────────────────────────────────────────────────────────
+// With no boundary, any error in a render unmounted the whole app to an empty page. The likeliest
+// one is a lazy chunk that is gone: a deploy lands while a sheet holds the reload (startUpdates,
+// below), the old hashed file has left the precache and the host, Pages answers the missing .js
+// with index.html, and the import rejects. A reload fetches the current build, so a failed chunk
+// reloads the page once; a flag in sessionStorage stops that becoming a loop, and is cleared once
+// the reloaded page has run for a while. Anything else shows one plain screen in the room's own
+// colours (the room is set on <html> before the first paint, so it needs nothing from App) with
+// the one way on. No stack trace is shown: the guest can do nothing with it.
+const CHUNK_RELOAD_KEY = 'spcc-chunk-reload'
+const CHUNK_FAILURE = /dynamically imported module|Importing a module script failed|module script|Unable to preload CSS|ChunkLoadError|Loading chunk/i
+
+function reloadedForChunk(): boolean {
+  try { return sessionStorage.getItem(CHUNK_RELOAD_KEY) === '1' } catch { return true } // blocked: never loop
+}
+
+class Fault extends Component<{ children: ReactNode }, { failed: boolean; reloading: boolean }> {
+  state = { failed: false, reloading: false }
+  private settled: ReturnType<typeof setTimeout> | undefined
+
+  static getDerivedStateFromError(error: unknown) {
+    const chunk = CHUNK_FAILURE.test(error instanceof Error ? error.message : String(error))
+    return { failed: true, reloading: chunk && !reloadedForChunk() }
+  }
+
+  componentDidMount() {
+    // Ten quiet seconds after a reload mean it worked, so a later stale chunk may reload once again.
+    this.settled = setTimeout(() => { try { sessionStorage.removeItem(CHUNK_RELOAD_KEY) } catch { /* blocked */ } }, 10_000)
+  }
+
+  componentWillUnmount() { if (this.settled) clearTimeout(this.settled) }
+
+  componentDidCatch() {
+    if (!this.state.reloading) return
+    if (this.settled) clearTimeout(this.settled)
+    try { sessionStorage.setItem(CHUNK_RELOAD_KEY, '1') } catch { /* blocked: reloadedForChunk() already said no */ }
+    window.location.reload()
+  }
+
+  render() {
+    if (!this.state.failed) return this.props.children
+    if (this.state.reloading) return null // the page is about to go; a flash of the screen helps nobody
+    return (
+      <main className="fault wrap">
+        <div className="ground" aria-hidden="true" />
+        <div className="empty-state" role="alert">
+          <h1 className="t-title">Something went wrong.</h1>
+          <GlassButton variant="primary" size="lg" type="button" onClick={() => window.location.reload()}>Reload</GlassButton>
+        </div>
+      </main>
+    )
+  }
+}
 
 // ── The build the guest is looking at ─────────────────────────────────────────────────────────
 // autoUpdate already installs a deploy in the background: vite-plugin-pwa sets skipWaiting and
@@ -67,9 +123,15 @@ function startUpdates() {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <Fault>
+      <App />
+    </Fault>
   </StrictMode>,
 )
+
+// Ask the browser to keep this passport's storage once the guest is past the entry screen
+// (state/keep.ts). Silent, and nothing waits on it.
+try { keepStorageOnceEntered() } catch { /* the app matters more than the request */ }
 
 // Below the render on purpose: an update that cannot arm is a stale build, a throw above the
 // render is a white screen. Nothing is lost by the order. render() returns before React commits,
