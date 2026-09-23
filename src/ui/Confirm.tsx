@@ -10,7 +10,8 @@ import './confirm.css'
 //
 // The tick is drawn here rather than taken from Icon.tsx because it is an animation, not an icon: the
 // path is stroked on over 300ms and needs its own geometry (a 40px box, a 3px stroke) to read at arm's
-// length. It is the glass engine (.glass) with the success film on it (confirm.css).
+// length. The disc is the glass engine (.glass) with the success film on it; the label is a solid
+// plate (confirm.css), so the tick is one glass surface and never a fifth.
 
 const HOLD_MS = 1100
 const FADE_MS = 200
@@ -53,7 +54,7 @@ export function Confirm({ label, onDone }: { label: string; onDone?: () => void 
           />
         </svg>
       </span>
-      <span className="tickc-label t-strong glass glass-sm" aria-hidden><span>{label}</span></span>
+      <span className="tickc-label t-strong" aria-hidden>{label}</span>
     </div>,
     document.body,
   )

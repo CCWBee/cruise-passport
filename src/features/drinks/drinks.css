@@ -16,6 +16,9 @@
 }
 .dfbtn:active { scale: .97; }
 .dfbtn.on { background: var(--fill); color: var(--on-fill); border-color: transparent; }
+/* under 360 the control gives the field 12 back, which is what the whole placeholder, "Drink, bar or
+   spirit", needs at 320 (the field's text box was 126 for 135 of words) */
+@media (max-width: 359px) { .dfbtn { padding: 0 var(--s3); gap: var(--s1); } }
 
 /* ── 2. the count line, with the way in to a drink of your own ── */
 .dtoolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); margin-top: var(--s4); }
@@ -92,7 +95,9 @@
 }
 .d-tick {
   fill: none; stroke: var(--on-mint); stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round;
-  stroke-dasharray: 12; stroke-dashoffset: 12;
+  /* 13, not 12: the path is 12.02 long, and a dash of 12 left its last 0.02 drawn, which the round
+     cap turned into a dot on every untried ring */
+  stroke-dasharray: 13; stroke-dashoffset: 13;
   transition: stroke-dashoffset var(--t-settle) var(--e-out) 60ms;
 }
 .d-try.on .d-disc { opacity: 1; transform: none; }

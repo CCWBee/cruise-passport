@@ -272,6 +272,49 @@ delete_my_data takes the recovery row, friends and memberships have SELECT and D
 with INSERT refused, the C and Isabel edge intact. The live app (main) is compatible: it never wrote
 those tables directly. Left: merge `hardening` into `night-bar` after the build's integration, then
 the recovery UI (the wiring list is at the end of the hardening spec).
+14:25: the build integrated (d3dedfc, all gates green, 11 of 11 agents). A guest-only preview (built
+with empty Supabase variables, no project key in the bundle) is at
+https://night-bar.cruise-passport.pages.dev (send `/?seed`), checked in Brave at 13, 19 and 23.
+`hardening` merged into night-bar as ece834b (one DESIGN.md registry conflict; the error screen
+now starts its own room since `.ground` is gone); 90 tests and every gate green. Final workflow
+`wf_3244398b-37e` (recovery UI, a live two-origin recovery test that deletes its own users, Brave on
+five screen sets at 13, 19, 23 and 320, a refute-by-default gate, fixes), scriptPath
+`C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\night-bar-finish-wf_3244398b-37e.js`.
+At 14:36 Charles asked to parallelise it ("Paralellise that not sequential so we can do it all at
+once speed it up"): that run was stopped during its first stage and replaced by
+`wf_f51e6fdb-bf2` (scriptPath
+`C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\night-bar-finish-parallel-wf_f51e6fdb-bf2.js`):
+Brave checks of Home, Drinks and You start at once, each in its own tab and only editing its own
+folders; the recovery UI finishes the stopped stage's work, then the live recovery test (its own dev
+server on 5174, so the demo seed on 5173 cannot overwrite its phones), Crew and the story set run
+together; then three gate reviewers at once; then one fixer who owns every file, applies the
+reported primitive defects, runs the gates and commits.
+14:48: Charles asked "Would headless be faster? If so do it it's just you running them so should
+be fine", then "Just cap their cpu usage". That run was stopped (the recovery screens had committed
+as 8d532ff and 06e3359; the Brave checkers' partial fixes left uncommitted in their folders). New
+tools: `tools/qa/capped.ps1` (job object, hard CPU cap 25%, below-normal priority; the first run held
+208 processes, the machine stayed at 7 to 22%), `tools/qa/sweep.mjs` (103 states in three rooms and
+320 wide, about 3 minutes; output in the ignored `tools/qa/sweeps/`), `tools/qa/contact.py`.
+First sweep: `tools/qa/sweeps/202609231431`. Then workflow `wf_af9b77ee-5df` (scriptPath
+`C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\night-bar-headless-review-fix-wf_af9b77ee-5df.js`):
+five image reviewers plus a headless live recovery test in parallel, six fixers by file ownership in
+parallel, one confirm stage (capped re-sweep, gates, commit).
+When it returns clean: push night-bar to main (Charles's standing go), watch the deploy, check the
+live shell, then delete the hardening worktree (plain node_modules, no junction).
+15:20: the confirm stage of `wf_af9b77ee-5df` committed the fixers' work on night-bar (the commit
+after 06e3359, "Night bar, the headless review's fixes"). Capped re-sweep `tools/qa/sweeps/202609231505`
+(105 shots, 0 failed; `sweep.mjs` now counts painted glass only, shoots `landing-phone` at `/get`,
+the desktop landing in all three rooms, and claim-done while its tick is up), then
+`202609231513` for the 320 dock and the medal deep link. Every blocker and major reported is gone in
+the renders. Gates: npm test 91 of 91, `tsc -b` 0, lint 0 errors, design:check clean, build 0. Two
+calls for Charles, neither blocking the push: the You segment is now "Diary" (the dock's Log took the
+word; "Days" or "History" are one-word swaps in `SEGMENTS`), and Isabel's `badges.ts` still says
+"Twenty Five" and "Log twenty five" (the tray and the medal sheet derive "Twenty-five drinks"
+through `earnedWords` in `medals.ts`, so only the coin's name shows the unhyphenated form). Left as
+residue: the top half of a row's second line still shows faintly along the capsule's top edge on
+Home, Drinks and Crew at 390 by 844 (the gutters beside the capsule and right of Log are clean);
+`erase-live.mjs` loads `/?seed`, which no longer syncs since `qaDemo()`, so it needs rewriting on the
+recovery-live pattern before it is next used.
 Alongside it, a read-only audit for Charles's question ("what's left to stop this being live? What's
 the online suite and data like for accounts and how are the offline fallback stuff"): run
 `wf_472886c2-538` (accounts, data and sync, offline, go-live blockers; each read then checked),

@@ -321,7 +321,7 @@ h1, h2, h3, p { margin: 0; }
 .gicon-halo { stroke-width: 4.4; opacity: .22; }
 
 /* an empty list: one short line and the one filled action that fills it, flush to the leading edge.
-   One shape for every empty segment on You (Stats, Badges, Log). */
+   One shape for every empty segment on You (Stats, Badges, Diary). */
 .empty-state { display: grid; justify-items: start; gap: var(--s4); }
 
 /* The screen main.tsx's error boundary shows in place of the app: an .empty-state held in the middle

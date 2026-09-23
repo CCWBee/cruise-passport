@@ -170,6 +170,8 @@
   --focus: #B3A6FF;
   --on-light: #0E1A2E;
   --sea-ink: #6FC9C4;
+  /* how much of a friend's hue their initial keeps (ui/fdot.css): 5.7:1 or more */
+  --fdot-hue: 55%;
 
   /* the nine glass families, lit lines in their own hues (A's family hues, lifted for the dark):
      4.7:1 or more on the brightest pool, against the 3:1 an icon needs */
@@ -189,6 +191,10 @@
   --glass-lens: rgba(255, 255, 255, .24);
   --glass-lift: 0 14px 30px -8px rgba(0, 0, 0, .6), 0 2px 6px rgba(0, 0, 0, .35);
   --glass-solid: #1A2238;
+  /* the dock's optics (app/nav.css): the engine's own numbers after dark. The capsule's body is
+  --dock-sat; the search pair (the field and the round button back) take --dock-field-sat */
+  --dock-sat: 180%; --dock-field-sat: 180%; --dock-bright: 1.08;
+  --dock-lens-sat: 210%; --dock-lens-bright: 1.32;
   /* the sheet (ui/sheet.css): C's navy film at medium, where the screen reads through it, and the
   second film its opacity brings in at large, for reading (.40, then .66 laid over it) */
   --sheet-film: rgba(14, 20, 36, .40);
@@ -246,6 +252,8 @@
   --focus: #B3A6FF;
   --on-light: #0E1A2E;
   --sea-ink: #6FC9C4;
+  /* how much of a friend's hue their initial keeps (ui/fdot.css): 5.7:1 or more */
+  --fdot-hue: 55%;
 
   /* 4.0:1 or more on the amber pool */
   --fam-cocktail: #FF8FB0; --fam-margarita: #B5E07A; --fam-wine: #F29AB6;
@@ -260,6 +268,8 @@
   --glass-lens: rgba(255, 255, 255, .24);
   --glass-lift: 0 14px 30px -8px rgba(0, 0, 0, .6), 0 2px 6px rgba(0, 0, 0, .35);
   --glass-solid: #221B35;
+  --dock-sat: 180%; --dock-field-sat: 180%; --dock-bright: 1.08;
+  --dock-lens-sat: 210%; --dock-lens-bright: 1.32;
   /* the sheet (ui/sheet.css): C's navy film at medium, where the screen reads through it, and the
   second film its opacity brings in at large, for reading (.40, then .66 laid over it) */
   --sheet-film: rgba(14, 20, 36, .40);
@@ -323,6 +333,8 @@
   --focus: #5B45C9;         /* 3.8:1, over the 3:1 a ring needs */
   --on-light: #0E1A2E;
   --sea-ink: #0F6563;
+  /* a friend's initial keeps less of their hue by day (ui/fdot.css): at 55% the green R was 3.3:1 */
+  --fdot-hue: 35%;
 
   /* A's family hues, darkened where cream let them be pale: 3.5:1 or more at the darkest point */
   --fam-cocktail: #9E2A4E; --fam-margarita: #3E6816; --fam-wine: #86203F;
@@ -340,9 +352,17 @@
   --glass-lens: rgba(255, 255, 255, .3);
   --glass-lift: 0 1px 2px rgba(16, 32, 48, .10), 0 10px 28px rgba(16, 32, 48, .16);
   --glass-solid: #F2F7FA;
-  /* the sheet by day: B's white films, .64 at medium and .62 over it at large (.86 in all) */
+  /* the dock by day. The floor under it is aqua (--room-mid to --room-1, which the foot lays under
+  the bar), and at 180% and brightness 1.08 the capsule read as a lit cyan pill, brighter and more
+  saturated than the sea it sat on (the night-bar sweep, 23 September 2026). By day the capsule's
+  body takes the bottom of the brief's 160 to 190% and no brightening, and its lens and the search
+  pair's body (which the brief does not bind) take .glass-calm's numbers, so it reads as clear glass */
+  --dock-sat: 160%; --dock-field-sat: 130%; --dock-bright: 1;
+  --dock-lens-sat: 120%; --dock-lens-bright: 1.24;
+  /* the sheet by day: B's white films, .64 at medium and .72 over it at large (.90 in all; at .62,
+  .86 in all, Home's tray and coins ghosted through the large Shake sheet) */
   --sheet-film: rgba(255, 255, 255, .64);
-  --sheet-film-large: rgba(255, 255, 255, .62);
+  --sheet-film-large: rgba(255, 255, 255, .72);
   /* the droplet by day: the same clear bead, ringed in a faint ink line so it holds its edge on
   the light capsule */
   --bead: linear-gradient(165deg, rgba(255, 255, 255, .96), rgba(255, 255, 255, .8) 60%, rgba(236, 244, 250, .84));
@@ -364,6 +384,11 @@
   --panel: var(--plate-quiet);
   /* the Confirm disc's mint glass */
   --mint-film: color-mix(in srgb, var(--mint-fill) 88%, transparent);
+  /* a control's boundary where the control itself must be found (a field's edge, a switch's track
+     when off): 3:1 or more against a sheet in every room, where --line's hairline measured 1.3 to
+     1.5:1 and the day sheet's fields and the off switch all but vanished (the night-bar sweep, 23
+     September 2026) */
+  --edge: color-mix(in srgb, var(--ink-3) 78%, transparent);
 }
 
 /* ── chrome built from the room ─────────────────────────────────────────────────────────────────

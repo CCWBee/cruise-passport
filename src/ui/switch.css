@@ -12,17 +12,20 @@
 .sw-track {
   position: absolute; inset: 0; border-radius: var(--r-tag); background: var(--track);
   border: 1px solid transparent;
-  transition: background-color var(--t-panel) var(--e-out);
+  transition: background-color var(--t-panel) var(--e-out), border-color var(--t-panel) var(--e-out);
 }
 .sw-knob {
   position: absolute; top: var(--pad); left: var(--pad); width: var(--knob); height: var(--knob);
   border-radius: 50%; background: #fff; border: 1px solid var(--line);
   transition: transform var(--t-panel) var(--e-out);
 }
+/* off, the track carries the room's --edge, so the control is found at 3:1 on a white day sheet,
+   where the track and the white knob were 1.4:1 and 1.2:1 against it; on, the fill says it */
+.sw[aria-checked="false"] .sw-track { border-color: var(--edge); }
 .sw[aria-checked="true"] .sw-track { background: var(--on); }
 .sw[aria-checked="true"] .sw-knob { transform: translateX(var(--travel)); border-color: transparent; }
 .sw:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: var(--r-tag); }
-.sw:disabled .sw-track { background: var(--press); }
+.sw:disabled .sw-track { background: var(--press); border-color: var(--line); }
 .sw:disabled .sw-knob { background: var(--plate-quiet); }
 
 .sw-row { display: flex; align-items: center; justify-content: space-between; gap: var(--s4); min-height: var(--ctl); }

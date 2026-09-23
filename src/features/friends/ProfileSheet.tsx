@@ -150,12 +150,12 @@ export function ProfileSheet({ onClose }: { onClose: () => void }) {
                 right whichever it was. Start again is two taps, because it replaces this phone's
                 recovery code as well as its friend code. */}
             <p className="t-body" role="status">This passport moved to another phone or app. Bring it back with your recovery code, or start again.</p>
-            <BringBack label="Bring it back" />
+            <BringBack label="Bring it back" startOpen />
             <ConfirmButton
               label="Start again"
               confirmLabel="Tap again to start again"
               note="This phone gets a new friend code and a new recovery code. Its drinks stay."
-              className="friends-action"
+              className="moved-start"
               onConfirm={startAgain}
             />
           </div>

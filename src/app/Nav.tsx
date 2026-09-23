@@ -3,6 +3,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { IconClose, IconSearch } from '../ui/Icon'
 import { openLog, registerLogField, useLogSearch } from '../features/search/log'
 import { TABS, tabOf } from './tabs'
+import { useSettled } from './useSettled'
 import './nav.css'
 
 // The dock: prototype C's floating capsule of the five tabs, the droplet that marks the one you are
@@ -16,6 +17,9 @@ const DRAG_START = 6
 const RUN_MS = 480
 // how long after a drag the click it would fire is swallowed (Sheet.tsx uses the same)
 const SWALLOW_MS = 250
+// --t-drawer: the fold, and the step down under a sheet. A piece that is hidden once it has run
+// drops its filters (.glass-off, useSettled), so the budget counts only glass that paints.
+const DRAWER_MS = 440
 
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -234,11 +238,16 @@ export function Nav({ down }: { down: boolean }) {
 
   const from = active > -1 ? TABS[active] : null
   const Back = from?.Icon
+  // the pieces the fold has hidden, and the whole dock once it has stepped down under a sheet
+  const pairOff = useSettled(!open, DRAWER_MS)
+  const restOff = useSettled(open, DRAWER_MS)
+  const dockOff = useSettled(down, DRAWER_MS)
+  const off = (hidden: boolean) => (hidden ? ' glass-off' : '')
 
   return (
-    <div className={'dock' + (open ? ' is-search' : '') + (down ? ' is-down' : '')}>
+    <div className={'dock' + (open ? ' is-search' : '') + (down ? ' is-down' : '') + off(dockOff)}>
       <nav
-        className={'tabbar glass' + (active < 0 ? ' no-tab' : '')}
+        className={'tabbar glass' + (active < 0 ? ' no-tab' : '') + off(restOff)}
         ref={barRef}
         aria-label="Sections"
         aria-hidden={open || undefined}
@@ -268,7 +277,7 @@ export function Nav({ down }: { down: boolean }) {
       {/* the capsule folded: one round button, the tab you came from, that closes the search */}
       <button
         type="button"
-        className="tab-return glass press"
+        className={'tab-return glass press' + off(pairOff)}
         aria-label={from ? `Close search and go back to ${from.label}` : 'Close search'}
         aria-hidden={!open || undefined}
         tabIndex={open ? 0 : -1}
@@ -282,7 +291,7 @@ export function Nav({ down }: { down: boolean }) {
           and B; C's bare plus said "add"). The tap focuses the field inside itself (openLog). */}
       <button
         type="button"
-        className="logbtn glass glass-tint press"
+        className={'logbtn glass glass-tint press' + off(restOff)}
         aria-label="Log a drink"
         aria-hidden={open || undefined}
         tabIndex={open ? -1 : 0}
@@ -297,7 +306,7 @@ export function Nav({ down }: { down: boolean }) {
 
       {/* The field Log becomes. It is always in the page and focusable, only transparent and
           untouchable while closed, because a field that is hidden cannot take focus inside the tap. */}
-      <div className="logfield glass" aria-hidden={!open || undefined}>
+      <div className={'logfield glass' + off(pairOff)} aria-hidden={!open || undefined}>
         <IconSearch size={20} className="logfield-icon" />
         <input
           ref={fieldRef}

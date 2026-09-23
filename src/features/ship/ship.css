@@ -2,7 +2,10 @@
    bar under it once a drink there is tried. No plates, no deck colours, no boxes. See docs/DESIGN.md. */
 
 /* a venue row: the name, "Visited" under it when it is, and the end column */
-.venue-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* The name wraps rather than ellipsising (base.css clips every .row-copy line): it is the row's whole
+   reason to exist, and at 320 three names ("The Butcher's Block by Dario") lost their ends to an
+   ellipsis. At 390 every name fits on one line. */
+.venue-row .venue-name { white-space: normal; overflow: visible; overflow-wrap: anywhere; }
 /* the word and its pin: the pin in the state colour, the word in the meta ink beside it, so the
    state reads as a fact about the bar rather than a mark against its list */
 .venue-visited { display: flex; align-items: center; gap: var(--s1); }

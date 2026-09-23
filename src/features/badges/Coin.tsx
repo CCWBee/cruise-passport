@@ -120,8 +120,11 @@ const SHIP_ART = '<path d="M6 33 H144 L133 47 Q131 49 126 49 H24 Q19 49 17 47 Z"
 const SHIP_FIT = 'translate(50 44) scale(.44) translate(-75 -27)'
 const YEAR = START.slice(0, 4)
 
-const RING_R = 54
-const RING_C = 2 * Math.PI * RING_R
+// The ring round a blank in reach is drawn about 3px wide at every size, in the 116 box: at a fixed
+// 3.4 units it came out 1.5px on the 52px blank in the case and read as an outline, not a measure
+// (seen in Brave, 23 September 2026). It runs 1px or more clear of the rim (r 49) and inside the box.
+const ringWidth = (size: number) => Math.max(3.4, Math.min(6.8, (116 * 3) / size))
+const ringRadius = (width: number) => 58 - width / 2 - 0.2
 
 const metalOf = (badge: BadgeDef, earned: boolean): MetalName =>
   earned ? (badge.tier ?? 'bronze') : 'blank'
@@ -152,6 +155,9 @@ function CoinFace({ badge, metal, size, ring, reverse = false }: FaceProps) {
   const fit = reverse ? SHIP_FIT : emblemFit(badge.id)
   // the rim sits at r 49 of the box; with a ring the box is 116 across, so the rim is inset further
   const rimInset = ringed ? `${((58 - 49) / 116) * 100}%` : '1%'
+  const ringW = ringWidth(size)
+  const ringR = ringRadius(ringW)
+  const ringC = 2 * Math.PI * ringR
 
   // the legend struck the way the emblem is; a guest's own ship name can be long, so past thirteen
   // characters it is fitted to the field rather than run off it
@@ -205,10 +211,10 @@ function CoinFace({ badge, metal, size, ring, reverse = false }: FaceProps) {
 
         {ringed && (
           <>
-            <circle className="coin-track" cx="50" cy="50" r={RING_R} strokeWidth="3.4" />
+            <circle className="coin-track" cx="50" cy="50" r={ringR} strokeWidth={ringW} />
             <circle
-              className="coin-arc" cx="50" cy="50" r={RING_R} strokeWidth="3.4"
-              strokeDasharray={`${(Math.max(0, Math.min(1, ring)) * RING_C).toFixed(1)} ${RING_C.toFixed(1)}`}
+              className="coin-arc" cx="50" cy="50" r={ringR} strokeWidth={ringW}
+              strokeDasharray={`${(Math.max(0, Math.min(1, ring)) * ringC).toFixed(1)} ${ringC.toFixed(1)}`}
               transform="rotate(-90 50 50)"
             />
           </>

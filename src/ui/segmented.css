@@ -10,6 +10,10 @@
   width: calc((100% - 6px) / var(--n));
   transform: translateX(calc(var(--i) * 100%));
   background: var(--plate); border-radius: calc(var(--r-control) - 3px);
+  /* the plate's own edge: by day a white plate on a near-white track in a white panel measured 1.08:1
+     and the selection showed only as ink against ink-2 at one weight, so the plate is bounded and its
+     label is bold */
+  border: 1px solid var(--line);
   transition: transform var(--t-panel) var(--e-out);
 }
 .seg-btn {
@@ -17,7 +21,7 @@
   color: var(--ink-2); display: inline-flex; align-items: center; justify-content: center; gap: var(--s1);
   border-radius: calc(var(--r-control) - 3px); transition: color var(--t-panel) var(--e-out); white-space: nowrap;
 }
-.seg-btn.on { color: var(--ink); }
+.seg-btn.on { color: var(--ink); font-weight: 700; }
 .seg-btn:disabled { color: var(--ink-2); }
 .seg-c { font-size: var(--f-meta); font-weight: 400; color: var(--ink-2); }
 .seg-btn.on .seg-c { color: var(--ink-2); }

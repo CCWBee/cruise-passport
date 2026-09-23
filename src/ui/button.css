@@ -24,10 +24,14 @@
 .gbtn-lg { padding: 0 var(--s5); min-height: 52px; font-size: var(--f-body); font-weight: 700; border-radius: var(--r-control); }
 .gbtn-block { width: 100%; }
 
-/* disabled reads as a ghost against the enabled one: no fill, a hairline, --ink-2 */
+/* Disabled reads as a ghost against the enabled one: no fill, the fainter hairline, --ink-3. By day
+   the secondary's white plate sits on a white sheet at 1.07:1, so the fill alone could not tell the
+   two apart and a disabled Create read as a working button (the night-bar sweep, 23 September 2026);
+   the paler label and edge do. Disabled text is exempt from the 4.5:1 bar, and --ink-3 still holds
+   3.7:1 or more. */
 .gbtn:disabled { cursor: default; }
-.gbtn-secondary:disabled, .gbtn-primary:disabled { background: transparent; color: var(--ink-2); border-color: var(--line); }
-.gbtn-ghost:disabled { color: var(--ink-2); }
+.gbtn-secondary:disabled, .gbtn-primary:disabled { background: transparent; color: var(--ink-3); border-color: var(--line-2); }
+.gbtn-ghost:disabled { color: var(--ink-3); }
 
 .gbtn-spin {
   width: 14px; height: 14px; flex: none; border-radius: 50%;

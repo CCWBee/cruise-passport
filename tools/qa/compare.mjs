@@ -10,7 +10,7 @@ const [before, after, outName = 'before-after'] = process.argv.slice(2)
 if (!before || !after) { console.error('usage: node compare.mjs <beforePrefix> <afterPrefix> [outName]'); process.exit(2) }
 const screens = [
   ['Home', 'home'], ['Drinks', 'drinks'], ['Drink sheet', 'drink-sheet'], ['Ship', 'ship'], ['Venue sheet', 'venue-sheet'],
-  ['Crew', 'social'], ['Add to your crew', 'add-sheet'], ['Stats', 'stats'], ['Badges', 'badges'], ['Log', 'log'], ['Wrapped', 'wrapped'],
+  ['Crew', 'social'], ['Add to your crew', 'add-sheet'], ['Stats', 'stats'], ['Badges', 'badges'], ['Diary', 'log'], ['Wrapped', 'wrapped'],
 ]
 const dir = OUT.replace(/\\/g, '/')
 const pairs = screens.filter(([, k]) => existsSync(path.join(OUT, `${before}-${k}.png`)) && existsSync(path.join(OUT, `${after}-${k}.png`)))

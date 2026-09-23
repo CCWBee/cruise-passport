@@ -1,16 +1,21 @@
 .you-head { display: grid; gap: var(--s3); margin-bottom: var(--s5); }
 
 /* C's small case on Stats: the velvet (.case, base.css) with its heading and the earned coins in one
-   line, up to six, highest tier first. Six at 44 with 12 between fill the case's 326 inside at 390;
-   at 320 the line holds four, and the rest wrap onto a second line the case's height hides, so a
+   line, up to six, highest tier first. Six at 44 with 8 between take 304 of the case's 316 inside
+   at 390 (with 12 between, the sixth wrapped out of sight, measured in Brave on 23 September 2026);
+   at 320 the line holds five, and the rest wrap onto a second line the case's height hides, so a
    coin is never cut in half. */
 .case-you { margin-bottom: var(--s6); }
 .case-you-head { display: flex; align-items: center; gap: var(--s3); }
 .case-go { flex: none; color: var(--ink-3); }
+/* The count and the next medal are one sentence, and cut short at 320 ("Whiskey Love...") the next
+   medal was lost (seen in Brave, 23 September 2026), so on a narrow phone it wraps onto a second
+   line rather than losing its end; the button is the whole case, not this text. */
+.case-you-head .t-meta { white-space: normal; text-wrap: balance; }
 .case-coins {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--s2) var(--s3);
+  gap: var(--s2);
   height: 48px;
   margin-top: var(--s3);
   overflow: hidden;

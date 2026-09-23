@@ -50,6 +50,12 @@
    metal at 42 inside the ring, and a locked one is 44, so both sit in one 52 slot and the names
    stand in one column ── */
 .medal-row { color: inherit; }
+/* At 320 the count at the right leaves the copy about 130px, and "Sun Princess Champion" was cut to
+   "Sun Princess C..." and "23% more of the list" to "23% more of the..." (measured in Brave, 23
+   September 2026), which loses the name and the unit. So in these rows the name and what is left
+   balance onto a second line, as a coin's caption does in the case; the row is the target and
+   grows with them. */
+.medal-row .row-copy > * { white-space: normal; text-wrap: balance; }
 .medal-lead {
   display: grid;
   flex: none;

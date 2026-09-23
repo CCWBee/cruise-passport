@@ -22,7 +22,7 @@ export interface MedalGroups {
 }
 
 /** Earned in tier order (the Champion first, then gold, silver, bronze, and within a tier the
- *  order of BADGES); in reach, anything with a count and something on it, nearest first, so the
+ *  order of BADGES, a count ladder's higher rung first); in reach, anything with a count and something on it, nearest first, so the
  *  first of them is the medal Home's tray names; the rest locked. */
 export function medalGroups(stat: BadgeStat): MedalGroups {
   const earned: { badge: BadgeDef; i: number }[] = []
@@ -34,9 +34,35 @@ export function medalGroups(stat: BadgeStat): MedalGroups {
     if (progress && progress.cur > 0) reach.push({ badge, progress })
     else locked.push(badge)
   })
-  earned.sort((a, b) => tierOrder(a.badge) - tierOrder(b.badge) || a.i - b.i)
+  // Within a tier, the rungs of one count ladder sit together at the ladder's first place in BADGES,
+  // highest rung first, so "the best medal held" is Fifty rather than Twenty Five
+  const key = (e: { badge: BadgeDef; i: number }) => {
+    const unit = BADGE_UNIT[e.badge.id]?.[1]
+    const first = unit ? BADGES.findIndex((b) => BADGE_UNIT[b.id]?.[1] === unit) : e.i
+    return { first, need: unit ? progressOf(e.badge, stat)?.need ?? 0 : 0 }
+  }
+  earned.sort((a, b) => {
+    const ka = key(a), kb = key(b)
+    return tierOrder(a.badge) - tierOrder(b.badge) || ka.first - kb.first || kb.need - ka.need || a.i - b.i
+  })
   reach.sort((a, b) => b.progress.pct - a.progress.pct)
   return { earned: earned.map((e) => e.badge), reach, locked }
+}
+
+/** What an earned medal is, for the line under Home's tray lead and on the case's sheet ("Silver medal · Twenty-five
+ *  drinks"). A badge's hint is what to do ("Log twenty five"), which is right in reach and locked
+ *  but wrong on a medal already won, so the imperative is turned into what was done: the verb goes,
+ *  compound tens take their hyphen, and a count ladder gets its unit. A hint that already names the
+ *  thing ("Ten gin drinks", "Half of everything") is said as it is. Derived rather than kept as
+ *  a second wording per badge, because the badge data is Isabel's (src/data/badges.ts). */
+export function earnedWords(badge: BadgeDef): string {
+  let words = badge.hint.replace(/^Log /, '').replace(/^Check in at /, '')
+  words = words.replace(/\b(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety) (one|two|three|four|five|six|seven|eight|nine)\b/gi, '$1-$2')
+  const unit = BADGE_UNIT[badge.id]
+  if (unit && words !== badge.hint && !unit.some((u) => words.endsWith(' ' + u))) {
+    words += ' ' + (/^one$/i.test(words) ? unit[0] : unit[1])
+  }
+  return words.charAt(0).toUpperCase() + words.slice(1)
 }
 
 const unitOf = (badge: BadgeDef, n: number) => {

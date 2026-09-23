@@ -15,7 +15,7 @@ import { FriendDot } from '../../ui/FriendDot'
 import { IconShaker } from '../../ui/Icon'
 // the struck coin, and the case's own arithmetic, so the tray and the case it opens count alike
 import { Coin } from '../badges/Coin'
-import { medalGroups, remainder } from '../badges/medals'
+import { earnedWords, medalGroups, remainder } from '../badges/medals'
 import { DrinkSheet } from '../drinks/DrinkSheet'
 import { ShakeSheet } from '../shake/ShakeSheet'
 import { VenueSheet } from '../ship/VenueSheet'
@@ -203,7 +203,7 @@ export function Home() {
                 <span className="tray-copy">
                   {medal && <span className="tray-new">{fresh.length > 1 ? `${fresh.length} new medals` : 'New medal'}</span>}
                   <span className="tray-name">{lead.name}</span>
-                  <span className="t-meta">{TIER_WORD[lead.tier ?? 'bronze']} medal · {lead.hint}</span>
+                  <span className="t-meta">{TIER_WORD[lead.tier ?? 'bronze']} medal · {earnedWords(lead)}</span>
                 </span>
               </span>
             ) : (

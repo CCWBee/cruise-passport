@@ -30,12 +30,14 @@
   animation: ship-bob 7s linear infinite;
 }
 /* the hull takes its colour from the sky palette (--sea-hull, set inline beside the other --sea-*
-   properties): it is that palette's --sea-lo by day, so nothing changes, and a slate at dusk and
-   night, where a hull the colour of the water would disappear into it. The deck is paint, white in
-   every room; the windows take the room's ink, dark by day and lit after dark. */
+   properties): it is that palette's --sea-lo by day, and a near-black silhouette at dusk and night.
+   It rides above the waterline against the horizon, not the water, and the slate it once had at
+   night was the horizon's own colour (#3B5B78 on #40587A), so the liner drew as a white deck with no
+   hull under it. The deck is paint, white in every room, and the windows are the hull's colour on
+   it: the room's ink, which they once took, is light after dark and vanished into the white deck. */
 .ship-hull { fill: var(--sea-hull, var(--sea-lo)); }
 .ship-deck { fill: var(--ship-deck); }
-.ship-window { fill: var(--ink); fill-opacity: .8; }
+.ship-window { fill: var(--sea-hull, var(--sea-lo)); fill-opacity: .8; }
 .ship-funnel { fill: var(--coral-brand); }
 .ship-mast { stroke: var(--sea-hull, var(--sea-lo)); stroke-width: 1.4; stroke-linecap: round; }
 @keyframes ship-bob {

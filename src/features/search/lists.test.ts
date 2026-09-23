@@ -32,6 +32,13 @@ test('a typed search puts names that start with the query first, keeps order wit
   assert.deepEqual(rankMatches(list, '').map((x) => x.id), ['1', '2', '3', '4'])
 })
 
+test('with a text, a whole-word match comes before a match inside a word', () => {
+  const list = [d('m', 'Bangkok Mule'), d('p', 'Mykonos Press'), d('g', 'Gin Fizz')]
+  const text: Record<string, string> = { m: 'whiskey ginger syrup ginger beer', p: "hendrick's gin cucumber", g: 'gin lemon soda' }
+  assert.deepEqual(rankMatches(list, 'gin', undefined, (x) => text[x.id]).map((x) => x.id), ['g', 'p', 'm'])
+  assert.deepEqual(rankMatches(list, 'gin').map((x) => x.id), ['g', 'm', 'p'])
+})
+
 test('matches group under their venue in the order of each venue\'s best match', () => {
   const ranked = [d('1', 'Mojito', 'ocean'), d('2', 'Mojo', 'crooners'), d('3', 'Classic Mojito', 'ocean')]
   assert.deepEqual(byVenue(ranked).map((g) => [g.venue, g.list.map((x) => x.id)]), [['ocean', ['1', '3']], ['crooners', ['2']]])

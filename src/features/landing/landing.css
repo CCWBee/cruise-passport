@@ -7,12 +7,20 @@
 /* the centred block. The safe-area inset is the floor of the bottom pad rather than an addition to
    it, because there is no nav below to clear, exactly as .entry-body has it. */
 .landing-body { display: grid; align-items: center; padding: var(--s6) 0 max(var(--s6), var(--safe-b)); }
+/* a grid item with auto margins shrinks to its content, so without this the column narrowed to the
+   capped lead below and stood off the masthead's edge on a desktop */
+.landing-body > .wrap { width: 100%; }
 /* the title and its lead: 8, a heading to its content */
 .landing-head { display: grid; gap: var(--s2); }
+/* the lead holds a reading measure: across the desktop column's 688 it ran to 95 characters and left
+   "works offline." alone on its second line. No effect at phone width, where the column is narrower. */
+.landing-head > p { max-width: 56ch; }
 .landing-code { display: grid; gap: var(--s3); }        /* the plate centres itself: .qr-plate has justify-self */
 .landing-addr { text-align: center; }
 /* not .row-copy: base.css clamps its children to one line with an ellipsis, and an install step is a
    sentence that has to wrap */
 .landing-step { display: grid; gap: var(--s1); min-width: 0; flex: 1; }
+/* the steps are spans, so base.css's p rule does not reach them: at 390 "Screen." sat alone */
+.landing-step > * { text-wrap: pretty; }
 .landing-note { margin-top: var(--s3); }
 .landing-price { margin-top: var(--s5); }

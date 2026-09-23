@@ -1,11 +1,12 @@
 /* A person's identity dot: their colour, their initial. The one place the friend hues appear. The
    initial is the hue mixed towards the room's ink, so it reads light on a dark room and dark on the
-   day one. */
+   day one. How much hue it keeps is the room's --fdot-hue: 55% after dark, 35% by day, where at 55%
+   Ravi's green R measured 3.3:1 on its disc. */
 .fdot {
   inline-size: var(--sz); block-size: var(--sz); border-radius: var(--r-tag);
   display: grid; place-items: center; flex: none;
   font-weight: 600; font-size: calc(var(--sz) * .45); font-variant-numeric: tabular-nums;
-  color: color-mix(in oklab, var(--fc) 55%, var(--ink));
+  color: color-mix(in oklab, var(--fc) var(--fdot-hue), var(--ink));
   background: color-mix(in oklab, var(--fc) 24%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--fc) 45%, transparent);
 }

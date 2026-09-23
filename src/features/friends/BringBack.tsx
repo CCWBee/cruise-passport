@@ -22,11 +22,17 @@ const CLAIM_LINE: Record<ClaimState, string> = {
   failed: 'That did not work. Try again in a moment.',
 }
 
-export function BringBack({ label = 'Bring back a passport' }: { label?: string }) {
+export function BringBack({ label = 'Bring back a passport', startOpen = false }: {
+  label?: string
+  /** Unfolded on arrival. Your details passes it when the passport has moved, because the code is
+   *  then the way on rather than a rare route: folded, "Bring it back" was an underlined line of text
+   *  above a full-width "Start again", so the one-way action outranked the likely one. */
+  startOpen?: boolean
+}) {
   const claim = useSyncStore((s) => s.claim)
   // Unfolded from the start when the store already holds an answer, so a ?qa=claim:… render and a
   // sheet reopened after a wrong code both show the line without a tap.
-  const [open, setOpen] = useState(() => claim !== 'idle' && claim !== 'done')
+  const [open, setOpen] = useState(() => startOpen || (claim !== 'idle' && claim !== 'done'))
   const [tapped, setTapped] = useState(false)
   const [code, setCode] = useState('')
   // The answer belongs to the code that was sent: once the guest edits it, the line goes quiet
@@ -75,11 +81,15 @@ export function BringBack({ label = 'Bring back a passport' }: { label?: string 
           // does the same); not on a render that opened already unfolded, which would raise a keyboard
           autoFocus={tapped}
           onChange={(event) => onChange(event.target.value)}
-          onKeyDown={(event) => { if (event.key === 'Enter' && code && !working) void submit() }}
+          onKeyDown={(event) => { if (event.key === 'Enter' && !working) void submit() }}
         />
       </label>
-      {/* plain, never primary: the entry screen's Done and the dock's Log are the filled controls */}
-      <GlassButton block className="friends-action" disabled={working || !code} onClick={() => { void submit() }}>
+      {/* plain, never primary: the entry screen's Done and the dock's Log are the filled controls.
+          Disabled only while a claim is in flight, never on an empty or short field: claimPassport
+          answers 'wrong' at once, with no request, for anything that is not a whole code, and a
+          disabled ghost here let the one-way "Start again" below outrank the way back on a moved
+          passport. */}
+      <GlassButton block className="friends-action" disabled={working} onClick={() => { void submit() }}>
         {working ? 'Bringing it back…' : 'Bring it back'}
       </GlassButton>
       <p className={line ? 't-meta friends-status' : 'sr-only'} role="status">{line}</p>

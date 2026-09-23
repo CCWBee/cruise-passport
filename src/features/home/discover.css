@@ -1,5 +1,8 @@
-/* What the crew has found: one line about the closest palate, one line of reach, then rows. */
+/* What the crew has found: one line about the closest palate, one line of reach, then rows. When the
+   rows are all one person's picks the palate line says so and moves down to sit on them, after the
+   reach line, or a plain meta line says whose they are; either keeps the 8 the reach line kept. */
 .disc-twin { display: flex; align-items: center; gap: var(--s2); margin-top: var(--s1); }
 .disc-twin b { font-weight: 600; }
 .disc-reach { margin-top: var(--s2); margin-bottom: var(--s2); }
 .disc-reach b { color: var(--ink); font-weight: 600; }
+.disc-reach + .disc-twin, .disc-who { margin-bottom: var(--s2); }

@@ -1,5 +1,5 @@
 import {
-  useCallback, useEffect, useMemo, useRef, useState,
+  Fragment, useCallback, useEffect, useMemo, useRef, useState,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
 import { createPortal } from 'react-dom'
@@ -150,6 +150,22 @@ function SaveWrapped({ card }: { card: WrappedFinale }) {
   )
 }
 
+// A list of drink names in a sentence, each name held whole: balanced on its own, "Both loved:
+// Bangkok Mule, Apples Delight and The Cartagena Cool" broke inside "Apples Delight" at 390, and a
+// drink's name split over two lines reads as two drinks. listJoin's commas and "and", as spans.
+function Names({ names }: { names: string[] }) {
+  return (
+    <>
+      {names.map((name, i) => (
+        <Fragment key={i}>
+          {i === 0 ? '' : i === names.length - 1 ? ' and ' : ', '}
+          <span className="wr-name">{name}</span>
+        </Fragment>
+      ))}
+    </>
+  )
+}
+
 // Every card is the same skeleton: a quiet label, one thing that is big (a numeral or a name),
 // then the plain lines that qualify it. No plates and no rings. The medals slide is the one place a
 // disc appears: it shows the coins won beneath the count, because Charles asked on 23 September 2026
@@ -225,7 +241,7 @@ function CardBody({ card, total }: { card: WrappedCard; total: number }) {
           <div className="wr-coins">
             {card.earned.slice(0, 6).map((id) => {
               const badge = BADGES.find((b) => b.id === id)
-              return badge ? <Coin key={id} badge={badge} state="earned" size={72} /> : null
+              return badge ? <Coin key={id} badge={badge} state="earned" size={96} /> : null
             })}
           </div>
         </div>
@@ -239,7 +255,7 @@ function CardBody({ card, total }: { card: WrappedCard; total: number }) {
           <div className="wr-facts">
             {card.twin && <p className="t-meta">Taste twin: {card.twin.name}, {card.twin.affinityPct}% match</p>}
             <p className="t-meta">Together you found {card.triedTogether} of {total}</p>
-            {card.shared.length > 0 && <p className="t-meta">Both loved: {listJoin(card.shared)}</p>}
+            {card.shared.length > 0 && <p className="t-meta">Both loved: <Names names={card.shared} /></p>}
           </div>
         </div>
       )
@@ -264,9 +280,9 @@ function CardBody({ card, total }: { card: WrappedCard; total: number }) {
         <div className="wr-content">
           <p className="t-meta">Your find</p>
           <h2 className="t-title wr-lead">{card.name}</h2>
-          <p className="t-meta tnum">
-            Nobody else in the crew tried it. {card.rating ? `You gave it ${card.rating} out of 5.` : 'You recommended it.'}
-          </p>
+          {/* two lines, one sentence each: as one line it broke after "tried" at 390 */}
+          <p className="t-meta">Nobody else in the crew tried it.</p>
+          <p className="t-meta tnum">{card.rating ? `You gave it ${card.rating} out of 5.` : 'You recommended it.'}</p>
         </div>
       )
     case 'nexttime':

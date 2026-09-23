@@ -20,7 +20,6 @@ styles/base.css :: colour not a token rgba(0, 0, 0, .8)
 app/shell.css :: linear-gradient(180deg, var(--room-mid)
 app/shell.css :: mask-image: linear-gradient(180deg, transparent
 app/shell.css :: colour not a token #000
-app/shell.css :: colour not a token rgba(0, 0, 0, .86)
 # the top bar's glass fades out over its last 14px below the title (C's scroll edge), a mask on the
 # filtered layer itself, so the strip needs no rule along its foot; a mask reads alpha, so black is its ink
 app/shell.css :: linear-gradient(180deg, #000 calc(100% - 14px)

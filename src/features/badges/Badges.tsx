@@ -1,4 +1,5 @@
 import { useId, useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { BADGES, TIER_WORD, badgeCount, type BadgeDef } from '../../data/badges'
 import { computeStats } from '../../state/stats'
 import { useAllDrinks, useStore } from '../../state/store'
@@ -6,7 +7,7 @@ import { GlassButton } from '../../ui/GlassButton'
 import { Sheet } from '../../ui/Sheet'
 import { openLog } from '../search/log'
 import { Coin } from './Coin'
-import { medalGroups, progressOf, remainder, struckLine, unstruckLine } from './medals'
+import { earnedWords, medalGroups, progressOf, remainder, struckLine, unstruckLine } from './medals'
 import './badges.css'
 
 // The medal case, the Badges segment of You (docs/DESIGN.md, Screens, You): what is won lies on the
@@ -27,6 +28,14 @@ export function Badges() {
   // a coin tapped in the case turns as the sheet rises (C); a deep link opens it still
   const [tapped, setTapped] = useState(false)
   const titleId = useId()
+  const { search } = useLocation()
+  const navigate = useNavigate()
+  // closing drops the deep link too, so a reload or a Back then Forward does not bring the sheet back
+  const close = () => {
+    setSelected(null)
+    setTapped(false)
+    if (new URLSearchParams(search).has('badge')) navigate('/badges', { replace: true })
+  }
 
   const { earned, reach, locked } = useMemo(() => medalGroups(badgeStat), [badgeStat])
   const open = (badge: BadgeDef) => { setTapped(true); setSelected(badge) }
@@ -133,7 +142,7 @@ export function Badges() {
       )}
 
       {selected && (
-        <Sheet height="medium" onClose={() => { setSelected(null); setTapped(false) }} labelledBy={titleId}>
+        <Sheet height="medium" onClose={close} labelledBy={titleId}>
           {/* C's order: the coin is what the sheet is about, so it leads, and the title and its one
               meta line follow it */}
           <div className="medal-sheet">
@@ -148,7 +157,7 @@ export function Badges() {
               className="medal-sheet-coin"
             />
             <h2 className="t-h2 sheet-title" id={titleId}>{selected.name}</h2>
-            <p className="sheet-meta">{TIER_WORD[selected.tier ?? 'bronze']} · {selected.hint}</p>
+            <p className="sheet-meta">{TIER_WORD[selected.tier ?? 'bronze']} · {selectedEarned ? earnedWords(selected) : selected.hint}</p>
             {line && <p className="t-body medal-sheet-line">{line}</p>}
           </div>
         </Sheet>

@@ -1,9 +1,9 @@
-/* Select: the trigger is the field's well; the menu is a solid plate in the room with the sheet's
+/* Select: the trigger is the field's well, with the field's --edge; the menu is a solid plate in the room with the sheet's
    shadow, because it floats over content of any brightness and has to be read, not seen through. */
 .sel-trigger {
   display: flex; align-items: center; gap: var(--s2); width: 100%; height: var(--ctl); padding: 0 var(--s4);
   font-size: var(--f-body); font-weight: 400; color: var(--ink); text-align: left;
-  background: var(--well); border: 1px solid var(--line); border-radius: var(--r-control);
+  background: var(--well); border: 1px solid var(--edge); border-radius: var(--r-control);
   outline: 2px solid transparent; outline-offset: 1px;
   transition: border-color var(--t-panel) var(--e-out);
 }

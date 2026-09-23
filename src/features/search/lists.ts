@@ -18,13 +18,26 @@ export function emptyLists<T extends LogCandidate>(menu: T[] | null, all: T[], e
 }
 
 /** A typed search's matches, drinks whose name starts with the query first (prototype C's order),
- *  each half keeping the order it came in, cut to MATCH_CAP. */
-export function rankMatches<T extends { name: string }>(matches: T[], q: string, cap: number = MATCH_CAP): T[] {
+ *  then, when `text` is given, drinks whose text holds the query as a whole word, then the rest, each
+ *  group keeping the order it came in, cut to MATCH_CAP. The middle group is what puts a gin drink
+ *  above a mule made with ginger when the guest types "gin": nothing is dropped, so type-ahead ("moj"
+ *  for Mojito) still finds everything it did. */
+export function rankMatches<T extends { name: string }>(
+  matches: T[], q: string, cap: number = MATCH_CAP, text?: (d: T) => string,
+): T[] {
   const needle = q.trim().toLowerCase()
   const lead: T[] = []
+  const word: T[] = []
   const rest: T[] = []
-  for (const d of matches) (needle && d.name.toLowerCase().startsWith(needle) ? lead : rest).push(d)
-  return lead.concat(rest).slice(0, cap)
+  // no lookbehind, which Safari before 16.4 cannot parse
+  const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const whole = needle && text ? new RegExp('(?:^|[^\\p{L}\\p{N}])' + escaped + '(?![\\p{L}\\p{N}])', 'u') : null
+  for (const d of matches) {
+    if (needle && d.name.toLowerCase().startsWith(needle)) lead.push(d)
+    else if (whole && text && whole.test(text(d).toLowerCase())) word.push(d)
+    else rest.push(d)
+  }
+  return lead.concat(word, rest).slice(0, cap)
 }
 
 /** Matches grouped under their venue, the groups in the order their best match comes, so the drink

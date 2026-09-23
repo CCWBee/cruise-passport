@@ -1,13 +1,22 @@
 /* The filter panel: a form with its own boundary, so it is the one panel on this screen.
    Nothing inside it is a box: labels, chips and groups separated by hairlines. */
 .fpanel { padding: var(--s4); margin-top: var(--s3); }
-/* Clear all alone, at the trailing edge where it has always sat */
-.fhead { display: flex; align-items: center; justify-content: flex-end; min-height: var(--ctl); }
+/* the head: Status's label, and Clear all at the trailing edge once something is chosen. A 44 row
+   either way, so choosing moves nothing; it reaches 12 up into the panel's padding and 8 down, so
+   the label sits where a bare label would and the segment starts where it always did. */
+.fhead {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s3);
+  min-height: var(--ctl); margin: calc(var(--s3) * -1) 0 calc(var(--s2) * -1);
+}
+/* a text action: its word ends on the panel's content edge, under which the summaries' "Any" ends,
+   while its 44px target keeps reaching into the padding (the count line's "Add a missing drink" does
+   the same) */
+.fhead .gbtn-ghost { margin-right: calc(var(--s4) * -1); }
 
-/* .f-label itself is base.css's; the panel only spaces its labels down from the group above, and
-   the first one, with no head above it, sits on the panel's own padding */
+/* .f-label itself is base.css's; the panel only spaces its labels down from the group above. The
+   head's label sits in its row. */
 .fpanel .f-label { margin-top: var(--s4); }
-.fpanel > .f-label:first-child { margin-top: 0; }
+.fpanel .fhead .f-label { margin: 0; }
 .fquick { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s4); }
 
 .fgrp { border-top: 1px solid var(--line); margin-top: var(--s4); }

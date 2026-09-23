@@ -2,6 +2,7 @@
    selected fill when on (ink on the light by day, the light on ink at night). Coral is not a chip
    colour. */
 .chip {
+  position: relative;
   display: inline-flex; align-items: center; gap: var(--s1);
   min-height: var(--ctl-sm); padding: 0 var(--s3);
   background: var(--plate-quiet); border: 1px solid var(--line);
@@ -9,6 +10,9 @@
   color: var(--ink);
   transition: background-color var(--t-panel) var(--e-out), color var(--t-panel) var(--e-out);
 }
+/* compact 36, with a 44 hit area (DESIGN.md, Geometry): 4 more above and below, which rows of chips
+   8 or more apart leave clear of each other */
+.chip::after { content: ''; position: absolute; inset: -4px 0; }
 .chip-c { font-size: var(--f-meta); font-weight: 400; color: var(--ink-2); }
 .chip.on { background: var(--fill); color: var(--on-fill); border-color: transparent; }
 .chip.on .chip-c { color: inherit; }

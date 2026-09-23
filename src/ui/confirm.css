@@ -36,16 +36,22 @@
   stroke-dashoffset: 1;
   animation: tickc-draw var(--t-draw) var(--e-out) var(--t-press) forwards;
 }
-/* the label sits on its own small plate of glass, so it reads over a dense list too: the sheet's
-   film and a wider blur, as the toast has, because the clear film let a title behind it through */
+/* The label sits on its own small plate, so it reads over a dense list too. The plate is solid (the
+   room's --plate-solid, a surface to be read rather than seen through), not glass: as glass it was a
+   second filtered surface, and on a screen whose top bar had folded in the tick made five, over the
+   budget of four (the night-bar review, 23 September 2026). Not glass, it can fade on itself. */
 .tickc-label {
   padding: var(--s2) var(--s4);
   border-radius: var(--r-tag);
+  color: var(--ink);
+  background: var(--plate-solid);
+  box-shadow: var(--glass-lift);
+  animation: tickc-in var(--t-press) var(--e-out);
 }
-.tickc-label.glass { --film: var(--sheet-film); --glass-blur: 12px; }
+.tickc-leaving .tickc-label { animation: tickc-out var(--t-panel) var(--e-out) forwards; }
 
-/* In and out on the glass's own layers, never on an ancestor: an opacity on .tickc would make it the
-   backdrop root of both plates, and they would fade as flat film. */
+/* The disc fades on the glass's own layers, never on an ancestor: an opacity on .tickc would make it
+   the backdrop root of the disc, and it would fade as flat film. */
 .tickc .glass::before, .tickc .glass::after, .tickc .glass > * { animation: tickc-in var(--t-press) var(--e-out); }
 .tickc-leaving .glass { animation: tickc-drop var(--t-panel) var(--e-out) forwards; }
 .tickc-leaving .glass::before, .tickc-leaving .glass::after, .tickc-leaving .glass > * {
@@ -60,7 +66,8 @@
 
 /* reduced motion: the tick is there, whole, from the first frame, and it still clears itself */
 @media (prefers-reduced-motion: reduce) {
-  .tickc-disc, .tickc .glass::before, .tickc .glass::after, .tickc .glass > * { animation: none; }
+  .tickc-disc, .tickc-label, .tickc .glass::before, .tickc .glass::after, .tickc .glass > * { animation: none; }
   .tickc-mark path { animation: none; stroke-dashoffset: 0; }
-  .tickc-leaving .glass, .tickc-leaving .glass::before, .tickc-leaving .glass::after, .tickc-leaving .glass > * { animation: none; opacity: 0; box-shadow: none; }
+  .tickc-leaving .glass, .tickc-leaving .glass::before, .tickc-leaving .glass::after, .tickc-leaving .glass > *,
+  .tickc-leaving .tickc-label { animation: none; opacity: 0; box-shadow: none; }
 }

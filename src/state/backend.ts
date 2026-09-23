@@ -212,6 +212,17 @@ async function checkStillThere(client: Client): Promise<void> {
   } catch { /* no answer is not an answer */ }
 }
 
+/** Is this session's user still there? Asked by a round that published nothing (sync.ts,
+ *  pullBackend) when the phone's own profile row has gone: within the hour after a claim on another
+ *  phone the access token still verifies, nothing in a pull asks whether its user exists, and
+ *  without this the round would call itself synced and the copy would not say "moved" until it
+ *  next published. Retires on the auth server's
+ *  definite answer only, as the publish path does. */
+export async function confirmIdentity(): Promise<void> {
+  const client = await sb()
+  if (client) await checkStillThere(client)
+}
+
 /** Publish steps run under the user the round started with, and stop if the session has since
  *  become someone else's or no one's. They never create a session. */
 async function signedInAs(uid: string): Promise<boolean> {

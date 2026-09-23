@@ -23,6 +23,12 @@
   transition: background-color var(--t-press) var(--e-out);
 }
 .crew-me:active { background-color: var(--press); }
+/* Under 360 wide (the compact dock's breakpoint) the friend code lost its last two characters to the
+   ellipsis at 320, and a code is read out and typed by hand. The seams give up 16px so it fits. */
+@media (max-width: 359px) {
+  .crew-head { gap: var(--s2); }
+  .crew-me { gap: var(--s1); padding: 0 var(--s1); margin-right: calc(-1 * var(--s1)); }
+}
 .crew-me-copy { display: grid; min-width: 0; }
 .crew-me-copy > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 

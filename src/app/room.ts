@@ -10,6 +10,7 @@
 // rest when the page is hidden, while a sheet is up, and (in CSS) under reduced motion.
 import { dayPart } from '../state/stats'
 import { nowHour } from '../data/model'
+import { isSheetUp } from '../ui/Sheet'
 
 export type Room = 'day' | 'evening' | 'night'
 
@@ -120,7 +121,8 @@ export function startRoom(el: HTMLElement): () => void {
   // one timer checks it when it comes due, so a stream of pointermoves costs no timer churn.
   let lastActive = 0
   let idle = 0
-  let sheets = false
+  // a sheet opened by a deep link mounted in Shell's commit and sent 'sheet:open' before this ran
+  let sheets = isSheetUp()
   const live = () => !document.hidden && !sheets && performance.now() - lastActive < IDLE_MS
   const update = () => { el.classList.toggle('is-live', live()) }
   const check = () => {

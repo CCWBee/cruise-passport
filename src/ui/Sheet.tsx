@@ -9,6 +9,15 @@ import './sheet.css'
 // must not shuffle the order underneath the sheet the guest is actually looking at.
 const openSheets: symbol[] = []
 
+/** Whether a sheet is mounted now. 'sheet:open' is sent from the sheet's own mount effect, and a
+ *  sheet that mounts in the same commit as its listeners (a deep link such as /badges?badge=gin on
+ *  a cold load) runs that effect before theirs, so they miss the event. A listener that subscribes
+ *  in an effect reads this once after subscribing: Shell's dock and room.ts's pools. (main.tsx
+ *  subscribes before the first render, so it cannot miss one.) */
+export function isSheetUp(): boolean {
+  return openSheets.length > 0
+}
+
 // ── Body lock ──────────────────────────────────────────────────────────────────────────────────
 // iOS ignores body { overflow: hidden }: the page behind keeps scrolling and a pull at the top of
 // the sheet reaches the document, where it fires pull-to-refresh. Pinning the body at its current

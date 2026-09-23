@@ -121,9 +121,12 @@ export function Entry({ onDone }: { onDone: () => void }) {
             {/* An iPhone in Safari, not the home-screen app (inIosBrowser, data/model.ts): Safari and the
                 app keep separate storage, so a passport started here is not the one the app opens.
                 Said before the name, because a name given here would have to be given again there.
-                Android's browser and its installed app share one passport, so nothing is said there. */}
+                Android's browser and its installed app share one passport, so nothing is said there.
+                Two lines at 390, not three: "and use it from there" went, because "first" already
+                says it, and the 21 it gave back is what keeps this branch off the scroll at 390 by 844
+                (docs/DESIGN.md, Entry). */}
             {inIosBrowser() && (
-              <p className="t-meta entry-install">Add this to your home screen first (Share, then Add to Home Screen) and use it from there: Safari keeps a separate passport.</p>
+              <p className="t-meta entry-install">Add this to your home screen first (Share, then Add to Home Screen): Safari keeps a separate passport.</p>
             )}
 
             {/* on the room, not in a panel: the sibling is ProfileSheet, whose identical pair sits

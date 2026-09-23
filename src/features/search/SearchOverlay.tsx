@@ -1,7 +1,7 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAllDrinks, useStore } from '../../state/store'
 import { currentBar } from '../../state/stats'
-import { VENUES, deckLabel, menuFor, type Drink } from '../../data/model'
+import { VENUES, deckLabel, ingredientsOf, menuFor, type Drink } from '../../data/model'
 import { useToast } from '../../ui/Toast'
 import { TopBar } from '../../app/TopBar'
 import { matchQuery } from '../drinks/facets'
@@ -46,7 +46,15 @@ export function SearchOverlay({ sheetUp }: { sheetUp: boolean }) {
   )
   const needle = q.trim().toLowerCase()
   const found = useMemo(() => (needle ? drinks.filter((d) => matchQuery(d, needle)) : []), [drinks, needle])
-  const groups = useMemo(() => byVenue(rankMatches(found, needle)), [found, needle])
+  // what a drink is made of, so "gin" puts a gin drink above a mule made with ginger
+  const groups = useMemo(
+    () => byVenue(rankMatches(found, needle, MATCH_CAP, (d: Drink) => d.spirits.join(' ') + ' ' + ingredientsOf(d))),
+    [found, needle],
+  )
+  // A new query is a new list: back to its top, where the count and the best match are. Without it
+  // a guest who had scrolled the empty field's lists typed into a page still scrolled half way down
+  // the matches, with the count line and the first bar out of sight above.
+  useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = 0 }, [needle])
   // the wishlist spans bars and its rows do not say where they are, so it runs bar by bar, each run
   // under the bar's name as a label line
   const wishRuns = useMemo(() => byVenue(empty.wish), [empty.wish])

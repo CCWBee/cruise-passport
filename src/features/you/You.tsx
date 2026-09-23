@@ -14,7 +14,7 @@ export type YouSegment = 'stats' | 'badges' | 'log'
 const SEGMENTS: { value: YouSegment; label: string }[] = [
   { value: 'stats', label: 'Stats' },
   { value: 'badges', label: 'Badges' },
-  { value: 'log', label: 'Log' },
+  { value: 'log', label: 'Diary' },
 ]
 
 // The "You" tab: one page, three views. Each view keeps its own route (/stats, /badges, /log) so
@@ -36,8 +36,8 @@ export function You({ segment, children }: { segment: YouSegment; children: Reac
       </div>
 
       {/* C's small case: You shows the medals rather than a row about them. On Stats only, which is
-          what You opens on: Badges is the full case, where this would say the count twice, and Log
-          is the diary. Not drawn until a medal is won, since an empty case is a structural zero and
+          what You opens on: Badges is the full case, where this would say the count twice, and Diary
+          is the log of days. Not drawn until a medal is won, since an empty case is a structural zero and
           Stats' own empty state already says what to do. */}
       {segment === 'stats' && earned > 0 && (
         <button

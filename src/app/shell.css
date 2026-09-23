@@ -42,15 +42,24 @@
    dissolves into the room as it passes under the bar and no fragment of its text shows in the
    gutters beside the capsule or to the right of Log. Still: a gradient in the room's colours, never
    a clone of the drifting pools, so the bar's backdrop does not change every frame. Clear until
-   110px above the safe area, .86 by the tab labels (40 up; .78 left the For you card names
-   legible in the gutters in C's second Brave pass), and the room alone from the bar's lower edge
-   down. It is not glass and has no filter. */
+   110px above the safe area, then a slow ramp to about a third 6px above the dock, a steep one to .9
+   at the dock's top edge and the room alone 14px below it, so the gutters are covered from the
+   capsule's top edge down while the For you card names just above the bar still read. The old ramp
+   reached .86 only at the tab labels, 40 up, and left "IX" of THE MIX, a list's "0" and a badge's
+   "7 of 12" readable beside the capsule and Log (the night-bar sweep, 23 September 2026). The stops
+   follow the dock's height (--foot-bar, 56 in the compact dock). A mask reads alpha only, so its
+   stops are written in white. It is not glass and has no filter. */
 .room-foot {
+  --foot-bar: var(--bar-h);
+  --foot-top: calc(100% - var(--bar-b) - var(--foot-bar));
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; pointer-events: none;
   height: calc(var(--safe-b) + 110px);
   background: linear-gradient(180deg, var(--room-mid), var(--room-1));
-  -webkit-mask-image: linear-gradient(180deg, transparent, rgba(0, 0, 0, .86) calc(100% - var(--safe-b) - 40px), #000 calc(100% - var(--safe-b) - 10px));
-  mask-image: linear-gradient(180deg, transparent, rgba(0, 0, 0, .86) calc(100% - var(--safe-b) - 40px), #000 calc(100% - var(--safe-b) - 10px));
+  -webkit-mask-image: linear-gradient(180deg, transparent, rgba(255, 255, 255, .3) calc(var(--foot-top) - 6px), rgba(255, 255, 255, .9) var(--foot-top), #fff calc(var(--foot-top) + 14px));
+  mask-image: linear-gradient(180deg, transparent, rgba(255, 255, 255, .3) calc(var(--foot-top) - 6px), rgba(255, 255, 255, .9) var(--foot-top), #fff calc(var(--foot-top) + 14px));
+}
+@media (max-width: 359px) {
+  .room-foot { --foot-bar: 56px; }
 }
 
 /* ── the top bar ────────────────────────────────────────────────────────────────────────────────

@@ -5,7 +5,7 @@
 //   - off     (guest): nothing.
 import { create } from 'zustand'
 import {
-  befriend, bindSync, claimRecovery, clearMoved, ensureSession, fetchBackup, fetchProfile, friendFeed,
+  befriend, bindSync, claimRecovery, clearMoved, confirmIdentity, ensureSession, fetchBackup, fetchProfile, friendFeed,
   groupFeed, hasBackend, identityMoved, joinGroup, listBackups, myGroups, oauthError, publishBackup,
   publishPassport, sessionKind, setRecovery, signInWithGoogle, unfriend, upsertProfile,
   type SessionKind,
@@ -270,7 +270,12 @@ async function replayUnfriends(): Promise<void> {
   useStore.getState().setPendingUnfriends([...left, ...since])
 }
 
-async function pullBackend(): Promise<boolean> {
+/** `selfCheck`: this round published nothing, so nothing has proved this session's user still owns
+ *  the phone's rows. Its own profile row is read beside the feeds; every round that publishes writes
+ *  that row, so on a pull-only round it can only be missing because the identity was claimed on
+ *  another phone (or erased there). Then the auth server is asked (confirmIdentity) and the feeds,
+ *  which speak for an identity that may no longer be this phone's, are not applied. */
+async function pullBackend(selfCheck = false): Promise<boolean> {
   const s = useStore.getState()
   if (!(await ensureSession())) return false
   await Promise.all([replayInvites(), replayUnfriends()])
@@ -280,12 +285,16 @@ async function pullBackend(): Promise<boolean> {
   // co-member would silently become a permanent friend.
   const codes = [...new Set(s.friends.filter((f) => !f.groupOnly && f.needsEdge).map((f) => f.code).filter((c): c is string => Boolean(c)))]
   await Promise.all(codes.map((c) => befriend(c)))
-  const [friends, coMembers, groups] = await Promise.all([
+  const [friends, coMembers, groups, own] = await Promise.all([
     friendFeed(s.cruiseId), groupFeed(s.cruiseId), myGroups(s.cruiseId),
+    selfCheck ? fetchProfile() : Promise.resolve(null),
   ])
   // A call that did not answer is not "you have nobody": hold and retry rather than writing an
   // empty roster over a good one and calling it a successful sync.
   if (!friends || !coMembers || !groups) return false
+  // The phone's own row is gone. If the auth server says the user is too, runSync shows "moved";
+  // if the user is still there, the round is held and the next one publishes the row again.
+  if (own === 'none') { await confirmIdentity(); return false }
   // An erase or a claim began while the feeds were in flight: their answer is about an identity
   // this phone may no longer be, so it is not applied.
   if (paused) return false
@@ -339,7 +348,8 @@ async function runSync() {
   const publishedRevision = localRevision
   // Publish first: `befriend` and both feeds resolve me through my own profiles row, so on a first
   // run the pull would do nothing at all if the row did not exist yet.
-  const published = useSyncStore.getState().pending ? await publishBackend() : true
+  const publishing = useSyncStore.getState().pending
+  const published = publishing ? await publishBackend() : true
   // Abandoned for an erase or a claim: nothing more is sent and nothing is said; the work is still
   // pending and the next round, if there is one, starts from the store as it then stands.
   if (paused) { useSyncStore.setState({ status: 'idle', pending: true }); return }
@@ -347,7 +357,7 @@ async function runSync() {
   // whatever session answers now would read an empty crew and applyFeed would clear the roster.
   if (!published) { if (identityMoved()) showMoved(); else holdPending(); return }
   await registerRecovery()
-  const pulled = await pullBackend()
+  const pulled = await pullBackend(!publishing)
   if (paused) { useSyncStore.setState({ status: 'idle', pending: true }); return }
   if (!pulled) { if (identityMoved()) showMoved(); else holdPending(); return }
   clearBackoff()

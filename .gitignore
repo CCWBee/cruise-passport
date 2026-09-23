@@ -48,3 +48,6 @@ tools/qa/profile-*/
 
 # workflow worktrees (each a checkout of this repo; their branches hold the work)
 .claude/
+
+# headless sweeps (tools/qa/sweep.mjs): regenerated on demand, never committed
+tools/qa/sweeps/

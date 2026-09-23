@@ -57,18 +57,28 @@
   position: relative; z-index: 2; width: min(100%, 560px); min-height: 100%; margin: 0 auto;
   padding: calc(var(--safe-t) + var(--s6) + var(--s5)) var(--s5) calc(var(--safe-b) + var(--s6) + var(--s5));
   display: flex; flex-direction: column; align-items: center; justify-content: center;
+  /* a card taller than the screen keeps its top in view rather than spilling over the rail */
+  justify-content: safe center;
   gap: var(--s2); text-align: center; pointer-events: none;
 }
+/* every line on a card is centred, so a line that wraps is balanced: "You gave it 5 out" over "of 5."
+   was the find card at 390 with base.css's pretty */
+.wr-content > p { text-wrap: balance; }
 .wr-lead { max-width: 20ch; }
-.wr-blurb { max-width: 30ch; color: var(--ink-2); }
+/* balanced, because it is centred: pretty left "of everything." alone under a full first line */
+.wr-blurb { max-width: 30ch; color: var(--ink-2); text-wrap: balance; }
 /* the facts that qualify a card, held a step away from the line the numeral belongs to */
 .wr-facts { display: grid; gap: var(--s1); margin-top: var(--s3); }
 /* a list of three drink names wraps evenly rather than leaving one name alone on the second line */
 .wr-facts p { text-wrap: balance; }
-/* the coins won, three to a row at most (3 x 72 + 2 x 12), centred under the count */
+/* a drink's name is never broken across two lines (Names in Wrapped.tsx) */
+.wr-name { white-space: nowrap; }
+/* the coins won, three to a row at most (3 x 96 + 2 x 12), centred under the count. 96 and not 72:
+   at 72 the six coins filled 240 of a 358 column and read as a footnote to the numeral, where Charles
+   asked for the medals to be prominent; 96 is also the size Gin Explorer's emblem is held legible at */
 .wr-coins {
   display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s3);
-  max-width: 240px; margin-top: var(--s4);
+  max-width: 312px; margin-top: var(--s4);
 }
 .wr-cover { align-items: flex-start; text-align: left; }
 .wr-cover .wr-lead { max-width: 12ch; }
@@ -127,6 +137,15 @@
   /* the query is about height, so only the top and bottom give way: the side padding has to clear
      the certificate's inner rule */
   .wr-finale .wr-certificate { padding: var(--s4) var(--s5); }
+  /* At 320 by 568 the finale stood 646 tall in 568: the certificate ran up over the progress rail
+     and Save sat on "Previous". On a short screen the certificate reads at a sheet's scale instead:
+     its title at heading size (one line at 320, where the title size wrapped it), the count at the
+     title size, still the largest thing on it, and its rows 4 apart rather than 8. That brings the
+     whole card to about 460 and clear of the rail and the hints. */
+  .wr-finale { gap: var(--s3); }
+  .wr-certificate > .t-title { font-size: var(--f-heading); line-height: 1.25; }
+  .wr-certificate > .wr-cert-number { font-size: var(--f-title); margin-top: 0; }
+  .wr-summary p { padding: var(--s1) 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

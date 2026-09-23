@@ -48,15 +48,14 @@ export function FilterPanel({ counts }: { counts: Counts }) {
 
   return (
     <div className="fpanel panel">
-      {/* The count line under the panel is the one count; the head holds Clear all alone, and only
-          when there is something to clear. */}
-      {nChosen(f) > 0 && (
-        <div className="fhead">
-          <GlassButton variant="ghost" onClick={clear}>Clear all</GlassButton>
-        </div>
-      )}
-
-      <div className="f-label">Status</div>
+      {/* The count line under the panel is the one count; the head holds Clear all, and only when
+          there is something to clear. It shares the row with Status's label, which is always a
+          44 row, so the first choice does not push every control down under the thumb that made it
+          (a head of its own appeared above Status and moved the panel 60px). */}
+      <div className="fhead">
+        <div className="f-label">Status</div>
+        {nChosen(f) > 0 && <GlassButton variant="ghost" onClick={clear}>Clear all</GlassButton>}
+      </div>
       <Segmented ariaLabel="Status" options={statusOpts} value={statusVal}
         onChange={(v) => setFilters({ tried: v === 'yes' ? true : v === 'no' ? false : null })} />
 

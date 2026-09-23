@@ -1,7 +1,10 @@
 import { useEffect, useState, type RefObject } from 'react'
+import { useSettled } from './useSettled'
 
 // Past this much scroll the large title has gone under the status bar, and the bar takes it (C).
 const FOLD = 46
+// --t-panel: the strip's fade (shell.css)
+const FADE_MS = 200
 
 // The scroll edge: a screen's large title folds into a strip of glass at the top once it has scrolled
 // away (prototype C's top bar, built as B's; shell.css has the recipe). It watches the page, or the
@@ -31,8 +34,12 @@ export function TopBar({ title, scroller, off = false }: {
       cancelAnimationFrame(raf)
     }
   }, [scroller])
+  // hidden, once its fade has run, it drops its filter (.glass-off), so the budget counts only glass
+  // that paints (docs/DESIGN.md, Material)
+  const isShown = shown && !off
+  const glassOff = useSettled(!isShown, FADE_MS)
   return (
-    <header className={'topbar glass' + (shown && !off ? ' is-shown' : '')} aria-hidden>
+    <header className={'topbar glass' + (isShown ? ' is-shown' : '') + (glassOff ? ' glass-off' : '')} aria-hidden>
       <span className="topbar-title">{title}</span>
     </header>
   )

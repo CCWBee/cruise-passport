@@ -41,8 +41,19 @@
 .tray-empty { display: block; }
 /* five coins at 56 with gaps of 8 fill the inner width at 390. The three rows sit 8 apart, not C's
    12 to 14: at 390 by 844 that is what lets the For you names clear the tab bar aboard, when the
-   readout has grown by the day's facts. */
-.tray-coins { display: flex; gap: var(--s2); margin-top: var(--s2); }
+   readout has grown by the day's facts.
+   The row holds as many whole coins as fit and drops the rest: at 320 the fifth coin was cut in half
+   by the tray's edge. The grid lays one row of 56 columns; a coin that does not fit wraps to a
+   second row of no height, which the overflow hides, and the heading's count still says them all.
+   The clip is 4px wider each side and 4px deeper than the coins, each taken back by a margin, so the
+   coins' cast shadows stay inside it and the rows still sit 8 apart; the height is fixed rather than
+   left to the row gap, which is only there when a coin has wrapped. */
+.tray-coins {
+  display: grid; grid-template-columns: repeat(auto-fill, 56px); grid-template-rows: 56px; grid-auto-rows: 0;
+  gap: var(--s1) var(--s2); height: calc(56px + var(--s1));
+  margin: var(--s2) calc(-1 * var(--s1)) calc(-1 * var(--s1));
+  overflow: hidden; padding-inline: var(--s1);
+}
 .tray-next { display: flex; align-items: center; gap: var(--s3); margin-top: var(--s2); }
 
 /* ── "For you": a horizontal shelf of drinks to try next. Each card is a swipeable, independently

@@ -7,6 +7,7 @@
 // black; reduced-motion / no-GL show a correct still sea with the same sky.
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { dayPart, type DayPart } from '../../state/stats'
+import { isSheetUp } from '../../ui/Sheet'
 import './sea.css'
 
 const FRAG = `
@@ -138,13 +139,13 @@ const SKY: Record<DayPart, Sky> = {
   // violet-grey overhead, one orange band left on the water's edge
   dusk: {
     top: rgb('#565578'), hor: rgb('#9A7E96'), hi: rgb('#1D6E80'), lo: rgb('#0A2A42'),
-    sun: rgb('#F2A05E'), band: rgb('#E8834B'), hull: rgb('#3B5B78'),
+    sun: rgb('#F2A05E'), band: rgb('#E8834B'), hull: rgb('#1B2A40'),
     sunY: 0.83, sunR: 0.15, sunI: 0.22, core: 0, glow: 0.07, bandI: 0.44, glint: 0.22,
   },
   // deep navy, a paler horizon, a small hard moon where the sun was, the sea darker
   night: {
     top: rgb('#0E1E38'), hor: rgb('#40587A'), hi: rgb('#10465A'), lo: rgb('#041D2E'),
-    sun: rgb('#E9EFF7'), band: rgb('#4A6183'), hull: rgb('#3B5B78'),
+    sun: rgb('#E9EFF7'), band: rgb('#4A6183'), hull: rgb('#08121F'),
     // the moon sits at the height the five suns do, so a full passport meets it the same way
     sunY: 0.83, sunR: 0.05, sunI: 0.95, core: 0.66, glow: 0.07, bandI: 0.20, glint: 0.16,
   },
@@ -255,6 +256,8 @@ export function SeaHero({ level, hour, children }: SeaHeroProps) {
     const down = () => setSheetUp(false)
     window.addEventListener('sheet:open', up)
     window.addEventListener('sheet:closed', down)
+    // a sheet mounted in the same commit sent 'sheet:open' before this listened
+    if (isSheetUp()) setSheetUp(true)
     return () => {
       io.disconnect()
       window.removeEventListener('sheet:open', up)

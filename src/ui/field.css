@@ -1,10 +1,11 @@
 /* Field: sentence-case label, a 44px well in the room (C's recessed field: a shade by night, a white
-   film by day), radius 16, a 1px line in every state (the ring is an outline, so nothing shifts), a
-   reserved hint line. Body size, which is also over iOS's 16px zoom line. */
+   film by day), radius 16, a 1px edge in every state (the ring is an outline, so nothing shifts), a
+   reserved hint line. Body size, which is also over iOS's 16px zoom line. The edge is the room's
+   --edge, 3:1 on a sheet: with --line's hairline the day add sheet read as labels over a blank page. */
 .field { display: flex; flex-direction: column; gap: var(--s1); margin-top: var(--s4); }
 .field-label { font-size: var(--f-meta); font-weight: 600; color: var(--ink-2); }
 .field-ctrl {
-  width: 100%; min-height: var(--ctl); background: var(--well); color: var(--ink); border: 1px solid var(--line);
+  width: 100%; min-height: var(--ctl); background: var(--well); color: var(--ink); border: 1px solid var(--edge);
   border-radius: var(--r-control); padding: var(--s3) var(--s4); font-size: var(--f-body); font-weight: 400;
   outline: 2px solid transparent; outline-offset: 1px;
   -webkit-user-select: text; user-select: text;
@@ -12,10 +13,10 @@
 }
 .field-ctrl::placeholder { color: var(--ink-2); }
 .field-ctrl:hover { border-color: var(--ink-3); }
-.field-ctrl:focus-visible { outline-color: var(--focus); border-color: var(--line); }
+.field-ctrl:focus-visible { outline-color: var(--focus); border-color: var(--edge); }
 textarea.field-ctrl { resize: vertical; min-height: 92px; line-height: 1.45; }
 .field-ctrl.tnum { font-variant-numeric: tabular-nums; }
 .field-ctrl[aria-invalid="true"] { border-color: var(--coral); }
-.field-ctrl:disabled { background: transparent; color: var(--ink-2); }
+.field-ctrl:disabled { background: transparent; color: var(--ink-2); border-color: var(--line); }
 .field-hint { font-size: var(--f-meta); color: var(--ink-2); min-height: 1lh; }
 .field-err { color: var(--coral-text); }

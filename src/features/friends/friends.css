@@ -9,28 +9,32 @@
    Nothing about the control is styled here: a local copy of the well was a white box with warm white
    type on it once the room went dark ── */
 
-/* the six identity colours: 44px targets. Every border stays 1px, so the chosen one is marked by a
-   deeper fill, a rim mixed towards the room's ink and a second rule drawn inside it rather than by a
-   fatter border. Mixed towards --ink, so the mark lightens at night and darkens by day. */
+/* the six identity colours: 44px targets, each filled with the full hue, so the swatch is the colour
+   the crew will see (a 24% tint read as pastel by day and as muddy brown at night, with mango and
+   pine the same brown). The resting edge is the hue pulled a fifth towards --ink, so a pale hue on a
+   pale room still has an edge. Every border stays 1px: the chosen one is marked by a rim in --ink,
+   which stands off the room in every light, and a rule drawn inside it in --on-light. The inner rule
+   is the constant navy rather than --ink because it sits on the hue, not on the room, and --ink turns
+   warm white at night, about 1.3:1 on pine; navy is at least 5:1 on all six. */
 .fpick { display: flex; flex-wrap: wrap; gap: var(--s2); }
+/* six at 44 with 8 between need 304; a 320 screen has 288, so pine dropped to a row of its own.
+   With 4 between they need 284 and stay on one row. */
+@media (max-width: 359px) { .fpick { gap: var(--s1); } }
 .fpick-dot {
   --fc: var(--friend-aqua);
   position: relative;
   inline-size: var(--ctl);
   block-size: var(--ctl);
   border-radius: var(--r-tag);
-  background: color-mix(in oklab, var(--fc) 24%, transparent);
-  border: 1px solid color-mix(in oklab, var(--fc) 45%, transparent);
+  background: var(--fc);
+  border: 1px solid color-mix(in oklab, var(--fc) 80%, var(--ink));
 }
-.fpick-dot.on {
-  background: color-mix(in oklab, var(--fc) 34%, transparent);
-  border-color: color-mix(in oklab, var(--fc) 62%, var(--ink));
-}
+.fpick-dot.on { border-color: var(--ink); }
 .fpick-dot.on::after {
   content: '';
   position: absolute;
   inset: 4px;
-  border: 1px solid color-mix(in oklab, var(--fc) 62%, var(--ink));
+  border: 1px solid var(--on-light);
   border-radius: var(--r-tag);
 }
 
@@ -41,6 +45,13 @@
    than as the next group. Renamed from .addme-hint: it is the fourth member of the generic
    .friends-block / .friends-action / .friends-status family and two sheets now use it. */
 .friends-hint { margin-top: var(--s2); }
+/* Your details: the sync line is the sheet's own line, not the answer to Bring it back. At 12 under an
+   unfolded Bring back it read as a second answer to the tap ("That code does not match a passport."
+   then "A demo. Nothing leaves this phone." one line apart), so it keeps a group's 24 from it. */
+.bring-back + .friends-status { margin-top: var(--s5); }
+/* a moved passport's second way on, a separate choice from the unfolded code above it, so it sits a
+   group's 24 away rather than the 16 that would read as a second button of the same form */
+.moved-start { margin-top: var(--s5); }
 /* the folded-away join and paste paths are .quiet-actions (base.css): deliberately the quietest things
    on the sheet, but each is the only route for whoever needs it, so each is 44px of target. Two
    folded in a row sit 12 apart by base.css's own pair rule; one that follows an unfolded block keeps

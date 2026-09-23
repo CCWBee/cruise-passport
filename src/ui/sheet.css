@@ -92,6 +92,9 @@
 .sheet-meta, .sheet .sheet-eyebrow, .sheet .eyebrow.sheet-eyebrow {
   font-size: var(--f-meta); font-weight: 400; line-height: 1.4; color: var(--ink-2);
   letter-spacing: 0; text-transform: none; margin: 0 0 var(--s1); padding-right: var(--s6);
+  /* a line or two, so the two are balanced rather than leaving "remove it." alone under the privacy
+     note's caption, which ran 5px past the measure beside the X */
+  text-wrap: balance;
 }
 /* clear of the X: 32 past the 24 inset is the X's 44 and its 12 from the edge */
 .sheet-title { padding-right: var(--s6); }

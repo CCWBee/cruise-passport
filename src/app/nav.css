@@ -2,7 +2,9 @@
    radius 32, 16 in from each side and 10 above the safe area, with Log round at its trailing end.
    Both are the glass engine (base.css), at its own numbers: saturate 180% and 210%, inside the
    brief's 160 to 190 for the body, because the coral pool moved off the bar rather than the glass
-   losing its colour (tokens.css, Night). The dock is one fixed strip that holds them, so stepping
+   losing its colour (tokens.css, Night). By day the floor under the bar is aqua, and those numbers
+   lit the capsule into a cyan pill, so the room's --dock-* tokens calm it there (tokens.css, Day);
+   evening and night keep the engine's. The dock is one fixed strip that holds them, so stepping
    down under a sheet is one translate on the strip and never fights the morph on the pieces. */
 .dock {
   --dock-x: var(--s4);
@@ -25,6 +27,12 @@
    56 tall, puts the last tab's edge clear of Log at 320 (prototype A, a.css 377) */
 @media (max-width: 359px) {
   .dock { --dock-x: var(--s2); --dock-h: 56px; }
+  /* the bead is 46 wide here and round-ended, and "Drinks" at 700 ran onto its shaded rim, where
+     the outer letters lost their contrast at night: at 600 the label clears the rim */
+  .tabbar .tab.is-under { font-weight: 600; }
+  /* at 600 the D and the s still sat on the rim (the confirm sweep, 23 September 2026), so the bead
+     is drawn 14% wider than its slot, 52 on a 46 slot; a neighbour's label is still 5px clear */
+  .tabbar > .droplet { scale: 1.14 1; }
 }
 
 /* ── the capsule ── */
@@ -37,6 +45,12 @@
   -webkit-user-select: none; user-select: none;
   transition: scale var(--t-settle) var(--e-spring), box-shadow var(--t-panel) var(--e-out);
 }
+/* the dock's optics, from the room (tokens.css): the engine's own after dark, calmer by day */
+.tabbar, .tab-return, .logfield {
+  --glass-sat: var(--dock-sat); --glass-bright: var(--dock-bright);
+  --lens-sat: var(--dock-lens-sat); --lens-bright: var(--dock-lens-bright);
+}
+.tab-return, .logfield { --glass-sat: var(--dock-field-sat); }
 /* under a thumb the capsule swells a little and the droplet lifts (C) */
 .tabbar.is-touching { scale: 1.02; transition: scale var(--t-press) var(--e-out); }
 .tabbar.is-touching > .spec { opacity: 1; transition-duration: 80ms; }
