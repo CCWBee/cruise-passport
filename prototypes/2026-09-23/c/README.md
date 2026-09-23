@@ -53,10 +53,10 @@ and they would sample nothing but it.
 
 | Layer | What it is | Numbers |
 | --- | --- | --- |
-| `::before`, the body | a clear backdrop filter with a thin film | `blur(6px) saturate(180%) brightness(1.08)`; film navy `rgba(12,18,34,.20)` (tab bar and search field `.24`, the dark sky chip `.36`, sheet `.40` at `saturate(160%) brightness(1.04)`; the sky chip and Back at `saturate(130%) brightness(1.06)`); a sheen across the top third, white `.11` to `0` at 34% |
+| `::before`, the body | a clear backdrop filter with a thin film | `blur(6px) saturate(180%) brightness(1.08)`; film navy `rgba(12,18,34,.20)` (tab bar and search field `.24`, the dark sky chip `.36`, sheet `.40` at `saturate(160%) brightness(1.04)`; the sky chip and Back at `saturate(130%) brightness(1.06)`; the tab bar and the Log button at `saturate(135%) brightness(1.06)`); a sheen across the top third, white `.11` to `0` at 34% |
 | `.spec`, the touch light | a radial highlight that moves to the finger | white `.34` at the pointer, `.06` at 46%, gone at 70%; opacity `0` to `1` in 80ms on press, back in 340ms |
 | content | the label, icon or field | positioned, so it paints above the body and under the rim |
-| `::after`, the edge lens | a heavier, brighter backdrop masked to a ring round the shape | `blur(14px) saturate(210%) brightness(1.32)` (sheet `blur(18px) saturate(200%) brightness(1.3)`; the sky chip and Back `saturate(120%) brightness(1.24)`, because at the chrome's numbers the chip's rim went neon cyan on the day sky and Back read as a blue button); ring 8px (sheet 10px, small buttons and chips 6px) by `mask: content-box exclude`; a 135° wash white `.24` to `0` at 62%, so the rim is lit from the top left |
+| `::after`, the edge lens | a heavier, brighter backdrop masked to a ring round the shape | `blur(14px) saturate(210%) brightness(1.32)` (sheet `blur(18px) saturate(200%) brightness(1.3)`; the sky chip and Back `saturate(120%) brightness(1.24)`, because at the chrome's numbers the chip's rim went neon cyan on the day sky and Back read as a blue button; the tab bar and the Log button `saturate(140%) brightness(1.28)`, because the capsule sits on the coral pool and at 180 and 210% it went magenta at dusk and night, a second tinted surface beside Log, and the search field the Log button becomes went the same way); ring 8px (sheet 10px, small buttons and chips 6px) by `mask: content-box exclude`; a 135° wash white `.24` to `0` at 62%, so the rim is lit from the top left |
 | specular | on the rim layer | `inset 1.5px 1.5px .5px -.5px` white `.9` on the upper left edge; `inset -1px -1.5px 1px -.5px` black `.38` on the lower right |
 | hairline | on the rim layer | `inset 0 0 0 1px` white `.16` |
 | lift | the element's own shadow | `0 14px 30px -8px` black `.6`, `0 2px 6px` black `.35` |
@@ -117,8 +117,10 @@ The glass needs colour behind it, so the whole app sits in a room:
   window are what pass under the tab bar and the top bar.
 - At the foot, a second copy of the room is laid over the content and faded in towards the tab bar
   (clear until 110px above the safe area, which is 36px above the bar; 78% at 40px, level with the tab
-  labels; 90% at the bottom). It began 176px up until the Brave pass, which showed it dimming the last
-  100px of every screen above the bar, the medal tray's next coin among them. A row dissolves into the
+  labels; the room alone from the bar's lower edge down). It began 176px up until the first Brave
+  pass, which showed it dimming the last 100px of every screen above the bar, the medal tray's next
+  coin among them; it ended at 90% until the second, which showed the For you card names still
+  legible in the strip under the capsule. A row dissolves into the
   room as it goes under the bar while the warm light stays behind the glass. This is what keeps the tab labels
   legible over anything, a silver coin included.
 - The **sea window** on Home is the app's own shader, ported whole (`SeaHero.tsx`): the sky by the
@@ -230,6 +232,16 @@ text colour from `getComputedStyle` composited over it, WCAG ratio. Worst case p
 | Tray: "1 more whiskey · 9 of 10", ink at 84% | 11.2 | 11.2 | 11.2 | 11.2 |
 | Tab labels, with the For you cards passing under | 10.0 | 9.2 | 8.9 | 9.0 |
 
+Second pass, the same day, after the fixes below: the final shots in `shots/` (Home and the other
+screens at the morning clock, Home again at 13, 19 and 23), each text box against the backdrop
+painted behind it by the same method. Worst case per pair: tab labels 9.4 (dusk and night) to 11.3;
+the sky chip 7.3 at 13, 5.8 at 19, 13.8 at 23, 9.3 in the morning; the date under the title 6.7;
+the readout 8.5; the medals count 6.3; the tray's lines 10.2 and 11.2; Drinks row meta 7.9 and its
+venue meta 7.0; the medium sheet's meta 8.5, notes 8.8, labels 9.0; the large sheet 10.9 or more;
+the search placeholder 10.4 and row meta 8.3; the case's tiers 10.1 and In reach meta 8.9; the
+opened medal 11.3 or more; Ship meta 8.3 and counts 7.1; Crew meta 7.7; You's deck counts 5.8
+(`0 of 1` over the lightest part of the room); the toast 7.6 and its Undo 14.2; the plus on Log 5.0.
+
 The medium sheet at night, over Drinks: title 10.5, lead 12.1, meta and notes 9.1, and meta over the
 brightest mint tick behind it 5.0. Tab labels over the Drinks, Ship and Crew lists at night: 8.7 or
 more. Search: placeholder 10.2, row meta 9.7. A screenshot is one moment
@@ -253,6 +265,21 @@ and the Home fit: the coin's reverse face carried the class `back`, so it took t
 44px size and its hidden-under-a-sheet rule, and turning the coin showed only its edge (now
 `face-rev`); and "Add to your crew" was a second filled lamp button on a screen whose one filled
 action is Log (now an outlined button in lamp type).
+
+A second pass in Brave the same day, frame 390 by 844 again, looked at every state as a guest and
+fixed four things: the tab bar (and the search field the Log button becomes) went magenta over the
+coral pool at dusk and night and read as a second tinted surface, so both now push the pool's
+colour less (the numbers are in the recipe); the For you card names showed through the strip under
+the capsule, so the foot edge is now the room alone below the bar; a drink row's price came after
+the ingredients and was always cut off by the ellipsis, so it now leads (`$13 · Absolut vodka
+shaken with lavender, lemon and melon`); and Crew's "Recommended by Sam · O'Malley's Irish Pub" was cut off on every row under a heading
+that already says whose picks they are, so it reads "Sam · O'Malley's Irish Pub". The first section
+after a large title on Search and Ship now sits 24px below it, not 8. Driven again with script
+clicks: tab tap (the droplet lands on the tab, measured to the pixel), Log to search with the field
+focused, tick, Undo, the tray to the case, a coin to its sheet at large, the grabber to medium, close,
+Back, a For you card to its sheet at medium. `scrollWidth` 390 on every state; backdrop-filtered
+surfaces on landing: Home 3 (sky chip, tab bar, Log), the case 3 (Back, tab bar, Log), the other tabs
+and search 2, a sheet 1, search with the toast 3.
 
 Checked without a browser: the script parses (`node --check`); every `?screen=` landing runs its
 whole start-up path in Node against a stub DOM without an error; the generated markup for every

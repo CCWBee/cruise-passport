@@ -230,7 +230,17 @@ Workflow run `wf_2e371d47-f6d` (the first launch, `wf_b934f643-55a`, was stopped
 written, to add the medals). Its first pass ended at about 03:25 on 23 September: all three builders
 done, Brave passes for A and B done (13 shots each in `<letter>/shots/`, verdicts in the journal),
 C's pass cut off by the monthly spend limit after saving its shots, and the three judges never ran.
-Resumed at 08:05 the same morning to finish C's pass and the judges. Resume: Workflow with scriptPath
+Resumed at 08:05 the same morning to finish C's pass and the judges; the run completed, all nine
+agents done. All three judges ranked C (Night bar) first (guest 7.5, glass 7, craft 7; A and B
+between 5 and 7); their reports and the render verdicts are in `prototypes/2026-09-23/JUDGING.md`.
+The three are on a Pages preview (not production): https://glass-prototypes.cruise-passport.pages.dev
+(redeploy: `npx wrangler pages deploy prototypes/2026-09-23 --project-name=cruise-passport
+--branch=glass-prototypes --commit-dirty=true`). WAITING ON CHARLES: the pick. Recommended: C, with
+the grafts the judges agree on (A's graded edge lens and droplet easing, Tried at medium height and a
+labelled Log; B's daytime room so C is light glass with ink at noon, Log opening on the bar you are
+in, and the dated medal line), and C's own defects fixed (the hard lens ring, the pools animating
+under the chrome for ever). Once he picks: write `docs/DESIGN.md` v2 and a build spec under
+`docs/specs/`, then build into the app. Resume: Workflow with scriptPath
 `C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-glass-revolution-prototypes-wf_b934f643-55a.js`
 and resumeFromRunId `wf_2e371d47-f6d`. It needs `python -m http.server 8791 --bind 127.0.0.1` running
 in `prototypes/2026-09-23` for the render stage.

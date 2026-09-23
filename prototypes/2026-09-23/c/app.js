@@ -301,7 +301,7 @@ var EMBLEMS = {"first":"<circle cx=\"50\" cy=\"64\" r=\"14\"/><path d=\"M18 68 Q
   // ── rows ─────────────────────────────────────────────────────────────────────────────────────
   function drinkMeta(d) {
     var price = d.p !== null && d.p !== undefined ? money(d.p) : '';
-    return [d.i, price].filter(Boolean).join(' · ');
+    return [price, d.i].filter(Boolean).join(' · ');
   }
   function drinkRow(d, o) {
     o = o || {};
@@ -478,7 +478,7 @@ var EMBLEMS = {"first":"<circle cx=\"50\" cy=\"64\" r=\"14\"/><path d=\"M18 68 Q
     if (!q) {
       var wish = Object.keys(entries).filter(function (id) { return entries[id].wish && !entries[id].tried && BY_ID[id]; });
       if (wish.length) {
-        h += '<section class="section" style="margin-top:8px"><div class="section-head"><h2>Your wishlist</h2></div><div class="rows">' +
+        h += '<section class="section" style="margin-top:24px"><div class="section-head"><h2>Your wishlist</h2></div><div class="rows">' +
           wish.map(function (id) { var d = BY_ID[id]; return drinkRow(d, { meta: venueName(d.v) + ' · Deck ' + deckLabel(VENUES[d.v].d) }); }).join('') + '</div></section>';
       }
       var picks = PICKS.filter(function (p) { return !isTried(p.id) && !(entries[p.id] && entries[p.id].wish); });
@@ -506,7 +506,7 @@ var EMBLEMS = {"first":"<circle cx=\"50\" cy=\"64\" r=\"14\"/><path d=\"M18 68 Q
     VKEYS.forEach(function (k) { (decks[VENUES[k].d] = decks[VENUES[k].d] || []).push(k); });
     var h = '<header class="large"><h1>Ship</h1><p>' + SHIP + ' · ' + VKEYS.length + ' venues</p></header>';
     Object.keys(decks).map(Number).sort(function (a, b) { return a - b; }).forEach(function (deck, di) {
-      h += '<section class="section"' + (di === 0 ? ' style="margin-top:8px"' : '') + '><div class="section-head"><h2>Deck ' + deckLabel(deck) + '</h2></div><div class="rows rows-flush">';
+      h += '<section class="section"' + (di === 0 ? ' style="margin-top:24px"' : '') + '><div class="section-head"><h2>Deck ' + deckLabel(deck) + '</h2></div><div class="rows rows-flush">';
       decks[deck].forEach(function (k) {
         var v = VENUES[k];
         var list = DRINKS.filter(function (d) { return d.v === k; });
@@ -541,7 +541,7 @@ var EMBLEMS = {"first":"<circle cx=\"50\" cy=\"64\" r=\"14\"/><path d=\"M18 68 Q
     });
     if (recs.length) {
       h += '<section class="section"><div class="section-head"><h2>Their picks you have not tried</h2></div><div class="rows">' +
-        recs.map(function (r) { var d = BY_ID[r.id]; return drinkRow(d, { meta: 'Recommended by ' + r.who + ' · ' + venueName(d.v) }); }).join('') + '</div></section>';
+        recs.map(function (r) { var d = BY_ID[r.id]; return drinkRow(d, { meta: r.who + ' · ' + venueName(d.v) }); }).join('') + '</div></section>';
     }
     $('#page-crew').innerHTML = h;
   }

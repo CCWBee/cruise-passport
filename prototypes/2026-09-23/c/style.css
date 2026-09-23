@@ -166,11 +166,13 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
    warm light stays behind the glass. It is not glass and has no filter. */
 .edge-foot {
   position: absolute; inset: 0; z-index: 2; pointer-events: none;
-  /* Clear until 36px above the bar, 78% by the tab labels (40px above the safe area), 90% at the
-     foot. It began 176px up until the Brave pass, which dimmed the last 100px of every screen above
-     the bar, the medal tray's next coin on Home among them. */
-  -webkit-mask-image: linear-gradient(180deg, transparent calc(100% - var(--safe-b) - 110px), rgba(0, 0, 0, .78) calc(100% - var(--safe-b) - 40px), rgba(0, 0, 0, .9));
-  mask-image: linear-gradient(180deg, transparent calc(100% - var(--safe-b) - 110px), rgba(0, 0, 0, .78) calc(100% - var(--safe-b) - 40px), rgba(0, 0, 0, .9));
+  /* Clear until 36px above the bar, 78% by the tab labels (40px above the safe area), and the room
+     alone from the bar's lower edge down. It began 176px up until the first Brave pass, which dimmed
+     the last 100px of every screen above the bar, the medal tray's next coin on Home among them; it
+     ended at 90% until the second, which showed the For you card names still legible in the strip
+     under the capsule. */
+  -webkit-mask-image: linear-gradient(180deg, transparent calc(100% - var(--safe-b) - 110px), rgba(0, 0, 0, .78) calc(100% - var(--safe-b) - 40px), #000 calc(100% - var(--safe-b) - 10px));
+  mask-image: linear-gradient(180deg, transparent calc(100% - var(--safe-b) - 110px), rgba(0, 0, 0, .78) calc(100% - var(--safe-b) - 40px), #000 calc(100% - var(--safe-b) - 10px));
 }
 .edge-foot .grain { display: none; }
 
@@ -357,6 +359,19 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
   position: absolute; inset: 0; border: 0; background: none; border-radius: inherit;
   display: grid; place-items: center; color: var(--ink);
   opacity: 0; visibility: hidden; transition: opacity .2s var(--e-out), visibility 0s linear .2s;
+}
+/* The capsule sits on the coral pool, low left, at every hour. At the chrome's 180 and 210%
+   saturation it went magenta at dusk and night and read as a second tinted button beside Log, the
+   one tinted glass. It bends the pool and brightens it, and pushes its colour less. The Log button
+   takes the same numbers: its coral is its own tint, and as the search field it sits on the same
+   pool and went the same magenta. */
+.tabbar::before, .logbtn::before {
+  -webkit-backdrop-filter: blur(6px) saturate(135%) brightness(1.06);
+  backdrop-filter: blur(6px) saturate(135%) brightness(1.06);
+}
+.tabbar::after, .logbtn::after {
+  -webkit-backdrop-filter: blur(14px) saturate(140%) brightness(1.28);
+  backdrop-filter: blur(14px) saturate(140%) brightness(1.28);
 }
 /* under a thumb the capsule swells a little and the droplet lifts */
 .tabbar.is-touching { transform: scale(1.02); transition: width .44s var(--e-drawer), transform .14s var(--e-out); }
