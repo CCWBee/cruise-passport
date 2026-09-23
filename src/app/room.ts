@@ -43,6 +43,16 @@ const THEME: Record<Room, string> = { day: '#DCEBF4', evening: '#1A1830', night:
 const FADE_MS = 600
 const IDLE_MS = 20000
 
+// ?hour= pins the room for QA from the load that carries it, not only while the address does: the
+// app's own links drop the query, and the next visibilitychange then put a night render into the
+// day room (Brave, /you to /badges at hour 23, 23 September 2026). Read once, with nowHour()'s test.
+const PINNED: number | null = (() => {
+  if (typeof location === 'undefined') return null
+  const raw = new URLSearchParams(location.search).get('hour')
+  return raw && /^\d{1,2}$/.test(raw) && Number(raw) <= 23 ? Number(raw) : null
+})()
+const roomHour = () => PINNED ?? nowHour()
+
 function setDocumentRoom(room: Room) {
   const root = document.documentElement
   root.dataset.room = room
@@ -53,7 +63,7 @@ function setDocumentRoom(room: Room) {
 
 function currentRoom(): Room {
   const set = document.documentElement.dataset.room
-  return set === 'day' || set === 'evening' || set === 'night' ? set : roomFor(nowHour())
+  return set === 'day' || set === 'evening' || set === 'night' ? set : roomFor(roomHour())
 }
 
 function makeLight(room: Room): HTMLDivElement {
@@ -73,7 +83,7 @@ let layer: HTMLElement | null = null
 /** Put the app in `room`. With the layer mounted and a real change, the new room fades in over the
  *  old one on the layer's opacity; the ink and the controls change half way through, when the two
  *  lights are level, rather than at the start, where light type would sit on a still-light sky. */
-export function applyRoom(room: Room = roomFor(nowHour())) {
+export function applyRoom(room: Room = roomFor(roomHour())) {
   if (room === currentRoom() && document.documentElement.dataset.room) return
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   if (!layer || reduced) {

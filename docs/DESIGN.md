@@ -110,7 +110,8 @@ as glass, and most drinks are logged in a bar after dark.
   that they are missing.
 - **Tuning a surface.** Only through custom properties on the surface itself: `--film`, `--rim`,
   `--glass-blur`, `--glass-sat`, `--glass-bright`, `--lens-blur`, `--lens-sat`, `--lens-bright`,
-  `--solid`. Never its own `backdrop-filter` or `::before` background, which is what lets the
+  `--spec-x`, `--solid`. `--spec-x` is how far the specular reaches in from the left edge; the sheet
+  sets it to 0, because down a pane that tall it drew a white line from head to foot. Never its own `backdrop-filter` or `::before` background, which is what lets the
   fallbacks below win everywhere. The variants: `.glass-sm` (a narrower rim), `.glass-calm`
   (saturate 130% and 120%, for glass on the sea's sky or a cool pool, where the full numbers painted
   a neon rim and a round button read as a blue one), `.glass-tint` (coral, the Log button's, the one
@@ -987,7 +988,9 @@ taken, and read overflow from the frame's `scrollWidth` rather than by eye. Alwa
 the dev server's `.env` carries the live project's keys, so a load without it signs a throwaway
 anonymous user in. The room follows the clock, not a colour-scheme preference (Colour), so a
 browser's forced dark mode and the Dark Reader extension in Brave leave it as a phone draws it; pin the
-room with `?hour=`. Brave's content blocking hides elements
+room with `?hour=`, which holds for the room after the app's own links drop the query, though
+not for `?nosync`: load each route directly with both rather than tapping through. Brave's content
+blocking hides elements
 whose class names look like social-media widgets: on 23 September 2026 it hid `.social-head`, the
 Crew heading and the only door onto Your details, which is why Crew's classes are `crew-*`. Keep
 class names clear of social, share, ad, banner and promo, and treat a module missing from a Brave

@@ -203,6 +203,19 @@ export function Sheet({ onClose, children, labelledBy, height = 'large', wave = 
     return () => window.removeEventListener('resize', onResize)
   }, [animate, apply, measure])
 
+  // once the pane has arrived, the drawer's class comes off and takes will-change with it (sheet.css),
+  // so a pane at rest at medium is drawn at its own scale rather than as a shrunk bitmap; every move
+  // puts the class back first
+  useEffect(() => {
+    const sheet = sheetRef.current
+    if (!sheet) return
+    const onEnd = (e: TransitionEvent) => {
+      if (e.target === sheet && e.propertyName === 'transform' && !geo.current.closing) animate(false)
+    }
+    sheet.addEventListener('transitionend', onEnd)
+    return () => sheet.removeEventListener('transitionend', onEnd)
+  }, [animate])
+
   // ── Dragging ────────────────────────────────────────────────────────────────────────────────
   // Direct manipulation, not decorative motion: it must work for everyone, or the grab handle is an
   // affordance that lies. At medium the content does not scroll, so a drag from anywhere on the

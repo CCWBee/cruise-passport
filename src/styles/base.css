@@ -150,7 +150,8 @@ h1, h2, h3, p { margin: 0; }
    that fade from each edge to nothing across the ring, the foot at 70% and the right at 80% for one
    light from the top left. C's hard content-box ring painted a pill inside a pill on the sky chip, a
    donut on Log and a band down the sheet. The lift is the element's own shadow.
-   A surface tunes it by setting --film, --rim, --glass-blur/sat/bright or --lens-blur/sat/bright on
+   A surface tunes it by setting --film, --rim, --glass-blur/sat/bright, --lens-blur/sat/bright or
+   --spec-x (how far the specular reaches in from the left edge; 0 lights the top edge alone) on
    itself, and never writes a backdrop-filter or a ::before background of its own: that is what lets
    the fallbacks at the end of this block win everywhere. The tab bar and the Log button keep their
    bodies inside 160 to 190% saturation; the coral pool moved off them instead (tokens.css, Night). */
@@ -168,6 +169,7 @@ h1, h2, h3, p { margin: 0; }
 .glass, .glass-live {
   --film: var(--glass-film);
   --rim: 8px;
+  --spec-x: 1.5px; /* set on every surface, so a sheet's 0 never reaches the glass inside it */
   box-shadow: var(--glass-lift);
 }
 .glass::before, .glass::after, .glass-live::before, .glass-live::after {
@@ -183,7 +185,7 @@ h1, h2, h3, p { margin: 0; }
   backdrop-filter: blur(var(--lens-blur)) saturate(var(--lens-sat)) brightness(var(--lens-bright));
   background: linear-gradient(135deg, var(--glass-lens), rgba(255, 255, 255, .03) 40%, rgba(255, 255, 255, 0) 62%, rgba(255, 255, 255, .07));
   box-shadow:
-    inset 1.5px 1.5px .5px -.5px var(--glass-rim),
+    inset var(--spec-x) 1.5px .5px -.5px var(--glass-rim),
     inset -1px -1.5px 1px -.5px var(--glass-rim-under),
     inset 0 0 0 1px var(--glass-hair);
   -webkit-mask:
