@@ -58,33 +58,84 @@ between sections. Whitespace separates ideas; it does not pad every object.
 
 ## Material
 
-- **Ground.** Cream `#FBF3E2` with two washes no darker than `#F7ECD3`. The film grain stays at 3.5%.
-  This is the surface content sits on.
-- **Liquid glass is the material of the chrome layer**, and it is meant to be seen. It reads as
-  glass only because content moves beneath it, so it lives exactly where that is true: the bottom
-  nav (the page scrolls under it), the sheet (the page shows through, blurred, behind it), the
-  readout and countdown chips and the floating action on the sea hero (the water moves under
-  them), the toast, and the Wrapped certificate over its drifting backdrop. Nowhere in the content
-  layer, never glass on glass (the glass bible's two hard rules): a sheet that opens another
-  replaces it rather than stacking, the way the venue sheet opens the drink sheet and Your details
-  opens the privacy note.
-- **The glass recipe** (`.glass-live` plus `.glass-edge` in `base.css`, tuned per role by tokens):
-  the film is a contrast obligation, not a fixed number: whatever white tint holds the text on it at
-  4.5:1 against the darkest backdrop that surface can have (buy contrast with film, never by
-  darkening the ink). Over the cream ground and the day sea that is 45 to 62%; the sheet, which
-  covers content of any brightness, sits at 88%; the sea chips, whose backdrop follows the clock,
-  carry a film the hero sets by the hour (lighter by day with the shader's own lens film beneath
-  them, heavier at night without it). `blur` 6 to 8px on small controls, 16 to 22px on bars and sheets, `saturate(160%)`,
-  a near-white hairline, one light from the top: a specular top edge (`inset 0 1px 0` white at 75%)
-  and a highlight gradient over the top 40%. A coral-tinted film marks the one primary action on
-  glass. Non-blur fallback and reduced-transparency path always present. The scan allows
-  `backdrop-filter` and the inset edge only in the files that own chrome.
-- **Panel** is a flat surface: `rgba(255,255,255,.55)` over the ground, 1px `--line`, radius 20, no
-  shadow, no highlight gradient. Use sparingly (see the container rule).
-- **Row highlight** for tappable rows: none at rest; `rgba(28,60,86,.06)` on press.
+The look this section describes replaced the cream ground on 23 September 2026: prototype C, "Night
+bar", with the grafts from A and B listed in `docs/specs/2026-09-23-night-bar-build.md`. The reason is
+the brief's (`docs/specs/2026-09-23-glass-revolution.md`): glass over a flat light fill does not read
+as glass, and most drinks are logged in a bar after dark.
 
-There are no floating cards. The two-stop card shadow and the turquoise film on content are retired;
-the specular edge belongs to glass chrome only.
+- **The room.** The app sits in a room whose light follows the clock: **day** from 7 to 17,
+  **evening** from 17 to 21 and **night** from 21 to 7, which are `dayPart()`'s six parts taken in
+  pairs (morning and afternoon, golden hour and dusk, night and dawn), so the room, the sea's sky and
+  Home's greeting never disagree. The room is `data-room` on `<html>`: set before the first paint by
+  the inline script in `index.html` (which honours `?hour=`, so a load never flashes the wrong
+  light), then by `src/app/room.ts` at the next boundary and whenever the page comes back into view.
+  Nothing reads `prefers-color-scheme`: the room is the clock's, not the phone's setting.
+- **What a room is.** A fixed layer behind everything (`.room`, mounted by `Shell`): a vertical
+  gradient (`--room-0`, `--room-mid`, `--room-1`) and three pools of light, each a radial gradient on
+  a plain element with no filter. The content scrolls over it and the glass bends it.
+  - **Day** is the sky and sea by daylight, prototype B's day palette made paler, because rows sit on
+    it directly with no platter: a pale sky at the top falling to sea blue and aqua at the floor, the
+    sun pooled top right and the sea's teal low left. Never cream. Light glass (white films) and ink.
+  - **Evening** is C's golden hour and dusk as one room: plum and amber, with coral and amber pools
+    and a pale gold one. C's dark glass and light ink.
+  - **Night** is C's bar after dark: navy `#0B1222` with coral, amber and cool blue pools. The coral
+    pool sits halfway up the left edge, never low left under the tab bar, where the chrome's
+    saturation turned the capsule magenta; the glass keeps its saturation and the pool moved.
+- **The pools drift, then rest.** On transform only, over 46 to 58 second cycles, for about 20
+  seconds after the guest last scrolled or touched; then they stop. They also rest while the page is
+  hidden, while a sheet is up, and under reduced motion. A phone left on a bar table keeps nothing
+  moving and no glass re-blurring.
+- **A change of room** cross-fades the layer over 600ms on its opacity, never a filter: the outgoing
+  light keeps its own `data-room` (the room tokens are declared on `[data-room]` for that reason)
+  until the incoming one is over it. The ink and the controls change half way, when the two lights
+  are level.
+- **The foot.** Over the content's last 110px, a still gradient in the room's floor colours, faded
+  in by a mask: clear at the top, .86 by the tab labels, the room alone from the tab bar's lower edge
+  down. A row dissolves into the room as it goes under the bar, and no fragment of its text shows in
+  the gutters beside the capsule or to the right of Log. It is never a clone of the drifting pools,
+  which would re-blur the bar every frame.
+- **The glass engine** (`.glass` in `base.css`), prototype C's recipe as one primitive. The element
+  carries no filter, opacity or mask, and neither does any ancestor while it is meant to be seen:
+  any of those makes a backdrop root, and the glass would sample nothing behind it. Its layers:
+  `::before` is the clear body (blur 6, saturate 180%, brightness 1.08, the room's `--glass-film`
+  with a sheen across the top third); the children paint over it (`.spec`, the touch light that
+  follows the finger, then the content); `::after` is the edge lens (blur 14, saturate 210%,
+  brightness 1.32, a 135 degree wash) masked by prototype A's graded frame, two gradient frames that
+  fade from each edge across the rim (`--rim`, 8px, 6 on `.glass-sm`) with the foot at 70% and the
+  right side at 80%, for one light from the top left. C's hard `content-box exclude` ring is gone: it
+  painted a pill inside a pill on the sky chip, a donut on Log and a band down the sheet. The lens
+  carries the specular (upper left lit, lower right shaded) and the hairline; the lift is the
+  element's own shadow (`--glass-lift`). `-webkit-backdrop-filter` stands beside every
+  `backdrop-filter`, and `-webkit-mask` beside every `mask`: Safari needs them, and Brave never shows
+  that they are missing.
+- **Tuning a surface.** Only through custom properties on the surface itself: `--film`, `--rim`,
+  `--glass-blur`, `--glass-sat`, `--glass-bright`, `--lens-blur`, `--lens-sat`, `--lens-bright`,
+  `--solid`. Never its own `backdrop-filter` or `::before` background, which is what lets the
+  fallbacks below win everywhere. The variants: `.glass-sm` (a narrower rim), `.glass-calm`
+  (saturate 130% and 120%, for glass on the sea's sky or a cool pool, where the full numbers painted
+  a neon rim and a round button read as a blue one), `.glass-tint` (coral, the Log button's, the one
+  tinted glass). The tab bar and Log keep their bodies inside the brief's 160 to 190% saturation.
+- **The budget.** At most four backdrop-filtered surfaces on screen. A surface that is covered or
+  scrolled away drops its filters with `.glass-off`, on the surface or on any ancestor (prototype A's
+  `.hero-off`), so the count holds while a screen is pushed over another or a sheet is up.
+- **Fallbacks, in every room.** With no backdrop filter, or under `prefers-reduced-transparency`, the
+  body goes solid (the room's `--glass-solid`, or the surface's `--solid`: the coral for Log, the mint
+  for the Confirm tick) and the rim keeps its specular and hairline, so the hierarchy and every
+  contrast pair hold with no optics at all.
+- **Where glass lives.** Chrome only: the tab bar and Log, the top bar once a screen is scrolled,
+  the sheet, the sky chip and Back, the toast, the Confirm tick, the Wrapped certificate. It reads as
+  glass because content moves beneath it. Never in the content layer, never glass on glass (the
+  glass bible's two hard rules): a sheet that opens another replaces it rather than stacking, the way
+  the venue sheet opens the drink sheet and Your details opens the privacy note.
+- **Panel** is a quiet film on the room (`--panel`), 1px `--line`, radius `--r-surface`, no shadow,
+  no optics: it is content, not chrome. Use sparingly (see the container rule).
+- **Row highlight** for tappable rows: none at rest; `--press` on press.
+- **The metals and the family hues are material**, like the sea: they sit outside the one-accent
+  rule. The family hues are in Iconography.
+- **The medals.** To be written by the medals stage: the coin, its metals and its relief.
+
+There are no floating cards in the content layer. The two-stop card shadow and the turquoise film on
+content are retired; the specular edge belongs to glass chrome only.
 
 ### Sheets
 
@@ -111,48 +162,68 @@ has to be right:
 
 ## Colour
 
-Colour is semantic. A colour that means something in one place may not decorate another.
+Colour is semantic. A colour that means something in one place may not decorate another. Every
+colour below is defined once per room in `tokens.css` (evening shares night's ink and state colours,
+over its own room); a feature file never branches on the room, it reads the token. The figures are
+arithmetic, WCAG ratios with alpha composited and no credit for blur, against the worst point each
+room can put behind the pair: the teal pool's peak on day's floor, and the brightest pool in the
+evening and at night. The Brave render pass at `?hour=13`, `19` and `23` is the measurement, and it
+wins where the two disagree.
 
-| Token | Value | Meaning, and nowhere else |
-| --- | --- | --- |
-| `--ink` | `#1C3C56` | text, icons, chart fills, deck numbers, every ordinal |
-| `--ink-2` | `rgba(28,60,86,.74)` | secondary text and labels (4.9:1 on the darkest ground) |
-| `--ink-3` | `rgba(28,60,86,.6)` | large text 18px bold or more, icon-only glyphs, hairlines. Never body or meta text |
-| `--line` | `rgba(28,60,86,.12)` | hairlines and borders |
-| `--coral-ink` | `#C72F50` | the one action colour: filled primary button (white text, 5.3:1), small accent text, active nav |
-| `--coral` | `#E23C61` | accent at icon or display size only (3.5:1) |
-| `--coral-brand` | `#FF5B78` | the funnel and the wordmark glyph. Not for UI |
-| `--mint` / `--mint-ink` | `#147C58` / `#0F6E4F` | "tried" and "visited", nothing else |
-| `--gold` / `--gold-ink` | `#B57A00` / `#965F00` | rating stars and rating text, nothing else |
-| `--focus` | `#6F5BD6` | the focus ring only |
-| `--sea-ink` | `#146E6A` | chart fills where ink would be too heavy (bars, area) |
-| `--friend-*` | six hues | a person's identity dot and their name mark. Never for decks, charts or badges |
+| Token | Day | Evening and night | Meaning, and nowhere else |
+| --- | --- | --- | --- |
+| `--room-0`, `--room-mid`, `--room-1`, `--pool-a/b/c` | pale sky to aqua; teal, sun and sky pools | plum or navy; coral, amber, and gold or blue pools | the room (Material) |
+| `--ink` | `#0E1A2E` (9.8:1) | `#F6F1E9` (7.6:1) | text and icons |
+| `--ink-2` | `#2A4058` (6.0:1) | `--ink` at 84% (5.9:1) | secondary text and labels |
+| `--ink-3` | `#46607A` (3.7:1) | `--ink` at 62% (4.1:1) | large text, icon-only glyphs. Never body or meta text |
+| `--line`, `--line-2`, `--press` | ink at 14, 8 and 7% | warm white at 14, 8 and 7% | hairlines and borders, the quieter divider, a press |
+| `--well`, `--plate`, `--plate-quiet`, `--plate-solid`, `--track` | white films, `#F2F7FA` | a shade, warm-white films, a solid navy or plum | a recessed field or track; a raised plate (the selected segment); a quiet button; a popover that must be read rather than seen through; a switch's track |
+| `--fill` / `--on-fill` | ink, white on it | warm white, ink on it | a selected control (a chip that is on) |
+| `--coral-ink` | `#C72F50` | `#C72F50` | the filled action, white type on it (5.3:1). Never a text colour in the dark rooms, where it is 3:1 |
+| `--coral`, `--coral-text` | `#B8284A` (3.4:1), `#8A1A36` (5.2:1) | `#FF6B84` (3.1:1), `#FFA3B4` (4.6:1) | the action colour as a glyph, and as text |
+| `--coral-glass` | a heavier coral (the white label 4.8:1) | C's coral tint | the Log button, the one tinted glass |
+| `--mint` / `--mint-fill` / `--on-mint` | `#0A5A3E` (4.7:1), white on it | `#5FE0A8` (5.2:1), `#062818` on it | tried and visited, nothing else |
+| `--star` / `--gold-ink` | `#7A4D00` (4.1:1) / `#6A4400` (4.9:1) | `#FFC54D` (5.5:1) | rating stars and rating text, nothing else |
+| `--lamp` / `--on-lamp`, `--amber` | a warm brown `#6E3C00` (5.1:1), `#8F5200` | `#FFE2B8` (6.9:1), `#FFB45C` | light, not state: a card's reason line, Undo, a lit line's halo, the in-reach ring. By day a lit line would vanish, so the lamp is a brown |
+| `--focus` | `#5B45C9` (3.8:1) | `#B3A6FF` (4.0:1) | the focus ring only |
+| `--fam-*` | nine hues, 3.5:1 or more | nine lifted hues, 4.0:1 or more | the family of glass a drink is served in (Iconography) |
+| `--sea-ink` | `#0F6563` | `#6FC9C4` | chart fills where ink would be too heavy (bars, area) |
+| `--friend-*` | six hues | the same | a person's identity dot and their name mark. Never for decks, charts or badges |
 
-Accent area: coral covers at most one control per screen plus the active nav item. The sea hero's
-palette is its own (mirrors the GLSL) and is the poster exception.
+Accent area: coral fills at most one control per screen, and on every screen that shows the Log
+button, Log is that control. The sea hero's palette is its own (it mirrors the GLSL) and is the poster
+exception; the metals and the family hues are material.
 
-The app is light only. `color-scheme: only light` (in `base.css` and `index.html`) stops a
-browser's forced dark mode, and `darkreader-lock` stops the Dark Reader extension, which rewrote
-every colour on the page in Brave on 23 September 2026: inverted, the glass chips and the sea hero
-came out as black boxes. There is no dark palette.
+The rooms replace "the app is light only". `color-scheme` is set per room on `<html>`, by the inline
+script before the first paint and by `room.ts` after it (light by day, dark in the evening and at
+night), so native controls and scrollbars match the light, and the `theme-color` meta follows the
+top of the room. `darkreader-lock` stays: the Dark Reader extension rewrote every colour on the page
+in Brave on 23 September 2026.
 
-Retired: the fruit set as a general palette, gradient progress fills, coloured deck numbers, the
-eight-colour donut, per-toggle colours (tried is mint, everything else is ink on and off), the
-yellow glow behind the Wrapped seal.
+Retired: the cream ground and its washes (`--cream` and `--wash-*` resolve to the room until the
+screens have moved off them), the fruit set as a general palette, gradient progress fills, coloured
+deck numbers, the eight-colour donut, per-toggle colours (tried is mint, everything else is ink on and
+off), the yellow glow behind the Wrapped seal.
 
 ## Typography
 
-One family (the platform's rounded or system sans; no webfont), two weights, five sizes, three inks.
+One family (the platform's rounded or system sans; no webfont), three weights, five sizes and a
+floor, three inks. The sizes are prototype C's generous ones, as tokens (`--f-*`): body at 17 and
+meta at 15 read at arm's length in a dim bar.
 
-| Role | Size / weight / line-height | Use |
-| --- | --- | --- |
-| display | clamp(40px, 11vw, 52px) / 700 / 1 | the hero percentage and Wrapped numerals only |
-| title | 22 / 600 / 1.2 | the screen's h1, the sheet's title |
-| heading | 17 / 600 / 1.3 | section h2, a row's primary line when it is the object (drink name) |
-| body | 15 / 400 / 1.5 | running text, row primary lines |
-| meta | 13 / 400 / 1.4, `--ink-2` | secondary lines, labels, counts, nav labels at 12 |
+| Role | Token | Size / weight / line-height | Use |
+| --- | --- | --- | --- |
+| display | `--f-display` | 64 / 700 / .9, tracked -.035em | the readout's figure and the Wrapped numerals only |
+| title | `--f-title` | 34 / 700 / 1.12 | the screen's large title |
+| heading | `--f-heading` | 21 / 700 / 1.25 | a section h2, a sheet's title |
+| body | `--f-body` | 17 / 400 / 1.5 | running text, a row's primary line, every field (over iOS's 16px zoom line) |
+| meta | `--f-meta` | 15 / 400 / 1.4, `--ink-2` | secondary lines, labels, counts |
+| floor | `--f-micro` | 12 / 600, 700 when active | the tab labels, and nothing else |
 
-- 12px is the floor. Nothing renders smaller, including chart axes and hint text.
+- 12px is the floor, and only the tab labels sit on it. Nothing renders smaller, including chart
+  axes and hint text. C's in-between sizes (26 for a sheet's title, 24 and 19 for names on the tray
+  and the cards, 13 for a kicker) fold into these: a sheet's title is heading, a card's name is body
+  at 700, a kicker is meta.
 - Emphasis inside body text is weight 600, never colour, never italic, never caps.
 - No uppercase tracked labels anywhere. A section is introduced by a plain heading; a field by a
   sentence-case label at meta size; a sheet by its title and one meta line beneath it.
@@ -173,9 +244,16 @@ icon size. Either one leads a row in the `.row-lead` slot: the glass on every ro
 (Drinks, a venue's list, Log, Stats' rated rows, Crew's Discover together), the shaker on Home's row
 that opens the Shake sheet. `IconDrinks` is the brand's
 funnel and draws one side of a glass, which is right for the tab and wrong for a drink. The glass
-leads the drink row (`DrinkCard`, on Drinks and in the venue sheet), in `--ink-3` because it is an
-icon-only glyph, and never in a state colour: it says what kind of drink it is before a word is
-read.
+leads the drink row (`DrinkCard`, on Drinks and in the venue sheet) and says what kind of drink it is
+before a word is read.
+
+The glass is drawn as a lit line in its family's hue (prototype A's family hues on C's lit line):
+`GlassIcon` draws the family's icon twice, the line over a halo of the same path at 4.4 wide and 22%
+(`.gicon-halo`), which costs a stroke rather than a filter on a list of two hundred, in
+`--fam-<family>`, tuned per room to 3:1 against the worst point of the room (3.5:1 or more by day,
+4.0:1 or more in the evening and at night). The hue is material, like the metals, and it is the one
+exception to "a row's glyph is never a state colour": C's all-amber lines made a list slower to scan.
+The shaker on Home's row stays in `--ink-3`.
 
 The shaker (`Shaker`, `Glass`) is drawn in the same idiom but is not in the set, and it takes the one
 hero stroke: 2.4 on screen for the tin and every glass, whatever the drawing is scaled to. The cap's
@@ -184,14 +262,33 @@ lime's segments, steam, ice, the flute's bubbles, the rocks glass's heavy base) 
 
 ## Motion
 
-Five authored moments and nothing else moves on its own: the ship riding the sea (the sea itself,
-with its sky following the clock, is the app's one live effect), the SheetWave wash when a sheet
-opens, the hero count-up on first paint, the new-medal coin's single turn on Home (one rotation,
-then still), and the shaker in the Shake sheet. Everything else is feedback: press
-scale `.97` over 120ms, state colour over 200ms, sheet rise over 280ms. One easing, `--e-out`,
-with the shaker's written exceptions below. No overshoot or spring curves on UI state, no reveal
-stagger on every screen, no chart grow-ins, no endless pulses. Under `prefers-reduced-motion` each
-effect has its own fallback that keeps the state change visible; there is no global animation kill.
+The authored moments, and nothing else moves on its own: the ship riding the sea (the sea itself,
+with its sky following the clock, is the app's one live effect), the SheetWave wash when a sheet is
+opened by a tap, the hero count-up on first paint, the coin turning (the new medal's single turn on
+Home, one rotation and then still, and the large coin in the medal sheet turning over to its reverse
+on a tap), the droplet (the active tab's lens sliding along the tab bar; Navigation), and the shaker
+in the Shake sheet. The room's pools drift only while the guest is using the app and then rest, and
+a change of room cross-fades over 600ms (Material). Everything else is feedback: glass under a thumb
+swells to 1.04 in 110ms and settles over 260ms (`.press`); a content control gives to `.97` over
+110ms and comes straight back (`.pressable`); state colour over 200ms; a screen fades in over 240ms.
+The easings are tokens: `--e-out` for nearly everything, `--e-spring` for the press settle,
+`--e-drawer` for the sheet and the chrome moving as a drawer, `--e-drift` for the pools, and the
+shaker's written exceptions below. No overshoot on UI state apart from the press settle, no reveal
+stagger on every screen, no chart grow-ins, no endless pulses (the pools stop). Under
+`prefers-reduced-motion` each effect has its own fallback that keeps the state change visible; there
+is no global animation kill.
+
+**The press settle** is the written exception to "no overshoot": one small overshoot as pressed glass
+settles back, prototype B's timing (a 110ms swell and a 260ms settle on `--e-spring`, the only press
+curve of the three prototypes inside Emil Kowalski's table; C's 420ms release was too slow). It is
+glass being pressed and let go rather than a state changing. It runs on the `scale` property, so it
+never fights a transform the surface uses to move, and under reduced motion there is no swell.
+
+**A screen's rise.** C fades a screen in over 240ms with a 10px rise. The route transition fades the
+root in over 240ms (`craft.css`); the rise is not built, because on the root it would lift the fixed
+room and the tab bar with the page, and a `view-transition-name` on the view would make the view a
+backdrop root for any glass inside it. It belongs to whoever captures the screen as a group of its
+own.
 
 **The ship** rides the water rather than a clock of its own. The sea's surface is one long swell,
 about one and a half crests across the hero and a tenth of its height from trough to crest, with a
@@ -744,11 +841,13 @@ a card's inner classes must not reuse a kind's name (`.wr-medals` once capped th
 ## Verification
 
 A screen is done when a render in Brave at 390×844 from the running dev server (`?seed&nosync`)
-shows the modules in rank order with the fold respected, and a scan of its CSS finds: no font-size
-below 12px and none off the scale; no spacing literal off the scale; no radius outside 20/12/999; no
-`box-shadow` on content; no `backdrop-filter` outside nav, sheet and hero chips; no
-`text-transform: uppercase` with tracking; no easing other than `--e-out` outside the shaker's
-written exceptions (Motion); every colour a token.
+shows the modules in rank order with the fold respected, in each room (`?hour=13`, `?hour=19` and
+`?hour=23`), and a scan of its CSS finds: no font-size below 12px and none off the `--f-*` scale; no
+spacing literal off the `--s*` scale; no radius off the `--r-*` scale; no `box-shadow` that is not a
+token; no `backdrop-filter` outside the glass engine and the chrome that owns a surface; no
+`text-transform: uppercase` with tracking; no easing that is not a token, outside the shaker's
+written exceptions (Motion); every colour a token. The scan reads its scales from `tokens.css`, so
+the two cannot drift apart.
 
 **The render is Brave's, not headless Chrome's.** Charles, 22 September 2026: "use brave to verify
 stuff not headless chrome it nukes performance" (`OPERATING_RULES.md`, "Verify in Brave, not headless
@@ -758,8 +857,9 @@ the route with `?seed&nosync`: the frame is a true phone viewport, and its layou
 from outside it. Take each screenshot twice, because the automation tab only renders when one is
 taken, and read overflow from the frame's `scrollWidth` rather than by eye. Always pass `nosync`:
 the dev server's `.env` carries the live project's keys, so a load without it signs a throwaway
-anonymous user in. The page is light only (Colour), so a browser's forced dark mode and the Dark
-Reader extension in Brave leave it as a phone draws it. Brave's content blocking hides elements
+anonymous user in. The room follows the clock, not a colour-scheme preference (Colour), so a
+browser's forced dark mode and the Dark Reader extension in Brave leave it as a phone draws it; pin the
+room with `?hour=`. Brave's content blocking hides elements
 whose class names look like social-media widgets: on 23 September 2026 it hid `.social-head`, the
 Crew heading and the only door onto Your details, which is why Crew's classes are `crew-*`. Keep
 class names clear of social, share, ad, banner and promo, and treat a module missing from a Brave
@@ -820,27 +920,32 @@ colour, are how that happens again. Read it before any change that renders.
 
 | Primitive | Home | Rule |
 | --- | --- | --- |
-| Tokens (`--ink*`, `--line`, `--coral*`, `--mint*`, `--gold*`, `--sea-ink`, `--s1..6`, `--r-*`, `--f-*`, `--e-out`, `--e-shake`, `--t-*`) | `src/styles/tokens.css` | every colour, space, radius, size and easing is a token; a literal in feature CSS is a defect. The one written exception: the shaker's computed keyframes carry `--e-out`'s and `--e-shake`'s values written in, read from this file by `keyframes.mjs`, because a `var()` in a keyframe's timing function does not resolve; `design-allow.txt` carries both with that reason |
-| Type roles `.t-display .t-title .t-h2 .t-body .t-strong .t-meta .t-micro .eyebrow` | `src/styles/base.css` | never a local `font-size`; `.eyebrow` is a sentence-case label, not caps |
+| Tokens (`--ink*`, `--line*`, `--press`, `--well`, `--plate*`, `--track`, `--fill`, `--coral*`, `--mint*`, `--star`, `--gold*`, `--lamp`, `--amber`, `--focus`, `--fam-*`, `--sea-ink`, `--room-*`, `--pool-*`, `--glass-*`, `--lens-*`, `--s1..6`, `--r-*`, `--f-*`, `--e-out`, `--e-spring`, `--e-drawer`, `--e-drift`, `--e-shake`, `--t-*`, `--bar-h`, `--bar-b`) | `src/styles/tokens.css` | every colour, space, radius, size and easing is a token; a literal in feature CSS is a defect. Everything that differs by room is defined three times, on `[data-room="day\|evening\|night"]`, with night also the `:root` default; a feature file never branches on the room. The one written exception: the shaker's computed keyframes carry `--e-out`'s and `--e-shake`'s values written in, read from this file by `keyframes.mjs`, because a `var()` in a keyframe's timing function does not resolve; `design-allow.txt` carries both with that reason |
+| Retiring token aliases: `--cream`, `--wash-*`, `--panel-solid`, `--glass-film-sheet`, `--glass-film-chip`, `--glass-live-film`, `--glass-film-light`, `--glass-highlight-film`, `--glass-highlight`, `--glass-border`, `--glass-fallback`, `--glass-blur-strong`, `--glass-blur-sm`, `--coral-film`, `--coral-film-blur`, `--mint-film-blur`, `--coral-deep`, `--ink-line`, `--lilac`, `--aqua`, `--fruit-*`, `--r-xs` to `--r-xl`, `--r-pill`, `--s7`, `--sh-1`, `--sh-2`, `--f-hero`, `--e-io`, `--spring`, `--spring-soft`, `--t-spring`, `--nav-h` | `src/styles/tokens.css` | kept only so unconverted CSS lands in the room rather than on cream: each resolves to the room's value. A screen builder moves its uses to the room tokens; the integrator deletes the alias once nothing reads it. `--ship-deck` is new and not retiring: the liner's white deck is paint, and `sea.css` should read it rather than `--cream` |
+| The room: `roomFor()`, `msToNextRoom()`, `applyRoom()`, `startRoom()`, `.room`, `.room-light`, `.pool`, `.room-foot` | `src/app/room.ts`, `base.css`, `src/app/shell.css`, the inline script in `index.html` | the light by the clock (Material). `roomFor()` is over `dayPart()`, and the inline script repeats its boundaries (7, 17, 21) because it runs before any module: change them together. `Shell` mounts the layer and the foot; the pools drift only while the guest is here. `.ground` is the same room painted once and still, retiring: Entry and Landing still render it, and move to the layer |
+| `.glass`, `.glass-sm`, `.glass-calm`, `.glass-tint`, `.spec`, `.glass-off` | `base.css` | the glass engine, prototype C's recipe with A's graded lens (Material). A surface tunes it through `--film`, `--rim`, `--glass-*`, `--lens-*` and `--solid` on itself, never with its own `backdrop-filter`; `.glass-off` on a covered surface or its ancestor drops the filters, for the four-surface budget |
+| `.press`, `.pressable` | `base.css` | glass under a thumb swells to 1.04 and settles with one small overshoot (Motion's written exception); a content control gives to .97. Both on `scale` |
+| Type roles `.t-display .t-title .t-h2 .t-body .t-strong .t-meta .t-micro .eyebrow` | `src/styles/base.css` | never a local `font-size`; `.eyebrow` is a sentence-case label, not caps; `.t-micro` is the 12px floor and is retiring as a text role, since only the tab labels sit on it |
 | `.section`, `.section-head` | `base.css` | a section is a plain `h2.t-h2`, 32px above, 8px to its content, count or meta at the right |
 | `.page`, `.page-act` | `src/app/shell.css` | a routed screen's wrapper: `.page > h1` sets 16 under the screen's title, and nothing sits between the title and the first module, since no screen has a lead line. `.page-act` is the one button under an invite route's line, 16 below it, in place of an inline margin. The safe-area inset is on `.view`, because no masthead sits above the tabs |
 | `.row` (tappable), `.line` (static), `.row-copy` | `base.css` | every list is rows with hairlines on the ground; never a box per item |
-| `.panel` | `base.css` | the one container, for a bounded interactive module only; never nested |
+| `.panel` | `base.css` | the one container, a quiet film on the room for a bounded interactive module only; never nested |
 | `.qr-plate` | `base.css` | the white plate under any `Qr`, because a code has to read under a camera whatever the ground is: the add sheet, the group sheet and the landing. It hides itself when empty, which is how `Qr` returning null for a value it cannot encode is caught at every call site at once |
-| `.glass-live`, `.glass-edge`, `.glass-coral` | `base.css` | liquid glass for chrome: nav, sheet, hero chips and the floating action, toast, Wrapped certificate. Nothing in the content layer |
-| `Confirm`, `haptic()` | `src/ui/Confirm.tsx`, `src/ui/haptic.ts` | the one success confirmation (tick on glass, label, haptic); silent where the result is already visible |
-| `.btn .btn-coral .btn-wide`, `GlassButton` | `base.css`, `src/ui/GlassButton.tsx` | one filled coral control per screen; a disabled control drops its fill to a ghost (transparent, hairline, `--ink-2`) so it never reads as an active one. The fill, the edge and the label colour change on one transition, so a change between disabled and enabled never passes a frame of white on a pale ground |
+| Retiring: `.glass-live`, `.glass-edge`, `.glass-sm` on old markup, `.glass-coral`, `.glass-mint` | `base.css` | aliases of the glass engine kept so unconverted markup lands on it: `.glass-live` is `.glass`, `.glass-edge` does nothing (the lens is the edge), `.glass-coral` and `.glass-mint` are tinted films. Still used by `Nav.tsx` and Home's sea chips; the tab bar and Home builders move to `.glass`, `.glass-sm`, `.glass-calm` and `.glass-tint`, and the integrator deletes the aliases |
+| `Confirm`, `haptic()` | `src/ui/Confirm.tsx`, `src/ui/haptic.ts` | the one success confirmation (a mint glass disc with the tick, the label on its own glass plate, a haptic); silent where the result is already visible. It fades on the glass's own layers, never on an ancestor, so the glass stays glass as it goes |
+| `Toast`, `useToast()` | `src/ui/Toast.tsx`, `toast.css` | a glass pill at the top of the screen (prototype C), clear of the thumb and the tab bar, sliding down on the drawer curve and back up on transform alone; its action (Undo) sits in the line, in the lamp's colour |
+| `GlassButton` (`.gbtn-*`); retiring `.btn .btn-coral .btn-mint .btn-wide .mini` | `src/ui/GlassButton.tsx`, `button.css`, `base.css` | 44px and round-ended, in the room's plates; `lg` is C's 52px wide button at body size. One filled coral control per screen, and on a screen that shows the Log button that control is Log. A disabled control drops its fill to a ghost (transparent, hairline, `--ink-2`) so it never reads as an active one; the fill, the edge and the label colour change on one transition. The `.btn` family in `base.css` is kept as an alias in the same look while the screens move to `GlassButton` |
 | `.quiet-action` | `base.css` | the quietest text action on a screen: a block, 44px of target, meta size at weight 600 in `--ink-2`, underlined, 24 above. Swept from `.friends-quiet`; the join and paste paths on the add sheet, the guest line on Your details, the Shake sheet's pair, the landing's way on and Ship's "Change this sailing". Two in a row sit 12 apart, not 24, by one rule here (`.quiet-action + .quiet-action`), because they are one group of rare routes; one that follows anything else keeps its own 24. A screen that sets the pair's spacing locally is the divergence this rule replaced |
 | `.tag`, `.mini` | `base.css` | small outline tags inside a meta line; compact 36px secondary control |
 | `Sheet` + `.sheet-meta` | `src/ui/Sheet.tsx`, `sheet.css` | title then one meta line, which carries the one fact the controls do not show (Copy); no eyebrow; the SheetWave is its opening |
-| `Field`, `SearchField`, `Select`, `Switch`, `Segmented`, `Chip`, `Toast`, `FriendDot` | `src/ui/` | the controls; restyle them there, never locally |
+| `Field`, `SearchField`, `Select`, `Switch`, `Segmented`, `Chip`, `FriendDot` | `src/ui/` | the controls, in the room's tokens (a field is a well, a selected segment a plate, a chip that is on the room's fill, a switch mint when on); restyle them there, never locally |
 | Icons (`Icon.tsx`: `IconStar`, `IconCheck`, `IconChevron`, ...) | `src/ui/Icon.tsx` | the only icon system; no glyph characters, no emoji; add to the set, do not draw inline |
-| `GlassIcon` (`IconGlassCocktail` and the other eight), `IconShaker` | `src/ui/Icon.tsx` | the glass a drink is served in, one per family of `src/data/glass.ts`, on the icon grid with both sides of every bowl drawn. `GlassIcon` picks by family. The shaker's prize is the same families drawn large (`Glass`) |
-| `.row-lead` | `base.css` | a row's leading glyph, `--ink-3`, never a state colour: the glass on every row that names a drink (`DrinkCard`, Log, Stats' rated rows, Crew's Discover together), `IconShaker` on Home's shake row. A new row that names a drink takes it |
+| `GlassIcon` (`IconGlassCocktail` and the other eight), `IconShaker`, `--fam-*`, `.gicon`, `.gicon-halo` | `src/ui/Icon.tsx`, `tokens.css`, `base.css` | the glass a drink is served in, one per family of `src/data/glass.ts`, on the icon grid with both sides of every bowl drawn. `GlassIcon` picks by family and draws it as a lit line in the family's hue over a halo of the same path (Iconography); it renders a `span.gicon` round two drawings. The shaker's prize is the same families drawn large (`Glass`) |
+| `.row-lead` | `base.css` | a row's leading glyph: the glass on every row that names a drink (`DrinkCard`, Log, Stats' rated rows, Crew's Discover together), in its family's hue, and `IconShaker` on Home's shake row in `--ink-3`. Never a state colour. A new row that names a drink takes it |
 | `.sr-only` | `base.css` | visually hidden, still announced |
 | `.empty-state` | `base.css` | an empty list: one short `p.t-body` and the one filled `.btn.btn-coral` that fills it, flush to the leading edge, 16 apart. Stats, Badges and Log use it (ruling 9 of the 22 September declutter, which retired `.stats-empty` and `.badge-empty-action`); a new empty list on another screen reuses it |
 | `.meter` | `base.css` | the 3px measure beside a count out of a total (a Ship venue row once something there is tried, Home's nearest-badge row); Stats' 6px deck bars and the badge rows keep their own shapes. Never an empty track: with nothing to fill it, it is not drawn |
-| `dayPart()`, `greetingWord()` | `src/state/stats.ts` | the six parts of the day and the greeting word; the sea's sky palette and Home's greeting both key off them, never off their own boundaries |
+| `dayPart()`, `greetingWord()` | `src/state/stats.ts` | the six parts of the day and the greeting word; the sea's sky palette, Home's greeting and the room (`roomFor()`) all key off them, never off their own boundaries |
 | `nowHour()`, `today()`, `qaFirstOpen()`, `qaLanding()`, `isDesktopVisitor()` | `src/data/model.ts` | the clock, with `?hour=` and `?day=` QA overrides; `?entry` forces the first-open screen over any store, and does not gate sync; `?landing=desktop\|phone` pins the landing's branch, and `desktop` also forces the root gate open, since `?seed` has always migrated the store to entered; `isDesktopVisitor()` is the width-plus-pointer test that chooses the landing's branch, kept here so `Landing.tsx` only exports its component |
 | `ingredientsOf()` | `src/data/model.ts` | what a drink's ingredients line shows. A drink the guest added before 22 September carries "Ingredients not recorded", which the add sheet used to write in place of nothing; it reads as empty, as a drink added now is. Whatever prints ingredients (the list row, the drink sheet) reads them through it, never `d.ingredients` directly |
 | `badgeCount()` | `src/data/badges.ts` | a badge's progress in words: "58 of 100", or "27% of 50%" for a badge marked `percent` (Cocktail Master and the ship's Champion), because everywhere else "n of m" counts drinks. The Close rows, the badge sheet and the labels on Home's nearest-badge row all use it |

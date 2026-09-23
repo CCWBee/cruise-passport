@@ -1,23 +1,24 @@
-/* Segmented control: a 44px track, radius 12, the selected segment on a solid plate. */
+/* Segmented control: C's seg, a recessed track in the room's well and the selected segment on a
+   raised plate, 44 tall, radius 16 with the plate 3 inside it. */
 .seg {
   position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
-  background: var(--press); border-radius: var(--r-control); padding: 3px;
-  border: 1px solid var(--line); min-height: var(--ctl);
+  background: var(--well); border-radius: var(--r-control); padding: 3px;
+  border: 1px solid var(--line-2); min-height: var(--ctl);
 }
 .seg-thumb {
   position: absolute; top: 3px; bottom: 3px; left: 3px;
   width: calc((100% - 6px) / var(--n));
   transform: translateX(calc(var(--i) * 100%));
-  background: var(--panel-solid); border-radius: calc(var(--r-control) - 3px); border: 1px solid var(--line);
+  background: var(--plate); border-radius: calc(var(--r-control) - 3px);
   transition: transform var(--t-panel) var(--e-out);
 }
 .seg-btn {
-  position: relative; z-index: 1; padding: 0 var(--s1); font-size: var(--f-meta); font-weight: 400;
+  position: relative; z-index: 1; padding: 0 var(--s1); font-size: var(--f-meta); font-weight: 600;
   color: var(--ink-2); display: inline-flex; align-items: center; justify-content: center; gap: var(--s1);
   border-radius: calc(var(--r-control) - 3px); transition: color var(--t-panel) var(--e-out); white-space: nowrap;
 }
-.seg-btn.on { color: var(--ink); font-weight: 600; }
+.seg-btn.on { color: var(--ink); }
 .seg-btn:disabled { color: var(--ink-2); }
-.seg-c { font-size: var(--f-micro); font-weight: 400; color: var(--ink-2); }
+.seg-c { font-size: var(--f-meta); font-weight: 400; color: var(--ink-2); }
 .seg-btn.on .seg-c { color: var(--ink-2); }
 @media (prefers-reduced-motion: reduce) { .seg-thumb { transition: none; } }

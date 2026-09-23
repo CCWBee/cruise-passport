@@ -1,27 +1,32 @@
-/* One button. 44px, radius 12, weight 600. The filled coral one appears once per screen. */
+/* One button. 44px and round-ended (C's toggles), weight 600, in the room's own plates. The filled
+   coral one appears once per screen, and on a screen that shows the Log button that is Log: a
+   primary there is a decision for its screen, never a default. */
 .gbtn {
   position: relative; display: inline-flex; align-items: center; justify-content: center;
-  gap: var(--s2); border-radius: var(--r-control); font-weight: 600; line-height: 1; white-space: nowrap;
-  padding: 0 var(--s4); font-size: var(--f-body); min-height: var(--ctl);
+  gap: var(--s2); border-radius: var(--r-tag); font-weight: 600; line-height: 1; white-space: nowrap;
+  padding: 0 var(--s4); font-size: var(--f-meta); min-height: var(--ctl);
   border: 1px solid var(--line);
-  transition: scale var(--t-press) var(--e-out), background-color var(--t-panel) var(--e-out), color var(--t-panel) var(--e-out);
+  transition: scale var(--t-press) var(--e-out), background-color var(--t-panel) var(--e-out),
+    border-color var(--t-panel) var(--e-out), color var(--t-panel) var(--e-out);
   touch-action: manipulation;
 }
 .gbtn:active:not(:disabled) { scale: .97; }
 
-.gbtn-secondary { background: var(--panel-solid); color: var(--ink); }
+.gbtn-secondary { background: var(--plate-quiet); color: var(--ink); }
 .gbtn-primary { background: var(--coral-ink); color: var(--on-accent); border-color: transparent; }
-.gbtn-mint.gbtn-primary { background: var(--mint-ink); color: var(--on-accent); }
+.gbtn-mint.gbtn-primary { background: var(--mint-fill); color: var(--on-mint); }
 .gbtn-ghost { background: transparent; border-color: transparent; color: var(--ink-2); }
 .gbtn-ghost:active:not(:disabled) { background: var(--press); }
 
-.gbtn-sm { padding: 0 var(--s3); font-size: var(--f-meta); min-height: var(--ctl-sm); }
-.gbtn-lg { padding: 0 var(--s5); min-height: 52px; }
+.gbtn-sm { padding: 0 var(--s3); min-height: var(--ctl-sm); }
+/* the wide action at the foot of a sheet or a screen (C's wide button): 52 tall, body size, and
+   squared off to the field radius so it reads as a place to press rather than a tag */
+.gbtn-lg { padding: 0 var(--s5); min-height: 52px; font-size: var(--f-body); font-weight: 700; border-radius: var(--r-control); }
 .gbtn-block { width: 100%; }
 
+/* disabled reads as a ghost against the enabled one: no fill, a hairline, --ink-2 */
 .gbtn:disabled { cursor: default; }
-.gbtn-secondary:disabled { background: var(--panel); color: var(--ink-2); }
-.gbtn-primary:disabled { background: var(--panel); color: var(--ink-2); border-color: var(--line); }
+.gbtn-secondary:disabled, .gbtn-primary:disabled { background: transparent; color: var(--ink-2); border-color: var(--line); }
 .gbtn-ghost:disabled { color: var(--ink-2); }
 
 .gbtn-spin {

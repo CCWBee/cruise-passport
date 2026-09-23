@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import type { CSSProperties, FocusEvent, ReactNode } from 'react'
+import type { FocusEvent, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { IconCheck, IconClose } from './Icon'
 import './toast.css'
@@ -95,8 +95,7 @@ function ToastItem({ toast, onRemove }: { toast: ToastRecord; onRemove: (id: num
 
   return (
     <article
-      className={`toast ${toast.tone} ${leaving ? 'leave' : 'enter'}${paused ? ' is-paused' : ''}`}
-      style={{ '--dur': `${toast.duration}ms` } as CSSProperties}
+      className={`toast glass glass-sm ${toast.tone} ${leaving ? 'leave' : 'enter'}${paused ? ' is-paused' : ''}`}
       onMouseEnter={() => {
         hoverRef.current = true
         pause()
@@ -115,23 +114,23 @@ function ToastItem({ toast, onRemove }: { toast: ToastRecord; onRemove: (id: num
       <span className="toast-copy">
         <span className="toast-title">{toast.title}</span>
         {toast.desc && <span className="toast-desc">{toast.desc}</span>}
-        {toast.action && (
-          <button
-            type="button"
-            className="toast-action"
-            onClick={() => {
-              toast.action?.onClick()
-              beginLeave()
-            }}
-          >
-            {toast.action.label}
-          </button>
-        )}
       </span>
+      {/* the way back sits in the line, at the thumb's end, as C's Undo does */}
+      {toast.action && (
+        <button
+          type="button"
+          className="toast-action"
+          onClick={() => {
+            toast.action?.onClick()
+            beginLeave()
+          }}
+        >
+          {toast.action.label}
+        </button>
+      )}
       <button type="button" className="toast-x pressable" aria-label="Dismiss notification" onClick={beginLeave}>
         <IconClose size={16} />
       </button>
-      <span className="toast-progress" aria-hidden />
     </article>
   )
 }

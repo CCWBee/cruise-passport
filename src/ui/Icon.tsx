@@ -1,4 +1,4 @@
-// Drawn icon set — one grid (24px box, 1.8px stroke, round caps/joins), outline↔filled.
+// Drawn icon set: one grid (24px box, 1.8px stroke, round caps and joins), outline and filled.
 // Replaces emoji used as UI chrome. Emoji stays only as content voice (category glyphs, badges).
 import type { SVGProps, ReactNode } from 'react'
 import type { GlassFamily } from '../data/glass'
@@ -227,4 +227,23 @@ const GLASS_ICONS: Record<GlassFamily, (p: P) => ReactNode> = {
   pint: IconGlassPint, cup: IconGlassCup, hurricane: IconGlassHurricane, highball: IconGlassHighball,
   rocks: IconGlassRocks,
 }
-export const GlassIcon = ({ family, ...p }: P & { family: GlassFamily }) => GLASS_ICONS[family](p)
+/** The glass a drink is served in, drawn as a lit line in its family's hue (`--fam-<family>` in
+ *  tokens.css, tuned per room to 3:1): the line over a soft halo of the same path at low alpha, which
+ *  costs a stroke rather than a filter on a list of two hundred. The hue is material, like the
+ *  metals, so a list can be scanned by kind before a word is read; it is the one exception to a
+ *  row's glyph never taking a colour (DESIGN.md, Iconography). The halo is the same icon drawn again
+ *  underneath, so every glass keeps its one drawing in the set above. */
+export const GlassIcon = ({ family, className, style, size = 24, ...p }: P & { family: GlassFamily }) => {
+  const Draw = GLASS_ICONS[family]
+  return (
+    <span
+      className={'gicon' + (className ? ` ${className}` : '')}
+      style={{ color: `var(--fam-${family})`, display: 'inline-grid', width: size, height: size, flex: 'none', ...style }}
+      data-family={family}
+      aria-hidden
+    >
+      <Draw {...p} size={size} className="gicon-halo" style={{ gridArea: '1 / 1' }} />
+      <Draw {...p} size={size} style={{ gridArea: '1 / 1' }} />
+    </span>
+  )
+}

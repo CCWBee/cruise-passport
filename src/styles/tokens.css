@@ -1,40 +1,13 @@
 /* Design tokens. The system is described in docs/DESIGN.md; every value here is on that list.
-   Old names are kept as aliases so unconverted CSS collapses onto the system rather than breaking. */
+   The app sits in one of three rooms whose light follows the clock (DESIGN.md, Material): day,
+   evening and night, set as data-room on <html> by the inline script in index.html and then by
+   src/app/room.ts. Everything that differs by room is defined three times below; a feature file
+   never branches on the room, it reads these. Old names are kept as aliases of the room's values so
+   unconverted CSS lands in the room rather than on cream; DESIGN.md's registry lists them as
+   retiring. */
+
+/* ── what does not change with the room ─────────────────────────────────────────────────────── */
 :root {
-  /* ground */
-  --cream: #FBF3E2;
-  --wash-dawn: #FBEFD9;
-  --wash-sky: #F8EDD8;
-  --wash-sand: #F7ECD3;   /* the darkest the ground gets: every ink alpha below is checked against it */
-  --wash-foam: #F3F0E4;
-
-  /* ink: three levels, alpha not opacity. ink-3 is for large text, icon glyphs and hairlines only. */
-  --ink: #1C3C56;
-  --ink-2: rgba(28, 60, 86, .74);   /* 4.9:1 on the darkest ground */
-  --ink-3: rgba(28, 60, 86, .60);   /* 3.4:1: 18px bold or larger, icons, never body or meta */
-  --line: rgba(28, 60, 86, .12);
-  --ink-line: var(--line);
-  --on-accent: #fff;
-
-  /* the one accent, three depths with rules */
-  --coral-brand: #FF5B78;  /* the funnel and the wordmark glyph only */
-  --coral: #E23C61;        /* icon or display size only (3.5:1) */
-  --coral-ink: #C72F50;    /* small text, the filled primary button (white on it 5.3:1), active nav */
-  --coral-deep: var(--coral-ink);
-  --coral-soft: rgba(226, 60, 97, .14);
-
-  /* state colours: tried, rating, focus. Nowhere else. */
-  --mint: #147C58;         /* icons, large */
-  --mint-ink: #0F6E4F;     /* small text */
-  --mint-soft: rgba(20, 124, 88, .14);
-  --gold: #B57A00;         /* star glyphs */
-  --gold-ink: #965F00;     /* rating text */
-  --gold-soft: rgba(181, 122, 0, .14);
-  --focus: #6F5BD6;
-  --lilac: var(--focus);
-  --sea-ink: #146E6A;      /* chart fills */
-  --aqua: var(--sea-ink);
-
   /* a person's identity dot. Not for decks, charts or badges. */
   --friend-aqua: #22C0D6; --friend-melon: #FF5B78; --friend-mango: #FF9F45;
   --friend-lime: #59CF6B; --friend-grape: #9B8CF2; --friend-pine: #F6C544;
@@ -48,46 +21,30 @@
   --sea-lo: #093755;
   --sea-sun: #F6CE79;
   --sea-ship-shadow: rgba(28, 60, 86, .26); /* the hull's shadow on the water, inside the poster */
+  /* the liner's white deck, which is paint, not ground: it stays white in every room */
+  --ship-deck: #F4EEE2;
 
-  /* surfaces */
-  --panel: rgba(255, 255, 255, .55);         /* flat panel over the ground, hairline, no shadow */
-  --panel-solid: #FDFAF2;
-  --press: rgba(28, 60, 86, .06);             /* row press highlight */
-  /* liquid glass: the chrome material (nav, sheet, hero chips, floating action, toast, certificate) */
-  --glass-film: rgba(255, 253, 250, .55);     /* the tint film that keeps text at 4.5:1 */
-  /* the sheet covers content of any brightness (the sea hero, a dark photo), so its film is set by
-     contrast, not by the range: at .88, 13px --ink-2 holds 4.51:1 with black behind, 4.60:1 over
-     --sea-lo. At .58 it was 3.10:1. */
-  --glass-film-sheet: rgba(255, 253, 250, .88);
-  --glass-film-chip: rgba(255, 253, 250, .46); /* small chips over the sea */
-  --glass-rim: rgba(255, 255, 255, .75);       /* the specular top edge: one light, from above */
-  --glass-rim-under: rgba(255, 255, 255, .18);
-  --glass-highlight-film: rgba(255, 255, 255, .28); /* the top-40% highlight */
-  --glass-blur: 20px;                          /* bars and sheets */
-  --glass-blur-sm: 8px;                        /* small controls */
-  --glass-sat: 160%;
-  --glass-fallback: rgba(255, 253, 250, .94);
-  --coral-film: rgba(199, 47, 80, .78);        /* the one primary action on glass */
-  --coral-film-blur: rgba(199, 47, 80, .74);
-  --mint-film: rgba(20, 124, 88, .86);         /* filled-green glass: the success tick */
-  --mint-film-blur: rgba(20, 124, 88, .82);
-  --scrim: rgba(28, 60, 86, .22);
-  --scrim-solid: rgba(28, 60, 86, .5);         /* the scrim under reduced transparency, no blur */
-  --glass-live-film: var(--glass-film);
-  /* aliases for unconverted rules: a card is now a panel */
-  --glass-film: var(--panel);
-  --glass-film-light: var(--panel);
-  --glass-border: var(--line);
-  --glass-highlight: none;
-  --glass-blur-strong: var(--glass-blur);
+  /* the brand mark */
+  --coral-brand: #FF5B78;  /* the funnel and the wordmark glyph only */
+  /* the filled action under white type: 5.3:1 in every room, so it does not change with the light.
+     It fills; it is never a text colour at night (it measures 3:1 on the room there), which is
+     what --coral is for */
+  --coral-ink: #C72F50;
+  --coral-deep: var(--coral-ink);
+  --on-accent: #fff;       /* white type on a filled accent, and the white plate under a QR code */
 
-  /* shadow: the sheet only. Content casts none. */
-  --sh-sheet: 0 -12px 40px rgba(28, 60, 86, .18);
-  --sh-1: none;
-  --sh-2: none;
+  /* the one tinted glass, the Log button's coral (C's tint layer), and its solid fallback */
+  --coral-glass: radial-gradient(120% 120% at 30% 18%, rgba(255, 128, 148, .78), rgba(226, 60, 97, .64) 58%, rgba(170, 28, 66, .62));
+  --coral-solid: #C63556;
 
-  /* radii: surface, control, tag */
-  --r-surface: 20px; --r-control: 12px; --r-tag: 999px;
+  /* radii: control, surface and tag, and the large shapes of the chrome */
+  --r-control: 16px;   /* a field, a segmented track, a row highlight */
+  --r-surface: 22px;   /* a card, a panel, the toast's box when it wraps */
+  --r-tag: 999px;      /* anything whose ends are round: pills, dots, toggles, round glass */
+  --r-tray: 26px;      /* the velvet medal tray */
+  --r-window: 28px;    /* the sea window on Home */
+  --r-sheet: 30px;     /* the sheet */
+  --r-bar: 32px;       /* the tab bar capsule: half its height */
   --r-xs: var(--r-control); --r-sm: var(--r-control); --r-md: var(--r-control);
   --r-lg: var(--r-surface); --r-xl: var(--r-surface); --r-pill: var(--r-tag);
 
@@ -98,38 +55,323 @@
 
   /* focus ring */
   --ring: var(--focus);
-  --ring-soft: rgba(111, 91, 214, .3);
+  --ring-soft: color-mix(in srgb, var(--focus) 30%, transparent);
 
-  /* motion: one easing, three durations */
+  /* motion. --e-out is the app's easing. --e-spring is the press settle: one small overshoot,
+     then rest (prototype B's curve over 260ms, the only press timing inside Emil Kowalski's table;
+     DESIGN.md Motion carries the written exception to "no overshoot"). --e-drawer is the sheet and
+     the chrome moving as a drawer. --e-drift is the room's pools, which breathe rather than travel. */
   --e-out: cubic-bezier(.22, .9, .32, 1);
+  --e-spring: cubic-bezier(.3, 1.45, .5, 1);
+  --e-drawer: cubic-bezier(.32, .72, 0, 1);
+  --e-drift: ease-in-out;
   /* the shaker's travel only (DESIGN.md Motion, a written exception): a tin travelling on screen
      and reversing at each end, which --e-out would throw off at full speed after every turn.
      Kowalski's strong ease-in-out. */
   --e-shake: cubic-bezier(.77, 0, .175, 1);
   --e-io: var(--e-out);
-  --e-spring: var(--e-out);
-  --spring: var(--e-out);
-  --spring-soft: var(--e-out);
-  --t-press: 120ms;
+  --spring: var(--e-spring);
+  --spring-soft: var(--e-spring);
+  --t-press: 110ms;    /* a press swells to 1.04 */
+  --t-settle: 260ms;   /* and settles back on --e-spring */
   --t-panel: 200ms;
+  --t-screen: 240ms;   /* a screen fades in */
   --t-sheet: 280ms;
-  --t-spring: var(--t-panel);
+  --t-room: 600ms;     /* the room cross-fades at a boundary of the day */
+  --t-spring: var(--t-settle);
   --t-fill: 600ms;
 
-  /* chrome sizes */
-  --nav-h: 60px;
+  /* chrome sizes: the floating tab bar is 64 tall and sits 10 above the safe area */
+  --bar-h: 64px;
+  --bar-b: calc(var(--safe-b) + 10px);
+  --nav-h: calc(var(--bar-h) + 10px);
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
   --wrap: 720px;
 
-  /* type: the platform's rounded or system sans, no webfont */
-  --font: ui-rounded, 'SF Pro Rounded', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --f-display: clamp(40px, 11vw, 52px);
-  --f-title: 22px; --f-heading: 17px; --f-body: 15px; --f-meta: 13px; --f-micro: 12px;
+  /* type: the platform's rounded or system sans, no webfont. Five sizes (C's generous scale) and
+     the 12px floor, which only the tab labels sit on */
+  --font: ui-rounded, 'SF Pro Rounded', 'SF Pro Text', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --f-display: 64px;   /* the readout's figure and the Wrapped numerals */
+  --f-title: 34px;     /* a screen's large title */
+  --f-heading: 21px;   /* a section heading, a sheet's title */
+  --f-body: 17px;      /* running text, a row's first line, every field (over iOS's 16px zoom line) */
+  --f-meta: 15px;      /* secondary lines, labels, counts */
+  --f-micro: 12px;     /* the floor: tab labels, and nothing else under meta */
   --f-hero: var(--f-display);
 
-  /* subtle film grain over the ground */
+  /* the glass engine's optics (base.css, .glass). Prototype C's recipe: a clear body and a
+     heavier, brighter edge lens. A surface retunes these by setting them on itself, never by
+     writing its own backdrop-filter. */
+  --glass-blur: 6px;
+  --glass-sat: 180%;
+  --glass-bright: 1.08;
+  --lens-blur: 14px;
+  --lens-sat: 210%;
+  --lens-bright: 1.32;
+  --glass-blur-sm: var(--glass-blur);
+
+  /* film grain, so a gradient never bands on a phone panel */
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+
+  /* retiring: the old content shadows, which content never casts. The sheet's shadow and the
+     glass's lift are the room's (below) */
+  --sh-1: none;
+  --sh-2: none;
+}
+
+/* ── the rooms ──────────────────────────────────────────────────────────────────────────────────
+   On [data-room], not :root[data-room]: the room layer's outgoing copy keeps its old attribute
+   through the cross-fade (room.ts), and its tokens have to resolve from that attribute rather than
+   from <html>. Night is also the :root default, so a page whose script never ran still renders.
+   The contrast figures are arithmetic (WCAG, alpha composited, no credit for blur) against the
+   worst point each room can put behind the pair; the Brave render pass is the measurement. */
+
+/* Night, 21 to 7 (dayPart's night and dawn): the bar after dark. Prototype C's night room: navy with
+   a coral pool, an amber one and a cool blue one. The coral pool sat low left, behind the tab bar,
+   where the chrome's saturation turned the capsule magenta; it now sits on the left edge, halfway up,
+   and the floor under the bar is the room's own navy. */
+:root, [data-room="night"] {
+  color-scheme: dark;
+  --room-0: #0B1222; --room-mid: #0F1121; --room-1: #130F1F; --room-0-rgb: 11, 18, 34;
+  --pool-a: rgba(255, 77, 109, .36);  --pool-a-x: 0%;  --pool-a-y: 58%;
+  --pool-b: rgba(255, 159, 67, .30);  --pool-b-x: 96%; --pool-b-y: 38%;
+  --pool-c: rgba(74, 99, 255, .22);   --pool-c-x: 8%;  --pool-c-y: 6%;
+  --ground: var(--room-1);
+
+  /* ink: warm white, because every surface here is dark. ink-2 holds 6.9:1 on the brightest pool,
+     ink-3 4.6:1 (icons and large type only) */
+  --ink: #F6F1E9;
+  --ink-2: rgba(246, 241, 233, .84);
+  --ink-3: rgba(246, 241, 233, .62);
+  --line: rgba(246, 241, 233, .14);
+  --line-2: rgba(246, 241, 233, .08);
+  --press: rgba(246, 241, 233, .07);
+  /* a recessed well (a field, a segmented track) and a raised plate (the selected segment, a
+     secondary button) */
+  --well: rgba(0, 0, 0, .24);
+  --plate: rgba(246, 241, 233, .14);
+  --plate-quiet: rgba(246, 241, 233, .08);
+  --plate-solid: #1A2238;
+  --track: rgba(246, 241, 233, .2);
+  /* a selected control's fill and the type on it */
+  --fill: #F6F1E9;
+  --on-fill: #0E1A2E;
+
+  /* light, not state: the lit line of a drawn glass and its halo, and the warm text that goes with
+     them (a card's reason, Undo). 8.1:1 on the brightest pool */
+  --lamp: #FFE2B8;
+  --on-lamp: #0E1A2E;
+  --amber: #FFB45C;
+  /* the action colour as a glyph or text on the room (3.7:1: a glyph, never body text) and as text
+     (4.5:1). The filled action is --coral-ink, above */
+  --coral: #FF6B84;
+  --coral-text: #FFA3B4;
+  --coral-soft: rgba(255, 107, 132, .16);
+  /* tried, and only tried: 6.2:1 on the brightest pool. A mint fill carries dark type */
+  --mint: #5FE0A8;
+  --mint-ink: #5FE0A8;
+  --mint-fill: #5FE0A8;
+  --on-mint: #062818;
+  --mint-soft: rgba(95, 224, 168, .16);
+  /* rating stars and rating text: 6.5:1 */
+  --star: #FFC54D;
+  --gold: var(--star);
+  --gold-ink: #FFC54D;
+  --gold-soft: rgba(255, 197, 77, .16);
+  --focus: #B3A6FF;
+  --on-light: #0E1A2E;
+  --sea-ink: #6FC9C4;
+
+  /* the nine glass families, lit lines in their own hues (A's family hues, lifted for the dark):
+     4.7:1 or more on the brightest pool, against the 3:1 an icon needs */
+  --fam-cocktail: #FF8FB0; --fam-margarita: #B5E07A; --fam-wine: #F29AB6;
+  --fam-flute: #F2D675; --fam-pint: #FFBE73; --fam-cup: #E6BFA3;
+  --fam-hurricane: #FF9F73; --fam-highball: #6FE3DA; --fam-rocks: #F0B884;
+
+  /* the glass: C's navy film of 20%, the sheen across the top third, the lit top-left rim and the
+     shaded lower one, the hairline, and the lift. --glass-solid is the body with no optics at all
+     (no backdrop filter, or reduced transparency): darker than the worst case the glass is
+     measured at, so every pair holds */
+  --glass-film: rgba(12, 18, 34, .20);
+  --glass-sheen: rgba(255, 255, 255, .11);
+  --glass-rim: rgba(255, 255, 255, .9);
+  --glass-rim-under: rgba(0, 0, 0, .38);
+  --glass-hair: rgba(255, 255, 255, .16);
+  --glass-lens: rgba(255, 255, 255, .24);
+  --glass-lift: 0 14px 30px -8px rgba(0, 0, 0, .6), 0 2px 6px rgba(0, 0, 0, .35);
+  --glass-solid: #1A2238;
+  --scrim: rgba(3, 6, 12, .6);
+  --scrim-solid: rgba(3, 6, 12, .78);
+  --sh-sheet: 0 -8px 40px rgba(0, 0, 0, .5), 0 -1px 6px rgba(0, 0, 0, .3);
+}
+
+/* Evening, 17 to 21 (golden hour and dusk): C's two warm rooms as one, plum and amber, with coral
+   and amber pools and a pale gold one where the last of the sun is. Same ink and glass as night */
+[data-room="evening"] {
+  color-scheme: dark;
+  --room-0: #1A1830; --room-mid: #18132A; --room-1: #140E22; --room-0-rgb: 26, 24, 48;
+  --pool-a: rgba(255, 91, 120, .32);  --pool-a-x: 0%;  --pool-a-y: 58%;
+  --pool-b: rgba(255, 166, 64, .32);  --pool-b-x: 96%; --pool-b-y: 38%;
+  --pool-c: rgba(255, 212, 140, .20); --pool-c-x: 8%;  --pool-c-y: 6%;
+  --ground: var(--room-1);
+
+  /* ink-2 5.9:1 and ink-3 4.1:1 on the amber pool at its peak, the brightest thing in the room */
+  --ink: #F6F1E9;
+  --ink-2: rgba(246, 241, 233, .84);
+  --ink-3: rgba(246, 241, 233, .62);
+  --line: rgba(246, 241, 233, .14);
+  --line-2: rgba(246, 241, 233, .08);
+  --press: rgba(246, 241, 233, .07);
+  --well: rgba(0, 0, 0, .24);
+  --plate: rgba(246, 241, 233, .14);
+  --plate-quiet: rgba(246, 241, 233, .08);
+  --plate-solid: #251E3A;
+  --track: rgba(246, 241, 233, .2);
+  --fill: #F6F1E9;
+  --on-fill: #0E1A2E;
+
+  --lamp: #FFE2B8;
+  --on-lamp: #0E1A2E;
+  --amber: #FFB45C;
+  --coral: #FF6B84;
+  --coral-text: #FFA3B4;   /* 4.6:1 on the amber pool */
+  --coral-soft: rgba(255, 107, 132, .16);
+  --mint: #5FE0A8;
+  --mint-ink: #5FE0A8;
+  --mint-fill: #5FE0A8;
+  --on-mint: #062818;
+  --mint-soft: rgba(95, 224, 168, .16);
+  --star: #FFC54D;
+  --gold: var(--star);
+  --gold-ink: #FFC54D;
+  --gold-soft: rgba(255, 197, 77, .16);
+  --focus: #B3A6FF;
+  --on-light: #0E1A2E;
+  --sea-ink: #6FC9C4;
+
+  /* 4.0:1 or more on the amber pool */
+  --fam-cocktail: #FF8FB0; --fam-margarita: #B5E07A; --fam-wine: #F29AB6;
+  --fam-flute: #F2D675; --fam-pint: #FFBE73; --fam-cup: #E6BFA3;
+  --fam-hurricane: #FF9F73; --fam-highball: #6FE3DA; --fam-rocks: #F0B884;
+
+  --glass-film: rgba(12, 18, 34, .20);
+  --glass-sheen: rgba(255, 255, 255, .11);
+  --glass-rim: rgba(255, 255, 255, .9);
+  --glass-rim-under: rgba(0, 0, 0, .38);
+  --glass-hair: rgba(255, 255, 255, .16);
+  --glass-lens: rgba(255, 255, 255, .24);
+  --glass-lift: 0 14px 30px -8px rgba(0, 0, 0, .6), 0 2px 6px rgba(0, 0, 0, .35);
+  --glass-solid: #221B35;
+  --scrim: rgba(3, 6, 12, .6);
+  --scrim-solid: rgba(3, 6, 12, .78);
+  --sh-sheet: 0 -8px 40px rgba(0, 0, 0, .5), 0 -1px 6px rgba(0, 0, 0, .3);
+}
+
+/* Day, 7 to 17 (morning and afternoon): the sky and sea by daylight, prototype B's day palette.
+   A pale sky at the top of the screen falling to sea blue and aqua at the floor, the sun pooled top
+   right and the sea's teal low left. Never cream: glass over a flat light fill is the failure the
+   brief exists to end. It is paler than B's open water because rows sit on it directly, with no
+   platter: the darkest point, the teal pool's peak on the floor, is L .54, and every pair below is
+   measured there. Light glass (white films, B's light values), ink on it. */
+[data-room="day"] {
+  color-scheme: light;
+  --room-0: #DCEBF4; --room-mid: #BFE0EC; --room-1: #A7D8DC; --room-0-rgb: 220, 235, 244;
+  --pool-a: rgba(40, 170, 163, .22);  --pool-a-x: 12%; --pool-a-y: 88%;
+  --pool-b: rgba(255, 244, 214, .9);  --pool-b-x: 92%; --pool-b-y: 4%;
+  --pool-c: rgba(127, 182, 222, .28); --pool-c-x: 6%;  --pool-c-y: 30%;
+  --ground: var(--room-1);
+
+  /* C's light-sky-chip ink. ink 9.8:1, ink-2 6.0:1, ink-3 3.7:1 (icons and large type) at the
+     darkest point */
+  --ink: #0E1A2E;
+  --ink-2: #2A4058;
+  --ink-3: #46607A;
+  --line: rgba(14, 26, 46, .14);
+  --line-2: rgba(14, 26, 46, .08);
+  --press: rgba(14, 26, 46, .07);
+  --well: rgba(255, 255, 255, .42);
+  --plate: rgba(255, 255, 255, .86);
+  --plate-quiet: rgba(255, 255, 255, .5);
+  --plate-solid: #F2F7FA;
+  --track: rgba(14, 26, 46, .16);
+  --fill: #0E1A2E;
+  --on-fill: #FFFFFF;
+
+  /* the lamp by day is a warm brown, 5.1:1: a lit line would vanish in daylight */
+  --lamp: #6E3C00;
+  --on-lamp: #FFFFFF;
+  --amber: #8F5200;
+  --coral: #B8284A;         /* a glyph: 3.4:1 */
+  --coral-text: #8A1A36;    /* 5.2:1 */
+  --coral-soft: rgba(184, 40, 74, .12);
+  --mint: #0A5A3E;          /* 4.7:1 */
+  --mint-ink: #0A5A3E;
+  --mint-fill: #0A5A3E;     /* white on it 8.3:1 */
+  --on-mint: #FFFFFF;
+  --mint-soft: rgba(10, 90, 62, .12);
+  --star: #7A4D00;          /* 4.1:1 */
+  --gold: var(--star);
+  --gold-ink: #6A4400;      /* 4.9:1 */
+  --gold-soft: rgba(122, 77, 0, .12);
+  --focus: #5B45C9;         /* 3.8:1, over the 3:1 a ring needs */
+  --on-light: #0E1A2E;
+  --sea-ink: #0F6563;
+
+  /* A's family hues, darkened where cream let them be pale: 3.5:1 or more at the darkest point */
+  --fam-cocktail: #9E2A4E; --fam-margarita: #3E6816; --fam-wine: #86203F;
+  --fam-flute: #6E5710; --fam-pint: #8C4C0E; --fam-cup: #6A4634;
+  --fam-hurricane: #A63A12; --fam-highball: #0F6563; --fam-rocks: #7A4012;
+
+  /* light glass: a white film (B's light bar at 20%, the sky chip's 24%), a brighter sheen, the
+     rim lit white and the lower rim in a faint ink shade (A's), a white hairline, and a soft lift
+     that does not blacken a sunlit screen */
+  --glass-film: rgba(255, 255, 255, .24);
+  --glass-sheen: rgba(255, 255, 255, .26);
+  --glass-rim: rgba(255, 255, 255, .9);
+  --glass-rim-under: rgba(12, 34, 52, .16);
+  --glass-hair: rgba(255, 255, 255, .55);
+  --glass-lens: rgba(255, 255, 255, .3);
+  --glass-lift: 0 1px 2px rgba(16, 32, 48, .10), 0 10px 28px rgba(16, 32, 48, .16);
+  --glass-solid: #F2F7FA;
+  /* the Log button's coral, heavier by day: white on C's .78 tint over the pale sky is 2:1, on this
+     4.8:1 for the 12px label */
+  --coral-glass: radial-gradient(120% 120% at 30% 18%, rgba(226, 70, 104, .92), rgba(199, 47, 80, .9) 58%, rgba(160, 28, 62, .9));
+  --scrim: rgba(12, 28, 44, .2);
+  --scrim-solid: rgba(12, 28, 44, .5);
+  --sh-sheet: 0 -8px 40px rgba(16, 32, 48, .18), 0 -1px 6px rgba(16, 32, 48, .1);
+}
+
+/* ── aliases: the retiring names, resolved to the room ──────────────────────────────────────────
+   Declared on the same selector list as the rooms so each resolves against the element's own room,
+   the outgoing layer's included. DESIGN.md's registry marks every one of these retiring; a screen
+   builder moves its uses to the room tokens above and the integrator deletes the line. */
+:root, [data-room] {
+  --cream: var(--ground);
+  --wash-dawn: var(--room-0);
+  --wash-sky: var(--room-mid);
+  --wash-sand: var(--room-1);
+  --wash-foam: var(--room-mid);
+  --ink-line: var(--line);
+  --lilac: var(--focus);
+  --aqua: var(--sea-ink);
+  /* surfaces: a panel is a quiet film on the room, the solid one a plate */
+  --panel: var(--plate-quiet);
+  --panel-solid: var(--plate-solid);
+  /* the old glass films, onto the engine's */
+  --glass-live-film: var(--glass-film);
+  --glass-film-sheet: var(--glass-film);
+  --glass-film-chip: var(--glass-film);
+  --glass-film-light: var(--glass-film);
+  --glass-highlight-film: var(--glass-sheen);
+  --glass-highlight: none;
+  --glass-border: var(--line);
+  --glass-fallback: var(--glass-solid);
+  --glass-blur-strong: var(--lens-blur);
+  --coral-film: rgba(199, 47, 80, .86);
+  --coral-film-blur: rgba(199, 47, 80, .86);
+  --mint-film: color-mix(in srgb, var(--mint-fill) 88%, transparent);
+  --mint-film-blur: color-mix(in srgb, var(--mint-fill) 88%, transparent);
 }
 
 /* wide-gamut sea and brand mark on P3 screens; the UI accents stay sRGB so their contrast holds */

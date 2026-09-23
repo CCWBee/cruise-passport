@@ -1,8 +1,12 @@
 /* Route continuity and the one reward pop. Motion is feedback; there is no page reveal stagger. */
 
-/* ── route view transitions: a short cross-fade so a tab change does not flash ── */
+/* ── route view transitions: a screen cross-fades in 240ms (prototype C) so a tab change does not
+   flash. Opacity only on the root: a rise would lift the fixed room and the tab bar with the page.
+   C's 10px rise belongs to the screen alone, which needs the screen captured as its own group; a
+   view-transition-name on the view would also make it a backdrop root for any glass inside it, so
+   it waits for the screen builders to place it (DESIGN.md, Motion). ── */
 ::view-transition-old(root) { animation: vt-out 160ms var(--e-out) both; }
-::view-transition-new(root) { animation: vt-in 200ms var(--e-out) both; }
+::view-transition-new(root) { animation: vt-in var(--t-screen) var(--e-out) both; }
 @keyframes vt-out { to { opacity: 0; } }
 @keyframes vt-in { from { opacity: 0; } }
 

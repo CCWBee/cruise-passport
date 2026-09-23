@@ -11,13 +11,28 @@
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs'
 import path from 'node:path'
 
-const FONT_OK = new Set(['12px', '13px', '15px', '17px', '22px', '16px'])          // 16px: inputs (iOS zoom guard)
-const SPACE_OK = new Set(['0', '0px', '1px', '2px', '3px', '4px', '8px', '12px', '16px', '24px', '32px', 'auto'])
-const RADIUS_OK = new Set(['20px', '12px', '999px', '50%', 'inherit', '0', '0px', '4px'])   // 4px: tiny bars/dots
-const COLOR_OK = /^(var\(--[\w-]+\)|transparent|currentColor|inherit|none|#fff|#ffffff|rgba\(255,\s*255,\s*255,\s*[\d.]+\)|rgba\(28,\s*60,\s*86,\s*[\d.]+\))$/i
-
 const strip = (s) => s.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '))
 const here = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'))
+
+// The scales are read from the token file, so the scan and the system cannot drift apart: every px
+// value a --f-*, --s<n> or --r-* token holds is on its scale, plus the few literals named below.
+const TOKENS = path.join(here, '..', '..', 'src', 'styles', 'tokens.css')
+const tokenPx = (prefix) => {
+  if (!existsSync(TOKENS)) return []
+  const src = strip(readFileSync(TOKENS, 'utf8'))
+  return [...src.matchAll(new RegExp(`--${prefix}[\\w-]*\\s*:\\s*(\\d+(?:\\.\\d+)?px)\\s*;`, 'g'))].map((m) => m[1])
+}
+// 13px and 22px: the cream system's meta and title, still in feature CSS the screen builders are
+// moving into the rooms; 16px: the iOS zoom guard on fields that predate the 17px body
+const FONT_OK = new Set([...tokenPx('f-'), '12px', '13px', '16px', '22px'])
+const SPACE_OK = new Set([...tokenPx('s\\d'), '0', '0px', '1px', '2px', '3px', 'auto'])
+// 4px: tiny bars and dots; 12px and 20px: the cream system's control and surface radii, as above
+const RADIUS_OK = new Set([...tokenPx('r-'), '50%', 'inherit', '0', '0px', '4px', '12px', '20px'])
+// a colour is a token; white and the inks are the literal exceptions: night's warm white, day's ink,
+// and the cream system's ink, still in unconverted feature CSS
+const COLOR_OK = /^(var\(--[\w-]+\)|transparent|currentColor|inherit|none|#fff|#ffffff|rgba\(255,\s*255,\s*255,\s*[\d.]+\)|rgba\(246,\s*241,\s*233,\s*[\d.]+\)|rgba\(14,\s*26,\s*46,\s*[\d.]+\)|rgba\(28,\s*60,\s*86,\s*[\d.]+\))$/i
+// a shadow is a token too: a value made only of var() references passes
+const SHADOW_OK = /^(none|var\(--[\w-]+\)(\s*,\s*var\(--[\w-]+\))*)$/
 
 function scan(file) {
   const src = strip(readFileSync(file, 'utf8'))
@@ -29,28 +44,28 @@ function scan(file) {
     for (const m of l.matchAll(/font-size\s*:\s*([^;]+);/g)) {
       const v = m[1].trim()
       if (v.startsWith('var(') || v.startsWith('clamp(') || v.startsWith('calc(') || v === 'inherit') continue
-      if (!FONT_OK.has(v)) flag(i, 'font-size off scale (12 13 15 17 22, display via clamp)', v)
+      if (!FONT_OK.has(v)) flag(i, 'font-size off scale (the --f-* tokens)', v)
     }
     for (const m of l.matchAll(/(?:^|[\s;{])(padding|margin|gap|row-gap|column-gap|top|right|bottom|left|inset)(?:-[a-z]+)?\s*:\s*([^;]+);/g)) {
       for (const p of m[2].trim().split(/\s+/)) {
         if (/^(var|calc|clamp|min|max|env)\(/.test(p) || p === 'auto' || p.startsWith('-')) continue
-        if (/^-?\d*\.?\d+(px)?$/.test(p) && !SPACE_OK.has(p)) flag(i, 'spacing off scale (4 8 12 16 24 32)', m[0])
+        if (/^-?\d*\.?\d+(px)?$/.test(p) && !SPACE_OK.has(p)) flag(i, 'spacing off scale (the --s tokens: 4 8 12 16 24 32)', m[0])
       }
     }
     for (const m of l.matchAll(/border(?:-[a-z-]+)?-radius\s*:\s*([^;]+);/g)) {
       for (const p of m[1].trim().split(/\s+/)) {
         if (/^(var|calc)\(/.test(p)) continue
-        if (!RADIUS_OK.has(p)) flag(i, 'radius outside 20/12/999', m[0])
+        if (!RADIUS_OK.has(p)) flag(i, 'radius off scale (the --r-* tokens)', m[0])
       }
     }
     for (const m of l.matchAll(/box-shadow\s*:\s*([^;]+);/g)) {
       const v = m[1].trim()
-      if (v !== 'none' && v !== 'var(--sh-sheet)') flag(i, 'shadow on content (sheet only)', v)
+      if (!SHADOW_OK.test(v)) flag(i, 'shadow not a token (the glass lift, the sheet)', v)
     }
-    if (/backdrop-filter/.test(l)) flag(i, 'backdrop-filter (nav, sheet, hero chips only)', l)
+    if (/backdrop-filter/.test(l)) flag(i, 'backdrop-filter (the glass engine in base.css, and chrome that owns its surface)', l)
     if (/text-transform\s*:\s*uppercase/.test(l)) flag(i, 'uppercase label', l)
     if (/letter-spacing\s*:\s*\.?0*[1-9]/.test(l) && !/letter-spacing\s*:\s*-/.test(l)) flag(i, 'tracked label', l)
-    if (/cubic-bezier|linear\(|ease-in-out|\bease\b(?!-out)/.test(l) && !/var\(--e-out\)/.test(l)) flag(i, 'easing other than --e-out', l)
+    if (/cubic-bezier|linear\(|ease-in-out|\bease\b(?!-out)/.test(l) && !/var\(--e-out\)/.test(l)) flag(i, 'easing other than a token (--e-out, --e-spring, --e-drawer)', l)
     for (const m of l.matchAll(/font-weight\s*:\s*([^;]+);/g)) {
       const v = m[1].trim()
       if (!['400', '600', '700', 'normal', 'inherit'].includes(v)) flag(i, 'weight not 400/600/700', v)
@@ -62,8 +77,8 @@ function scan(file) {
     for (const m of l.matchAll(/(#[0-9a-f]{3,8}\b|rgba?\([^)]*\)|hsla?\([^)]*\)|color\(display-p3[^)]*\))/gi)) {
       if (!COLOR_OK.test(m[1])) flag(i, 'colour not a token', m[1])
     }
-    if (/linear-gradient|radial-gradient/.test(l)) flag(i, 'gradient (ground, sea and Wrapped backdrop only)', l)
-    if (/animation\s*:\s*[^;]*infinite/.test(l) && !/spin/.test(l)) flag(i, 'endless animation (ship bob, Wrapped drift and spinners only)', l)
+    if (/linear-gradient|radial-gradient/.test(l)) flag(i, 'gradient (the room, the glass, the sea and the Wrapped backdrop only)', l)
+    if (/animation\s*:\s*[^;]*infinite/.test(l) && !/spin/.test(l)) flag(i, 'endless animation (the room drift, ship bob, Wrapped drift and spinners only)', l)
   })
   return out
 }

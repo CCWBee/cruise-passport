@@ -1,7 +1,9 @@
+/* Select: the trigger is the field's well; the menu is a solid plate in the room with the sheet's
+   shadow, because it floats over content of any brightness and has to be read, not seen through. */
 .sel-trigger {
   display: flex; align-items: center; gap: var(--s2); width: 100%; height: var(--ctl); padding: 0 var(--s4);
-  font-size: 16px; font-weight: 400; color: var(--ink); text-align: left;
-  background: #fff; border: 1px solid var(--line); border-radius: var(--r-control);
+  font-size: var(--f-body); font-weight: 400; color: var(--ink); text-align: left;
+  background: var(--well); border: 1px solid var(--line); border-radius: var(--r-control);
   outline: 2px solid transparent; outline-offset: 1px;
   transition: border-color var(--t-panel) var(--e-out);
 }
@@ -15,13 +17,13 @@
 .sel-lg { height: 52px; }
 
 .sel-menu {
-  position: fixed; z-index: 60; background: var(--panel-solid); border: 1px solid var(--line);
+  position: fixed; z-index: 60; background: var(--plate-solid); border: 1px solid var(--line);
   border-radius: var(--r-control); box-shadow: var(--sh-sheet); padding: var(--s1); max-height: 280px; overflow-y: auto;
 }
 .sel-menu:focus { outline: none; }
 .sel-opt {
   display: flex; align-items: center; gap: var(--s2); min-height: var(--ctl); padding: var(--s2) var(--s3) var(--s2) var(--s4);
-  border-radius: calc(var(--r-control) - 4px); font-size: 16px; color: var(--ink); cursor: pointer;
+  border-radius: calc(var(--r-control) - 4px); font-size: var(--f-body); color: var(--ink); cursor: pointer;
 }
 .sel-opt .sel-tick { margin-left: auto; width: 16px; height: 16px; color: var(--mint); visibility: hidden; }
 .sel-opt[aria-selected="true"] { background: var(--press); }

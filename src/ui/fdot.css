@@ -1,4 +1,6 @@
-/* A person's identity dot: their colour, their initial. The one place the friend hues appear. */
+/* A person's identity dot: their colour, their initial. The one place the friend hues appear. The
+   initial is the hue mixed towards the room's ink, so it reads light on a dark room and dark on the
+   day one. */
 .fdot {
   inline-size: var(--sz); block-size: var(--sz); border-radius: var(--r-tag);
   display: grid; place-items: center; flex: none;
@@ -8,9 +10,10 @@
   box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--fc) 45%, transparent);
 }
 .fstack { display: flex; }
+/* stacked, each dot is cut out of the one before by a ring of the room's floor */
 .fstack .fdot:not(:first-child) {
   margin-inline-start: -6px;
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--fc) 45%, transparent), 0 0 0 2px var(--cream);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--fc) 45%, transparent), 0 0 0 2px var(--ground);
 }
 /* stacked dots spread a little under a pointer (ui/avatarSpring.ts, hover devices only) */
 .fstack > * {

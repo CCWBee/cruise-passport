@@ -1,7 +1,7 @@
-/* Switch: a flat track, a solid knob, mint when on (it means visited or tried). */
+/* Switch: the room's track, a white knob, mint when on (it means visited or tried). */
 .sw {
   --w: 52px; --h: 32px; --pad: 3px; --knob: calc(var(--h) - var(--pad) * 2);
-  --travel: calc(var(--w) - var(--knob) - var(--pad) * 2); --on: var(--mint);
+  --travel: calc(var(--w) - var(--knob) - var(--pad) * 2); --on: var(--mint-fill);
   position: relative; flex: none; width: var(--w); height: var(--h); border-radius: var(--r-tag);
   touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
@@ -10,7 +10,7 @@
 .sw-sm { --w: 44px; --h: 28px; }
 
 .sw-track {
-  position: absolute; inset: 0; border-radius: var(--r-tag); background: var(--line);
+  position: absolute; inset: 0; border-radius: var(--r-tag); background: var(--track);
   border: 1px solid transparent;
   transition: background-color var(--t-panel) var(--e-out);
 }
@@ -23,7 +23,7 @@
 .sw[aria-checked="true"] .sw-knob { transform: translateX(var(--travel)); border-color: transparent; }
 .sw:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: var(--r-tag); }
 .sw:disabled .sw-track { background: var(--press); }
-.sw:disabled .sw-knob { background: var(--panel-solid); }
+.sw:disabled .sw-knob { background: var(--plate-quiet); }
 
 .sw-row { display: flex; align-items: center; justify-content: space-between; gap: var(--s4); min-height: var(--ctl); }
 .sw-row-label { font-size: var(--f-body); font-weight: 600; color: var(--ink); }

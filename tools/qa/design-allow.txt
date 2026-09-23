@@ -2,25 +2,34 @@
 # One per line: <file path suffix> :: <substring of the flagged line>   and a reason in a comment above.
 # Every entry is a deliberate exception named in docs/DESIGN.md. Do not add one to make a screen pass.
 
-# the ground: cream with two washes (DESIGN.md, Material)
-styles/base.css :: radial-gradient(1100px 620px
-styles/base.css :: radial-gradient(900px 560px
-styles/base.css :: radial-gradient(940px 720px
-# liquid glass is defined once, here (film, blur, the specular edge and top highlight, the coral film)
+# the room (DESIGN.md, Material): its vertical gradient, the three pools of light, and the same painted
+# once and still on .ground for the screens that have not mounted the layer
+styles/base.css :: linear-gradient(180deg, var(--room-0)
+styles/base.css :: radial-gradient(closest-side, var(--pool-
+styles/base.css :: radial-gradient(circle 290px
+styles/base.css :: radial-gradient(circle 260px
+styles/base.css :: radial-gradient(circle 230px
+# the glass engine is defined once, here (DESIGN.md, Material): the body and the edge lens, the sheen,
+# the lens's wash, and the touch light that follows the finger
 styles/base.css :: backdrop-filter
-styles/base.css :: inset 0 1px 0 var(--glass-rim)
-styles/base.css :: linear-gradient(to bottom, var(--glass-highlight-film)
-# the Confirm tick floats over content: the sheet's shadow plus the specular edge on its disc and label plate
-ui/confirm.css :: var(--sh-sheet), inset 0 1px 0 var(--glass-rim)
-# the toast is glass: film, blur, edge
-ui/toast.css :: inset 0 1px 0 var(--glass-rim)
-ui/toast.css :: linear-gradient(to bottom, var(--glass-highlight-film)
-# the sheet and the toast layer over content
+styles/base.css :: linear-gradient(180deg, var(--glass-sheen)
+styles/base.css :: linear-gradient(135deg, var(--glass-lens)
+styles/base.css :: radial-gradient(circle at var(--lx
+# the edge lens's mask, A's graded frame: a mask reads alpha only, so black is its ink
+styles/base.css :: transparent var(--rim)
+styles/base.css :: colour not a token #000
+styles/base.css :: colour not a token rgba(0, 0, 0, .7)
+styles/base.css :: colour not a token rgba(0, 0, 0, .8)
+# the foot of the room: a still gradient in the room's colours, faded in towards the tab bar by a mask
+app/shell.css :: linear-gradient(180deg, var(--room-mid)
+app/shell.css :: mask-image: linear-gradient(180deg, transparent
+app/shell.css :: colour not a token #000
+app/shell.css :: colour not a token rgba(0, 0, 0, .86)
+# the sheet layers over content (the sheet stage moves it onto the glass engine)
 ui/sheet.css :: backdrop-filter
 # the sheet is liquid glass: the specular edge and the top-40% highlight
 ui/sheet.css :: inset 0 1px 0 var(--glass-rim)
 ui/sheet.css :: linear-gradient(to bottom, var(--glass-highlight-film)
-ui/toast.css :: backdrop-filter
 # the segmented thumb and the select option sit 3-4px inside a 12px control
 ui/segmented.css :: calc(var(--r-control) - 3px)
 ui/select.css :: calc(var(--r-control) - 4px)
@@ -36,9 +45,6 @@ features/wrapped/wrapped.css :: linear-gradient(to bottom, var(--glass-highlight
 features/wrapped/wrapped.css :: radial-gradient(circle at 74% 16%
 features/wrapped/wrapped.css :: linear-gradient(160deg
 features/wrapped/wrapped.css :: wr-drift
-# TEMPORARY. The sheet's film is 88%, not the 58% tokens.css carries: a sheet opens over the sea
-# hero, where 58% leaves 13px --ink-2 at 3.10:1 over --sea-lo. The sheet shadows the token locally
-# until tokens.css and DESIGN.md carry 88%; delete this line with the shadow.
 # the shaker's computed keyframes (DESIGN.md Motion, the written exceptions): a var() in a keyframe's
 # animation-timing-function does not resolve in Chrome (the segment takes the animation's own easing),
 # so keyframes.mjs writes --e-out's and --e-shake's values in literally, read from tokens.css

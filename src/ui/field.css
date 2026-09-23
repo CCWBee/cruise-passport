@@ -1,19 +1,21 @@
-/* Field: sentence-case label, 44px control, radius 12, 1px border in every state (the ring is an
-   outline, so nothing shifts), a reserved hint line. */
+/* Field: sentence-case label, a 44px well in the room (C's recessed field: a shade by night, a white
+   film by day), radius 16, a 1px line in every state (the ring is an outline, so nothing shifts), a
+   reserved hint line. Body size, which is also over iOS's 16px zoom line. */
 .field { display: flex; flex-direction: column; gap: var(--s1); margin-top: var(--s4); }
 .field-label { font-size: var(--f-meta); font-weight: 600; color: var(--ink-2); }
 .field-ctrl {
-  width: 100%; min-height: var(--ctl); background: #fff; color: var(--ink); border: 1px solid var(--line);
-  border-radius: var(--r-control); padding: var(--s3) var(--s4); font-size: 16px; font-weight: 400;
+  width: 100%; min-height: var(--ctl); background: var(--well); color: var(--ink); border: 1px solid var(--line);
+  border-radius: var(--r-control); padding: var(--s3) var(--s4); font-size: var(--f-body); font-weight: 400;
   outline: 2px solid transparent; outline-offset: 1px;
+  -webkit-user-select: text; user-select: text;
   transition: border-color var(--t-panel) var(--e-out);
 }
 .field-ctrl::placeholder { color: var(--ink-2); }
 .field-ctrl:hover { border-color: var(--ink-3); }
 .field-ctrl:focus-visible { outline-color: var(--focus); border-color: var(--line); }
-textarea.field-ctrl { resize: vertical; min-height: 76px; }
+textarea.field-ctrl { resize: vertical; min-height: 92px; line-height: 1.45; }
 .field-ctrl.tnum { font-variant-numeric: tabular-nums; }
-.field-ctrl[aria-invalid="true"] { border-color: var(--coral-ink); }
-.field-ctrl:disabled { background: var(--panel); color: var(--ink-2); }
-.field-hint { font-size: var(--f-micro); color: var(--ink-2); min-height: 1lh; }
-.field-err { color: var(--coral-ink); }
+.field-ctrl[aria-invalid="true"] { border-color: var(--coral); }
+.field-ctrl:disabled { background: transparent; color: var(--ink-2); }
+.field-hint { font-size: var(--f-meta); color: var(--ink-2); min-height: 1lh; }
+.field-err { color: var(--coral-text); }

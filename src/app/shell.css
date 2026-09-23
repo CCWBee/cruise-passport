@@ -16,3 +16,18 @@
 .page > h1 { margin-bottom: var(--s4); }
 /* the way on under an invite route's line: 16, a group's gap */
 .page-act { margin-top: var(--s4); }
+
+/* The foot of the room: its floor laid over the content and faded in towards the tab bar, so a row
+   dissolves into the room as it passes under the bar and no fragment of its text shows in the
+   gutters beside the capsule or to the right of Log. Still: a gradient in the room's colours, never
+   a clone of the drifting pools, so the bar's backdrop does not change every frame. Clear until
+   110px above the safe area, .86 by the tab labels (40 up; .78 left the For you card names
+   legible in the gutters in C's second Brave pass), and the room alone from the bar's lower edge
+   down. It is not glass and has no filter. */
+.room-foot {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; pointer-events: none;
+  height: calc(var(--safe-b) + 110px);
+  background: linear-gradient(180deg, var(--room-mid), var(--room-1));
+  -webkit-mask-image: linear-gradient(180deg, transparent, rgba(0, 0, 0, .86) calc(100% - var(--safe-b) - 40px), #000 calc(100% - var(--safe-b) - 10px));
+  mask-image: linear-gradient(180deg, transparent, rgba(0, 0, 0, .86) calc(100% - var(--safe-b) - 40px), #000 calc(100% - var(--safe-b) - 10px));
+}

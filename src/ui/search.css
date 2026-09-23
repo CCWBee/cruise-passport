@@ -1,16 +1,21 @@
-/* Search field: a 44px control, radius 12, solid, the ring as an outline. */
+/* Search field: C's find well, 50 tall, radius 16, the room's well and line, the ring drawn inside it
+   so nothing shifts. The type is body size, over iOS's 16px zoom line. */
 .sfield {
   display: flex; align-items: center; gap: var(--s2); border-radius: var(--r-control);
-  min-height: var(--ctl); padding: 0 var(--s2) 0 var(--s3); color: var(--ink-2);
-  background: var(--panel-solid); border: 1px solid var(--line);
-  outline: 2px solid transparent; outline-offset: 1px;
+  min-height: 50px; padding: 0 var(--s2) 0 var(--s3); color: var(--ink-2);
+  background: var(--well); border: 1px solid var(--line);
+  outline: 2px solid transparent; outline-offset: -2px;
   transition: border-color var(--t-panel) var(--e-out);
 }
 .sfield:focus-within { outline-color: var(--focus); }
 .sfield-input:focus-visible { outline: none; } /* the wrapper carries the one ring */
-.sfield-input { flex: 1; min-width: 0; font-size: 16px; font-weight: 400; color: var(--ink); background: none; }
+.sfield-input {
+  flex: 1; min-width: 0; height: 100%; font-size: var(--f-body); font-weight: 400; color: var(--ink); background: none;
+  -webkit-appearance: none; appearance: none; -webkit-user-select: text; user-select: text;
+}
 .sfield-input::placeholder { color: var(--ink-2); }
 .sfield-input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+/* the clear button: 28 drawn, 44 to the thumb */
 .sfield-clear {
   position: relative; flex: none; display: grid; place-items: center; width: 28px; height: 28px;
   border-radius: 50%; background: var(--press); color: var(--ink-2);

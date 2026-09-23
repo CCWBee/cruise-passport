@@ -3,13 +3,37 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
-    <meta name="theme-color" content="#FBF3E2" />
-    <!-- The app is light by design, and inverted it breaks: the glass chips and the sea hero come out as
-         black boxes. "only light" stops a browser's forced dark mode (Chrome's and Samsung Internet's
-         darken-websites settings); darkreader-lock stops the Dark Reader extension, which rewrote every
-         colour on the page in Brave on 23 September 2026. -->
-    <meta name="color-scheme" content="only light" />
+    <!-- The app's light follows the clock: a day room, an evening one and a night one (docs/DESIGN.md,
+         Material). The script below sets the room, the colour scheme and the status bar's colour before
+         the first paint; these two are what a browser sees if it never runs. Nothing reads
+         prefers-color-scheme: the room is the clock's, not the phone's setting. darkreader-lock stops
+         the Dark Reader extension, which rewrote every colour on the page in Brave on 23 September
+         2026. -->
+    <meta name="theme-color" content="#0B1222" />
+    <meta name="color-scheme" content="dark" />
     <meta name="darkreader-lock" />
+    <script>
+    /* The room, before the first paint, so a load never flashes the wrong light. It repeats
+       roomFor() in src/app/room.ts, over dayPart() in src/state/stats.ts: 7 to 17 day, 17 to 21
+       evening, 21 to 7 night; change the boundaries there and here together. ?hour= pins it for QA
+       with the same digits-only test as nowHour() in src/data/model.ts. Its own script, so a throw
+       here cannot stop the seed below, or the other way round. */
+    (function () {
+      try {
+        var raw = new URLSearchParams(location.search).get('hour')
+        var h = raw && /^\d{1,2}$/.test(raw) && Number(raw) <= 23 ? Number(raw) : new Date().getHours()
+        var room = h >= 7 && h < 17 ? 'day' : h >= 17 && h < 21 ? 'evening' : 'night'
+        var scheme = room === 'day' ? 'light' : 'dark'
+        var root = document.documentElement
+        root.setAttribute('data-room', room)
+        root.style.colorScheme = scheme
+        var meta = document.querySelector('meta[name="color-scheme"]')
+        if (meta) meta.setAttribute('content', scheme)
+        var theme = document.querySelector('meta[name="theme-color"]')
+        if (theme) theme.setAttribute('content', room === 'day' ? '#DCEBF4' : room === 'evening' ? '#1A1830' : '#0B1222')
+      } catch (e) {}
+    })()
+    </script>
     <title>Sun Princess Cocktail Passport</title>
     <meta name="description" content="Tick off, rate and log all 214 cocktails aboard the Sun Princess (3 to 17 October 2026). Earn badges, unlock a Cruise Wrapped finale, and see what your crew loved. Works offline." />
 
