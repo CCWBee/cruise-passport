@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 
 import { VENUES } from '../../data/model'
 import { pickedForYou, useSources } from '../../state/social'
 import { useAllDrinks, useStore } from '../../state/store'
+import { GlassButton } from '../../ui/GlassButton'
 import { haptic } from '../../ui/haptic'
 import { Sheet } from '../../ui/Sheet'
 import { DrinkSheet } from '../drinks/DrinkSheet'
@@ -176,7 +177,7 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
   return (
     <Sheet onClose={onClose} labelledBy={titleId}>
       <div className="shake">
-        <h2 className="t-title sheet-title" id={titleId}>Shake</h2>
+        <h2 className="t-h2 sheet-title" id={titleId}>Shake</h2>
         <p className="sheet-meta">The shaker picks one you have not tried.</p>
 
         <div className="shake-body">
@@ -194,19 +195,24 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
                     the prize that came out of the tin carries no lettering of its own */}
                 <h3 className="t-h2" style={at(SHAKER.landMs)}>{drink.name}</h3>
                 <p className="t-meta tnum" style={at(SHAKER.landMs + 80)}>{where}</p>
-                {result.reason && <p className="t-body" style={at(SHAKER.landMs + 160)}>{result.reason}</p>}
+                {result.reason && <p className="t-body shake-reason" style={at(SHAKER.landMs + 160)}>{result.reason}</p>}
               </div>
             )}
           </div>
 
-          <button
+          {/* the sheet's one filled control, C's wide button at the foot: the dock steps down under
+              a sheet, so Log is not on screen to be the coral one */}
+          <GlassButton
+            variant="primary"
+            size="lg"
+            block
             type="button"
-            className="btn btn-coral btn-wide pressable shake-go"
+            className="shake-go"
             disabled={busy}
             onClick={() => (phase === 'revealed' && result ? goGet(result.id) : press())}
           >
             {label}
-          </button>
+          </GlassButton>
 
           <div className="shake-quiets">
             {/* in the layout from the start and shown at the reveal, for the same reason as the slot:

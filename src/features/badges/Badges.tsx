@@ -1,26 +1,17 @@
-import { useEffect, useId, useMemo, useState } from 'react'
-import { BADGES, badgeCount, type BadgeDef, type BadgeStat } from '../../data/badges'
+import { useId, useMemo, useState } from 'react'
+import { BADGES, TIER_WORD, badgeCount, type BadgeDef } from '../../data/badges'
 import { computeStats } from '../../state/stats'
 import { useAllDrinks, useStore } from '../../state/store'
+import { GlassButton } from '../../ui/GlassButton'
 import { Sheet } from '../../ui/Sheet'
 import { openLog } from '../search/log'
 import { Coin } from './Coin'
+import { medalGroups, progressOf, remainder, struckLine, unstruckLine } from './medals'
 import './badges.css'
 
-// The rank is said in words in the sheet, so the metal is not carrying it alone.
-const TIER_NAME: Record<NonNullable<BadgeDef['tier']>, string> = {
-  bronze: 'Bronze',
-  silver: 'Silver',
-  gold: 'Gold',
-  special: 'Special',
-}
-
-function progressOf(badge: BadgeDef, stat: BadgeStat) {
-  const p = badge.progress?.(stat)
-  if (!p || p.need <= 0) return null
-  return { ...p, pct: Math.min(100, Math.max(0, (p.cur / p.need) * 100)) }
-}
-
+// The medal case, the Badges segment of You (docs/DESIGN.md, Screens, You): what is won lies on the
+// velvet, large and in tier order; what is in reach is a ringed blank with what is left; what is
+// locked is a blank with what earns it. Home's tray opens this in one tap.
 export function Badges() {
   const drinks = useAllDrinks()
   const passport = useStore((state) => state.me)
@@ -28,33 +19,28 @@ export function Badges() {
     () => computeStats(drinks, passport).badgeStat,
     [drinks, passport],
   )
-  const [selectedBadge, setSelectedBadge] = useState<BadgeDef | null>(null)
+  // deep link: /badges?badge=<id> opens with that medal's sheet up (Home's new medal, and QA)
+  const [selected, setSelected] = useState<BadgeDef | null>(() => {
+    const id = new URLSearchParams(location.search).get('badge')
+    return BADGES.find((x) => x.id === id) ?? null
+  })
+  // a coin tapped in the case turns as the sheet rises (C); a deep link opens it still
+  const [tapped, setTapped] = useState(false)
   const titleId = useId()
 
-  // deep link: /badges?badge=<id> opens that medal (also used for QA)
-  useEffect(() => {
-    const id = new URLSearchParams(location.search).get('badge')
-    if (id) { const b = BADGES.find((x) => x.id === id); if (b) setSelectedBadge(b) }
-  }, [])
+  const { earned, reach, locked } = useMemo(() => medalGroups(badgeStat), [badgeStat])
+  const open = (badge: BadgeDef) => { setTapped(true); setSelected(badge) }
 
-  // three groups: what you have, what is within reach, what has not started
-  const { earned, close, locked } = useMemo(() => {
-    const earned: BadgeDef[] = []
-    const close: { badge: BadgeDef; cur: number; need: number; pct: number }[] = []
-    const locked: BadgeDef[] = []
-
-    for (const badge of BADGES) {
-      if (badge.test(badgeStat)) { earned.push(badge); continue }
-      const p = progressOf(badge, badgeStat)
-      if (p && p.cur > 0) close.push({ badge, ...p })
-      else locked.push(badge)
-    }
-    close.sort((a, b) => b.pct - a.pct)
-    return { earned, close, locked }
-  }, [badgeStat])
-
-  const selectedEarned = selectedBadge ? selectedBadge.test(badgeStat) : false
-  const selectedProgress = selectedBadge ? progressOf(selectedBadge, badgeStat) : null
+  const selectedEarned = selected ? selected.test(badgeStat) : false
+  const selectedProgress = selected ? progressOf(selected, badgeStat) : null
+  // the dated line replays the passport once per day logged, so it is worked out for the sheet
+  // that is open and not for every coin in the case
+  const line = useMemo(() => {
+    if (!selected) return ''
+    return selected.test(badgeStat)
+      ? struckLine(selected, drinks, passport)
+      : unstruckLine(selected, progressOf(selected, badgeStat))
+  }, [selected, badgeStat, drinks, passport])
 
   return (
     <div className="badges">
@@ -65,58 +51,56 @@ export function Badges() {
         </div>
 
         {earned.length ? (
-          <div className="badge-grid">
-            {earned.map((badge) => (
-              <button
-                key={badge.id}
-                type="button"
-                className="badge-medal pressable"
-                onClick={() => setSelectedBadge(badge)}
-                aria-label={`${badge.name}, earned`}
-              >
-                <Coin badge={badge} state="earned" size={72} />
-                <span className="badge-medal-name t-meta">{badge.name}</span>
-              </button>
-            ))}
+          // The velvet belongs to the night bar in every room, so it carries night's light and ink
+          // (DESIGN.md, You): a silver coin reads as metal on dark cloth and as plastic on a pale one
+          <div className="case case-full" data-room="night">
+            <div className="case-grid">
+              {earned.map((badge) => (
+                <button
+                  key={badge.id}
+                  type="button"
+                  className="case-item pressable"
+                  onClick={() => open(badge)}
+                  aria-label={`${badge.name}, ${TIER_WORD[badge.tier ?? 'bronze']}`}
+                >
+                  <Coin badge={badge} state="earned" size={92} />
+                  <span className="case-name">{badge.name}</span>
+                  <span className="case-tier">{TIER_WORD[badge.tier ?? 'bronze']}</span>
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="empty-state">
             <p className="t-body">Badges arrive as you log drinks.</p>
-            <button type="button" className="btn btn-coral" onClick={openLog}>Log a drink</button>
+            {/* secondary: the dock's Log is this screen's one coral fill, and the same action */}
+            <GlassButton variant="secondary" onClick={openLog}>Log a drink</GlassButton>
           </div>
         )}
       </section>
 
-      {close.length > 0 && (
+      {reach.length > 0 && (
         <section className="section">
           <div className="section-head">
-            <h2 className="t-h2">Close</h2>
+            <h2 className="t-h2">In reach</h2>
           </div>
-          {close.map(({ badge, cur, need, pct }) => (
+          {reach.map(({ badge, progress }) => (
             <button
               key={badge.id}
               type="button"
-              className="row badge-row"
-              onClick={() => setSelectedBadge(badge)}
-              aria-label={`${badge.name}, ${badgeCount(badge, cur, need)}`}
+              className="row medal-row"
+              onClick={() => open(badge)}
+              aria-label={`${badge.name}, ${badgeCount(badge, progress.cur, progress.need)}, ${remainder(badge, progress)}`}
             >
-              {/* the hint is the sheet's meta line, one tap away; here the count says what is left */}
+              {/* the ring is the measure, so the row carries no bar of its own */}
+              <span className="medal-lead">
+                <Coin badge={badge} state="reach" progress={progress.pct / 100} size={52} />
+              </span>
               <span className="row-copy">
                 <span className="t-strong">{badge.name}</span>
+                <span className="t-meta">{remainder(badge, progress)}</span>
               </span>
-              <span className="badge-meter">
-                <span className="t-meta tnum">{badgeCount(badge, cur, need)}</span>
-                <span
-                  className="badge-track"
-                  role="progressbar"
-                  aria-label={`${badge.name} progress`}
-                  aria-valuemin={0}
-                  aria-valuemax={need}
-                  aria-valuenow={Math.min(cur, need)}
-                >
-                  <span className="badge-fill" style={{ width: `${pct}%` }} />
-                </span>
-              </span>
+              <span className="medal-count t-meta tnum">{badgeCount(badge, progress.cur, progress.need)}</span>
             </button>
           ))}
         </section>
@@ -131,10 +115,14 @@ export function Badges() {
             <button
               key={badge.id}
               type="button"
-              className="row badge-row"
-              onClick={() => setSelectedBadge(badge)}
-              aria-label={`${badge.name}, locked`}
+              className="row medal-row"
+              onClick={() => open(badge)}
+              aria-label={`${badge.name}, locked. ${badge.hint}`}
             >
+              <span className="medal-lead">
+                <Coin badge={badge} state="locked" size={44} />
+              </span>
+              {/* the hint is the only place here that says what earns it */}
               <span className="row-copy">
                 <span className="t-strong">{badge.name}</span>
                 <span className="t-meta">{badge.hint}</span>
@@ -144,29 +132,24 @@ export function Badges() {
         </section>
       )}
 
-      {selectedBadge && (
-        <Sheet onClose={() => setSelectedBadge(null)} labelledBy={titleId}>
-          <div className="badge-sheet">
-            <h2 className="t-title sheet-title" id={titleId}>{selectedBadge.name}</h2>
-            <p className="sheet-meta">{selectedBadge.hint} · {TIER_NAME[selectedBadge.tier ?? 'bronze']} tier</p>
-
-            <div className="medal-mount">
-              <Coin
-                badge={selectedBadge}
-                state={selectedEarned ? 'earned' : selectedProgress && selectedProgress.cur > 0 ? 'reach' : 'locked'}
-                progress={selectedProgress ? selectedProgress.pct / 100 : undefined}
-                size={196}
-                flip={selectedEarned}
-              />
-            </div>
-
-            <p className="t-body badge-state">
-              {selectedEarned
-                ? 'Earned'
-                : selectedProgress
-                  ? badgeCount(selectedBadge, selectedProgress.cur, selectedProgress.need)
-                  : 'Not earned yet'}
-            </p>
+      {selected && (
+        <Sheet height="medium" onClose={() => { setSelected(null); setTapped(false) }} labelledBy={titleId}>
+          {/* C's order: the coin is what the sheet is about, so it leads, and the title and its one
+              meta line follow it */}
+          <div className="medal-sheet">
+            <Coin
+              key={selected.id}
+              badge={selected}
+              state={selectedEarned ? 'earned' : selectedProgress && selectedProgress.cur > 0 ? 'reach' : 'locked'}
+              progress={selectedProgress ? selectedProgress.pct / 100 : undefined}
+              size={196}
+              flip={selectedEarned}
+              turn={selectedEarned && tapped}
+              className="medal-sheet-coin"
+            />
+            <h2 className="t-h2 sheet-title" id={titleId}>{selected.name}</h2>
+            <p className="sheet-meta">{TIER_WORD[selected.tier ?? 'bronze']} · {selected.hint}</p>
+            {line && <p className="t-body medal-sheet-line">{line}</p>}
           </div>
         </Sheet>
       )}

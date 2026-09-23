@@ -1,5 +1,5 @@
 /* Stats: the first segment of You. Three questions as plain headings, answered by rows and
-   hairlines on the ground. No cards, no donut, no chart grow-ins. See docs/DESIGN.md. */
+   hairlines on the room. No cards, no donut, no chart grow-ins. See docs/DESIGN.md. */
 
 /* You supplies the title and the segmented control; the first heading follows it directly. */
 .stats > .section:first-child { margin-top: 0; }
@@ -9,30 +9,19 @@
 /* where the h3 is the section's first content, it keeps the heading-to-content gap of 8 */
 .section > h2 + .stats-sub { margin-top: 0; }
 
-/* ── lists: static rows, so no press tint and no button affordance ── */
+/* ── lists: read-only rows are base.css's .line (48 tall, a hairline between); the rated rows are
+   .row, which open the drink ── */
 .stats-list { display: flex; flex-direction: column; }
 
-.stats-line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s3);
-  min-height: var(--row);
-  padding: var(--s2) 0;
-}
-
-.stats-line + .stats-line { border-top: 1px solid var(--line); }
-
 .stats-line-label {
+  flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.stats-line-value { flex: none; }
-
-/* ── completion by deck: label and count, the bar beneath, no track ── */
+/* ── completion by deck: label and count on one line, the .meter beneath ── */
 .stats-decks { display: flex; flex-direction: column; gap: var(--s3); }
 
 .stats-deck-head {
@@ -40,24 +29,9 @@
   align-items: baseline;
   justify-content: space-between;
   gap: var(--s3);
-  margin-bottom: var(--s1);
 }
 
-.stats-deck-bar { height: 6px; }
-
-.stats-deck-bar span {
-  display: block;
-  height: 100%;
-  min-width: 6px;
-  border-radius: var(--r-tag);
-  background: var(--sea-ink);
-}
-
-/* ── rated rows: tappable, they open the drink ── */
 .stats-rated .row-copy > * { display: block; }
-
-/* base.css rounds a lone .row and squares every .row + .row; keep one list's press tint one shape */
-.stats-list .row:not(:only-child) { border-radius: 0; }
 
 /* the rating reads as one unit at the right of the row, as it does on Log */
 .stats-star {
@@ -70,7 +44,7 @@
   font-weight: 600;
 }
 
-/* ── drinks logged per day: HTML axis labels at a true 12px, the plot stretched between them ── */
+/* ── drinks logged per day: HTML axis labels at meta size, the plot stretched between them ── */
 .stats-chart {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -84,6 +58,7 @@
   text-align: right;
 }
 
+/* the axis is the chart's baseline, structure rather than a rule along a heading */
 .stats-chart-plot {
   display: block;
   width: 100%;

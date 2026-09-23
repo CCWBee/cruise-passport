@@ -143,24 +143,8 @@ export { VENUES }
 // ── Home's front panel: pure selectors, appended. Nothing above this line changed. ──
 // These exist so Home reads the same numbers the screens they lead to compute, rather than
 // measuring the same things a second way and disagreeing with them.
-import { BADGES, type BadgeDef } from '../data/badges'
+import { BADGES, tierOrder, type BadgeDef } from '../data/badges'
 import { menuFor } from '../data/model'
-
-export interface NextBadge { badge: BadgeDef; cur: number; need: number; pct: number }
-
-/** The badge nearest to earned. The same measure the Badges screen's "Close" list uses: an
- *  un-earned badge with a progress predicate and something on the board, ranked by percentage. */
-export function nextBadge(stat: BadgeStat): NextBadge | null {
-  let best: NextBadge | null = null
-  for (const badge of BADGES) {
-    if (badge.test(stat)) continue
-    const p = badge.progress?.(stat)
-    if (!p || p.need <= 0 || p.cur <= 0) continue
-    const pct = Math.min(100, Math.max(0, (p.cur / p.need) * 100))
-    if (!best || pct > best.pct) best = { badge, cur: p.cur, need: p.need, pct }
-  }
-  return best
-}
 
 /** Drinks a passport logged on one ISO day, in the order that passport holds them. */
 export function drinksOn(drinks: Drink[], p: Passport, iso: string): Drink[] {
@@ -254,13 +238,13 @@ export function newMedals(stat: BadgeStat, seen: string[]): BadgeDef[] {
   return BADGES.filter((b) => b.test(stat) && !seen.includes(b.id))
 }
 
-// A tier is an ordinal, so "the best of these" is the highest rank; within one rank the later badge
-// in BADGES is the harder one (the list runs easiest first), which is why the fold keeps the last.
-const TIER_RANK: Record<NonNullable<BadgeDef['tier']>, number> = { bronze: 0, silver: 1, gold: 2, special: 3 }
+// A tier is an ordinal, so "the best of these" is the highest rank, the lowest TIER_ORDER (it runs
+// highest first); within one rank the later badge in BADGES is the harder one (the list runs easiest
+// first), which is why the fold keeps the last.
 /** The one medal a batch is announced by: the highest tier, and the hardest inside that tier. */
 export function topMedal(list: BadgeDef[]): BadgeDef | null {
   if (!list.length) return null
-  return list.reduce((best, b) => (TIER_RANK[b.tier ?? 'bronze'] >= TIER_RANK[best.tier ?? 'bronze'] ? b : best))
+  return list.reduce((best, b) => (tierOrder(b) <= tierOrder(best) ? b : best))
 }
 
 export interface CrewDay {

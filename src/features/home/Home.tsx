@@ -3,23 +3,23 @@ import { Link } from 'react-router-dom'
 import { SeaHero } from './SeaHero'
 import { useStore, useAllDrinks } from '../../state/store'
 import {
-  computeStats, nextBadge, countOn, currentBar, venueProgress, biggestBar,
+  computeStats, countOn, currentBar, venueProgress, biggestBar,
   dayPart, greetingWord, firstName, newMedals, topMedal, crewToday, syncedAgo,
-  type NextBadge,
 } from '../../state/stats'
 import { useSources, pickedForYou } from '../../state/social'
 import { DAYS, START, today, nowHour, VENUES, VENUE_KEYS } from '../../data/model'
-import { badgeCount } from '../../data/badges'
+import { BADGES, TIER_WORD, badgeCount } from '../../data/badges'
 import { useCountUp } from '../../ui/useCountUp'
+import { useScreenTitle } from '../../app/screenTitle'
 import { FriendDot } from '../../ui/FriendDot'
 import { IconShaker } from '../../ui/Icon'
-// the struck coin, the same one the case and the medal sheet draw
+// the struck coin, and the case's own arithmetic, so the tray and the case it opens count alike
 import { Coin } from '../badges/Coin'
+import { medalGroups, remainder } from '../badges/medals'
 import { DrinkSheet } from '../drinks/DrinkSheet'
 import { ShakeSheet } from '../shake/ShakeSheet'
 import { VenueSheet } from '../ship/VenueSheet'
 import { WrappedTeaser } from '../wrapped/WrappedTeaser'
-import { openLog } from '../search/log'
 import './home.css'
 
 const drinkVenue = (key: string) => VENUES[key]?.name || key
@@ -33,38 +33,14 @@ function countdown(): { text: ReactNode } {
   return { text: <>Voyage complete</> }
 }
 
-// The remainder said in the badge's own unit, so the line reads as a sentence ("2 more gins").
-// An id with no unit here is a percentage badge and is measured in per cent.
-const BADGE_UNIT: Record<string, [string, string]> = {
-  first: ['drink', 'drinks'], ten: ['drink', 'drinks'], twentyfive: ['drink', 'drinks'],
-  fifty: ['drink', 'drinks'], hundred: ['drink', 'drinks'], onefifty: ['drink', 'drinks'],
-  twohundred: ['drink', 'drinks'], everybar: ['venue', 'venues'],
-  // "whiskey": the badge covers American whiskey and bourbon and its sheet is spelled that way,
-  // so the row and the sheet it opens use one spelling.
-  coffee: ['coffee cocktail', 'coffee cocktails'], whiskey: ['whiskey', 'whiskeys'],
-  gin: ['gin', 'gins'], rum: ['rum', 'rums'], wine: ['wine', 'wines'],
-}
-function badgeRemainder(nb: NextBadge): string {
-  const left = Math.max(1, nb.need - nb.cur)
-  // a percentage badge says so from its own definition (badges.ts `percent`), the fact badgeCount reads
-  if (nb.badge.percent) return `${left}% more of the list`
-  const unit = BADGE_UNIT[nb.badge.id]
-  return unit ? `${left} more ${left === 1 ? unit[0] : unit[1]}` : `${left} more`
-}
-
-// The greeting's second line. The hero chip already says which day of the voyage it is, so this says
+// The greeting's second line. The sky chip already says which day of the voyage it is, so this says
 // the date instead: two lines, two facts. Long weekday and month because it is read at a glance.
 const greetDate = (iso: string): string =>
   new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
 
-function Fact({ value, label }: { value: ReactNode; label: string }) {
-  return (
-    <div className="fact">
-      <div className="fact-v tnum">{value}</div>
-      <div className="fact-l">{label}</div>
-    </div>
-  )
-}
+// Five coins at 56 and four gaps of 8 fill the tray's inner width at 390 (C's arithmetic, on the
+// spacing scale). Past five the count in the heading says the rest, and the case shows them all.
+const TRAY_COINS = 5
 
 export function Home() {
   const drinks = useAllDrinks()
@@ -86,13 +62,11 @@ export function Home() {
   const aboard = DAYS.indexOf(day) > -1
 
   // ── the greeting: the screen's first line, who and when, before what. Only with a name: a
-  // greeting to nobody is decoration, so without one the hero stays first.
+  // greeting to nobody is decoration, so without one the sea window is first, and the top bar
+  // takes the tab's name when the page scrolls.
   const greetName = firstName(profile.name)
-
-  // the chips floating on the sea. The shader lenses the water under their rectangles; the chips
-  // themselves stay HTML, so the CSS-glass fallback is unchanged when there is no WebGL.
-  const readoutRef = useRef<HTMLDivElement>(null)
-  const countRef = useRef<HTMLParagraphElement>(null)
+  const greeting = greetName ? `${greetingWord(dayPart(hour))}, ${greetName}` : ''
+  useScreenTitle(greeting)
 
   // ── the bar module. Aboard it is the venue of the last drink written today; with nothing
   // written today it falls back to the bar with most logged, and before sailing to the longest
@@ -105,21 +79,20 @@ export function Home() {
     [drinks, me, barKey],
   )
 
-  // ── up next: the badge nearest to earned, measured the way the Badges screen measures it
-  const nb = useMemo(() => nextBadge(s.badgeStat), [s.badgeStat])
+  // ── the medal tray: the case's three groups, counted the way the case counts them
+  const groups = useMemo(() => medalGroups(s.badgeStat), [s.badgeStat])
 
-  // ── the new medal: earned since the guest last looked. One module, the highest tier of the
-  // batch, the rest counted in its meta.
+  // The new medal: earned since the guest last looked. It leads the tray, the highest tier of the
+  // batch, and the kicker counts the batch. With nothing new the tray is led by the best medal held.
   const fresh = useMemo(() => newMedals(s.badgeStat, seenMedals), [s.badgeStat, seenMedals])
   const medal = topMedal(fresh)
-  // The rest of the batch, counted in its own unit. "Ten gin drinks · and 5 more" reads as fifteen
-  // gins, so on a batch the count replaces the hint rather than sharing the line with it: the hint
-  // is one tap away in the sheet, and the meta line never states a number of the wrong thing.
-  const more = fresh.length - 1
-  const moreMedals = more > 0 ? `and ${more} more ${more === 1 ? 'medal' : 'medals'}` : ''
+  const lead = medal ?? groups.earned[0] ?? null
+  const rest = groups.earned.filter((b) => b !== lead).slice(0, TRAY_COINS)
+  // the nearest medal in reach, the measure the case's In reach list is sorted by
+  const next = groups.reach[0] ?? null
 
   // The moment is spent the first time it is shown, so the ids are taken on render and written when
-  // Home goes away (or straight away on a tap). All of them, not just the coin's: the module counted
+  // Home goes away (or straight away on a tap). All of them, not just the coin's: the kicker counted
   // the others, so parading them one at a time on the next three opens would repeat a moment had.
   const shown = useRef<string[]>([])
   if (medal) shown.current = fresh.map((b) => b.id)
@@ -154,62 +127,120 @@ export function Home() {
   // loved it, or it is in the spirit you rate highest). Renders only when there is a real basis.
   const picks = useMemo(() => pickedForYou(me, srcs), [me, srcs])
 
-  // Aboard, module 2's three facts are true only when there is a bar to count; with none, every
-  // one of them is zero. Before sailing the module is only the way to a first venue, so it renders
-  // only when there is no venue at all.
+  // Aboard, today's three facts are true only when there is a bar to count; with none, every one
+  // of them is zero. Before sailing the only thing to say about the ship is the way to a first
+  // venue, and only when there is no venue at all.
   const shipZero = aboard ? s.barsTotal === 0 : VENUE_KEYS.length === 0
+  const todayFacts = aboard && !shipZero
+
+  // The tray renders once there is something to earn: with no catalogue there is no first drink to
+  // log, and a tray saying so would be a promise nothing can keep.
+  const showTray = drinks.length > 0 || groups.earned.length > 0
+  const earnedCount = groups.earned.length
+  // Spoken, the tray is one control, so its label says what the coins and lines say, in order.
+  const trayLabel = [
+    earnedCount ? `Medals, ${earnedCount} of ${BADGES.length} earned` : 'Medals, none earned yet',
+    medal && lead ? (fresh.length > 1 ? `${fresh.length} new medals, led by ${lead.name}` : `New medal, ${lead.name}`) : '',
+    next ? `Next, ${next.badge.name}, ${badgeCount(next.badge, next.progress.cur, next.progress.need)}` : '',
+    'Open the case',
+  ].filter(Boolean).join('. ') + '.'
 
   return (
     <div className="wrap page home">
       {greetName && (
         <header className="home-greet">
-          <h1 className="t-title">{greetingWord(dayPart(hour))}, {greetName}</h1>
+          <h1 className="t-title">{greeting}</h1>
           <p className="t-meta">{greetDate(day)}</p>
         </header>
       )}
 
-      <div className="home-hero">
-        <SeaHero level={pct / 100} hour={hour} chips={[readoutRef, countRef]} />
-        <p className="sea-count glass-live glass-sm glass-edge" ref={countRef}>{cd.text}</p>
-        <div className="sea-readout glass-live glass-sm glass-edge" ref={readoutRef}>
-          <div className="sea-pct tnum">{pctShown.toFixed(0)}<small>%</small></div>
-          {/* with nothing to try the two lines keep their shape and their measure, and say what is
-              true rather than "0 of 0" */}
-          <p className="sea-sub">{s.total ? <>{s.n} of {s.total}<br />tried</> : <>no drinks<br />yet</>}</p>
+      {/* The window onto the sea, and the sky chip floating in it. The readout has left the water
+          for the line below, and "Log a drink" has gone to the dock, whose Log is the one coral
+          fill on the screen. */}
+      <SeaHero level={pct / 100} hour={hour}>
+        <p className="sea-chip glass glass-sm glass-calm">{cd.text}</p>
+      </SeaHero>
+
+      {/* The readout: the one display number in the app, and beside it what it counts. Aboard, the
+          day's three facts are its next lines, the numbers that move by the day; "Day 3 of 15" is
+          not among them, because the sky chip says it. */}
+      <div className="readout">
+        <p className="t-display tnum readout-pct">{pctShown.toFixed(0)}<small>%</small></p>
+        <div className="readout-copy">
+          {/* with nothing to try the line keeps its place and says what is true rather than "0 of 0" */}
+          <p className="readout-sub tnum">{s.total ? <><b>{s.n}</b> of {s.total} tried</> : 'No drinks yet'}</p>
+          {todayFacts && (
+            <>
+              <p className="readout-today tnum"><b>{countOn(me, day)}</b> today · <b>{s.streak}</b> day streak</p>
+              <p className="readout-today tnum"><b>{s.bars} of {s.barsTotal}</b> bars visited</p>
+            </>
+          )}
         </div>
-        {/* the one primary action on the app, floating on the water where the thumb rests */}
-        <button type="button" className="sea-log glass-live glass-sm glass-edge glass-coral pressable" onClick={openLog}>
-          Log a drink
-        </button>
       </div>
 
-      {/* Module 2. Aboard it is Today, three numbers that move by the day. Before sailing there is
-          no day, no streak and nothing logged, and the ship's own counts do not change between
-          opens or say what to do now (Ship holds them), so the module is only the way to a first
-          venue and is absent once there is one: For you moves up into its place. The empty row is
-          the one case where the facts would all be structural zeros, which DESIGN.md forbids
-          outright; aboard the test is barsTotal and not the venue count, because a sailing whose
-          venues are all restaurants has venues and no bars. The row needs no wrapper: Home's rows
-          sit as siblings of a .section-head and are already squared, so a wrapper would make this
-          the one rounded thing on the screen. */}
-      {(aboard || shipZero) && (
-        <section className="section">
-          <div className="section-head"><h2 className="t-h2">{aboard ? 'Today' : 'The ship'}</h2></div>
-          {shipZero ? (
-            <Link to="/ship" className="row pressable" viewTransition>
-              <span className="row-copy">
-                <span className="t-strong">{aboard ? 'Add a bar' : 'Add your first venue'}</span>
-                <span className="t-meta">{aboard ? 'Nothing to check in at on this sailing yet' : 'Bars, cafés and restaurants you will drink at'}</span>
+      {/* Module 2, the medal tray: the one box on Home that holds things, on the case's velvet, and
+          the one tap to the case. The new medal leads it large and turns once; the other earned
+          coins lie beside it; the nearest in reach is a blank with its ring filling. The count is
+          said once, in the heading. The whole tray is one target, so the coins inside take no taps
+          of their own. */}
+      {showTray && (
+        <section className="section home-medals">
+          <div className="section-head">
+            <h2 className="t-h2">Medals</h2>
+            {earnedCount > 0 && <p className="t-meta tnum">{earnedCount} of {BADGES.length}</p>}
+          </div>
+          <Link
+            to="/badges"
+            className="case tray pressable"
+            data-room="night"
+            onClick={() => { if (fresh.length) markMedalsSeen(fresh.map((b) => b.id)) }}
+            aria-label={trayLabel}
+          >
+            {lead ? (
+              <span className="tray-lead">
+                {/* keyed by the medal, so a second new medal mounts a coin of its own and turns too */}
+                <Coin key={lead.id} badge={lead} state="earned" size={96} turn={!!medal} />
+                <span className="tray-copy">
+                  {medal && <span className="tray-new">{fresh.length > 1 ? `${fresh.length} new medals` : 'New medal'}</span>}
+                  <span className="tray-name">{lead.name}</span>
+                  <span className="t-meta">{TIER_WORD[lead.tier ?? 'bronze']} medal · {lead.hint}</span>
+                </span>
               </span>
-            </Link>
-          ) : (
-            // "Day n of 15" is not among the three: the hero chip already says it
-            <div className="facts">
-              <Fact value={countOn(me, day)} label="logged" />
-              <Fact value={s.streak} label="day streak" />
-              <Fact value={`${s.bars} of ${s.barsTotal}`} label="bars visited" />
-            </div>
-          )}
+            ) : (
+              <span className="t-meta tray-empty">Log your first drink and the first coin is struck.</span>
+            )}
+            {rest.length > 0 && (
+              <span className="tray-coins">
+                {rest.map((b) => <Coin key={b.id} badge={b} state="earned" size={56} />)}
+              </span>
+            )}
+            {next && (
+              <span className="tray-next">
+                <Coin badge={next.badge} state="reach" progress={next.progress.pct / 100} size={44} />
+                {/* the remainder in words; the ring carries the count, so the line never says the
+                    same number twice */}
+                <span className="row-copy">
+                  <span className="t-strong">{next.badge.name}</span>
+                  <span className="t-meta">{remainder(next.badge, next.progress)}</span>
+                </span>
+              </span>
+            )}
+          </Link>
+        </section>
+      )}
+
+      {/* The one case where today's facts would all be structural zeros, which DESIGN.md forbids
+          outright: in their place, the way to a first bar. Aboard the test is barsTotal and not the
+          venue count, because a sailing whose venues are all restaurants has venues and no bars. */}
+      {shipZero && (
+        <section className="section">
+          <div className="section-head"><h2 className="t-h2">The ship</h2></div>
+          <Link to="/ship" className="row pressable">
+            <span className="row-copy">
+              <span className="t-strong">{aboard ? 'Add a bar' : 'Add your first venue'}</span>
+              <span className="t-meta">{aboard ? 'Nothing to check in at on this sailing yet' : 'Bars, cafés and restaurants you will drink at'}</span>
+            </span>
+          </Link>
         </section>
       )}
 
@@ -221,7 +252,9 @@ export function Home() {
         <section className="section">
           <div className="section-head"><h2 className="t-h2">For you</h2></div>
           {/* a shelf you swipe: each card is an independently opened unit, so it earns its boundary.
-              The reason line, in the accent, is the honest basis: a matched friend, or your palate. */}
+              The name leads, so the first screen ends on words rather than on boxes (the judged
+              defect in C); the reason, in the lamp's colour, is the honest basis: a matched friend,
+              or your palate. */}
           {picks.length > 0 && (
             <ul className="rec-rail" role="list">
               {picks.map((p) => (
@@ -232,8 +265,8 @@ export function Home() {
                     onClick={() => setOpenId(p.drink.id)}
                     aria-label={`${p.drink.name}, ${drinkVenue(p.drink.venue)}. ${p.reason}`}
                   >
+                    <span className="rec-name">{p.drink.name}</span>
                     <span className="rec-reason">{p.reason}</span>
-                    <span className="rec-name t-strong">{p.drink.name}</span>
                     {/* a taste pick's reason already names the spirit, so its meta is the venue
                         alone; a crew pick's reason names a person, so the spirit is new there */}
                     <span className="rec-meta t-meta">
@@ -245,7 +278,7 @@ export function Home() {
             </ul>
           )}
           {/* the playful last item of the section that already exists to suggest drinks, so it
-              borrows that heading and adds none. Ink only: Log a drink keeps the screen's coral.
+              borrows that heading and adds none. Ink only: the dock's Log keeps the screen's coral.
               Its own wrapper, so .row:not(:only-child) leaves a row that stands alone at radius 12.
               One line: the Shake sheet's meta line says what the shaker does, and a row that
               opens a sheet does not repeat that sheet's meta line. */}
@@ -287,65 +320,13 @@ export function Home() {
         </section>
       )}
 
-      {/* The reward moment, and the one place Home is allowed to be spectacular. No heading: the
-          line "New medal · Gin Explorer" is the heading, and a second one would say it twice. */}
-      {medal && (
-        <section className="section">
-          <Link
-            to={`/badges?badge=${medal.id}`}
-            className="row pressable"
-            viewTransition
-            onClick={() => markMedalsSeen(fresh.map((b) => b.id))}
-            // spoken, the middle dot is gone, so the second line becomes its own sentence and says
-            // the same thing the screen says
-            aria-label={`New medal, ${medal.name}. ${moreMedals ? `And ${more} more new ${more === 1 ? 'medal' : 'medals'}.` : `${medal.hint}.`}`}
-          >
-            <div className="home-coin">
-              <Coin badge={medal} state="earned" size={96} turn />
-            </div>
-            <span className="row-copy">
-              <span className="t-strong">New medal · {medal.name}</span>
-              <span className="t-meta">{moreMedals || medal.hint}</span>
-            </span>
-          </Link>
-        </section>
-      )}
-
-      {/* What comes next: the nearest badge and the crew's day. The top drink and the top bar are
-          retrospective, and Stats shows both, so they are not here; with no badge in reach and
-          nobody logging today the section has nothing to say and does not render. */}
-      {(nb || crew.length > 0) && (
+      {/* Up next: where the crew is today. The nearest medal was here and is now the tray's last
+          line, so it is said once; with nobody logging today the section has nothing to say and
+          does not render. One line per crew member who logged today: the same dot, name and meta
+          line the crew screen's "Sailing with" rows use, so a person reads the same way on both. */}
+      {crew.length > 0 && (
         <section className="section">
           <div className="section-head"><h2 className="t-h2">Up next</h2></div>
-
-          {nb && (
-            <Link
-              to={`/badges?badge=${nb.badge.id}`}
-              className="row pressable"
-              viewTransition
-              aria-label={`${nb.badge.name}, ${badgeCount(nb.badge, nb.cur, nb.need)}`}
-            >
-              <span className="row-copy">
-                <span className="t-strong">{nb.badge.name}</span>
-                <span className="t-meta">{badgeRemainder(nb)}</span>
-                {/* the remainder is already in words above, so the bar carries the count for
-                    assistive technology only; the row never says the same number twice */}
-                <span
-                  className="meter"
-                  role="progressbar"
-                  aria-label={badgeCount(nb.badge, nb.cur, nb.need)}
-                  aria-valuemin={0}
-                  aria-valuemax={nb.need}
-                  aria-valuenow={Math.min(nb.cur, nb.need)}
-                >
-                  <span style={{ width: `${nb.pct}%` }} />
-                </span>
-              </span>
-            </Link>
-          )}
-
-          {/* one line per crew member who logged today: the same dot, name and meta line the crew
-              screen's "Sailing with" rows use, so a person reads the same way on both */}
           {crew.map((c) => {
             // "at" when every one of today's drinks was there, "mostly" when more than half were, and
             // nothing at all when the day was spread: a hedge where the data is exact would be as
@@ -364,13 +345,11 @@ export function Home() {
                 key={c.id}
                 to="/social"
                 className="row pressable"
-                viewTransition
                 aria-label={spoken}
               >
                 <FriendDot name={c.name} colour={c.colour} size={28} />
                 <span className="row-copy">
-                  {/* .t-strong, not Social's .t-body: inside one list the primary line reads one way,
-                      and the badge row above is 17/600 */}
+                  {/* .t-strong, not Social's .t-body: inside one list the primary line reads one way */}
                   <span className="t-strong">{c.name}</span>
                   <span className="t-meta tnum">{line}</span>
                 </span>

@@ -3,9 +3,11 @@ import { groupMembers, type MemberRow } from '../../state/backend'
 import { createGroupFlow, deleteGroupFlow, groupInviteLink, leaveGroupFlow } from '../../state/groups'
 import { useStore } from '../../state/store'
 import { FriendDot } from '../../ui/FriendDot'
+import { GlassButton } from '../../ui/GlassButton'
 import { Qr } from '../../ui/Qr'
 import { Sheet } from '../../ui/Sheet'
 import { ConfirmButton } from './ConfirmButton'
+import '../../ui/field.css'
 import './friends.css'
 
 /** Live connectivity, for the two actions that genuinely cannot work without it. */
@@ -102,25 +104,27 @@ export function GroupSheet({ groupId, onClose }: { groupId?: string; onClose: ()
       <div className="friends-sheet">
         {/* Same fallback as createGroupFlow sends, or the heading changes under the guest when the
             pull lands. */}
-        <h2 className="t-title sheet-title" id="group-title">{detail ? (group?.name || name.trim() || 'Our group') : 'Set up a group'}</h2>
+        <h2 className="t-h2 sheet-title" id="group-title">{detail ? (group?.name || name.trim() || 'Our group') : 'Set up a group'}</h2>
         <p className="sheet-meta">{detail ? `${shown.length} aboard` : 'One link, everyone joins.'}</p>
 
         {!detail && (
           <>
             <label className="f-field">
               <span className="f-label">Group name</span>
-              <input value={name} maxLength={40} placeholder="Family, cabin 10842…" onChange={(event) => setName(event.target.value)} />
+              <input className="field-ctrl" value={name} maxLength={40} placeholder="Family, cabin 10842…" onChange={(event) => setName(event.target.value)} />
             </label>
-            {/* the name is required, so the primary waits for it rather than making "Our group",
-                and it wears the fill only while it can be pressed: coral on coral reads at 4.2:1 */}
-            <button
-              type="button"
-              className={'btn btn-wide friends-action' + (!busy && online && name.trim() ? ' btn-coral' : '')}
+            {/* the name is required, so the primary waits for it rather than making "Our group". It
+                is the sheet's one fill (the dock steps down under a sheet), and it wears it only while
+                it can be pressed: disabled, GlassButton draws it as a ghost */}
+            <GlassButton
+              variant="primary"
+              block
+              className="friends-action"
               onClick={create}
               disabled={busy || !online || !name.trim()}
             >
               {busy ? 'Creating…' : 'Create'}
-            </button>
+            </GlassButton>
             {!online && <p className="t-meta friends-status">Needs a connection</p>}
           </>
         )}
@@ -136,11 +140,11 @@ export function GroupSheet({ groupId, onClose }: { groupId?: string; onClose: ()
                       goes in the actions row where the add sheet keeps its own. */}
                   <div className="addme-code-row">
                     <code className="tnum addme-code-val">{invite}</code>
-                    <button type="button" className="mini pressable" onClick={copyInvite}>Copy</button>
+                    <GlassButton onClick={copyInvite}>Copy</GlassButton>
                   </div>
                 </div>
                 <div className="addme-actions addme-actions-one">
-                  <button type="button" className="btn btn-coral btn-wide" onClick={share}>Share invite link</button>
+                  <GlassButton variant="primary" block onClick={share}>Share invite link</GlassButton>
                 </div>
               </div>
             )}

@@ -91,18 +91,6 @@ p { text-wrap: pretty; }
   .room-light { transition: none; }
 }
 
-/* The room with no layer mounted: the same gradient and pools painted once, still. Retiring: the
-   entry screen and the landing still render a .ground, and move to the room layer with their
-   screen builders. */
-.ground {
-  position: fixed; inset: 0; z-index: -1; pointer-events: none;
-  background:
-    radial-gradient(circle 290px at var(--pool-a-x) var(--pool-a-y), var(--pool-a), transparent),
-    radial-gradient(circle 260px at var(--pool-b-x) var(--pool-b-y), var(--pool-b), transparent),
-    radial-gradient(circle 230px at var(--pool-c-x) var(--pool-c-y), var(--pool-c), transparent),
-    linear-gradient(180deg, var(--room-0), var(--room-mid) 55%, var(--room-1));
-}
-
 button, input, textarea, select { font-family: inherit; font-size: inherit; color: inherit; }
 button { border: 0; background: none; cursor: pointer; padding: 0; color: inherit; }
 input, textarea { border: 0; outline: none; }
@@ -124,8 +112,6 @@ h1, h2, h3, p { margin: 0; }
 .t-body { font-size: var(--f-body); font-weight: 400; }
 .t-strong { font-size: var(--f-body); font-weight: 600; }
 .t-meta { font-size: var(--f-meta); font-weight: 400; line-height: 1.4; color: var(--ink-2); }
-/* the floor: tab labels. Retiring as a text role: nothing else sits under meta */
-.t-micro { font-size: var(--f-micro); font-weight: 400; line-height: 1.3; color: var(--ink-2); }
 /* a label above a group or field: sentence case at meta size. Never caps, never tracked. */
 .eyebrow { font-size: var(--f-meta); font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--ink-2); }
 .muted { color: var(--ink-2); }
@@ -155,7 +141,7 @@ h1, h2, h3, p { margin: 0; }
    itself, and never writes a backdrop-filter or a ::before background of its own: that is what lets
    the fallbacks at the end of this block win everywhere. The tab bar and the Log button keep their
    bodies inside 160 to 190% saturation; the coral pool moved off them instead (tokens.css, Night). */
-:where(.glass, .glass-live) {
+:where(.glass) {
   position: relative;
   color: var(--ink);
 }
@@ -164,23 +150,25 @@ h1, h2, h3, p { margin: 0; }
    vanished under the film in Brave, 23 September 2026), so the body is pushed to the back of the
    surface's own stacking context. Isolation makes that context; unlike opacity, a filter or a mask
    it does not make a backdrop root, so the body still samples the room. */
-.glass, .glass-live { isolation: isolate; }
-.glass::before, .glass-live::before { z-index: -1; }
-.glass, .glass-live {
+.glass { isolation: isolate; }
+.glass::before { z-index: -1; }
+/* the defaults at no specificity, so a surface's own class tunes them whatever order the stylesheets
+   load in (DESIGN.md, Material: a surface tunes the glass on itself) */
+:where(.glass) {
   --film: var(--glass-film);
   --rim: 8px;
   --spec-x: 1.5px; /* set on every surface, so a sheet's 0 never reaches the glass inside it */
   box-shadow: var(--glass-lift);
 }
-.glass::before, .glass::after, .glass-live::before, .glass-live::after {
+.glass::before, .glass::after {
   content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
 }
-.glass::before, .glass-live::before {
+.glass::before {
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)) brightness(var(--glass-bright));
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)) brightness(var(--glass-bright));
   background: linear-gradient(180deg, var(--glass-sheen), transparent 34%), var(--film);
 }
-.glass::after, .glass-live::after {
+.glass::after {
   -webkit-backdrop-filter: blur(var(--lens-blur)) saturate(var(--lens-sat)) brightness(var(--lens-bright));
   backdrop-filter: blur(var(--lens-blur)) saturate(var(--lens-sat)) brightness(var(--lens-bright));
   background: linear-gradient(135deg, var(--glass-lens), rgba(255, 255, 255, .03) 40%, rgba(255, 255, 255, 0) 62%, rgba(255, 255, 255, .07));
@@ -197,7 +185,7 @@ h1, h2, h3, p { margin: 0; }
 }
 /* children paint above the body and under the rim, in tree order; zero specificity, so a child's
    own position (the touch light, a tint, a droplet) wins */
-:where(.glass, .glass-live) > * { position: relative; }
+:where(.glass) > * { position: relative; }
 /* small glass (a chip, a round button, the toast): a narrower rim */
 .glass-sm { --rim: 6px; }
 /* glass on something saturated already, the sea window's sky or a cool pool: at 180 and 210% its
@@ -219,8 +207,7 @@ h1, h2, h3, p { margin: 0; }
 /* A surface that is covered or scrolled away drops its filters (prototype A, a.css 469, .hero-off),
    so the four-surface budget holds while a screen is pushed over it or a sheet is up. On the
    surface, or on any ancestor of it. */
-.glass-off.glass::before, .glass-off.glass::after, .glass-off .glass::before, .glass-off .glass::after,
-.glass-off.glass-live::before, .glass-off.glass-live::after, .glass-off .glass-live::before, .glass-off .glass-live::after {
+.glass-off.glass::before, .glass-off.glass::after, .glass-off .glass::before, .glass-off .glass::after {
   -webkit-backdrop-filter: none; backdrop-filter: none;
 }
 
@@ -228,19 +215,12 @@ h1, h2, h3, p { margin: 0; }
    --glass-solid, or a surface's own --solid) and the rim keeps its specular and hairline, so the
    hierarchy and every contrast pair hold with no optics at all */
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .glass::before, .glass-live::before { background: var(--solid, var(--glass-solid)); }
+  .glass::before { background: var(--solid, var(--glass-solid)); }
 }
 @media (prefers-reduced-transparency: reduce) {
-  .glass::before, .glass::after, .glass-live::before, .glass-live::after { -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .glass::before, .glass-live::before { background: var(--solid, var(--glass-solid)); }
+  .glass::before, .glass::after { -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .glass::before { background: var(--solid, var(--glass-solid)); }
 }
-
-/* Retiring aliases of the old glass classes, kept so unconverted markup lands on the engine:
-   .glass-live is .glass, .glass-edge was the old rim (the lens does it now), .glass-coral and
-   .glass-mint are tinted films. DESIGN.md's registry lists them; the screen builders move to
-   .glass, .glass-sm and .glass-tint. */
-.glass-coral { --film: var(--coral-film); --solid: var(--coral-ink); color: var(--on-accent); }
-.glass-mint { --film: var(--mint-film); --solid: var(--mint-fill); color: var(--on-mint); }
 
 /* ── a surface in the content layer ── */
 /* a panel: a quiet film on the room for a discrete module with its own boundary. No shadow, no
@@ -252,6 +232,37 @@ h1, h2, h3, p { margin: 0; }
   border-radius: var(--r-surface);
   box-shadow: none;
 }
+/* the velvet the medals lie on (prototype C's .case): Home's tray, the case on Badges and You's small
+   case, one cloth. It is material, like the metals on it, so it is the same plum in every room, and
+   the markup sets data-room="night" on it, so the ink and the rings read inside it are night's: a
+   silver coin reads as struck metal on dark cloth and as plastic on a pale one. The nap is a
+   turbulence at .09. */
+.case {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: var(--s4) var(--s4) var(--s3);
+  border-radius: var(--r-tray);
+  overflow: hidden;
+  text-align: left;
+  color: var(--ink);
+  background: var(--velvet);
+  box-shadow: var(--sh-tray);
+}
+.case::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: .09;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='v'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 .8  0 0 0 0 .9  0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23v)'/%3E%3C/svg%3E");
+}
+.case > * { position: relative; }
+/* The ring is night's colour, pinned with the cloth, so it is drawn on the cloth: outside it, on the
+   day room, it measured 1.8:1 where a ring needs 3 */
+.case:focus-visible { outline-offset: -3px; }
+
 /* the white plate under any Qr: a code has to read under a camera, so the plate is white whatever
    the room beneath it is. It comes after .panel, so a `panel qr-plate` reads white, not the
    panel's film. */
@@ -337,25 +348,6 @@ h1, h2, h3, p { margin: 0; }
   .press, .press:active, .press.is-pressed { transition: none; scale: none; }
 }
 
-/* ── buttons: retiring aliases of GlassButton's (ui/button.css), kept so unconverted markup lands
-   in the room. 44px, one filled accent per screen. ── */
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: var(--s2);
-  min-height: var(--ctl); padding: 0 var(--s4); border-radius: var(--r-tag);
-  font-size: var(--f-meta); font-weight: 600; line-height: 1; white-space: nowrap;
-  background: var(--plate-quiet); color: var(--ink); border: 1px solid var(--line);
-  /* the fill, the edge and the label change on one clock: a label that flips before its fill passes
-     a frame of pale type on a pale fill between disabled and enabled */
-  transition: scale var(--t-press) var(--e-out), background-color var(--t-panel) var(--e-out),
-    border-color var(--t-panel) var(--e-out), color var(--t-panel) var(--e-out);
-}
-.btn:active { scale: .97; }
-.btn-coral { background: var(--coral-ink); color: var(--on-accent); border-color: transparent; }
-.btn-mint { background: var(--mint-fill); color: var(--on-mint); border-color: transparent; }
-.btn-wide { width: 100%; }
-/* disabled reads as a ghost against the filled enabled button: no fill, a hairline, --ink-2 */
-.btn:disabled, .btn-coral:disabled, .btn-mint:disabled { cursor: default; color: var(--ink-2); background: transparent; border-color: var(--line); }
-
 /* small tags (24px or under): outline only, meta ink. Part of a meta line, not a badge row. */
 .tag {
   display: inline-flex; align-items: center; height: 22px; padding: 0 var(--s2);
@@ -366,15 +358,6 @@ h1, h2, h3, p { margin: 0; }
 .tag-prem { color: var(--gold-ink); border-color: var(--gold-soft); background: var(--gold-soft); }
 .tag-over { color: var(--coral-text); border-color: var(--coral-soft); background: var(--coral-soft); }
 .tag-price { color: var(--ink-2); }
-
-/* compact secondary control, 36px visual with a 44px hit area via padding in context */
-.mini {
-  display: inline-flex; align-items: center; justify-content: center; gap: var(--s1);
-  min-height: var(--ctl-sm); padding: 0 var(--s3); border-radius: var(--r-tag);
-  background: var(--plate-quiet); border: 1px solid var(--line);
-  font-size: var(--f-meta); font-weight: 600; color: var(--ink); margin: 0 var(--s2) var(--s2) 0;
-}
-.mini:disabled { color: var(--ink-2); background: transparent; cursor: default; }
 
 /* a field group: a sentence-case label at meta size, then its control. The one field label in the
    app; feature files must not declare their own. */

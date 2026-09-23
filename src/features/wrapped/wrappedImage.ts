@@ -2,20 +2,72 @@ import { SHIP } from '../../data/model'
 import { certificateRows, voyageDateRange, type WrappedFinale } from './wrappedData'
 
 // The certificate, redrawn as a 1080x1920 poster for the share sheet. It carries the same numbers
-// and the same sentence-case labels as the card on screen. A detached canvas cannot resolve CSS
-// custom properties, so the palette below is transcribed from src/styles/tokens.css.
-const CREAM = '#FBF3E2'
-const DAWN = '#FBEFD9'
-const SKY = '#F8EDD8'
-const INK = '#1C3C56'
-const INK_2 = 'rgba(28, 60, 86, .74)'
-const LINE = 'rgba(28, 60, 86, .12)'
-const SEA_HI = '#28AAA3'
-const SEA_LO = '#093755'
+// and the same sentence-case labels as the card on screen, in the room the guest saved it from: the
+// certificate on screen sits in that room, and the picture is of it. A detached canvas cannot
+// resolve CSS custom properties, so each room below is transcribed from src/styles/tokens.css.
+type RoomName = 'day' | 'evening' | 'night'
+
+interface Pool { colour: string; clear: string; x: number; y: number; r: number }
+
+interface Palette {
+  room: [string, string, string]
+  pools: Pool[]
+  ink: string
+  ink2: string
+  line: string
+  film: string
+  hair: string
+}
 
 const W = 1080
 const H = 1920
-const SEA_TOP = 1500
+
+// A pool of light where the room puts it (tokens.css --pool-*-x and -y, as fractions of the frame)
+// and as wide against the poster as its layer is against a 390 phone (base.css: .pool-a 580 across,
+// -b 520, -c 460), so the picture is lit as the screen is. Its clear stop is the same colour at
+// nothing, never `transparent`, which a canvas gradient may run through grey.
+const POOL_R = [290 / 390, 260 / 390, 230 / 390]
+const pool = (rgb: string, alpha: number, x: number, y: number, i: number): Pool =>
+  ({ colour: `rgba(${rgb}, ${alpha})`, clear: `rgba(${rgb}, 0)`, x, y, r: POOL_R[i] * W })
+
+// The certificate's film is the medium sheet's (--sheet-film), which it reads at on screen. A canvas
+// has no blur, and over gradients this soft that loses nothing. At the worst point under it the
+// meta ink holds 8.9:1 in the evening, 9.5 at night and 9.1 by day (WCAG, by arithmetic), and the
+// address at the foot 6.3:1 or more.
+const NIGHT: Palette = {
+  room: ['#0B1222', '#0F1121', '#130F1F'],
+  pools: [pool('255, 77, 109', .36, 0, .58, 0), pool('255, 159, 67', .30, .96, .38, 1), pool('74, 99, 255', .22, .08, .06, 2)],
+  ink: '#F6F1E9',
+  ink2: 'rgba(246, 241, 233, .84)',
+  line: 'rgba(246, 241, 233, .14)',
+  film: 'rgba(14, 20, 36, .40)',
+  hair: 'rgba(255, 255, 255, .16)',
+}
+
+const PALETTES: Record<RoomName, Palette> = {
+  night: NIGHT,
+  evening: {
+    ...NIGHT,
+    room: ['#1A1830', '#18132A', '#140E22'],
+    pools: [pool('255, 91, 120', .32, 0, .58, 0), pool('255, 166, 64', .32, .96, .38, 1), pool('255, 212, 140', .20, .08, .06, 2)],
+  },
+  day: {
+    room: ['#DCEBF4', '#BFE0EC', '#A7D8DC'],
+    pools: [pool('40, 170, 163', .22, .12, .88, 0), pool('255, 244, 214', .9, .92, .04, 1), pool('127, 182, 222', .28, .06, .30, 2)],
+    ink: '#0E1A2E',
+    ink2: '#2A4058',
+    line: 'rgba(14, 26, 46, .14)',
+    film: 'rgba(255, 255, 255, .64)',
+    hair: 'rgba(255, 255, 255, .55)',
+  },
+}
+
+// the room <html> is in, as the inline script in index.html and room.ts set it; night if neither ran
+function roomNow(): RoomName {
+  const room = document.documentElement.dataset.room
+  return room === 'day' || room === 'evening' ? room : 'night'
+}
+
 const PANEL_X = 96
 const PANEL_W = W - PANEL_X * 2
 const PAD = 74
@@ -74,33 +126,23 @@ function clip(ctx: Ctx, text: string, maxWidth: number): string {
   return `${text.slice(0, cut).trimEnd()}…`
 }
 
-// The ground, the same three washes the app sits on. No glow behind the certificate.
-function paintGround(ctx: Ctx) {
-  const ground = ctx.createLinearGradient(0, 0, W * .3, H)
-  ground.addColorStop(0, SKY)
-  ground.addColorStop(.48, CREAM)
-  ground.addColorStop(1, DAWN)
-  ctx.fillStyle = ground
+// The room, as base.css paints it: the vertical gradient, then the three pools of light over it,
+// each fading to nothing at its edge. No glow of its own behind the certificate.
+function paintRoom(ctx: Ctx, p: Palette) {
+  const room = ctx.createLinearGradient(0, 0, 0, H)
+  room.addColorStop(0, p.room[0])
+  room.addColorStop(.55, p.room[1])
+  room.addColorStop(1, p.room[2])
+  ctx.fillStyle = room
   ctx.fillRect(0, 0, W, H)
-}
-
-function paintSea(ctx: Ctx) {
-  const sea = ctx.createLinearGradient(0, SEA_TOP - 120, 0, H)
-  sea.addColorStop(0, 'rgba(40, 170, 163, 0)')
-  sea.addColorStop(.3, 'rgba(40, 170, 163, .58)')
-  sea.addColorStop(.62, SEA_HI)
-  sea.addColorStop(1, SEA_LO)
-  ctx.fillStyle = sea
-  ctx.fillRect(0, SEA_TOP - 120, W, H - SEA_TOP + 120)
-
-  // Two slack crest lines, enough to read as water without turning into a pattern.
-  ctx.lineWidth = 3
-  ctx.strokeStyle = 'rgba(255, 255, 255, .3)'
-  for (const [y, dip] of [[SEA_TOP + 96, 26], [SEA_TOP + 214, -20]] as const) {
-    ctx.beginPath()
-    ctx.moveTo(-20, y)
-    ctx.quadraticCurveTo(W / 2, y + dip, W + 20, y)
-    ctx.stroke()
+  for (const light of p.pools) {
+    const x = light.x * W
+    const y = light.y * H
+    const glow = ctx.createRadialGradient(x, y, 0, x, y, light.r)
+    glow.addColorStop(0, light.colour)
+    glow.addColorStop(1, light.clear)
+    ctx.fillStyle = glow
+    ctx.fillRect(0, 0, W, H)
   }
 }
 
@@ -118,8 +160,8 @@ export async function renderWrappedImage(card: WrappedFinale): Promise<Blob> {
   setFont(ctx, ROUNDED, 700, 32)
   const stack = ctx.font.includes('32px') ? ROUNDED : PLAIN
 
-  paintGround(ctx)
-  paintSea(ctx)
+  const p = PALETTES[roomNow()]
+  paintRoom(ctx, p)
 
   const inner = PANEL_W - PAD * 2
   const left = PANEL_X + PAD
@@ -135,7 +177,7 @@ export async function renderWrappedImage(card: WrappedFinale): Promise<Blob> {
     gap: 32,
     draw: (top) => {
       setFont(ctx, stack, 600, 52)
-      ctx.fillStyle = INK
+      ctx.fillStyle = p.ink
       ctx.textAlign = 'center'
       ctx.fillText(clip(ctx, 'Cruise Wrapped', inner), centre, top)
     },
@@ -146,7 +188,7 @@ export async function renderWrappedImage(card: WrappedFinale): Promise<Blob> {
     gap: 16,
     draw: (top) => {
       setFont(ctx, stack, 700, 128)
-      ctx.fillStyle = INK
+      ctx.fillStyle = p.ink
       ctx.textAlign = 'center'
       ctx.fillText(String(count), centre, top)
     },
@@ -157,7 +199,7 @@ export async function renderWrappedImage(card: WrappedFinale): Promise<Blob> {
     gap: 48,
     draw: (top) => {
       setFont(ctx, stack, 400, 30)
-      ctx.fillStyle = INK_2
+      ctx.fillStyle = p.ink2
       ctx.textAlign = 'center'
       ctx.fillText(`drinks tried, ${pct.toFixed(0)}% complete`, centre, top)
     },
@@ -175,18 +217,18 @@ export async function renderWrappedImage(card: WrappedFinale): Promise<Blob> {
       draw: (top) => {
         if (rowIndex > 0) {
           ctx.lineWidth = 2
-          ctx.strokeStyle = LINE
+          ctx.strokeStyle = p.line
           ctx.beginPath()
           ctx.moveTo(left, top - 16)
           ctx.lineTo(left + inner, top - 16)
           ctx.stroke()
         }
         setFont(ctx, stack, 400, 30)
-        ctx.fillStyle = INK_2
+        ctx.fillStyle = p.ink2
         ctx.textAlign = 'left'
         ctx.fillText(row.label, left, top)
         setFont(ctx, stack, 600, 30)
-        ctx.fillStyle = INK
+        ctx.fillStyle = p.ink
         ctx.textAlign = 'right'
         lines.forEach((line, i) => ctx.fillText(line, left + inner, top + i * 38))
       },
@@ -198,7 +240,7 @@ export async function renderWrappedImage(card: WrappedFinale): Promise<Blob> {
     gap: 0,
     draw: (top) => {
       setFont(ctx, stack, 400, 28)
-      ctx.fillStyle = INK_2
+      ctx.fillStyle = p.ink2
       ctx.textAlign = 'center'
       ctx.fillText(clip(ctx, `${SHIP} · ${voyageDateRange()}`, inner), centre, top)
     },
@@ -206,15 +248,26 @@ export async function renderWrappedImage(card: WrappedFinale): Promise<Blob> {
 
   const contentH = blocks.reduce((sum, block, i) => sum + block.h + (i < blocks.length - 1 ? block.gap : 0), 0)
   const panelH = contentH + PAD * 2
-  const panelY = Math.max(120, (SEA_TOP - panelH) / 2)
+  // centred, a little above the middle, so the address at the foot keeps a clear band of room
+  const panelY = Math.max(120, (H - panelH) / 2 - 60)
 
-  // A flat panel with a hairline, and the inner rule a certificate is allowed. No shadow, no glow.
+  // The certificate as the glass it is on screen: the film and the glass's white hairline, then the
+  // specular lit from the top left and gone by the middle, as base.css lights .glass. Last, the
+  // inner rule a certificate is allowed. No shadow, no glow.
   roundRect(ctx, PANEL_X, panelY, PANEL_W, panelH, 40)
-  ctx.fillStyle = 'rgba(255, 255, 255, .55)'
+  ctx.fillStyle = p.film
   ctx.fill()
   ctx.lineWidth = 2
-  ctx.strokeStyle = LINE
+  ctx.strokeStyle = p.hair
   ctx.stroke()
+  const spec = ctx.createLinearGradient(PANEL_X, panelY, PANEL_X + PANEL_W / 2, panelY + panelH / 2)
+  spec.addColorStop(0, 'rgba(255, 255, 255, .9)')
+  spec.addColorStop(1, 'rgba(255, 255, 255, 0)')
+  ctx.lineWidth = 3
+  ctx.strokeStyle = spec
+  ctx.stroke()
+  ctx.lineWidth = 2
+  ctx.strokeStyle = p.line
   roundRect(ctx, PANEL_X + 24, panelY + 24, PANEL_W - 48, panelH - 48, 24)
   ctx.stroke()
 
@@ -225,7 +278,7 @@ export async function renderWrappedImage(card: WrappedFinale): Promise<Blob> {
   })
 
   setFont(ctx, stack, 600, 26)
-  ctx.fillStyle = 'rgba(255, 255, 255, .82)'
+  ctx.fillStyle = p.ink2
   ctx.textAlign = 'center'
   ctx.fillText('cruise.charlesbee.org', centre, H - 104)
 

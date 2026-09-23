@@ -49,10 +49,12 @@ export function DiscoverTogether({ onOpen }: { onOpen: (id: string) => void }) {
           every row that names a drink */}
       {recs.map((p) => (
         <button key={p.drink.id} type="button" className="row pressable" onClick={() => onOpen(p.drink.id)}>
-          <GlassIcon family={glassFamily(p.drink)} className="row-lead" />
+          {/* the glass at DrinkCard's size, so a drink row reads the same here as on Drinks */}
+          <GlassIcon family={glassFamily(p.drink)} size={30} className="row-lead" />
           <span className="row-copy">
-            {/* the drink is the object of the row, so it reads at the heading size Drinks uses */}
-            <span className="t-h2">{p.drink.name}</span>
+            {/* the drink is the object of the row, so it reads as Drinks' row names do: body at
+                weight 600. The heading size is 21 now, which in a row read as a section title. */}
+            <span className="t-strong">{p.drink.name}</span>
             <span className="t-meta">{byPhrase(p)}</span>
           </span>
         </button>

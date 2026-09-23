@@ -22,15 +22,13 @@ const tokenPx = (prefix) => {
   const src = strip(readFileSync(TOKENS, 'utf8'))
   return [...src.matchAll(new RegExp(`--${prefix}[\\w-]*\\s*:\\s*(\\d+(?:\\.\\d+)?px)\\s*;`, 'g'))].map((m) => m[1])
 }
-// 13px and 22px: the cream system's meta and title, still in feature CSS the screen builders are
-// moving into the rooms; 16px: the iOS zoom guard on fields that predate the 17px body
-const FONT_OK = new Set([...tokenPx('f-'), '12px', '13px', '16px', '22px'])
+// 16px: the iOS zoom guard on fields that predate the 17px body
+const FONT_OK = new Set([...tokenPx('f-'), '12px', '16px'])
 const SPACE_OK = new Set([...tokenPx('s\\d'), '0', '0px', '1px', '2px', '3px', 'auto'])
-// 4px: tiny bars and dots; 12px and 20px: the cream system's control and surface radii, as above
-const RADIUS_OK = new Set([...tokenPx('r-'), '50%', 'inherit', '0', '0px', '4px', '12px', '20px'])
-// a colour is a token; white and the inks are the literal exceptions: night's warm white, day's ink,
-// and the cream system's ink, still in unconverted feature CSS
-const COLOR_OK = /^(var\(--[\w-]+\)|transparent|currentColor|inherit|none|#fff|#ffffff|rgba\(255,\s*255,\s*255,\s*[\d.]+\)|rgba\(246,\s*241,\s*233,\s*[\d.]+\)|rgba\(14,\s*26,\s*46,\s*[\d.]+\)|rgba\(28,\s*60,\s*86,\s*[\d.]+\))$/i
+// 4px: tiny bars and dots
+const RADIUS_OK = new Set([...tokenPx('r-'), '50%', 'inherit', '0', '0px', '4px'])
+// a colour is a token; white and the inks are the literal exceptions: night's warm white and day's ink
+const COLOR_OK = /^(var\(--[\w-]+\)|transparent|currentColor|inherit|none|#fff|#ffffff|rgba\(255,\s*255,\s*255,\s*[\d.]+\)|rgba\(246,\s*241,\s*233,\s*[\d.]+\)|rgba\(14,\s*26,\s*46,\s*[\d.]+\))$/i
 // a shadow is a token too: a value made only of var() references passes
 const SHADOW_OK = /^(none|var\(--[\w-]+\)(\s*,\s*var\(--[\w-]+\))*)$/
 
@@ -77,8 +75,8 @@ function scan(file) {
     for (const m of l.matchAll(/(#[0-9a-f]{3,8}\b|rgba?\([^)]*\)|hsla?\([^)]*\)|color\(display-p3[^)]*\))/gi)) {
       if (!COLOR_OK.test(m[1])) flag(i, 'colour not a token', m[1])
     }
-    if (/linear-gradient|radial-gradient/.test(l)) flag(i, 'gradient (the room, the glass, the sea and the Wrapped backdrop only)', l)
-    if (/animation\s*:\s*[^;]*infinite/.test(l) && !/spin/.test(l)) flag(i, 'endless animation (the room drift, ship bob, Wrapped drift and spinners only)', l)
+    if (/linear-gradient|radial-gradient/.test(l)) flag(i, 'gradient (the room, the glass, the sea and the medals only)', l)
+    if (/animation\s*:\s*[^;]*infinite/.test(l) && !/spin/.test(l)) flag(i, 'endless animation (the room drift, ship bob and spinners only)', l)
   })
   return out
 }

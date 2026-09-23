@@ -1,11 +1,9 @@
-/* Crew. Everything sits flat on the ground as headings, rows and hairlines; the name card is the
+/* Crew. Everything sits flat on the room as headings, rows and hairlines; the name card is the
    one panel, because it is a form with its own boundary. See docs/DESIGN.md. */
 /* The classes are crew-*, never social-*: Brave's content blocking hides elements whose class names
    look like social-media widgets, and on 23 September 2026 it hid .social-head, the heading and the
    profile control, which is the only door onto Your details. Keep new names clear of social, share,
    ad, banner and promo for the same reason. */
-.crew-page { padding-top: var(--s3); }
-
 /* the name card: shown until there is a name, and on /join */
 .crew-name { padding: var(--s4); margin-bottom: var(--s5); }
 .crew-name-lead { margin-top: var(--s1); }
@@ -28,7 +26,8 @@
 .crew-me-copy { display: grid; min-width: 0; }
 .crew-me-copy > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* 2. the one filled control. The seam below it belongs to .section's 32px; it adds none of its own. */
+/* 2. Add to your crew, C's wide button (GlassButton lg), unfilled because the dock's Log is the
+   screen's one fill. The seam below it belongs to .section's 32px; it adds none of its own. */
 
 /* 3. the crew: rows, not a stack of boxes (the row itself is in friends.css) */
 .crew-empty { margin-top: var(--s1); }

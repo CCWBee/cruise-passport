@@ -3,7 +3,7 @@ import { Sheet } from '../../ui/Sheet'
 import { DRINK_BY_ID, ingredientsOf, money, pkgOf, VENUES, START, END, today, type Drink } from '../../data/model'
 import { useStore, useAllDrinks } from '../../state/store'
 import { commentsFor, groupRating, recommendationsFor, useSources } from '../../state/social'
-import { IconStar } from '../../ui/Icon'
+import { IconBookmark, IconCheck, IconHeart, IconRecommend, IconStar } from '../../ui/Icon'
 import { TextField, TextArea } from '../../ui/Field'
 import { FriendDot } from '../../ui/FriendDot'
 import './drinksheet.css'
@@ -14,7 +14,7 @@ function listNames(names: string[]) {
   return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
 }
 
-// Sweetness and strength: five ink dots, no meter, no gradient.
+// Sweetness and strength: a label and five ink dots on one line (C's), no meter, no gradient.
 function Meter({ label, n }: { label: string; n: number }) {
   return (
     <div className="ds-meter">
@@ -64,22 +64,40 @@ export function DrinkSheet({ id, onClose }: { id: string; onClose: () => void })
   const custom = id[0] === 'c'
   const facts = factsLine(d)
 
-  const chip = (k: 'tried' | 'fav' | 'wish' | 'rec', label: string, on: boolean, mint?: boolean) => (
-    <button
-      key={k}
-      className={'ds-chip' + (on ? ' on' : '') + (mint ? ' ds-chip-mint' : '')}
-      type="button"
-      aria-pressed={on}
-      onClick={() => (k === 'tried' ? toggleTried(id) : k === 'rec' ? toggleRec(id) : toggle(id, k))}
-    >
-      {label}
-    </button>
-  )
+  // The four marks, each its glyph over its word. Only Tried fills, in mint, when on; Favourite,
+  // Wishlist and Recommend (a speech bubble, what it says to the crew) turn their glyph solid, as
+  // they read on every screen.
+  const chip = (k: 'tried' | 'fav' | 'wish' | 'rec', label: string, on: boolean) => {
+    const Glyph = k === 'tried' ? IconCheck : k === 'fav' ? IconHeart : k === 'wish' ? IconBookmark : IconRecommend
+    return (
+      <button
+        key={k}
+        className={'ds-chip pressable' + (on ? ' on' : '') + (k === 'tried' ? ' ds-chip-mint' : '')}
+        type="button"
+        aria-pressed={on}
+        onClick={() => (k === 'tried' ? toggleTried(id) : k === 'rec' ? toggleRec(id) : toggle(id, k))}
+      >
+        {/* Tried keeps its outline check on the mint: the fill is the state, and a filled disc on a
+            mint plate would be a second fill */}
+        <Glyph size={22} filled={on && k !== 'tried'} />
+        <span className="ds-chip-l">{label}</span>
+      </button>
+    )
+  }
 
   return (
-    <Sheet onClose={onClose} labelledBy={titleId}>
-      <h2 className="t-title sheet-title" id={titleId}>{d.name}</h2>
+    // Medium: a drink is a sheet to look at, and it opens over the list it came from. Everything the
+    // guest came to do (tick it, keep it, save it) sits under the title so it shows at that height.
+    <Sheet onClose={onClose} labelledBy={titleId} height="medium">
+      <h2 className="t-h2 sheet-title" id={titleId}>{d.name}</h2>
       <p className="sheet-meta">{v ? `${v.name} · Deck ${v.deck} · ` : ''}{d.category}</p>
+
+      <div className="ds-chips">
+        {chip('tried', 'Tried', !!e.tried)}
+        {chip('fav', 'Favourite', !!e.fav)}
+        {chip('wish', 'Wishlist', !!e.wish)}
+        {!custom && chip('rec', 'Recommend', !!e.rec)}
+      </div>
 
       {ingredientsOf(d) && <p className="ds-ing t-body">{ingredientsOf(d)}</p>}
       {d.desc && !custom && <p className="ds-desc t-meta">{d.desc}</p>}
@@ -112,7 +130,7 @@ export function DrinkSheet({ id, onClose }: { id: string; onClose: () => void })
             aria-label={`${n} star${n > 1 ? 's' : ''}`}
             onClick={() => setRating(id, n)}
           >
-            <IconStar size={26} filled={n <= (e.rating || 0)} />
+            <IconStar size={30} filled={n <= (e.rating || 0)} />
           </button>
         ))}
       </div>
@@ -125,13 +143,8 @@ export function DrinkSheet({ id, onClose }: { id: string; onClose: () => void })
         </p>
       )}
 
-      <div className="ds-chips">
-        {chip('tried', 'Tried', !!e.tried, true)}
-        {chip('fav', 'Favourite', !!e.fav)}
-        {chip('wish', 'Wishlist', !!e.wish)}
-        {!custom && chip('rec', 'Recommend', !!e.rec)}
-      </div>
-
+      {/* the date comes after the rating, not under the marks, so ticking Tried at medium height
+          adds it below the fold rather than pushing the ingredients down under the thumb */}
       {e.tried && (
         <TextField
           id={`${titleId}-date`}

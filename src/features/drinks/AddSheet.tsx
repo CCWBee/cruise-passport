@@ -57,14 +57,16 @@ export function AddSheet({ onClose, venue: preset }: { onClose: () => void; venu
   // same way out as the Drinks empty state rather than a form whose venue Select has nothing in it.
   // The Select is not disabled instead: src/ui/Select.tsx has no disabled prop, and minting one
   // would mean a registry entry in DESIGN.md and a sweep of every other Select for this one state.
+  // The link is the sheet's one action, so it is the wide primary at its foot: the dock steps down
+  // under a sheet, and with it Log's coral. No view transition, which would snapshot the dock.
   if (VENUE_KEYS.length === 0) {
     return (
       <Sheet onClose={onClose} labelledBy={titleId}>
-        <h2 className="t-title sheet-title" id={titleId}>Add a drink</h2>
+        <h2 className="t-h2 sheet-title" id={titleId}>Add a drink</h2>
         <p className="sheet-meta">Only you will see it.</p>
         <p className="t-body add-noven">Add a venue first, then the drinks you order there.</p>
         <div className="dempty-acts">
-          <Link to="/ship" className="gbtn gbtn-primary gbtn-md" onClick={onClose} viewTransition>Add a venue</Link>
+          <Link to="/ship" className="gbtn gbtn-primary gbtn-lg gbtn-block" onClick={onClose}>Add a venue</Link>
         </div>
       </Sheet>
     )
@@ -72,7 +74,7 @@ export function AddSheet({ onClose, venue: preset }: { onClose: () => void; venu
 
   return (
     <Sheet onClose={onClose} labelledBy={titleId}>
-      <h2 className="t-title sheet-title" id={titleId}>Add a drink</h2>
+      <h2 className="t-h2 sheet-title" id={titleId}>Add a drink</h2>
       <p className="sheet-meta">Only you will see it.</p>
       <form onSubmit={submit} autoComplete="off">
         <TextField id="add-name" label="Name" name="name" required autoFocus value={name} onChange={(event) => setName(event.target.value)} />
@@ -117,7 +119,7 @@ export function AddSheet({ onClose, venue: preset }: { onClose: () => void; venu
         {/* disabled rather than an early return on submit: a button that does nothing when tapped
             is the state DESIGN.md's "Every control ships default, pressed, focus-visible, disabled"
             exists to prevent, and the venue form is written the same way */}
-        <GlassButton variant="primary" block type="submit" className="add-submit" disabled={!cleanName}>Add it</GlassButton>
+        <GlassButton variant="primary" size="lg" block type="submit" className="add-submit" disabled={!cleanName}>Add it</GlassButton>
       </form>
     </Sheet>
   )

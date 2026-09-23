@@ -4,12 +4,13 @@ import { useAllDrinks, useStore } from '../../state/store'
 import { computeStats } from '../../state/stats'
 import { glassFamily } from '../../data/glass'
 import { GlassIcon, IconStar } from '../../ui/Icon'
+import { GlassButton } from '../../ui/GlassButton'
 import { DrinkSheet } from '../drinks/DrinkSheet'
 import { openLog } from '../search/log'
 import './log.css'
 
 // The log renders inside the You page, so it adds no wrapper of its own: one plain section per day,
-// a heading with its date and count, then rows on the ground separated by hairlines. A row is the
+// a heading with its date and count, then rows on the room separated by hairlines. A row is the
 // drink and its rating on one line; the bar is the drink sheet's meta line, one tap away. Days after
 // the last logged one collapse to a single line so the tail of the voyage does not scroll as filler.
 export function Log() {
@@ -29,7 +30,8 @@ export function Log() {
       {lastLogged < 0 ? (
         <div className="empty-state">
           <p className="t-body">Nothing logged yet.</p>
-          <button type="button" className="btn btn-coral" onClick={openLog}>Log a drink</button>
+          {/* secondary: the tab bar's Log is this screen's one coral fill, and it opens the same search */}
+          <GlassButton variant="secondary" onClick={openLog}>Log a drink</GlassButton>
         </div>
       ) : null}
 

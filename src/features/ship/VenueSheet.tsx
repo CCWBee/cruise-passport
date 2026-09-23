@@ -6,6 +6,7 @@ import { useAllDrinks, useStore } from '../../state/store'
 import { DrinkCard } from '../drinks/DrinkCard'
 import { AddSheet } from '../drinks/AddSheet'
 import { DrinkSheet } from '../drinks/DrinkSheet'
+import { GlassButton } from '../../ui/GlassButton'
 import { Sheet } from '../../ui/Sheet'
 import { Switch } from '../../ui/Switch'
 import { VenueForm } from './VenueForm'
@@ -42,9 +43,12 @@ export function VenueSheet({ venueKey, onClose }: { venueKey: string; onClose: (
     return <AddSheet venue={venueKey} onClose={() => setAdding(false)} />
   }
 
+  // A sheet to look at, so it opens at medium over the screen it came from (DESIGN.md, Sheets): the
+  // name, the facts, the visited switch and the count are in the first half of the screen, and a
+  // drag or a tap on the grabber takes it to large for the list.
   return (
-    <Sheet onClose={onClose} labelledBy={titleId}>
-      <h2 className="t-title sheet-title" id={titleId}>{venue.name}</h2>
+    <Sheet onClose={onClose} labelledBy={titleId} height="medium">
+      <h2 className="t-h2 sheet-title" id={titleId}>{venue.name}</h2>
       {/* no trailing comma with nothing after it: a venue the guest added need not keep hours */}
       <p className="sheet-meta tnum">Deck {venue.deck} · {venue.type}{venue.hours ? `, ${venue.hours}` : ''}</p>
       {venue.blurb && <p className="t-body venue-blurb">{venue.blurb}</p>}
@@ -95,10 +99,11 @@ export function VenueSheet({ venueKey, onClose }: { venueKey: string; onClose: (
         </>
       ) : (
         // an empty list ships the one action that fills it (DESIGN.md States), in the shape every
-        // empty list takes
+        // empty list takes. Filled, because it is the sheet's one fill: the dock and its Log step
+        // down under a sheet, so the coral is this sheet's to spend.
         <div className="empty-state venue-progress">
           <p className="t-body">No drinks here yet.</p>
-          <button type="button" className="btn btn-coral pressable" onClick={() => setAdding(true)}>Add a drink</button>
+          <GlassButton variant="primary" onClick={() => setAdding(true)}>Add a drink</GlassButton>
         </div>
       )}
     </Sheet>

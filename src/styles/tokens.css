@@ -2,17 +2,14 @@
    The app sits in one of three rooms whose light follows the clock (DESIGN.md, Material): day,
    evening and night, set as data-room on <html> by the inline script in index.html and then by
    src/app/room.ts. Everything that differs by room is defined three times below; a feature file
-   never branches on the room, it reads these. Old names are kept as aliases of the room's values so
-   unconverted CSS lands in the room rather than on cream; DESIGN.md's registry lists them as
-   retiring. */
+   never branches on the room, it reads these. The cream system's names, kept as aliases while the
+   screens moved into the rooms, are gone. */
 
 /* ── what does not change with the room ─────────────────────────────────────────────────────── */
 :root {
   /* a person's identity dot. Not for decks, charts or badges. */
   --friend-aqua: #22C0D6; --friend-melon: #FF5B78; --friend-mango: #FF9F45;
   --friend-lime: #59CF6B; --friend-grape: #9B8CF2; --friend-pine: #F6C544;
-  --fruit-aqua: var(--friend-aqua); --fruit-melon: var(--friend-melon); --fruit-mango: var(--friend-mango);
-  --fruit-lime: var(--friend-lime); --fruit-grape: var(--friend-grape); --fruit-pine: var(--friend-pine);
 
   /* sea (hero): mirror of the GLSL constants. The hero is the poster exception. */
   --sea-sky-top: #609CCF;
@@ -30,12 +27,16 @@
      It fills; it is never a text colour at night (it measures 3:1 on the room there), which is
      what --coral is for */
   --coral-ink: #C72F50;
-  --coral-deep: var(--coral-ink);
   --on-accent: #fff;       /* white type on a filled accent, and the white plate under a QR code */
 
   /* the one tinted glass, the Log button's coral (C's tint layer), and its solid fallback */
   --coral-glass: radial-gradient(120% 120% at 30% 18%, rgba(255, 128, 148, .78), rgba(226, 60, 97, .64) 58%, rgba(170, 28, 66, .62));
   --coral-solid: #C63556;
+
+  /* the velvet the medals lie on (base.css, .case): prototype C's plum cloth lit from the top left
+     and sunk by an inner shadow. Material, like the metals on it, so it is the same in every room */
+  --velvet: radial-gradient(130% 100% at 18% 0%, #2E2044, #1B1330 55%, #120C1E);
+  --sh-tray: inset 0 4px 16px rgba(0, 0, 0, .7), inset 0 0 0 1px rgba(255, 255, 255, .05), 0 1px 0 rgba(255, 255, 255, .05);
 
   /* radii: control, surface and tag, and the large shapes of the chrome */
   --r-control: 16px;   /* a field, a segmented track, a row highlight */
@@ -45,11 +46,9 @@
   --r-window: 28px;    /* the sea window on Home */
   --r-sheet: 30px;     /* the sheet */
   --r-bar: 32px;       /* the tab bar capsule: half its height */
-  --r-xs: var(--r-control); --r-sm: var(--r-control); --r-md: var(--r-control);
-  --r-lg: var(--r-surface); --r-xl: var(--r-surface); --r-pill: var(--r-tag);
 
   /* spacing: 4 8 12 16 24 32 */
-  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 32px;
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px;
   --inset: 16px;
   --ctl: 44px; --ctl-sm: 36px; --row: 48px;
 
@@ -69,9 +68,6 @@
      and reversing at each end, which --e-out would throw off at full speed after every turn.
      Kowalski's strong ease-in-out. */
   --e-shake: cubic-bezier(.77, 0, .175, 1);
-  --e-io: var(--e-out);
-  --spring: var(--e-spring);
-  --spring-soft: var(--e-spring);
   --t-press: 110ms;    /* a press swells to 1.04 */
   --t-settle: 260ms;   /* and settles back on --e-spring */
   --t-panel: 200ms;
@@ -79,13 +75,11 @@
   --t-sheet: 280ms;
   --t-room: 600ms;     /* the room cross-fades at a boundary of the day */
   --t-drawer: 440ms;   /* the sheet between its heights, and the dock folding for search (C's drawer) */
-  --t-spring: var(--t-settle);
   --t-fill: 600ms;
 
   /* chrome sizes: the floating tab bar is 64 tall and sits 10 above the safe area */
   --bar-h: 64px;
   --bar-b: calc(var(--safe-b) + 10px);
-  --nav-h: calc(var(--bar-h) + 10px);
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
   --wrap: 720px;
@@ -99,7 +93,6 @@
   --f-body: 17px;      /* running text, a row's first line, every field (over iOS's 16px zoom line) */
   --f-meta: 15px;      /* secondary lines, labels, counts */
   --f-micro: 12px;     /* the floor: tab labels, and nothing else under meta */
-  --f-hero: var(--f-display);
 
   /* the glass engine's optics (base.css, .glass). Prototype C's recipe: a clear body and a
      heavier, brighter edge lens. A surface retunes these by setting them on itself, never by
@@ -110,15 +103,9 @@
   --lens-blur: 14px;
   --lens-sat: 210%;
   --lens-bright: 1.32;
-  --glass-blur-sm: var(--glass-blur);
 
   /* film grain, so a gradient never bands on a phone panel */
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
-
-  /* retiring: the old content shadows, which content never casts. The sheet's shadow and the
-     glass's lift are the room's (below) */
-  --sh-1: none;
-  --sh-2: none;
 }
 
 /* ── the rooms ──────────────────────────────────────────────────────────────────────────────────
@@ -370,36 +357,13 @@
   --sh-sheet: 0 -8px 40px rgba(16, 32, 48, .18), 0 -1px 6px rgba(16, 32, 48, .1);
 }
 
-/* ── aliases: the retiring names, resolved to the room ──────────────────────────────────────────
-   Declared on the same selector list as the rooms so each resolves against the element's own room,
-   the outgoing layer's included. DESIGN.md's registry marks every one of these retiring; a screen
-   builder moves its uses to the room tokens above and the integrator deletes the line. */
+/* ── surfaces built from the room ───────────────────────────────────────────────────────────────
+   On the same selector list as the rooms, so each resolves against the element's own room. */
 :root, [data-room] {
-  --cream: var(--ground);
-  --wash-dawn: var(--room-0);
-  --wash-sky: var(--room-mid);
-  --wash-sand: var(--room-1);
-  --wash-foam: var(--room-mid);
-  --ink-line: var(--line);
-  --lilac: var(--focus);
-  --aqua: var(--sea-ink);
-  /* surfaces: a panel is a quiet film on the room, the solid one a plate */
+  /* a panel is a quiet film on the room */
   --panel: var(--plate-quiet);
-  --panel-solid: var(--plate-solid);
-  /* the old glass films, onto the engine's */
-  --glass-live-film: var(--glass-film);
-  --glass-film-sheet: var(--glass-film);
-  --glass-film-chip: var(--glass-film);
-  --glass-film-light: var(--glass-film);
-  --glass-highlight-film: var(--glass-sheen);
-  --glass-highlight: none;
-  --glass-border: var(--line);
-  --glass-fallback: var(--glass-solid);
-  --glass-blur-strong: var(--lens-blur);
-  --coral-film: rgba(199, 47, 80, .86);
-  --coral-film-blur: rgba(199, 47, 80, .86);
+  /* the Confirm disc's mint glass */
   --mint-film: color-mix(in srgb, var(--mint-fill) 88%, transparent);
-  --mint-film-blur: color-mix(in srgb, var(--mint-fill) 88%, transparent);
 }
 
 /* ── chrome built from the room ─────────────────────────────────────────────────────────────────

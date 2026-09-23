@@ -1,11 +1,11 @@
-// The living sea, Home's hero. A raw WebGL1 sum-of-sines sea whose tide-line IS completion.
-// Day one: low sea, wide sky. Last drink: the tide meets the sun. Area-honest by construction.
-// It is alive in two honest ways and no others: the sky follows the real clock (six palettes keyed
-// off dayPart(), blended across the hour boundary so a live session never steps), and the two
-// chips floating on it are refractive glass (the shader lenses the water inside their rectangles;
-// the text stays HTML). One live effect, hard-gated for battery. The CSS-gradient sea sits behind
-// so it is never black; reduced-motion / no-GL show a correct still sea with the same sky.
-import { useEffect, useRef, useState, type CSSProperties, type RefObject } from 'react'
+// The living sea, Home's window onto the water. A raw WebGL1 sum-of-sines sea whose tide-line IS
+// completion. Day one: low sea, wide sky. Last drink: the tide meets the sun. Area-honest by construction.
+// It is alive in one honest way: the sky follows the real clock (six palettes keyed off dayPart(),
+// blended across the hour boundary so a live session never steps). The sky chip Home floats on it is
+// the glass engine, not the shader (prototype C): it bends the canvas the way the tab bar bends the
+// room. One live effect, hard-gated for battery. The CSS-gradient sea sits behind so it is never
+// black; reduced-motion / no-GL show a correct still sea with the same sky.
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { dayPart, type DayPart } from '../../state/stats'
 import './sea.css'
 
@@ -21,11 +21,6 @@ uniform float uReduced; // 1.0 = hold a still frame
 uniform vec3  uSkyTop, uSkyHor, uSeaHi, uSeaLo, uSunC, uBandC;
 uniform vec4  uSunP;    // x, y, radius, intensity  (a small hard disc at night: the moon)
 uniform vec4  uSunQ;    // core (edge hardness), glow, horizon band, glint
-
-// the two DOM chips, in device pixels with y up: the water inside them is lensed and filmed
-uniform vec4  uChipA, uChipB;   // x, y, w, h
-uniform vec4  uChipG;           // radius, lens width, displacement, dpr
-uniform float uFilm;            // the white film the glass lays over the water it bends
 
 float hash(vec2 p){ return fract(sin(dot(p,vec2(41.3,289.1)))*43758.5453); }
 float noise(vec2 p){
@@ -71,55 +66,13 @@ vec3 scene(vec2 uv, float horizon, float t, float asp){
   return col;
 }
 
-float sdRR(vec2 p, vec2 b, float r){
-  vec2 q = abs(p) - b + r;
-  return min(max(q.x, q.y), 0.0) + length(max(q, vec2(0.0))) - r;
-}
-
-// One chip: the water inside its rounded rectangle, bent at the edge, filmed white, lit from
-// above. No text is drawn here: the readout and the countdown are HTML on top.
-vec3 chip(vec3 col, vec2 px, vec4 c, float horizon, float t, float asp){
-  if(c.z < 2.0) return col;                       // no rect yet
-  vec2  hb  = c.zw * 0.5;
-  vec2  p   = px - (c.xy + hb);
-  float r   = min(uChipG.x, min(hb.x, hb.y));
-  float d   = sdRR(p, hb, r);                     // <0 inside
-  float dpr = uChipG.w;
-
-  // a 1px rim of darker water just outside: the edge the eye reads as thickness
-  col = mix(col, col * 0.80, smoothstep(dpr * 1.6, 0.0, d) * step(0.0, d));
-
-  float inside = 1.0 - smoothstep(-dpr * 0.5, dpr * 0.5, d);
-  if(inside < 0.002) return col;
-
-  // the lens: displacement along the rect's own normal, strongest at the edge, nothing in the
-  // middle, a few pixels of magnitude
-  float e = clamp(-d / uChipG.y, 0.0, 1.0);
-  float k = (1.0 - e) * (1.0 - e);
-  vec2  g = vec2(sdRR(p + vec2(1.0, 0.0), hb, r) - sdRR(p - vec2(1.0, 0.0), hb, r),
-                 sdRR(p + vec2(0.0, 1.0), hb, r) - sdRR(p - vec2(0.0, 1.0), hb, r));
-  float gm = length(g);
-  vec2  n  = gm > 0.0001 ? g / gm : vec2(0.0, 1.0);
-
-  vec3 base = scene((px + n * k * uChipG.z) / uRes, horizon, t, asp);
-  base = mix(base, vec3(1.0), uFilm);
-  // one light, from above: a specular line inside the top edge, a faint one along the foot
-  float line = smoothstep(dpr * 1.6, 0.0, abs(d + dpr));
-  base += vec3(1.0) * line * (max(n.y, 0.0) * 0.55 + max(-n.y, 0.0) * 0.16);
-
-  return mix(col, base, inside);
-}
-
 void main(){
   vec2  px  = gl_FragCoord.xy;
   float asp = uRes.x / uRes.y;
   float t   = uReduced > 0.5 ? 8.0 : uTime;
   float horizon = mix(0.14, 0.80, uLevel);
 
-  vec3 col = scene(px / uRes, horizon, t, asp);
-  col = chip(col, px, uChipA, horizon, t, asp);
-  col = chip(col, px, uChipB, horizon, t, asp);
-  gl_FragColor = vec4(col, 1.0);
+  gl_FragColor = vec4(scene(px / uRes, horizon, t, asp), 1.0);
 }`
 
 const VERT = `attribute vec2 p; void main(){ gl_Position = vec4(p,0.0,1.0); }`
@@ -145,14 +98,12 @@ function compile(gl: WebGLRenderingContext, type: number, src: string) {
 // ── the sky, by the hour ────────────────────────────────────────────────────────────────────
 // One table, read twice: as GLSL uniforms and as the --sea-* custom properties the CSS floor
 // paints, so a phone without WebGL gets the same sky rather than a permanent mid-morning.
-// Every palette is chosen to sit under --ink text on a white-filmed chip; `film` is how much of
-// that film the shader lays down and rises as the water darkens (contrast is bought with film).
 
 type RGB = [number, number, number]
 interface Sky {
   top: RGB; hor: RGB; hi: RGB; lo: RGB; sun: RGB; band: RGB; hull: RGB
   sunY: number; sunR: number; sunI: number
-  core: number; glow: number; bandI: number; glint: number; film: number
+  core: number; glow: number; bandI: number; glint: number
 }
 const rgb = (h: string): RGB => [
   parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16),
@@ -164,39 +115,38 @@ const SKY: Record<DayPart, Sky> = {
   dawn: {
     top: rgb('#B49CC0'), hor: rgb('#F6C9A2'), hi: rgb('#3E8FA0'), lo: rgb('#123A52'),
     sun: rgb('#FFD9A8'), band: rgb('#F3B98C'), hull: rgb('#123A52'),
-    sunY: 0.83, sunR: 0.14, sunI: 0.50, core: 0, glow: 0.09, bandI: 0.26, glint: 0.35, film: 0.30,
+    sunY: 0.83, sunR: 0.14, sunI: 0.50, core: 0, glow: 0.09, bandI: 0.26, glint: 0.35,
   },
   // the sea the hero shipped with: the dawn-blue morning
   morning: {
     top: rgb('#609CCF'), hor: rgb('#BDD9DA'), hi: rgb('#28AAA3'), lo: rgb('#093755'),
     sun: rgb('#F6CE79'), band: rgb('#D8E6DE'), hull: rgb('#093755'),
-    sunY: 0.82, sunR: 0.17, sunI: 0.58, core: 0, glow: 0.07, bandI: 0.00, glint: 0.40, film: 0.26,
+    sunY: 0.82, sunR: 0.17, sunI: 0.58, core: 0, glow: 0.07, bandI: 0.00, glint: 0.40,
   },
   // higher, bluer, the light flat and white
   afternoon: {
     top: rgb('#3D7CC4'), hor: rgb('#A8CDE6'), hi: rgb('#1E9FB4'), lo: rgb('#0A3A62'),
     sun: rgb('#FFF2CC'), band: rgb('#C7DDEC'), hull: rgb('#0A3A62'),
-    sunY: 0.81, sunR: 0.13, sunI: 0.46, core: 0, glow: 0.05, bandI: 0.00, glint: 0.34, film: 0.24,
+    sunY: 0.81, sunR: 0.13, sunI: 0.46, core: 0, glow: 0.05, bandI: 0.00, glint: 0.34,
   },
   // amber along the horizon, the water warm under it
   golden: {
     top: rgb('#7F97C6'), hor: rgb('#F3C078'), hi: rgb('#2E9A96'), lo: rgb('#0C3550'),
     sun: rgb('#FFD48C'), band: rgb('#F6B45E'), hull: rgb('#0C3550'),
-    sunY: 0.83, sunR: 0.17, sunI: 0.62, core: 0, glow: 0.11, bandI: 0.34, glint: 0.46, film: 0.30,
+    sunY: 0.83, sunR: 0.17, sunI: 0.62, core: 0, glow: 0.11, bandI: 0.34, glint: 0.46,
   },
   // violet-grey overhead, one orange band left on the water's edge
   dusk: {
     top: rgb('#565578'), hor: rgb('#9A7E96'), hi: rgb('#1D6E80'), lo: rgb('#0A2A42'),
     sun: rgb('#F2A05E'), band: rgb('#E8834B'), hull: rgb('#3B5B78'),
-    sunY: 0.83, sunR: 0.15, sunI: 0.22, core: 0, glow: 0.07, bandI: 0.44, glint: 0.22, film: 0.42,
+    sunY: 0.83, sunR: 0.15, sunI: 0.22, core: 0, glow: 0.07, bandI: 0.44, glint: 0.22,
   },
   // deep navy, a paler horizon, a small hard moon where the sun was, the sea darker
   night: {
     top: rgb('#0E1E38'), hor: rgb('#40587A'), hi: rgb('#10465A'), lo: rgb('#041D2E'),
     sun: rgb('#E9EFF7'), band: rgb('#4A6183'), hull: rgb('#3B5B78'),
-    // the moon sits at the height the five suns do, so a full passport meets it the same way; the
-    // countdown chip crosses its glow at night exactly as it crosses the sun by day
-    sunY: 0.83, sunR: 0.05, sunI: 0.95, core: 0.66, glow: 0.07, bandI: 0.20, glint: 0.16, film: 0.55,
+    // the moon sits at the height the five suns do, so a full passport meets it the same way
+    sunY: 0.83, sunR: 0.05, sunI: 0.95, core: 0.66, glow: 0.07, bandI: 0.20, glint: 0.16,
   },
 }
 
@@ -211,7 +161,7 @@ const mixSky = (a: Sky, b: Sky, t: number): Sky => ({
   hull: mixC(a.hull, b.hull, t),
   sunY: mixN(a.sunY, b.sunY, t), sunR: mixN(a.sunR, b.sunR, t), sunI: mixN(a.sunI, b.sunI, t),
   core: mixN(a.core, b.core, t), glow: mixN(a.glow, b.glow, t), bandI: mixN(a.bandI, b.bandI, t),
-  glint: mixN(a.glint, b.glint, t), film: mixN(a.film, b.film, t),
+  glint: mixN(a.glint, b.glint, t),
 })
 
 /** The sky at an hour, fractional hours included. */
@@ -248,25 +198,22 @@ function effectiveHour(prop: number | undefined, pin: number | null): number {
   return d.getHours() + d.getMinutes() / 60
 }
 
-/** The two chips floating on the sea. Home passes their refs; until it does they are found beside
- *  the hero, because SeaHero has to know their rectangles either way. */
-function chipEls(wrap: HTMLElement, refs?: RefObject<HTMLElement | null>[]): HTMLElement[] {
-  const given = (refs || []).map((r) => r.current).filter(Boolean) as HTMLElement[]
-  if (given.length) return given
-  return Array.from((wrap.parentElement || wrap).querySelectorAll<HTMLElement>('.sea-readout, .sea-count'))
-}
+/** The skies bright enough to want ink on the chip rather than light type. Dawn and golden hour are
+ *  light skies inside the dark rooms, so the chip follows the sky, not the room (C's is-lightsky).
+ *  A dark sky only ever falls in the evening or night room, where --ink is light. */
+const LIGHT_SKY: ReadonlySet<DayPart> = new Set<DayPart>(['dawn', 'morning', 'afternoon', 'golden'])
 
 export interface SeaHeroProps {
   level: number
   /** the pinned hour (0..23), honoured only where `?hour=` pins it; otherwise the sky takes the
    *  clock itself, minute by minute. See dayPart() in state/stats.ts */
   hour?: number
-  /** the DOM chips floating on the sea (readout, countdown): the shader lenses the water under
-   *  their rectangles; the chips themselves stay HTML so the CSS-glass fallback holds */
-  chips?: RefObject<HTMLElement | null>[]
+  /** what floats on the water: Home's sky chip, a `.glass` that bends the canvas. `data-sky` on the
+   *  window says whether the sky behind it is light or dark, and sea.css tunes the chip by it */
+  children?: ReactNode
 }
 
-export function SeaHero({ level, hour, chips }: SeaHeroProps) {
+export function SeaHero({ level, hour, children }: SeaHeroProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
   const shipRef = useRef<SVGSVGElement>(null)
@@ -274,14 +221,12 @@ export function SeaHero({ level, hour, chips }: SeaHeroProps) {
   targetRef.current = level
   const hourRef = useRef(hour)
   hourRef.current = hour
-  const chipsRef = useRef(chips)
-  chipsRef.current = chips
 
   // Whether the hour is pinned is fixed for the life of the mount: a QA render never changes it and
   // a live session never acquires one.
   const [pin] = useState(pinnedHour)
-  // The shader reads the clock every frame; the render path (the CSS floor, the hull, the chips'
-  // film) reads it here, so it needs its own tick or it freezes at the hour the screen was opened.
+  // The shader reads the clock every frame; the render path (the CSS floor, the hull, the chip's
+  // sky) reads it here, so it needs its own tick or it freezes at the hour the screen was opened.
   // A minute is as coarse as the half-hour cross-fade can be drawn with, it does nothing while the
   // tab is hidden, and it catches up on the way back, so it is a clock rather than an animation.
   const [clock, setClock] = useState(() => effectiveHour(hour, pin))
@@ -294,19 +239,37 @@ export function SeaHero({ level, hour, chips }: SeaHeroProps) {
   }, [pin, hour])
 
   const sky = skyAt(clock)
-  // Dusk and night put a sky behind the countdown darker than the ground its 46% film was measured
-  // against. Where WebGL is live the shader's own film carries it; where it is not, the same number
-  // is published to the chip as a percentage and sea.css mixes the film up to the sheet's by it. It
-  // is a percentage rather than a class so the film follows the sky continuously: a step would be
-  // visible as the palette crosses into night.
-  const filmPct = Math.round(Math.min(1, Math.max(0, (sky.film - 0.26) / 0.29)) * 100) + '%'
+  const lightSky = LIGHT_SKY.has(dayPart(Math.floor(clock)))
+
+  // The four-surface budget (DESIGN.md, Material): glass nobody can see drops its filters, as
+  // prototype A's .hero-off does. The chip is inside the window, so the window leaving the screen,
+  // or a sheet coming up over it, takes the chip out of the count; .glass-off on the window reaches it.
+  const [offScreen, setOffScreen] = useState(false)
+  const [sheetUp, setSheetUp] = useState(false)
+  useEffect(() => {
+    const wrap = wrapRef.current
+    if (!wrap) return
+    const io = new IntersectionObserver((e) => setOffScreen(!e[0].isIntersecting), { threshold: 0 })
+    io.observe(wrap)
+    const up = () => setSheetUp(true)
+    const down = () => setSheetUp(false)
+    window.addEventListener('sheet:open', up)
+    window.addEventListener('sheet:closed', down)
+    return () => {
+      io.disconnect()
+      window.removeEventListener('sheet:open', up)
+      window.removeEventListener('sheet:closed', down)
+    }
+  }, [])
 
   useEffect(() => {
     const cv = canvasRef.current, wrap = wrapRef.current
     if (!cv || !wrap) return
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
 
-    const gl = cv.getContext('webgl', { alpha: false, antialias: true, depth: false, stencil: false, powerPreference: 'low-power' })
+    // No antialiasing: a full-screen triangle has no edges to smooth, so multisampling it was work
+    // for nothing (the spec, on C's antialias at a dpr of 2)
+    const gl = cv.getContext('webgl', { alpha: false, antialias: false, depth: false, stencil: false, powerPreference: 'low-power' })
     if (!gl) { cv.classList.add('sea-nogl'); return } // CSS sea shows through
 
     const vs = compile(gl, gl.VERTEX_SHADER, VERT)
@@ -328,31 +291,10 @@ export function SeaHero({ level, hour, chips }: SeaHeroProps) {
     const uRes = U('uRes'), uTime = U('uTime'), uLevel = U('uLevel'), uReduced = U('uReduced')
     const uSkyTop = U('uSkyTop'), uSkyHor = U('uSkyHor'), uSeaHi = U('uSeaHi'), uSeaLo = U('uSeaLo')
     const uSunC = U('uSunC'), uBandC = U('uBandC'), uSunP = U('uSunP'), uSunQ = U('uSunQ')
-    const uChipA = U('uChipA'), uChipB = U('uChipB'), uChipG = U('uChipG'), uFilm = U('uFilm')
     gl.uniform1f(uReduced, reduced ? 1 : 0)
 
-    // The program links, so the lens is live and the DOM chips turn their own film down: the
-    // shader lays one of its own inside the same rectangles. The class goes on each chip rather
-    // than on the hero because the chips are the hero's siblings, not its children, and that is
-    // where sea.css has to reach.
-    let els: HTMLElement[] = []
-    // the chips' own corner radius (--r-control), read off the rendered element rather than
-    // repeated as a number here, so the lens cannot come loose from the box it sits inside. The
-    // read happens when the chips are found, which is before the first draw, so there is no
-    // number to fall back to.
-    let chipR = 0
-    function readRadius() {
-      const v = els[0] ? parseFloat(getComputedStyle(els[0]).borderTopLeftRadius) : NaN
-      if (v > 0) chipR = v
-    }
-    function findChips(): HTMLElement[] {
-      const found = chipEls(wrap!, chipsRef.current)
-      found.forEach((el) => { el.classList.add('sea-gl'); ro.observe(el) })
-      return found
-    }
-
     let shown = targetRef.current
-    let raf = 0, onScreen = true, running = false, dpr = 1
+    let raf = 0, onScreen = true, running = false
     const t0 = performance.now()
 
     // The liner rides the swell. Its stern and bow, as fractions of the hero's width, are read from
@@ -383,27 +325,12 @@ export function SeaHero({ level, hour, chips }: SeaHeroProps) {
     if (ship) { ship.classList.add('is-riding'); measureShip() }
 
     function size() {
-      dpr = Math.min(devicePixelRatio || 1, 2)
+      // 1.5, not a phone's 3: a soft gradient sea drawn at 1.5 cannot be told from one at 3, and it
+      // costs a quarter of the fragments (the spec's cap)
+      const dpr = Math.min(devicePixelRatio || 1, 1.5)
       const w = Math.round(wrap!.clientWidth * dpr), h = Math.round(wrap!.clientHeight * dpr)
       if (cv!.width !== w || cv!.height !== h) { cv!.width = w; cv!.height = h; gl!.viewport(0, 0, w, h) }
       gl!.uniform2f(uRes, w, h)
-    }
-
-    // the chip rectangles, CSS px off the DOM, multiplied by the dpr the canvas is sized with and
-    // flipped into GL space (y up from the foot of the canvas)
-    function setChips() {
-      if (!els.length) { els = findChips(); readRadius() }
-      const base = wrap!.getBoundingClientRect()
-      const slots = [uChipA, uChipB]
-      for (let i = 0; i < 2; i++) {
-        const el = els[i]
-        if (!el) { gl!.uniform4f(slots[i], 0, 0, 0, 0); continue }
-        const r = el.getBoundingClientRect()
-        const w = r.width * dpr, h = r.height * dpr
-        gl!.uniform4f(slots[i], (r.left - base.left) * dpr, cv!.height - (r.top - base.top) * dpr - h, w, h)
-      }
-      // the chips' own radius, a 10px lens, 6px of displacement
-      gl!.uniform4f(uChipG, chipR * dpr, 10 * dpr, 6 * dpr, dpr)
     }
 
     function setSky() {
@@ -412,11 +339,10 @@ export function SeaHero({ level, hour, chips }: SeaHeroProps) {
       c(uSkyTop, s.top); c(uSkyHor, s.hor); c(uSeaHi, s.hi); c(uSeaLo, s.lo); c(uSunC, s.sun); c(uBandC, s.band)
       gl!.uniform4f(uSunP, 0.74, s.sunY, s.sunR, s.sunI)
       gl!.uniform4f(uSunQ, s.core, s.glow, s.bandI, s.glint)
-      gl!.uniform1f(uFilm, s.film)
     }
 
     function draw(now: number) {
-      size(); setSky(); setChips()
+      size(); setSky()
       const t = reduced ? 8 : (now - t0) / 1000
       ride(t)
       gl!.uniform1f(uTime, (now - t0) / 1000)
@@ -445,11 +371,8 @@ export function SeaHero({ level, hour, chips }: SeaHeroProps) {
     io.observe(cv)
     const onVis = () => { document.hidden ? stop() : start() }
     document.addEventListener('visibilitychange', onVis)
-    const onResize = () => { readRadius(); measureShip(); draw(performance.now()) }
+    const onResize = () => { measureShip(); draw(performance.now()) }
     addEventListener('resize', onResize)
-    // the chips change width as the count-up runs and as the countdown copy changes
-    // width only: the count-up changes it many times a second and a radius does not move with it
-    const ro = new ResizeObserver(() => { if (!running) draw(performance.now()) })
     // the still frame has no loop to pick the clock up, so it is redrawn once a minute
     const tick = setInterval(() => { if (!running && !document.hidden && onScreen) draw(performance.now()) }, 60000)
 
@@ -457,10 +380,9 @@ export function SeaHero({ level, hour, chips }: SeaHeroProps) {
     start()
 
     return () => {
-      stop(); io.disconnect(); ro.disconnect(); clearInterval(tick)
+      stop(); io.disconnect(); clearInterval(tick)
       document.removeEventListener('visibilitychange', onVis)
       removeEventListener('resize', onResize)
-      els.forEach((el) => el.classList.remove('sea-gl'))
       if (ship) { ship.classList.remove('is-riding'); ship.style.transform = '' }
       gl.deleteProgram(prog); gl.deleteShader(vs); gl.deleteShader(fs); gl.deleteBuffer(buf)
       // The GPU context is freed on a real unmount only. SheetWave drops loseContext() outright
@@ -470,14 +392,6 @@ export function SeaHero({ level, hour, chips }: SeaHeroProps) {
       setTimeout(() => { if (!cv.isConnected) gl.getExtension('WEBGL_lose_context')?.loseContext() }, 0)
     }
   }, [])
-
-  useEffect(() => {
-    const wrap = wrapRef.current
-    if (!wrap) return
-    const els = chipEls(wrap, chipsRef.current)
-    els.forEach((el) => el.style.setProperty('--sea-film', filmPct))
-    return () => els.forEach((el) => el.style.removeProperty('--sea-film'))
-  }, [filmPct])
 
   // CSS-gradient sea as the floor (behind canvas). Waterline from completion, sky from the same
   // table the shader reads, so no-WebGL gets breakfast at breakfast and midnight at midnight.
@@ -495,7 +409,12 @@ export function SeaHero({ level, hour, chips }: SeaHeroProps) {
   }
 
   return (
-    <div className="sea" ref={wrapRef} style={seaVars}>
+    <div
+      className={'sea' + (offScreen || sheetUp ? ' glass-off' : '')}
+      ref={wrapRef}
+      style={seaVars}
+      data-sky={lightSky ? 'light' : 'dark'}
+    >
       <div className="sea-floor" style={cssStyle} aria-hidden />
       <canvas className="sea-canvas" ref={canvasRef} aria-hidden />
       {/* a liner riding the tide: its waterline is completion, so it rises as you sip through */}
@@ -506,6 +425,7 @@ export function SeaHero({ level, hour, chips }: SeaHeroProps) {
         <path className="ship-funnel" d="M53 17 L56 5 H67 L70 17 Z" />
         <line className="ship-mast" x1="88" y1="12" x2="88" y2="3" />
       </svg>
+      {children}
     </div>
   )
 }

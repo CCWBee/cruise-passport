@@ -68,7 +68,9 @@ export const IconCheck = ({ filled, ...p }: P) =>
   filled ? (
     <Svg filled {...p}>
       <circle cx="12" cy="12" r="9" />
-      <path d="M8.2 12.2l2.5 2.5 5-5.2" fill="none" stroke="var(--on-accent, #fff)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+      {/* the filled check is tried, and tried is mint, so the tick is the ink that reads on mint in
+          each room: white on day's dark mint, near black on the evening's and night's pale one */}
+      <path d="M8.2 12.2l2.5 2.5 5-5.2" fill="none" stroke="var(--on-mint)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   ) : (
     <Svg {...p}>
@@ -76,6 +78,12 @@ export const IconCheck = ({ filled, ...p }: P) =>
       <path d="M8.3 12.3l2.4 2.4 4.8-5" />
     </Svg>
   )
+// Recommend: a speech bubble, one closed path so it fills cleanly beside the heart and the bookmark
+export const IconRecommend = (p: P) => (
+  <Svg {...p}>
+    <path d="M6 4.8h12a2.2 2.2 0 0 1 2.2 2.2v7.6a2.2 2.2 0 0 1-2.2 2.2h-6.2L7.4 20v-3.2H6a2.2 2.2 0 0 1-2.2-2.2V7A2.2 2.2 0 0 1 6 4.8z" />
+  </Svg>
+)
 export const IconHeart = (p: P) => (
   <Svg {...p}>
     <path d="M12 20.3c-.5-.4-7.8-5.3-7.8-11C4.2 6.4 6.1 4.5 8.6 4.5c1.5 0 2.8.8 3.4 2 .6-1.2 1.9-2 3.4-2 2.5 0 4.4 1.9 4.4 4.8 0 5.7-7.3 10.6-7.8 11z" />
@@ -128,10 +136,11 @@ export const IconPlus = (p: P) => (
 export const IconChevron = (p: P) => (
   <Svg {...p}><path d="m10 6.8 5.2 5.2-5.2 5.2" /></Svg>
 )
+// one path with the hole as its second subpath, so the filled pin keeps its hole (evenodd) rather
+// than flooding into a teardrop; outlined, the two subpaths stroke as before
 export const IconPin = (p: P) => (
   <Svg {...p}>
-    <path d="M19 10.1c0 5-7 10-7 10s-7-5-7-10a7 7 0 1 1 14 0z" />
-    <circle cx="12" cy="10" r="2.3" />
+    <path fillRule="evenodd" d="M19 10.1c0 5-7 10-7 10s-7-5-7-10a7 7 0 1 1 14 0zM12 7.7a2.3 2.3 0 1 0 0 4.6a2.3 2.3 0 1 0 0-4.6z" />
   </Svg>
 )
 export const IconCalendar = (p: P) => (

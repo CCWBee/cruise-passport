@@ -1,10 +1,12 @@
 // The Social tab, top to bottom: who you are, how people get in, the crew, your groups, and what the
 // crew has found. Crew = direct friends plus group co-members, one roster, tagged by how you got them.
 import { useEffect, useRef, useState } from 'react'
+import { useScreenTitle } from '../../app/screenTitle'
 import { hasBackend } from '../../state/backend'
 import { useStore } from '../../state/store'
 import { useConfirm } from '../../ui/Confirm'
 import { FriendDot } from '../../ui/FriendDot'
+import { GlassButton } from '../../ui/GlassButton'
 import { IconChevron } from '../../ui/Icon'
 import { DrinkSheet } from '../drinks/DrinkSheet'
 import { AddCrewSheet } from '../friends/AddCrewSheet'
@@ -30,16 +32,19 @@ export function NameCard({ lead }: { lead?: string }) {
       <Heading className="t-h2">What should your crew call you?</Heading>
       {lead && <p className="t-meta crew-name-lead">{lead}</p>}
       <NameFields draft={draft} onDraft={setDraft} />
-      {/* the fill arrives with the name: an empty draft leaves a plain disabled control rather than
-          coral text on a coral wash, which is the one thing on this card nobody could read */}
-      <button
-        type="button"
-        className={'btn btn-wide crew-name-done' + (draft.trim() ? ' btn-coral' : '')}
+      {/* Not filled: the dock's Log is the one filled control on every screen that shows it, and
+          it shows here, on /add and /join as on Crew. Disabled until there is a name, which
+          GlassButton draws as a ghost, so an empty card never offers a Done that does nothing. */}
+      <GlassButton
+        variant="secondary"
+        size="lg"
+        block
+        className="crew-name-done"
         disabled={!draft.trim()}
         onClick={() => setProfile({ name: draft.trim() })}
       >
         Done
-      </button>
+      </GlassButton>
     </section>
   )
 }
@@ -72,6 +77,7 @@ export function Social() {
   useEffect(() => () => { if (newTimer.current) clearTimeout(newTimer.current) }, [])
   const online = hasBackend()
   const named = Boolean(profile.name.trim())
+  useScreenTitle('Your crew')
 
   const groupName = (ids?: string[]) =>
     ids?.map((id) => groups.find((g) => g.id === id)?.name).find(Boolean) || ''
@@ -97,11 +103,12 @@ export function Social() {
         </button>
       </div>
 
-      {/* the one filled control on the screen: until there is a name, that is Done on the card above,
-          because everything shared before it would go out as "A friend" */}
-      <button type="button" className={'btn btn-wide crew-add' + (named ? ' btn-coral' : '')} onClick={() => setAddOpen(true)} aria-haspopup="dialog">
+      {/* Prototype C's wide button, and not filled: the dock's Log is this screen's one filled
+          control (DESIGN.md, Colour). It is still the screen's first action, which its width and
+          its place under the heading say without a colour. */}
+      <GlassButton variant="secondary" size="lg" block className="crew-add" onClick={() => setAddOpen(true)} aria-haspopup="dialog">
         Add to your crew
-      </button>
+      </GlassButton>
 
       <section className="section" aria-label="Sailing with">
         <div className="section-head"><h2 className="t-h2">Sailing with</h2></div>
@@ -128,7 +135,9 @@ export function Social() {
                       name, so it takes the same two-tap confirm as every other one-way action. */}
                   {!friend.groupOnly && (
                     <ConfirmButton
-                      className="mini pressable friend-remove"
+                      variant="ghost"
+                      block={false}
+                      className="friend-remove"
                       label="Remove"
                       confirmLabel="Tap again"
                       ariaLabel={`Remove ${friend.name}`}

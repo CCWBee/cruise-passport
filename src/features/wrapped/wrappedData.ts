@@ -1,4 +1,4 @@
-import { BADGES } from '../../data/badges'
+import { BADGES, tierOrder } from '../../data/badges'
 import { DRINK_BY_ID, END, START, VENUES, type Drink } from '../../data/model'
 import { computeStats, type Passport, type Stats } from '../../state/stats'
 import { groupReach, recommendedForYou, tasteTwin, type Source } from '../../state/social'
@@ -187,8 +187,7 @@ export function deriveWrapped(drinks: Drink[], passport: Passport, srcs: Source[
   if (archetype) cards.push({ kind: 'archetype', archetype })
   if (medals > 0) {
     // the coins themselves, highest tier first, so the slide shows what was won and not only a count
-    const rank = { special: 0, gold: 1, silver: 2, bronze: 3 }
-    const shown = [...earned].sort((a, b) => rank[a.tier ?? 'bronze'] - rank[b.tier ?? 'bronze']).map((b) => b.id)
+    const shown = [...earned].sort((a, b) => tierOrder(a) - tierOrder(b)).map((b) => b.id)
     cards.push({ kind: 'medals', count: medals, total: BADGES.length, earned: shown })
   }
   const crew = crewCard(passport, srcs)

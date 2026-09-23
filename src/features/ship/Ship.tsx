@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useScreenTitle } from '../../app/screenTitle'
 import { activeCruiseId } from '../../data/cruises'
 import { DECKS, VENUES, VENUE_KEYS, deckLabel, menuFor } from '../../data/model'
 import { sailingById } from '../../data/sailings'
 import { useAllDrinks, useStore } from '../../state/store'
 import { SailingSheet } from '../cruise/SailingSheet'
 import { GlassButton } from '../../ui/GlassButton'
-import { IconCheck, IconChevron } from '../../ui/Icon'
+import { IconChevron, IconPin } from '../../ui/Icon'
 import { VenueForm } from './VenueForm'
 import { VenueSheet } from './VenueSheet'
 // social.css owns .crew-go, the chevron colour on the row this screen's foot action copies. Taken
@@ -26,6 +27,7 @@ export function Ship() {
   // published sailing is not in there, so it is never offered a new name, new dates or a delete.
   const cruiseId = activeCruiseId()
   const sailing = sailingById(cruiseId)
+  useScreenTitle('The ship')
   // deep link: /ship?venue=<key> opens that venue (also used for QA)
   useEffect(() => {
     const k = new URLSearchParams(location.search).get('venue')
@@ -41,8 +43,10 @@ export function Ship() {
       <h1 className="t-title">The ship</h1>
       {/* The empty state is the action, as every empty list's is (.empty-state on You). Two lines
           rather than one, because the You lists fill themselves as a side effect of using the app and
-          nothing fills this screen except this control, so the second line says what a venue is for;
-          and a filled primary, because this is the only way to make the screen exist. Ship spends no coral otherwise, so the cap of one filled control holds.
+          nothing fills this screen except this control, so the second line says what a venue is for.
+          Not filled: the dock's Log is the one filled control on every screen that shows it
+          (DESIGN.md, Colour), as the You segments' empty states now also read. It is the only
+          control on the screen, so it needs no colour to be found.
           It and the foot row carry the same class, because they are the same action and QA clicks
           one selector, and they never render together: with no venues DECKS is empty, so no deck
           section renders and the foot row is not reached. */}
@@ -50,7 +54,7 @@ export function Ship() {
         <div className="ship-empty">
           <p className="t-body">Your sailing has no venues yet.</p>
           <p className="t-meta">Add the bars, cafés and restaurants you will drink at.</p>
-          <GlassButton variant="primary" className="ship-add" aria-haspopup="dialog" onClick={() => setAddVenue(true)}>
+          <GlassButton className="ship-add" aria-haspopup="dialog" onClick={() => setAddVenue(true)}>
             Add a venue
           </GlassButton>
         </div>
@@ -66,29 +70,45 @@ export function Ship() {
               const venue = VENUES[key]
               const menu = menuFor(key, drinks)
               const tried = menu.filter((d) => entries[d.id]?.tried).length
+              const visited = !!visits[key]?.visited
               // A venue with no drinks shows its name alone, because "0 of 0" is a structural zero.
-              // The bar draws only once something is tried: an empty track says nothing the count at
-              // the right does not.
+              // The bar draws only once something is tried: an empty track says nothing the count
+              // above it does not.
               const count = menu.length ? `, ${tried} of ${menu.length} tried` : ''
               return (
                 <button
                   key={key}
                   className="row venue-row"
                   onClick={() => setOpenVenue(key)}
-                  aria-label={`${venue.name}${count}${visits[key]?.visited ? ', visited' : ''}`}
+                  aria-label={`${venue.name}${count}${visited ? ', visited' : ''}`}
                 >
                   <span className="row-copy">
-                    <span className="venue-line">
-                      <span className="t-body venue-name">{venue.name}</span>
-                      {visits[key]?.visited && <IconCheck className="venue-visited" size={15} filled />}
-                    </span>
-                    {tried > 0 && (
-                      <span className="meter" aria-hidden>
-                        <span style={{ width: `${(tried / menu.length) * 100}%` }} />
+                    <span className="t-strong venue-name">{venue.name}</span>
+                    {/* Visited is said in words, on its own line under the name and away from the
+                        count. A mint tick beside "0 of 2" read as that bar being finished (the
+                        night bar spec, from the prototype judging): a tick means done, and visiting
+                        a bar is not finishing its list. The pin, filled in the state colour as every
+                        state glyph is, says "been here", and the word says it to anyone who does not
+                        read the pin. */}
+                    {visited && (
+                      <span className="t-meta venue-visited">
+                        <IconPin size={16} filled />
+                        Visited
                       </span>
                     )}
                   </span>
-                  {menu.length > 0 && <span className="t-meta tnum venue-count">{tried} of {menu.length}</span>}
+                  {/* prototype C's end column: the count, and the bar under it once something is
+                      tried, so every bar ends at the same x and none of them underlines a name */}
+                  {menu.length > 0 && (
+                    <span className="venue-end">
+                      <span className="t-meta tnum">{tried} of {menu.length}</span>
+                      {tried > 0 && (
+                        <span className="meter">
+                          <span style={{ width: `${(tried / menu.length) * 100}%` }} />
+                        </span>
+                      )}
+                    </span>
+                  )}
                 </button>
               )
             })}

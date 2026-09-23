@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAllDrinks, useStore } from '../../state/store'
 import { wrappedUnlocked } from './wrappedData'
-import '../home/home.css'
+import './wrapped.css'
 
+// Home's row into the story. A plain link with no view transition: a whole-page transition would
+// snapshot the tab bar on the way out, and the story brings its own entrance.
 export function WrappedTeaser() {
   const drinks = useAllDrinks()
   const me = useStore((s) => s.me)
@@ -15,7 +17,6 @@ export function WrappedTeaser() {
     <Link
       to="/wrapped"
       className="row pressable wrapped-row"
-      viewTransition
       aria-label={seen ? 'Open your Cruise Wrapped again' : 'Open your Cruise Wrapped'}
     >
       {/* one line: the row renders only when Wrapped is unlocked, so "Ready to open" beneath it told

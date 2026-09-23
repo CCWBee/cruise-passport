@@ -2,11 +2,13 @@ import { useId } from 'react'
 import { glassFamily } from '../../data/glass'
 
 // The prize: a glass drawn for the kind of drink, so the guest can tell what is coming before the card
-// names it. Nine families, each drawn once on a 64 by 72 box in the shaker's own idiom: one ink
-// stroke over a cream fill, and the drink itself in --line, the one shade the drawing is allowed. No
-// colour, no lettering, never IconDrinks (that glyph is the brand's funnel and draws one side of a
-// glass). They are SVG groups, not whole images, because they are painted inside the shaker's drawing,
-// behind the tin, and rise out of its mouth.
+// names it. Nine families, each drawn once on a 64 by 72 box in the shaker's own idiom: one stroke in
+// the family's hue (--fam-*, the hue the drink's row on Drinks is drawn in, so the glass that rises
+// is the one the guest will find in the list), over the sheet's own solid, so the glass reads as
+// clear and still hides what stands behind it, and the drink itself in the same hue, thin. No
+// lettering, never IconDrinks (that glyph is the brand's funnel and draws one side of a glass). They
+// are SVG groups, not whole images, because they are painted inside the shaker's drawing, behind the
+// tin, and rise out of its mouth.
 //
 // The caller sets the stroke on the group it places the glass in, so a glass draws at the tin's
 // weight on screen whatever it is scaled to; the fine lines (a pick, the lime's segments, steam, ice)
@@ -18,9 +20,9 @@ import { glassFamily } from '../../data/glass'
 
 const BOX_W = 64, BOX_H = 72
 
-// A bowl is one closed outline and the drink inside it. The outline is painted three times: cream
-// under everything, the drink clipped to it, then the stroke on top, so the drink never crosses the
-// ink line whatever shape the glass is. The drink is a level (everything below it) unless a glass
+// A bowl is one closed outline and the drink inside it. The outline is painted three times: the
+// sheet's solid under everything, the drink clipped to it, then the stroke on top, so the drink never
+// crosses the line whatever shape the glass is. The drink is a level (everything below it) unless a glass
 // draws its own surface, as the pint's head does.
 function Bowl({ outline, level, drink }: { outline: string; level: number; drink?: string }) {
   const clip = 'glass-' + useId().replace(/[^a-zA-Z0-9_-]/g, '')
@@ -30,7 +32,8 @@ function Bowl({ outline, level, drink }: { outline: string; level: number; drink
       <path d={outline} stroke="none" />
       <path
         d={drink ?? `M0 ${level}H${BOX_W}V${BOX_H}H0Z`}
-        fill="var(--line)"
+        fill="currentColor"
+        fillOpacity={0.32}
         stroke="none"
         clipPath={`url(#${clip})`}
       />
@@ -164,11 +167,12 @@ export function RocksGlass({ fine }: { fine: number }) {
 }
 
 /** The glass for a drink, drawn on its 64 by 72 box. `data-glass` names the family, which is what
- *  the QA probes read back to prove the prize matched the drink. */
+ *  the QA probes read back to prove the prize matched the drink. The hue is set here, as GlassIcon
+ *  sets it on a row, so the stroke and the drink both read it as currentColor. */
 export function Glass({ drink, fine }: { drink: { name: string; category: string; frozen?: boolean }; fine: number }) {
   const family = glassFamily(drink)
   return (
-    <g data-glass={family}>
+    <g data-glass={family} stroke="currentColor" style={{ color: `var(--fam-${family})`, fill: 'var(--glass-solid)' }}>
       {family === 'cocktail' && <CocktailGlass fine={fine} />}
       {family === 'margarita' && <MargaritaGlass fine={fine} />}
       {family === 'wine' && <WineGlass />}

@@ -36,6 +36,32 @@ export interface BadgeDef {
 export const badgeCount = (badge: BadgeDef, cur: number, need: number): string =>
   badge.percent ? `${cur}% of ${need}%` : `${cur} of ${need}`
 
+export type Tier = NonNullable<BadgeDef['tier']>
+
+/** The medal ladder, highest first: the order the case, Home's tray and Wrapped lay coins out in,
+ *  and the order topMedal picks by. One rank, so no two screens can rank a medal differently. */
+export const TIER_ORDER: Record<Tier, number> = { special: 0, gold: 1, silver: 2, bronze: 3 }
+export const tierOrder = (badge: BadgeDef): number => TIER_ORDER[badge.tier ?? 'bronze']
+
+/** The tier in words, said beside the metal so the metal does not carry the rank alone. C's words:
+ *  the ship's Champion is its own tier, and "Special" said nothing a guest could picture. */
+export const TIER_WORD: Record<Tier, string> = {
+  bronze: 'Bronze',
+  silver: 'Silver',
+  gold: 'Gold',
+  special: 'Champion',
+}
+
+/** What a badge's count is a count of, so a line reads as a sentence ("1 more whiskey"). An id with
+ *  no unit is a percentage badge, or one earned by finishing a whole category, which has no count. */
+export const BADGE_UNIT: Record<string, [one: string, many: string]> = {
+  first: ['drink', 'drinks'], ten: ['drink', 'drinks'], twentyfive: ['drink', 'drinks'],
+  fifty: ['drink', 'drinks'], hundred: ['drink', 'drinks'], onefifty: ['drink', 'drinks'],
+  twohundred: ['drink', 'drinks'], everybar: ['venue', 'venues'],
+  coffee: ['coffee cocktail', 'coffee cocktails'], whiskey: ['whiskey', 'whiskeys'],
+  gin: ['gin', 'gins'], rum: ['rum', 'rums'], wine: ['wine', 'wines'],
+}
+
 export const BADGES: BadgeDef[] = [
   { id: 'first', emoji: '🥇', name: 'First Sip', hint: 'Log one drink', tier: 'bronze', test: (s) => s.n >= 1, progress: (s) => ({ cur: s.n, need: 1 }) },
   { id: 'ten', emoji: '🔟', name: 'Ten Down', hint: 'Log ten', tier: 'bronze', test: (s) => s.n >= 10, progress: (s) => ({ cur: s.n, need: 10 }) },

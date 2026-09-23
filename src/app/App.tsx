@@ -49,7 +49,7 @@ function InviteScreen({ msg, failed }: { msg: string; failed: boolean }) {
   return (
     <div className="wrap page">
       <p className="t-body" role="status">{msg}</p>
-      {failed && <Link to="/social" className="btn btn-wide page-act">Go to your crew</Link>}
+      {failed && <Link to="/social" className="gbtn gbtn-secondary gbtn-lg gbtn-block page-act">Go to your crew</Link>}
     </div>
   )
 }
@@ -168,7 +168,7 @@ function NotFound() {
     <div className="wrap page">
       {/* the title is the whole message; .page > h1's own 16 sets the button under it */}
       <h1 className="t-title">That link does not go anywhere</h1>
-      <Link to="/" className="btn">Back to your passport</Link>
+      <Link to="/" className="gbtn gbtn-secondary gbtn-md">Back to your passport</Link>
     </div>
   )
 }

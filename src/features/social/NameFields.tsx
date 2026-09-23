@@ -1,9 +1,10 @@
 import type { CSSProperties } from 'react'
 import { FRIEND_COLOURS, useStore } from '../../state/store'
-// friends.css is where .f-field input, .fpick and .fpick-dot are actually styled; base.css carries
-// only .f-field and .f-label. Without this import the inputs render borderless and the colour dots
-// collapse, wherever this pair is used. Social.tsx keeps its own import of the same file, which is
-// idempotent.
+// friends.css is where .fpick and .fpick-dot are styled; base.css carries .f-field and .f-label, and
+// the input is Field's own .field-ctrl, so ui/field.css comes too. Without these the colour dots
+// collapse and the input loses its well, wherever this pair is used. Social.tsx keeps its own import
+// of friends.css, which is idempotent.
+import '../../ui/field.css'
 import '../friends/friends.css'
 
 // The name and colour pair, lifted out of NameCard so the entry screen uses the mechanism rather
@@ -19,6 +20,7 @@ export function NameFields({ draft, onDraft }: { draft: string; onDraft: (v: str
       <label className="f-field">
         <span className="f-label">Your name</span>
         <input
+          className="field-ctrl"
           value={draft}
           maxLength={24}
           autoComplete="name"
@@ -33,7 +35,7 @@ export function NameFields({ draft, onDraft }: { draft: string; onDraft: (v: str
               type="button"
               key={colour}
               className={'fpick-dot pressable' + (profile.colour === colour ? ' on' : '')}
-              style={{ '--fc': `var(--fruit-${colour})` } as CSSProperties}
+              style={{ '--fc': `var(--friend-${colour})` } as CSSProperties}
               aria-label={`Use ${colour}`}
               aria-pressed={profile.colour === colour}
               onClick={() => setProfile({ colour })}

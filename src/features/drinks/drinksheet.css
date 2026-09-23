@@ -1,55 +1,73 @@
-/* The drink sheet: a title, one meta line, then plain paragraphs, dots, stars, chips and fields.
-   No eyebrow, no coloured toggle boxes, no gradient meters. */
-.ds-ing { margin-top: var(--s3); }
+/* The drink sheet: a title, one meta line, the four marks, then plain paragraphs, dots, stars and
+   fields. No eyebrow, no coloured toggle boxes, no gradient meters. */
+
+/* ── the marks: Tried, Favourite, Wishlist and Recommend on one row at 390, straight under the title
+   so they show at medium height (A's order; C wrapped Recommend to a second row). Each is its glyph
+   over its word, sized to its word, so "Recommend" takes the room it needs and "Tried" does not. The
+   row reaches 8 into the sheet's side padding for the width four words need; under about 360 it
+   wraps. ── */
+.ds-chips {
+  display: flex; flex-wrap: wrap; gap: var(--s1);
+  margin: var(--s4) calc(var(--s2) * -1) 0;
+}
+.ds-chip {
+  flex: 1 1 auto; min-width: var(--ctl);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-height: var(--ctl); padding: var(--s2) var(--s1);
+  border-radius: var(--r-control); border: 1px solid var(--line);
+  background: var(--plate-quiet); color: var(--ink-2);
+  transition: scale var(--t-press) var(--e-out), background-color var(--t-panel) var(--e-out),
+    border-color var(--t-panel) var(--e-out), color var(--t-panel) var(--e-out);
+}
+.ds-chip-l { font-size: var(--f-meta); font-weight: 600; line-height: 1.3; white-space: nowrap; }
+/* on: the word and glyph go to ink, and Favourite's and Wishlist's glyph turns solid (DrinkSheet.tsx);
+   no fill */
+.ds-chip.on { color: var(--ink); }
+/* Tried, and only Tried, fills: the room's mint with its own ink on it */
+.ds-chip.on.ds-chip-mint { background: var(--mint-fill); color: var(--on-mint); border-color: transparent; }
+
+.ds-ing { margin-top: var(--s4); }
 .ds-desc { margin-top: var(--s2); }
 .ds-facts { margin-top: var(--s2); }
 .ds-warn { margin-top: var(--s2); }
 
-/* a sentence-case label above a group of controls */
+/* a sentence-case label beside or above a group of controls */
 .ds-label { font-size: var(--f-meta); font-weight: 600; color: var(--ink-2); }
 
-/* sweetness and strength: five ink dots each. Space, not a rule, sets the groups apart: a hairline
-   separates rows in a list and never groups inside a sheet. */
-.ds-meters { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); margin-top: var(--s5); }
-.ds-meter { display: grid; gap: var(--s2); }
-.ds-dots { display: flex; gap: var(--s1); }
-/* an off dot keeps a ring in --ink-3 so the denominator of "3 of 5" survives sun glare */
-.ds-dots i { width: 8px; height: 8px; border-radius: var(--r-tag); background: transparent; border: 1px solid var(--ink-3); }
+/* sweetness and strength: each a line of its own, the label and then five ink dots at the trailing
+   edge (C's). Space, not a rule, sets the groups apart: a hairline separates rows in a list and
+   never groups inside a sheet. */
+.ds-meters { display: grid; margin-top: var(--s5); }
+.ds-meter { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); min-height: var(--s6); }
+.ds-dots { display: flex; gap: var(--s2); }
+/* an off dot keeps a ring in --ink-3 so the denominator of "3 of 5" survives glare and a dim bar;
+   at 1.5, near C's 1.6, which is the weight C drew for a dot this size */
+.ds-dots i { width: 11px; height: 11px; border-radius: var(--r-tag); background: transparent; border: 1.5px solid var(--ink-3); }
 .ds-dots i.on { background: var(--ink); border-color: var(--ink); }
-.ds-abv { margin-top: var(--s3); }
+.ds-abv { margin-top: var(--s2); }
 
-/* rating */
+/* rating: C's stars, a 30 glyph in a 48 target; the row steps 9 left so the first glyph lines up
+   with the label above it rather than the target's edge */
 .ds-rate-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s3); margin-top: var(--s5); }
 .ds-group { font-size: var(--f-meta); color: var(--gold-ink); white-space: nowrap; }
-.ds-stars { display: flex; gap: var(--s1); margin-top: var(--s1); }
+.ds-stars { display: flex; gap: 2px; margin: var(--s1) 0 0 -9px; }
 .ds-star {
-  width: var(--ctl); height: var(--ctl); display: grid; place-items: center;
+  width: 48px; height: 48px; display: grid; place-items: center;
   border-radius: var(--r-control); color: var(--ink-3);
   transition: color var(--t-panel) var(--e-out), background-color var(--t-press) var(--e-out);
 }
 .ds-star:active { background-color: var(--press); }
-.ds-star.on { color: var(--gold); }
+.ds-star.on { color: var(--star); }
 .ds-recby { display: flex; align-items: center; gap: var(--s2); margin-top: var(--s2); }
 
-/* one group of compact chips: tried in mint when on, the rest in ink */
-.ds-chips { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s4); }
-.ds-chip {
-  position: relative; display: inline-flex; align-items: center; justify-content: center;
-  min-height: var(--ctl-sm); padding: 0 var(--s3);
-  border-radius: var(--r-control); border: 1px solid var(--line);
-  background: var(--panel-solid); color: var(--ink);
-  font-size: var(--f-meta); font-weight: 400; line-height: 1; white-space: nowrap;
-  transition: background-color var(--t-panel) var(--e-out), color var(--t-panel) var(--e-out);
-}
-/* the chip is 36px tall with a 44px hit area */
-.ds-chip::before { content: ''; position: absolute; inset: -4px 0; }
-.ds-chip.on { background: var(--ink); color: #fff; border-color: transparent; }
-.ds-chip.on.ds-chip-mint { background: var(--mint-ink); }
-
-/* what the crew said */
+/* what the crew said: a list, so its rows take the list's hairline */
 .ds-crew-row { display: flex; align-items: flex-start; gap: var(--s3); padding: var(--s3) 0; }
-.ds-crew-row + .ds-crew-row { border-top: 1px solid var(--line); }
+.ds-crew-row + .ds-crew-row { border-top: 1px solid var(--line-2); }
 .ds-crew-copy { min-width: 0; }
 .ds-crew-copy p { margin-top: 2px; overflow-wrap: anywhere; }
 .ds-crew-name { display: inline-flex; align-items: center; gap: var(--s2); }
-.ds-crew-stars { display: inline-flex; align-items: center; color: var(--gold); }
+.ds-crew-stars { display: inline-flex; align-items: center; color: var(--star); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-chip:active { scale: 1; }
+}

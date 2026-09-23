@@ -6,9 +6,11 @@ import { buildCard, buildPayload, encodeShare, normaliseCode } from '../../state
 import { useStore } from '../../state/store'
 import { refreshNow } from '../../state/sync'
 import { FriendDot } from '../../ui/FriendDot'
+import { GlassButton } from '../../ui/GlassButton'
 import { IconCamera } from '../../ui/Icon'
 import { Qr } from '../../ui/Qr'
 import { Sheet } from '../../ui/Sheet'
+import '../../ui/field.css'
 import './friends.css'
 
 // The camera scanner pulls in jsQR; load it only when someone opens it, keeping it off first paint.
@@ -96,7 +98,7 @@ export function AddCrewSheet({ onClose, onDone }: {
   useEffect(() => () => { seq.current++ }, [])
 
   // One live region for the whole sheet, at its foot: two of them meant the answer appeared in a
-  // different place depending on which button was pressed. A success is not reported here at all —
+  // different place depending on which button was pressed. A success is not reported here at all:
   // it goes to the tick, which is the same everywhere in the app.
   const flash = (label: string) => {
     setStatus(label)
@@ -159,10 +161,22 @@ export function AddCrewSheet({ onClose, onDone }: {
     : rows > 0 ? (rows === 1 ? '1 person found' : `${rows} people found`)
     : 'Their code is at the top of their Crew page.'
 
+  // The scanner replaces this sheet rather than opening over it: a sheet over a sheet is glass on
+  // glass, which DESIGN.md's Material section forbids, and the drink and venue sheets already hand
+  // over this way. This component stays mounted, so the query and its rows are still here when the
+  // scanner closes and the sheet comes back.
+  if (scan) {
+    return (
+      <Suspense fallback={null}>
+        <ScanSheet onClose={() => setScan(false)} onDone={onDone} />
+      </Suspense>
+    )
+  }
+
   return (
     <Sheet onClose={onClose} labelledBy="add-crew-title">
       <div className="friends-sheet">
-        <h2 className="t-title sheet-title" id="add-crew-title">Add to your crew</h2>
+        <h2 className="t-h2 sheet-title" id="add-crew-title">Add to your crew</h2>
         {/* what the sheet is for, not the privacy trade: the one line under the field carries that */}
         <p className="sheet-meta">{online ? 'Find them by name, or send them your link.' : 'Send them your link, or scan their code.'}</p>
 
@@ -173,6 +187,7 @@ export function AddCrewSheet({ onClose, onDone }: {
             <label className="f-field">
               <span className="f-label">Their name or code</span>
               <input
+                className="field-ctrl"
                 value={query}
                 maxLength={40}
                 inputMode="search"
@@ -198,15 +213,14 @@ export function AddCrewSheet({ onClose, onDone }: {
                       {held.has(code)
                         ? <span className="t-meta addme-held">In your crew</span>
                         : (
-                          <button
-                            type="button"
-                            className="mini pressable addme-add"
+                          <GlassButton
+                            className="addme-add"
                             aria-label={`Add ${row.name}`}
                             disabled={find === 'searching'}
                             onClick={() => addFound(row)}
                           >
                             Add
-                          </button>
+                          </GlassButton>
                         )}
                     </div>
                   )
@@ -222,20 +236,19 @@ export function AddCrewSheet({ onClose, onDone }: {
         {/* 2. the route that needs nothing from the server, and hands it to someone standing beside
             you. Offline it is not an alternative to anything, it is the route, so it drops the "Or"
             and the line above points at it rather than repeating it as a second button. */}
-        <button type="button" className="btn btn-wide addme-send" onClick={share} disabled={!link}>
+        <GlassButton block className="addme-send" onClick={share} disabled={!link}>
           {online && find !== 'offline' ? 'Or send your link' : 'Send your link'}
-        </button>
+        </GlassButton>
         <p className="t-meta friends-hint">Beside them? AirDrop or Nearby Share it.</p>
 
         {/* 3. the two quiet routes for the phone that will not take a link */}
         <div className="addme-actions">
-          <button type="button" className="btn" onClick={() => setScan(true)}>
-            <IconCamera size={18} />
+          <GlassButton icon={<IconCamera size={18} />} aria-haspopup="dialog" onClick={() => setScan(true)}>
             Scan their code
-          </button>
-          <button type="button" className="btn" aria-expanded={showCode} onClick={() => setShowCode((v) => !v)}>
+          </GlassButton>
+          <GlassButton aria-expanded={showCode} onClick={() => setShowCode((v) => !v)}>
             {showCode ? 'Hide my code' : 'Show my code'}
-          </button>
+          </GlassButton>
         </div>
 
         {showCode && (
@@ -247,7 +260,7 @@ export function AddCrewSheet({ onClose, onDone }: {
               <div className="addme-code-row">
                 <span className="sr-only">Your code</span>
                 <code className="tnum addme-code-val">{profile.code}</code>
-                <button type="button" className="mini pressable" onClick={() => copy(profile.code!, 'Code copied')}>Copy</button>
+                <GlassButton onClick={() => copy(profile.code!, 'Code copied')}>Copy</GlassButton>
               </div>
             )}
           </div>
@@ -261,6 +274,7 @@ export function AddCrewSheet({ onClose, onDone }: {
             <label className="f-field">
               <span className="f-label">Invite code or link</span>
               <input
+                className="field-ctrl"
                 value={invite}
                 maxLength={64}
                 autoCapitalize="characters"
@@ -272,7 +286,7 @@ export function AddCrewSheet({ onClose, onDone }: {
                 onChange={(event) => { setInvite(event.target.value); setStatus('') }}
               />
             </label>
-            <button type="button" className="btn btn-wide friends-action" onClick={join} disabled={joining || !invite.trim()}>{joining ? 'Joining…' : 'Join group'}</button>
+            <GlassButton block className="friends-action" onClick={join} disabled={joining || !invite.trim()}>{joining ? 'Joining…' : 'Join group'}</GlassButton>
           </div>
         ) : (
           <button type="button" className="quiet-action" onClick={() => setShowJoin(true)}>Join a group with a code</button>
@@ -284,7 +298,7 @@ export function AddCrewSheet({ onClose, onDone }: {
             <label className="f-field">
               <span className="f-label">Their passport code</span>
               <textarea
-                className="tnum"
+                className="field-ctrl tnum"
                 rows={3}
                 value={paste}
                 onChange={(event) => { setPaste(event.target.value); setStatus('') }}
@@ -293,7 +307,7 @@ export function AddCrewSheet({ onClose, onDone }: {
                 autoFocus
               />
             </label>
-            <button type="button" className="btn btn-wide friends-action" onClick={add} disabled={!paste.trim()}>Add</button>
+            <GlassButton block className="friends-action" onClick={add} disabled={!paste.trim()}>Add</GlassButton>
           </div>
         ) : (
           <button type="button" className="quiet-action" onClick={() => setShowPaste(true)}>Paste a code instead</button>
@@ -301,12 +315,6 @@ export function AddCrewSheet({ onClose, onDone }: {
 
         {status && <p className="t-meta friends-status" role="status">{status}</p>}
       </div>
-
-      {scan && (
-        <Suspense fallback={null}>
-          <ScanSheet onClose={() => setScan(false)} onDone={onDone} />
-        </Suspense>
-      )}
     </Sheet>
   )
 }

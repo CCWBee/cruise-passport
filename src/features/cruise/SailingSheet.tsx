@@ -73,7 +73,7 @@ export function SailingSheet({ sailing, onClose }: { sailing?: Sailing; onClose:
 
   return (
     <Sheet onClose={close} labelledBy="sailing-sheet-title">
-      <h2 className="t-title sheet-title" id="sailing-sheet-title">Your sailing</h2>
+      <h2 className="t-h2 sheet-title" id="sailing-sheet-title">Your sailing</h2>
       {/* the one fact the fields below do not show: what is required, or what an edit leaves alone.
           Saying what is required here is what lets the cruise line carry no "Optional." hint. */}
       <p className="sheet-meta">
@@ -119,7 +119,7 @@ export function SailingSheet({ sailing, onClose }: { sailing?: Sailing; onClose:
           value={end}
           onChange={(event) => { setEndErr(''); setEnd(event.target.value) }}
         />
-        <GlassButton variant="primary" block type="submit" className="sailing-submit" disabled={!ready}>
+        <GlassButton variant="primary" size="lg" block type="submit" className="sailing-submit" disabled={!ready}>
           {editing ? 'Save' : 'Start your passport'}
         </GlassButton>
       </form>
@@ -131,11 +131,14 @@ export function SailingSheet({ sailing, onClose }: { sailing?: Sailing; onClose:
       {editing && (
         <>
           <hr className="hairline sailing-rule" />
+          {/* the ghost, so a one-way action is the quietest control on the sheet at rest and only
+              its armed state (friends.css) marks it */}
           <ConfirmButton
             label="Delete this sailing"
             confirmLabel="Tap again to delete"
             note="Removes the sailing, its venues and the drinks you added to it from this phone. Your other sailings stay."
-            className="btn btn-wide sailing-delete"
+            variant="ghost"
+            className="sailing-delete"
             onConfirm={remove}
           />
         </>

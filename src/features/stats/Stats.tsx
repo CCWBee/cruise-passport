@@ -5,6 +5,7 @@ import { bestRatedBars, useSources } from '../../state/social'
 import { computeStats } from '../../state/stats'
 import { glassFamily } from '../../data/glass'
 import { GlassIcon, IconStar } from '../../ui/Icon'
+import { GlassButton } from '../../ui/GlassButton'
 import { DrinkSheet } from '../drinks/DrinkSheet'
 import { openLog } from '../search/log'
 import './stats.css'
@@ -12,42 +13,47 @@ import './stats.css'
 const dayLabel = (iso: string) =>
   new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 
-// A named question, answered by rows. No box: the heading and the hairlines do the grouping.
+// A named question, answered by read-only rows on the room (.line). No box: the heading and the
+// hairlines do the grouping. The count sits at the right in meta ink, as prototype C's You has it:
+// the label is what is read, the count is what is compared.
 function CountRows({ rows, ariaLabel }: { rows: { label: string; value: number }[]; ariaLabel: string }) {
   return (
     <div className="stats-list" role="list" aria-label={ariaLabel}>
       {rows.map((row) => (
-        <div className="stats-line" role="listitem" key={row.label}>
+        <div className="line" role="listitem" key={row.label}>
           <span className="stats-line-label t-body">{row.label}</span>
-          <span className="stats-line-value t-body tnum">{row.value}</span>
+          <span className="t-meta tnum">{row.value}</span>
         </div>
       ))}
     </div>
   )
 }
 
-// Completion by deck: the count carries the fact, the bar carries the shape. No track behind it.
+// Completion by deck: the count carries the fact and the bar carries the shape. The bar is the
+// registered .meter, the measure Ship puts under a bar's tried count, so a count out of a total
+// looks the same wherever it appears.
 function DeckBars({ rows }: { rows: { label: string; value: number; total: number }[] }) {
   return (
     <div className="stats-decks">
       {rows.map((row) => (
-        <div className="stats-deck" key={row.label}>
+        <div key={row.label}>
           <div className="stats-deck-head">
             <span className="t-body">{row.label}</span>
             <span className="t-meta tnum">{row.value} of {row.total}</span>
           </div>
-          <div className="stats-deck-bar" aria-hidden="true">
+          <span className="meter" aria-hidden="true">
             {row.value > 0 && row.total > 0 && (
               <span style={{ width: `${(row.value / row.total) * 100}%` }} />
             )}
-          </div>
+          </span>
         </div>
       ))}
     </div>
   )
 }
 
-// Axis labels live in HTML so they stay at a true 12px whatever the plot is stretched to.
+// Axis labels live in HTML so they stay at meta size whatever the plot is stretched to: 12px is
+// the tab labels' floor and nobody else's (DESIGN.md, Typography).
 function VoyageChart({ byDay }: { byDay: Record<string, Drink[]> }) {
   const width = 300
   const height = 100
@@ -65,8 +71,8 @@ function VoyageChart({ byDay }: { byDay: Record<string, Drink[]> }) {
   return (
     <div className="stats-chart">
       <div className="stats-chart-y" aria-hidden="true">
-        <span className="t-micro tnum">{max}</span>
-        <span className="t-micro tnum">0</span>
+        <span className="t-meta tnum">{max}</span>
+        <span className="t-meta tnum">0</span>
       </div>
       <svg
         className="stats-chart-plot"
@@ -87,8 +93,8 @@ function VoyageChart({ byDay }: { byDay: Record<string, Drink[]> }) {
       </svg>
       <span />
       <div className="stats-chart-x" aria-hidden="true">
-        <span className="t-micro tnum">{dayLabel(DAYS[0])}</span>
-        <span className="t-micro tnum">{dayLabel(DAYS[DAYS.length - 1])}</span>
+        <span className="t-meta tnum">{dayLabel(DAYS[0])}</span>
+        <span className="t-meta tnum">{dayLabel(DAYS[DAYS.length - 1])}</span>
       </div>
     </div>
   )
@@ -184,7 +190,8 @@ export function Stats() {
     return (
       <div className="empty-state">
         <p className="t-body">Your stats appear once you log a drink.</p>
-        <button type="button" className="btn btn-coral" onClick={openLog}>Log a drink</button>
+        {/* secondary: the tab bar's Log is this screen's one coral fill, and it opens the same search */}
+        <GlassButton variant="secondary" onClick={openLog}>Log a drink</GlassButton>
       </div>
     )
   }
@@ -234,7 +241,7 @@ export function Stats() {
             <h3 className="t-strong stats-sub">Best rated bars, you and your crew</h3>
             <div className="stats-list">
               {bars.map((bar) => (
-                <div className="stats-line" key={bar.venueKey}>
+                <div className="line" key={bar.venueKey}>
                   <span className="row-copy">
                     <span className="t-body">{bar.name}</span>
                     <span className="t-meta tnum">{bar.count} ratings</span>

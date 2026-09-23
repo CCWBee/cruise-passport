@@ -30,16 +30,15 @@ export function Drinks() {
   const [openId, setOpenId] = useState<string | null>(null)
   const [showAdd, setShowAdd] = useState(false)
 
-  // deep link: /drinks?openf opens the filter panel (also used for QA); ?log=1 is Home's
-  // "Log a drink" arriving, so the search field takes focus and shows its ring. The keyboard is
-  // the platform's to raise and iOS will not raise one from a route change.
+  // Deep links, also used for QA: ?openf opens the filter panel, ?q= fills the search, ?drink= opens
+  // a drink's sheet and ?add the add sheet. Nothing routes here to log a drink: Log opens its own
+  // search over whichever screen the guest is on (features/search).
   useEffect(() => {
     const p = new URLSearchParams(location.search)
     if (p.has('openf')) setShowFilters(true)
     if (p.get('q')) setQ(p.get('q')!)
     if (p.get('drink')) setOpenId(p.get('drink'))
     if (p.has('add')) setShowAdd(true)
-    if (p.has('log')) document.querySelector<HTMLInputElement>('.dsearch .sfield-input')?.focus()
   }, [setShowFilters])
 
   const { results, counts } = useMemo(
@@ -72,15 +71,18 @@ export function Drinks() {
   if (drinks.length === 0) {
     return (
       <div className="wrap page drinks">
+        <h1 className="t-title">Drinks</h1>
+        {/* Secondary, not coral: Log is the one filled control on every screen that shows it. */}
         <div className="dempty">
           {VENUE_KEYS.length === 0 ? (
             <>
               <p className="t-body">Add a venue first, then the drinks you order there.</p>
               {/* It navigates rather than opening a second door onto the venue form: that form
                   belongs to Ship, and Ship with no venues is already the empty state whose one
-                  control is "Add a venue", so the guest lands on the action either way. */}
+                  control is "Add a venue", so the guest lands on the action either way. No view
+                  transition: a root snapshot would show the dock's droplet twice. */}
               <div className="dempty-acts">
-                <Link to="/ship" className="gbtn gbtn-primary gbtn-md" viewTransition>Add a venue</Link>
+                <Link to="/ship" className="gbtn gbtn-secondary gbtn-md">Add a venue</Link>
               </div>
             </>
           ) : (
@@ -88,7 +90,7 @@ export function Drinks() {
               <p className="t-body">Nothing on your list yet.</p>
               {/* one button, not the two the filter-empty state shows: there is no filter to drop */}
               <div className="dempty-acts">
-                <GlassButton variant="primary" type="button" aria-haspopup="dialog" onClick={() => setShowAdd(true)}>Add a drink</GlassButton>
+                <GlassButton type="button" aria-haspopup="dialog" onClick={() => setShowAdd(true)}>Add a drink</GlassButton>
               </div>
             </>
           )}
@@ -100,6 +102,7 @@ export function Drinks() {
 
   return (
     <div className="wrap page drinks">
+      <h1 className="t-title">Drinks</h1>
       <div className="dsearch">
         <SearchField value={q} onChange={setQ} ariaLabel="Search drinks" placeholder="Drink, bar or spirit" />
         <button
@@ -128,7 +131,7 @@ export function Drinks() {
           <p className="t-body">{chosen > 0 ? 'Nothing matches all of those.' : 'No drink matches that search.'}</p>
           <div className="dempty-acts">
             {drop && <GlassButton onClick={() => dropGroup(drop.key)}>Drop {GROUP_LABEL[drop.key]} for {drop.n} more</GlassButton>}
-            <GlassButton variant="primary" onClick={() => { clear(); setQ('') }}>Reset</GlassButton>
+            <GlassButton onClick={() => { clear(); setQ('') }}>Reset</GlassButton>
           </div>
         </div>
       ) : (

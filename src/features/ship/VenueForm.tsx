@@ -118,7 +118,7 @@ export function VenueForm({ cruiseId, venueKey, venue, onClose }: {
 
   return (
     <Sheet onClose={close} labelledBy="venue-form-title">
-      <h2 className="t-title sheet-title" id="venue-form-title">{editing ? venue?.name : 'Add a venue'}</h2>
+      <h2 className="t-h2 sheet-title" id="venue-form-title">{editing ? venue?.name : 'Add a venue'}</h2>
       {/* the one fact the fields below do not show: what is required, or what an edit leaves alone */}
       <p className="sheet-meta">
         {editing ? 'The drinks logged here stay logged.' : 'Only the deck and name are needed.'}
@@ -180,7 +180,7 @@ export function VenueForm({ cruiseId, venueKey, venue, onClose }: {
         {/* Disabled rather than an early return on submit: a button that does nothing when tapped is
             the state DESIGN.md's "Every control ships default, pressed, focus-visible, disabled"
             exists to prevent. */}
-        <GlassButton variant="primary" block type="submit" className="venue-form-submit" disabled={!cleanName}>
+        <GlassButton variant="primary" size="lg" block type="submit" className="venue-form-submit" disabled={!cleanName}>
           {editing ? 'Save' : 'Add it'}
         </GlassButton>
         {!editing && (
@@ -196,7 +196,7 @@ export function VenueForm({ cruiseId, venueKey, venue, onClose }: {
             label="Remove this venue"
             confirmLabel="Tap again to remove"
             note={removeNote}
-            className="btn btn-wide venue-form-remove"
+            className="venue-form-remove"
             onConfirm={remove}
           />
         </>

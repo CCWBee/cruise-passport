@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { extractShareCode } from '../../state/share'
 import { useStore } from '../../state/store'
+import { GlassButton } from '../../ui/GlassButton'
 import { Sheet } from '../../ui/Sheet'
 import { Scanner } from './Scanner'
 import './friends.css'
@@ -37,14 +38,15 @@ export function ScanSheet({ onClose, onDone }: {
       <div className="scan-sheet">
         {/* the same words as the button that opened it, so nobody has to check they are in the
             right place */}
-        <h2 className="t-title sheet-title" id="scan-title">Scan their code</h2>
+        <h2 className="t-h2 sheet-title" id="scan-title">Scan their code</h2>
         <p className="sheet-meta scan-lead">Ask them to tap Show my code, then point your camera at it.</p>
         {!scanned && <Scanner onResult={handle} onError={setCamera} />}
-        {/* The paste field is on the sheet underneath, which this one covers, so say so and go there. */}
+        {/* The paste field is on the add sheet this one replaced, and closing this brings that one
+            back, so say so and go there. */}
         {camera && (
           <>
             <p className="t-meta scan-error" role="status">{camera}</p>
-            <button type="button" className="btn btn-wide scan-out" onClick={onClose}>Close and paste a code</button>
+            <GlassButton block className="scan-out" onClick={onClose}>Close and paste a code</GlassButton>
           </>
         )}
         {status && <p className="t-body scan-status" role="status">{status}</p>}

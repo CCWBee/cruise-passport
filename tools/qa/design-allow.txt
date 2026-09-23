@@ -2,13 +2,9 @@
 # One per line: <file path suffix> :: <substring of the flagged line>   and a reason in a comment above.
 # Every entry is a deliberate exception named in docs/DESIGN.md. Do not add one to make a screen pass.
 
-# the room (DESIGN.md, Material): its vertical gradient, the three pools of light, and the same painted
-# once and still on .ground for the screens that have not mounted the layer
+# the room (DESIGN.md, Material): its vertical gradient and the three pools of light
 styles/base.css :: linear-gradient(180deg, var(--room-0)
 styles/base.css :: radial-gradient(closest-side, var(--pool-
-styles/base.css :: radial-gradient(circle 290px
-styles/base.css :: radial-gradient(circle 260px
-styles/base.css :: radial-gradient(circle 230px
 # the glass engine is defined once, here (DESIGN.md, Material): the body and the edge lens, the sheen,
 # the lens's wash, and the touch light that follows the finger
 styles/base.css :: backdrop-filter
@@ -35,14 +31,6 @@ ui/select.css :: calc(var(--r-control) - 4px)
 ui/fdot.css :: inset 0 0 0 1px color-mix
 # the ship bobbing on the sea: one of the three authored motions
 features/home/sea.css :: ship-bob
-# the Wrapped certificate is glass over the drifting backdrop
-features/wrapped/wrapped.css :: backdrop-filter
-features/wrapped/wrapped.css :: inset 0 1px 0 var(--glass-rim)
-features/wrapped/wrapped.css :: linear-gradient(to bottom, var(--glass-highlight-film)
-# the Wrapped backdrop: the story's one ambient gradient and drift
-features/wrapped/wrapped.css :: radial-gradient(circle at 74% 16%
-features/wrapped/wrapped.css :: linear-gradient(160deg
-features/wrapped/wrapped.css :: wr-drift
 # the shaker's computed keyframes (DESIGN.md Motion, the written exceptions): a var() in a keyframe's
 # animation-timing-function does not resolve in Chrome (the segment takes the animation's own easing),
 # so keyframes.mjs writes --e-out's and --e-shake's values in literally, read from tokens.css

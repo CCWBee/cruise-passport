@@ -1,5 +1,6 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Masthead } from '../../app/Masthead'
+import { startRoom } from '../../app/room'
 import { isDesktopVisitor } from '../../data/model'
 import { Qr } from '../../ui/Qr'
 import './landing.css'
@@ -20,10 +21,14 @@ const PRICE_LINE: string | null = null
 // The desktop dead end, removed: a laptop visitor is handed the app on the phone in their pocket
 // rather than a first-open screen asking for a name and a colour on a machine that will never be
 // carried to a bar. It renders at / for a desktop first open and at /get for anybody, so it brings
-// its own ground and its own masthead and has no nav, exactly as the entry screen does.
+// its own room and its own masthead and has no nav, exactly as the entry screen does.
 // Nothing here collects, sends or stores anything: the code is drawn from a bundled generator, the
 // address comes from location, and the copy is static. There is no state to keep.
 export function Landing({ onContinue, continueLabel }: { onContinue: () => void; continueLabel: string }) {
+  // The room, mounted and run as Shell and the entry screen mount it (Entry.tsx says why there is no
+  // foot). On a laptop it is the same light by the clock the phone will show.
+  const roomRef = useRef<HTMLDivElement>(null)
+  useEffect(() => (roomRef.current ? startRoom(roomRef.current) : undefined), [])
   // Built the way the add sheet builds its share link: origin plus Vite's base, never a hardcoded
   // host, so a preview encodes the preview and the dev server encodes 127.0.0.1. The address line is
   // the display form of the same value, and the branch is there so the two cannot drift if `base`
@@ -37,9 +42,9 @@ export function Landing({ onContinue, continueLabel }: { onContinue: () => void;
 
   return (
     <>
-      {/* outside Shell, so it has to bring the ground itself: without it the two washes and the grain
-          go and the screen falls back to flat --cream from body */}
-      <div className="ground" aria-hidden />
+      {/* outside Shell, so it has to bring the room itself: without it the gradient, the pools and
+          the grain go and the screen falls back to the room's flat floor from body */}
+      <div className="room" ref={roomRef} aria-hidden />
       <main className="landing">
         <Masthead />
         <div className="landing-body">

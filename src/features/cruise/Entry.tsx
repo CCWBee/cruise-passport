@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Masthead } from '../../app/Masthead'
+import { startRoom } from '../../app/room'
 import { activeCruiseId, CRUISES, cruiseById } from '../../data/cruises'
 import { hasBackend } from '../../state/backend'
 import { useStore } from '../../state/store'
+import { GlassButton } from '../../ui/GlassButton'
 import { Select } from '../../ui/Select'
 import { PrivacySheet } from '../privacy/PrivacySheet'
 import { NameFields } from '../social/NameFields'
@@ -22,8 +24,14 @@ function prettyRange(start: string, end: string): string {
 // whether anything may leave the phone. Nothing has gone to the server when this renders, and nothing
 // does until Done: sync.ts gates its whole transport on `enteredCruise`, which is what makes the
 // consent line below true rather than a description of what happened a moment ago.
-// It renders outside Shell, so it brings its own ground and its own masthead and has no nav.
+// It renders outside Shell, so it brings its own room and its own masthead and has no nav.
 export function Entry({ onDone }: { onDone: () => void }) {
+  // The room, mounted and run exactly as Shell mounts it: the light by the clock, the pools that
+  // drift while the guest is here and rest while a sheet is up. No foot, because there is no tab bar
+  // for a row to pass under. Entry, the landing and Shell never mount together, and each hands the
+  // layer on in its cleanup, so the room is started once per screen.
+  const roomRef = useRef<HTMLDivElement>(null)
+  useEffect(() => (roomRef.current ? startRoom(roomRef.current) : undefined), [])
   const setProfile = useStore((s) => s.setProfile)
   const enterCruise = useStore((s) => s.enterCruise)
   // Initialised from the profile, not from empty: a ?entry run over a store that already has a name
@@ -49,9 +57,10 @@ export function Entry({ onDone }: { onDone: () => void }) {
 
   return (
     <>
-      {/* the screen renders outside Shell, so it has to bring the ground itself: without it the two
-          washes and the grain go and the screen falls back to flat --cream from body */}
-      <div className="ground" aria-hidden />
+      {/* the screen renders outside Shell, so it has to bring the room itself: without it the
+          gradient, the pools and the grain go and the screen falls back to the room's flat floor
+          from body */}
+      <div className="room" ref={roomRef} aria-hidden />
       <main className="entry">
         <Masthead />
         <div className="entry-body">
@@ -88,9 +97,9 @@ export function Entry({ onDone }: { onDone: () => void }) {
 
             {/* One row beneath module 2, in its own wrapper div for the reason the privacy row has
                 one: .row:not(:only-child) (base.css) squares a row with siblings, and wrapped it
-                keeps radius 12 and its press tint. It is the privacy row's shape rather than Crew's
-                group row, because it is on this screen and two rows on one screen must read the
-                same way; that is also why it carries no chevron. .cruise-byo carries no style of
+                keeps the control radius and its press tint. It is the privacy row's shape rather
+                than Crew's group row, because it is on this screen and two rows on one screen must
+                read the same way; that is also why it carries no chevron. .cruise-byo carries no style of
                 its own and exists so the QA shot can click it. One line: "your own sailing" says
                 what it is, and on the single-sailing branch there is no list for a second line to
                 point at. */}
@@ -107,7 +116,7 @@ export function Entry({ onDone }: { onDone: () => void }) {
               </button>
             </div>
 
-            {/* on the ground, not in a panel: the sibling is ProfileSheet, whose identical pair sits
+            {/* on the room, not in a panel: the sibling is ProfileSheet, whose identical pair sits
                 flat on the sheet. NameCard keeps its panel on Crew because it sits among other
                 content there; here the form is the screen, and a box around the only thing present is
                 the fourth banned tell */}
@@ -128,8 +137,8 @@ export function Entry({ onDone }: { onDone: () => void }) {
             </p>
 
             {/* in its own wrapper so .row:not(:only-child) (base.css) does not square its corners: an
-                isolated row keeps radius 12. The same row and class go into ProfileSheet, so the note
-                is reached the same way in both places. One deliberate difference: here the row is one
+                isolated row keeps the control radius. The same row and class go into ProfileSheet, so
+                the note is reached the same way in both places. One deliberate difference: here the row is one
                 line, without PRIVACY_SUBTITLE, because the consent line directly above already says
                 what leaves the phone and how to remove it. ProfileSheet has no such line, so its row
                 keeps the subtitle. */}
@@ -148,8 +157,9 @@ export function Entry({ onDone }: { onDone: () => void }) {
 
             {/* always enabled: a name is optional here, because the app has never required one to log
                 a drink, and /add, /join and Crew each still ask before anything of yours goes out
-                under a name */}
-            <button type="button" className="btn btn-wide btn-coral pressable entry-done" onClick={done}>Done</button>
+                under a name. The screen's one filled control, C's wide button at the foot, as the
+                add sheet's Add it is; there is no dock here, so no Log to be the coral one instead */}
+            <GlassButton variant="primary" size="lg" block type="button" className="entry-done" onClick={done}>Done</GlassButton>
           </div>
         </div>
       </main>

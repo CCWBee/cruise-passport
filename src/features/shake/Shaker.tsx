@@ -4,9 +4,11 @@ import { GLASS_H, GLASS_W, Glass } from './Glass'
 import { SHAKER } from './timing'
 import './shake.css'
 
-// The shaker: a cobbler shaker drawn the way ui/Icon.tsx draws everything, one ink stroke on a cream
-// fill, at hero size. It is not in the icon set because it is not an icon: it is the one object on
-// its screen, and an icon there would be a 24px glyph blown up.
+// The shaker: a cobbler shaker drawn the way ui/Icon.tsx draws everything, one stroke in the room's
+// ink, at hero size, over a body of steel mixed from that ink and the room's solid plate (shake.css),
+// so it is pale steel by day and dark steel in the evening and at night. It is not in the icon set
+// because it is not an icon: it is the one object on its screen, and an icon there would be a 24px
+// glyph blown up.
 //
 // Drawn from Charles's photograph of 22 September (docs/specs/2026-09-22-shaker-v2.md): a grooved cap
 // on a short neck, a domed strainer, the band where the strainer's skirt overlaps the body's rolled
@@ -18,8 +20,8 @@ import './shake.css'
 // coordinate below is on the drawing and nothing is placed with a layout offset. Painted back to
 // front inside one rig, which is what the shake moves:
 //
-//   the burst, six ink strokes that exist for a quarter of a second as the cap goes;
-//   the prize glass, down inside the tin until the pop, so the tin's cream fill hides it;
+//   the burst, six strokes of lamp light that exist for a quarter of a second as the cap goes;
+//   the prize glass, down inside the tin until the pop, so the tin's opaque steel hides it;
 //   the tin (dome, band and body), with the light and shade of polished steel;
 //   the cap, on top, its own layer so it can chatter, lift and fly.
 
@@ -81,7 +83,6 @@ export function Shaker({ phase, still = false, drink }: ShakerProps) {
         width={STAGE_W}
         height={STAGE_H}
         viewBox={`${-X0 / K} ${-Y0 / K} ${STAGE_W / K} ${STAGE_H / K}`}
-        fill="var(--cream)"
         stroke="currentColor"
         strokeWidth={STROKE}
         strokeLinecap="round"
@@ -117,14 +118,16 @@ export function Shaker({ phase, still = false, drink }: ShakerProps) {
             <path d={DOME} stroke="none" />
             <path d={BAND} stroke="none" />
             {/* the steel: a strip of light left of centre down the dome and the body, and the far
-                side in shade. The light on steel and --line, the only two allowed on the drawing */}
+                side in shade: the glass engine's lit rim and its shaded one (shake.css), the only two
+                allowed on the drawing, so the tin catches the same light as the glass around it */}
             <g className="shaker-light" stroke="none">
               <path d="M17 84L24 84L28.5 212L24.5 212Z" />
               <path d="M28.5 84L30.5 84L33 212L31.5 212Z" />
               <path d="M19 31C13 39 10.5 49 10 62L16 62C16.5 49 18.5 40 23 32Z" />
             </g>
             {/* the shade: the far side, and a narrow dark reflection beside each strip of light,
-                which is what makes a highlight read on cream, as it does on polished steel */}
+                which is what makes a highlight read on pale steel by day, as it does on polished
+                steel */}
             <g className="shaker-shade" stroke="none">
               <path d="M66 84H84C81.5 140 77 190 74 210H64.5C66.5 190 67.5 140 66 84Z" />
               <path d="M58 27C70 31 77 44 78 62H70C69.5 46 65.5 34 58 27Z" />

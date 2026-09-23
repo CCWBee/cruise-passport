@@ -1,65 +1,80 @@
-/* Home: the instrument's front panel. The sea poster carries the one primary action; below it,
-   aboard, three facts, then what to try, the bar you are standing in, what is next, and Wrapped.
-   Everything under the hero sits flat on the ground: no box, no card, no plate. */
+/* Home: the view from the bar (prototype C's order). The greeting, the window onto the sea, the
+   readout, then the medal tray inside the first screen; below it what to try, the bar you are
+   standing in, the crew's day and Wrapped. Three boxes and no more: the sea window, the tray and the
+   For you cards, and the tray dominates by size, by depth and by what it holds, not by brightness
+   alone. Everything else sits flat on the room. */
 /* .view carries the safe-area inset (shell.css); var(--s3) is .page's own value, so the greeting sits
    exactly where every other tab's first line does. */
 .home { padding-top: var(--s3); }
-.home-hero { position: relative; }
 
 /* the greeting: the screen's first line when there is a name. The title and its meta sit as one
-   block, the way a sheet's title and caption do, then 16 to the hero. */
+   block, the way a sheet's title and caption do, then 16 to the sea window. */
 .home-greet { margin-bottom: var(--s4); }
 
-/* three facts in one row, on the ground: no container, no dividers */
-.facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s3); }
-.fact-v { font-size: var(--f-title); font-weight: 600; line-height: 1.2; letter-spacing: -.01em; }
-.fact-l { margin-top: var(--s1); font-size: var(--f-meta); line-height: 1.4; color: var(--ink-2); }
+/* ── the readout: the display number and what it counts, on the room under the window. The copy is
+   bottom aligned to the figure, and aboard it grows to the day's facts beside it rather than a row
+   of its own, which is what keeps the tray inside the first screen on day three as on day minus
+   ten. ── */
+.readout { display: flex; align-items: flex-end; gap: var(--s3); margin-top: var(--s3); }
+.readout-pct { flex: none; }
+.readout-pct small { font-size: var(--f-title); letter-spacing: 0; margin-left: 2px; }
+.readout-copy { display: grid; gap: 2px; min-width: 0; padding-bottom: var(--s1); }
+.readout-sub { font-size: var(--f-body); line-height: 1.3; color: var(--ink-2); }
+.readout-today { font-size: var(--f-meta); line-height: 1.35; color: var(--ink-2); }
+/* the guest's own numbers in full ink, the words round them in ink-2 (C) */
+.readout-sub b, .readout-today b { color: var(--ink); font-weight: 700; }
 
-/* ── the new medal: the coin beside the line that names it ──
-   The coin is the same Medallion the badge sheet turns, at row scale, with the flat disc the
-   Badges grid draws beneath it while three.js loads and in place of it where there is no WebGL.
-   The slot keeps its size either way, so the row never jumps under the guest's thumb: at fov 27
-   from 6 units the turned coin reads about 66px inside the 96px stage, so the 72px flat disc it
-   replaces is the same apparent coin. The coin takes no pointer events: the row is one target, and
-   a tap opens the badge rather than spinning a coin that is turned in the sheet the tap leads to. */
-.home-coin {
-  flex: none;
-  width: 96px; height: 96px;
-  display: grid; place-items: center;
-  pointer-events: none;
-}
-/* The Medallion's canvas carries an inline 220px, sized for the badge sheet, and this stream does
-   not own that file. Scaling it with a transform is not the way out: the canvas measures itself
-   with getBoundingClientRect, so a scaled stage is measured after the scale and the coin comes out
-   twice as small again. The slot overrides the size instead, so the drawing buffer is the slot's.
-   Standing request: an optional `size` on Medallion retires these two rules. */
-.home-coin .medal-stage,
-.home-coin .medal-stage > div { width: 96px !important; height: 96px !important; }
+/* ── the medal tray (module 2). The cloth is .case (base.css): the velvet, its nap and its sunk
+   edge, the same plum in every room, with data-room="night" on it so the type and the rings on it
+   read night's tokens. Here only the tray's own layout. 24 above, not a section's 32: it answers the
+   readout, a medal for the drinks it counts. ── */
+.home-medals { margin-top: var(--s5); }
+.tray-lead { display: flex; align-items: center; gap: var(--s4); }
+/* The name and its line may wrap: "Sun Princess Champion" is wider than the 214 beside a 96 coin, and
+   three short lines still fit the coin's height. The tray is one target, so no line of it is a
+   label that must hold to one line. */
+.tray-copy { display: grid; gap: 2px; min-width: 0; }
+/* the new medal's line: plain words in the lamp's colour, no pill and no dot. It is there only while
+   the medal is new, so it tells the guest why this coin leads the tray. */
+.tray-new { font-size: var(--f-meta); font-weight: 700; line-height: 1.3; color: var(--lamp); }
+.tray-name { font-size: var(--f-heading); font-weight: 700; line-height: 1.2; }
+.tray-empty { display: block; }
+/* five coins at 56 with gaps of 8 fill the inner width at 390. The three rows sit 8 apart, not C's
+   12 to 14: at 390 by 844 that is what lets the For you names clear the tab bar aboard, when the
+   readout has grown by the day's facts. */
+.tray-coins { display: flex; gap: var(--s2); margin-top: var(--s2); }
+.tray-next { display: flex; align-items: center; gap: var(--s3); margin-top: var(--s2); }
 
 /* ── "For you": a horizontal shelf of drinks to try next. Each card is a swipeable, independently
-   opened unit, which is the one thing on Home that earns a boundary. The rail bleeds to the screen
-   edges so the next card peeks, the affordance to swipe; body never scrolls sideways (the rail
-   holds its own overflow). ── */
+   opened unit, which earns its boundary; it is a quiet film with a hairline, so it never competes
+   with the tray. The rail bleeds to the screen edges so the next card peeks, the affordance to
+   swipe; body never scrolls sideways (the rail holds its own overflow). ── */
 .rec-rail {
-  display: flex; gap: var(--s3); list-style: none; margin: 0; padding: 0 var(--inset);
+  display: flex; gap: var(--s3); list-style: none; margin: 0; padding: var(--s1) var(--inset) var(--s2);
   margin-inline: calc(-1 * var(--inset));
   overflow-x: auto; overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory; scroll-padding: var(--inset); -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
 .rec-rail::-webkit-scrollbar { display: none; }
-.rec-card { flex: 0 0 72%; scroll-snap-align: start; }
+/* 212, C's: two cards and the edge of a third at 390 */
+.rec-card { flex: none; width: 212px; scroll-snap-align: start; display: flex; }
 /* the press feedback is .pressable (base.css); this only carries the card's shape and layout */
 .rec-open {
-  display: flex; flex-direction: column; gap: var(--s1); width: 100%; height: 100%;
+  display: flex; flex-direction: column; align-items: flex-start; gap: var(--s1); width: 100%;
   padding: var(--s4); text-align: left;
-  background: var(--panel-solid); border: 1px solid var(--line); border-radius: var(--r-surface);
+  background: var(--plate-quiet); border: 1px solid var(--line); border-radius: var(--r-surface);
 }
-/* the reason, in the accent: the one warm mark on the shelf, and the honest basis for the pick.
-   One line: clickable text never wraps (a long "Loved by A and B" clips rather than growing). */
-.rec-reason { font-size: var(--f-meta); font-weight: 600; color: var(--coral-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rec-name { line-height: 1.25; }
-.rec-meta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* the name first, two lines at most: it is what the guest scans the shelf for */
+.rec-name {
+  font-size: var(--f-body); font-weight: 600; line-height: 1.3;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+/* the reason, in the lamp's colour: the one warm line on the shelf, and the honest basis for the
+   pick. One line: clickable text never wraps (a long "Loved by A and B" clips rather than growing). */
+.rec-reason {
+  max-width: 100%; font-size: var(--f-meta); font-weight: 600; line-height: 1.4; color: var(--lamp);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.rec-meta { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* the Wrapped row: one quiet row, only when Wrapped is unlocked */
-.wrapped-row { margin-top: var(--s6); color: var(--ink); }

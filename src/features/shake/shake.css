@@ -15,6 +15,9 @@
 /* the answer is the shaker's caption, so it takes the shaker's centring rather than the sheet's
    left edge: two lines hung off the left of a centred object read as belonging to nothing */
 .shake-answer { display: grid; gap: var(--s1); text-align: center; }
+/* the reason is warm light, as a reason is on the For you cards: why this drink, in the lamp's
+   colour, under the name in ink and the place in ink-2 */
+.shake-reason { color: var(--lamp); }
 /* The answer's place, held from the first frame: two lines of name, the meta line and the reason,
    with the answer's two gaps. Held rather than grown into, so the sheet never changes height while
    the shaker is moving; a longer name than two lines is the one case that still grows it. The reason
@@ -40,13 +43,22 @@
   justify-self: center;
   width: 300px; height: 275px;
   color: var(--ink);
+  /* The steel: the room's ink mixed into its solid plate, so the tin is a pale grey steel by day and
+     a dark slate one in the evening and at night, lighter than the sheet behind it in the dark rooms
+     and darker than it by day, and the ink stroke holds over 8:1 on it in all three by arithmetic
+     (the render stage measures it). Opaque, because the tin hides the prize until the pop. */
+  --steel: color-mix(in srgb, var(--ink) 16%, var(--plate-solid));
 }
-.shaker svg { display: block; overflow: visible; }
+.shaker svg { display: block; overflow: visible; fill: var(--steel); }
 
-/* Steel, in the app's idiom: a strip of light left of centre in the glass chrome's own specular, and
-   --line down the far side as the only shade. Nothing else on the drawing is coloured. */
+/* Polished steel, in the glass engine's own light: a strip left of centre in the lit rim's white,
+   and the far side and the reflections beside each strip in the under rim's shade, which is dark in
+   every room (--line is light ink in the evening and at night, and would have lit the far side). */
 .shaker .shaker-light { fill: var(--glass-rim); }
-.shaker .shaker-shade { fill: var(--line); }
+.shaker .shaker-shade { fill: var(--glass-rim-under); }
+/* the burst is light going off as the cap goes, so it is drawn in the lamp's colour, the warm light
+   the For you cards' reasons and Undo carry */
+.shaker .shaker-burst { stroke: var(--lamp); }
 .shaker .shaker-ray { opacity: 0; }
 
 /* The pivots. The rig, the cap, the glass and each ray are drawn round their pivots in the markup

@@ -1,147 +1,76 @@
-/* Badges: the second segment of You. Three plain sections on the ground, no card per badge. */
+/* Badges: the medal case, the second segment of You (docs/DESIGN.md, Screens, You). The earned coins
+   lie on the velvet; In reach and Locked are rows on the room, each led by its blank. */
 
 /* the segment starts under the You header, so the first heading keeps that 24px, not 24 + 32 */
 .badges > .section:first-child { margin-top: 0; }
 
-/* ── Earned: discs with the name beneath ── */
-.badge-grid {
+/* The velvet is .case in base.css, the same cloth under Home's tray and You's small case. The full
+   case sets data-room="night" on it, so its ink and focus ring are night's in every room. */
+
+/* ── the full case: the earned coins at 92, three to a row at 390 and two at 320, the name and
+   the tier beneath each ── */
+.case-full { padding: var(--s5) var(--s2); }
+
+.case-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-  gap: var(--s4) var(--s3);
+  gap: var(--s5) var(--s2);
 }
 
-.badge-medal {
+.case-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--s2);
   min-width: 0;
+  color: inherit;
+  text-align: center;
+  border-radius: var(--r-control);
+}
+
+/* A caption under the coin, not a label to read in a line: the coin is the target, so a long name
+   ("Sun Princess Champion", cut short at 320 in the judging) balances onto two lines rather than
+   losing its end. The whole name is also the button's label and the sheet's title. */
+.case-name {
+  max-width: 100%;
+  font-size: var(--f-meta);
+  font-weight: 700;
+  line-height: 1.25;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.case-tier {
+  margin-top: calc(-1 * var(--s1));
+  font-size: var(--f-meta);
+  line-height: 1.25;
+  color: var(--ink-2);
+}
+
+/* ── In reach and Locked: rows on the room, each led by its blank. A ringed blank at 52 draws its
+   metal at 42 inside the ring, and a locked one is 44, so both sit in one 52 slot and the names
+   stand in one column ── */
+.medal-row { color: inherit; }
+.medal-lead {
+  display: grid;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+}
+.medal-count { flex: none; white-space: nowrap; }
+
+/* ── the medal sheet: the coin at 196, then its name, its tier and hint, and the line under it,
+   all centred on the coin (C's and B's) ── */
+.medal-sheet {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: var(--s2);
   text-align: center;
 }
-
-/* a caption under the disc, and part of a button: one line, clipped. The whole name is on the
-   button's aria-label and is the sheet's title. */
-.badge-medal-name {
-  width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-/* ── the coin: one flat metal face, a hairline rim, the emblem struck pale into it ──
-   The tier ladder is four steps of ink into the ground's own white. A tier is an ordinal, so it is
-   ink, like every other ordinal in the app: no rating gold enters badge art. The lightest step
-   still measures 4.88:1 against the emblem. The tier is named in the sheet, so the ladder is not
-   the only place the distinction lives. */
-.medal-tier {
-  --metal: color-mix(in oklab, var(--ink) 70%, var(--panel-solid));
-  --emblem: var(--panel-solid);
-}
-
-.medal-silver { --metal: color-mix(in oklab, var(--ink) 80%, var(--panel-solid)); }
-.medal-gold { --metal: color-mix(in oklab, var(--ink) 90%, var(--panel-solid)); }
-.medal-special { --metal: var(--ink); }
-
-.medal-disc {
-  position: relative;
-  display: block;
-  flex: none;
-}
-
-/* locked, flat: no metal at all, a hairline ring and the emblem in quiet ink */
-.medal-disc.is-locked {
-  --metal: transparent;
-  --emblem: var(--ink-3);
-}
-
-/* locked, in the sheet: the same quiet reading, but a filled face, because a transparent coin
-   turned edge-on shows its own back. Panel white sits below every earned tier. */
-.medal-stage.is-locked {
-  --metal: var(--panel-solid);
-  --emblem: var(--ink-3);
-}
-
-.medal-art {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.medal-face {
-  fill: var(--metal);
-  stroke: var(--line);
-  stroke-width: 1;
-}
-
-.medal-emblem {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  color: var(--emblem);
-}
-
-.medal-emblem-svg { display: block; }
-.medal-emblem-svg :is(path, circle, polygon, ellipse, rect) { fill: var(--emblem); }
-
-/* ── Close and Locked: rows on the ground ── */
-.badge-row { color: inherit; }
-
-/* a Close row is one line: the name, then the count and its bar side by side at the right. The bar
-   is fixed and last, so the bars stand in one column and every count ends on the same edge. */
-.badge-meter {
-  display: grid;
-  grid-auto-flow: column;
-  align-items: center;
-  gap: var(--s2);
-  flex: none;
-  white-space: nowrap;
-}
-
-.badge-track {
-  display: block;
-  width: 56px;
-  height: 3px;
-  overflow: hidden;
-  border-radius: var(--r-tag);
-  background: var(--line);
-}
-
-.badge-fill {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--sea-ink);
-}
-
-/* ── the badge sheet ── */
-.badge-sheet { padding-bottom: var(--s2); }
-
-.medal-mount {
-  display: grid;
-  min-height: 220px;
-  place-items: center;
-  margin: var(--s4) 0;
-}
-
-/* the turnable coin. Its colours are read off these two probes, so the WebGL face is the same
-   metal and the same emblem the flat disc uses; nothing about the coin is hand-picked. */
-.medal-stage {
-  position: relative;
-  display: grid;
-  place-items: center;
-}
-
-.medal-probe {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-  visibility: hidden;
-}
-
-.medal-probe-metal { color: var(--metal); }
-.medal-probe-emblem { color: var(--emblem); }
-.medal-probe-ground { color: var(--panel-solid); }
-
-.badge-state { margin-top: var(--s4); }
+.medal-sheet-coin { margin: var(--s2) 0 var(--s4); }
+/* The title and its meta line sit under the coin, well below the X, so they drop the clearance the
+   sheet keeps for a title in the head band; with it they would centre 16px left of the coin */
+.medal-sheet .sheet-title,
+.medal-sheet .sheet-meta { padding-right: 0; }
+.medal-sheet-line { margin-top: var(--s3); text-wrap: pretty; }

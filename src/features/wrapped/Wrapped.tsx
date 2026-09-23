@@ -7,8 +7,10 @@ import { useNavigate } from 'react-router-dom'
 import { useAllDrinks, useStore } from '../../state/store'
 import { useSources } from '../../state/social'
 import { IconClose } from '../../ui/Icon'
+import { GlassButton } from '../../ui/GlassButton'
 import { useCountUp } from '../../ui/useCountUp'
 import { SHIP } from '../../data/model'
+import { startRoom } from '../../app/room'
 import { BADGES } from '../../data/badges'
 import { Coin } from '../badges/Coin'
 import {
@@ -129,9 +131,11 @@ function SaveWrapped({ card }: { card: WrappedFinale }) {
     <>
       {/* Both ends of the gesture: swallowing only pointerdown would leave the story's pointerup
           measuring against the previous card's start point, read as a swipe or a dismiss. */}
-      <button
-        type="button"
-        className="btn btn-coral wr-save"
+      {/* The story's one coral fill: /wrapped has no tab bar, so no Log button to take that place. */}
+      <GlassButton
+        variant="primary"
+        size="lg"
+        className="wr-save"
         disabled={busy}
         aria-busy={busy}
         onPointerDown={(event) => event.stopPropagation()}
@@ -139,7 +143,7 @@ function SaveWrapped({ card }: { card: WrappedFinale }) {
         onClick={(event) => { event.stopPropagation(); void save() }}
       >
         {busy ? 'Making your picture…' : 'Save my Wrapped'}
-      </button>
+      </GlassButton>
       {/* empty at rest: the button says what it does; the region stays mounted so "Saved." is announced */}
       <p className="wr-save-note t-meta" role="status">{status}</p>
     </>
@@ -282,7 +286,10 @@ function CardBody({ card, total }: { card: WrappedCard; total: number }) {
     case 'finale':
       return (
         <div className="wr-content wr-finale">
-          <div className="wr-certificate panel">
+          {/* glass, the engine's (base.css): the room drifts beneath it, so the film and the lit rim
+              read. The inner rule is a child, because the glass's ::after is its edge lens. */}
+          <div className="wr-certificate glass">
+            <span className="wr-cert-rule" aria-hidden="true" />
             <h2 className="t-title">Cruise Wrapped</h2>
             <p className="t-display tnum wr-cert-number"><AnimatedNumber value={card.count} /></p>
             <p className="t-meta">drinks tried, <span className="tnum">{card.pct.toFixed(0)}%</span> complete</p>
@@ -317,6 +324,7 @@ export function Wrapped({ onClose, startIndex = 0 }: WrappedProps) {
   const [holding, setHolding] = useState(false)
   const [pagePaused, setPagePaused] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
+  const roomRef = useRef<HTMLDivElement>(null)
   const holdTimer = useRef<number | undefined>(undefined)
   const gesture = useRef({ x: 0, y: 0, time: 0, held: false })
 
@@ -346,6 +354,12 @@ export function Wrapped({ onClose, startIndex = 0 }: WrappedProps) {
     if (!unlocked) return
     try { localStorage.setItem(SEEN_KEY, '1') } catch { /* additive hint only */ }
   }, [unlocked])
+
+  // The story sits in the room the tabs do (room.ts), mounted here because /wrapped is routed
+  // outside Shell: the same light by the clock, the same pools, which drift while the guest is
+  // tapping through and rest when the phone is left alone. One layer behind every card, so a card
+  // slides over a still room rather than bringing a backdrop of its own.
+  useEffect(() => (roomRef.current ? startRoom(roomRef.current) : undefined), [unlocked])
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow
@@ -422,10 +436,13 @@ export function Wrapped({ onClose, startIndex = 0 }: WrappedProps) {
   if (!unlocked) {
     return createPortal(
       <div className="wr wr-locked" role="dialog" aria-modal="true" aria-label="Cruise Wrapped">
-        <div className="wr-locked-panel panel">
+        <div className="room" ref={roomRef} aria-hidden="true" />
+        {/* on the room, no panel: a message and its one way out are not a module with a boundary */}
+        <div className="wr-locked-panel">
           <h1 className="t-title">Your story is still under way</h1>
           <p className="t-meta">Cruise Wrapped unlocks when the voyage is complete, or after your twenty-fifth drink.</p>
-          <button type="button" className="btn btn-coral" onClick={close}>Back to Home</button>
+          {/* filled: /wrapped has no tab bar, so no Log button holds the screen's coral */}
+          <GlassButton variant="primary" onClick={close}>Back to Home</GlassButton>
         </div>
       </div>,
       document.body,
@@ -448,6 +465,7 @@ export function Wrapped({ onClose, startIndex = 0 }: WrappedProps) {
       onPointerUp={pointerUp}
       onPointerCancel={pointerEnd}
     >
+      <div className="room" ref={roomRef} aria-hidden="true" />
       <p id="wr-instructions" className="sr-only">Tap left or right, swipe, or use the arrow keys to move through your story.</p>
       <div
         className="wr-dots"
@@ -466,7 +484,7 @@ export function Wrapped({ onClose, startIndex = 0 }: WrappedProps) {
       </div>
       <button
         type="button"
-        className="wr-close"
+        className="wr-close pressable"
         aria-label="Close Cruise Wrapped"
         onPointerDown={(event) => event.stopPropagation()}
         onClick={(event) => { event.stopPropagation(); close() }}
@@ -475,7 +493,6 @@ export function Wrapped({ onClose, startIndex = 0 }: WrappedProps) {
       </button>
       <main className="wr-stage" aria-live="polite">
         <section className="wr-card" key={`${card.kind}-${index}`} aria-label={`Card ${index + 1} of ${cards.length}`}>
-          <div className="wr-backdrop" aria-hidden="true" />
           <CardBody card={card} total={wrappedTotal(drinks)} />
         </section>
       </main>

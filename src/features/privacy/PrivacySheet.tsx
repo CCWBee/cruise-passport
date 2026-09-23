@@ -31,7 +31,7 @@ export function PrivacySheet({ onClose }: { onClose: () => void }) {
   return (
     <Sheet onClose={onClose} labelledBy="privacy-title">
       <div className="privacy">
-        <h2 className="t-title sheet-title" id="privacy-title">Privacy note</h2>
+        <h2 className="t-h2 sheet-title" id="privacy-title">Privacy note</h2>
         <p className="sheet-meta">{PRIVACY_SUBTITLE}</p>
 
         {!server && (

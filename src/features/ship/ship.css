@@ -1,18 +1,17 @@
-/* Ship: a plain section per deck, one row per venue, a 3px ink bar under the name once a drink
-   there is tried. No plates, no deck colours, no boxes. See docs/DESIGN.md. */
+/* Ship: a plain section per deck, one row per venue on the room, the count at the right with a 3px
+   bar under it once a drink there is tried. No plates, no deck colours, no boxes. See docs/DESIGN.md. */
 
-/* a venue row: name (with its state glyphs), the bar under it, the count at the right */
-.venue-line { display: flex; align-items: center; gap: var(--s2); min-width: 0; }
+/* a venue row: the name, "Visited" under it when it is, and the end column */
 .venue-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.venue-line svg { flex: none; }
-.venue-visited { color: var(--mint); }        /* visited */
-/* a fixed measure column: every count right-aligned, so every bar ends at the same x */
-.venue-count { flex: none; min-width: 64px; text-align: right; }
-
-/* progress: a hairline track with an ink fill, drawn only once a drink at the venue is tried. The
-   track keeps every drawn bar the same measure, so a short fill reads as a bar rather than an
-   underline on the name. No transition: this is the same measure as .badge-fill and
-   .stats-deck-bar, and none of the three grows in. */
+/* the word and its pin: the pin in the state colour, the word in the meta ink beside it, so the
+   state reads as a fact about the bar rather than a mark against its list */
+.venue-visited { display: flex; align-items: center; gap: var(--s1); }
+.venue-visited svg { flex: none; color: var(--mint); }
+/* prototype C's end column: a fixed measure, every count right-aligned over its bar, so every bar
+   starts and ends at the same x down a deck. The bar is .meter (base.css) as it stands; it takes its
+   width from this column. */
+.venue-end { flex: none; inline-size: 72px; display: grid; justify-items: end; }
+.venue-end .meter { inline-size: 100%; }
 
 /* ── the venue sheet: title, meta, blurb, the visited switch, the count line, then the list.
       Space alone separates the groups; no hairline fences the switch ── */
@@ -33,8 +32,8 @@
 .venue-rule { margin-top: var(--s4); }
 .venue-form-remove { margin-top: var(--s4); }
 
-/* ── the empty ship: the action is the state (the You segments' .empty-state takes the same shape), two lines and the one
-      filled control the screen otherwise never spends ── */
+/* ── the empty ship: the action is the state (the You segments' .empty-state takes the same shape),
+      two lines and the one control ── */
 .ship-empty { margin-top: var(--s5); }
 .ship-empty .t-meta { margin-top: var(--s2); }
 .ship-empty .ship-add { margin-top: var(--s4); }

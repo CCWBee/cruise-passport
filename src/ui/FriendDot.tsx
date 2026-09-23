@@ -7,7 +7,7 @@ export function FriendDot({ name, colour, size = 22 }: { name: string; colour: s
     <span
       className="fdot"
       title={name}
-      style={{ '--fc': `var(--fruit-${colour})`, '--sz': `${size}px` } as CSSProperties}
+      style={{ '--fc': `var(--friend-${colour})`, '--sz': `${size}px` } as CSSProperties}
     >
       {(name.trim()[0] || '?').toUpperCase()}
     </span>

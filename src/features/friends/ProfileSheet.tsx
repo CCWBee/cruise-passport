@@ -2,9 +2,11 @@ import { useState, type CSSProperties } from 'react'
 import { deleteMyData, hasBackend } from '../../state/backend'
 import { FRIEND_COLOURS, useStore } from '../../state/store'
 import { keepAsGuest, startSignIn, useSyncStore } from '../../state/sync'
+import { GlassButton } from '../../ui/GlassButton'
 import { Sheet } from '../../ui/Sheet'
 import { GUEST_HONESTY, PrivacySheet, PRIVACY_SUBTITLE } from '../privacy/PrivacySheet'
 import { ConfirmButton } from './ConfirmButton'
+import '../../ui/field.css'
 import './friends.css'
 
 // Who you are to the crew: the name and colour that ride on every shared drink, whether this passport
@@ -75,118 +77,118 @@ export function ProfileSheet({ onClose }: { onClose: () => void }) {
   if (privacyOpen) return <PrivacySheet onClose={() => setPrivacyOpen(false)} />
 
   return (
-      <Sheet onClose={onClose} labelledBy="profile-title">
-        <div className="friends-sheet">
-          <h2 className="t-title sheet-title" id="profile-title">Your details</h2>
-          {/* The one meta line says what the sheet is for rather than reading out the two field
-              labels beneath it. The longer "and where your passport is kept" wrapped to a one-word
-              widow at 390px, and it was untrue in a build with no Keep block. The code is not
-              repeated here either: it is on the Crew header behind this sheet and under Show my code. */}
-          <p className="sheet-meta">How your crew sees you.</p>
+    <Sheet onClose={onClose} labelledBy="profile-title">
+      <div className="friends-sheet">
+        <h2 className="t-h2 sheet-title" id="profile-title">Your details</h2>
+        {/* The one meta line says what the sheet is for rather than reading out the two field
+            labels beneath it. The longer "and where your passport is kept" wrapped to a one-word
+            widow at 390px, and it was untrue in a build with no Keep block. The code is not
+            repeated here either: it is on the Crew header behind this sheet and under Show my code. */}
+        <p className="sheet-meta">How your crew sees you.</p>
 
-          <label className="f-field">
-            <span className="f-label">Your name</span>
-            <input
-              value={profile.name}
-              maxLength={24}
-              autoComplete="name"
-              onChange={(event) => setProfile({ name: event.target.value })}
-            />
-          </label>
+        <label className="f-field">
+          <span className="f-label">Your name</span>
+          <input
+            className="field-ctrl"
+            value={profile.name}
+            maxLength={24}
+            autoComplete="name"
+            onChange={(event) => setProfile({ name: event.target.value })}
+          />
+        </label>
 
-          <div className="f-field">
-            <span className="f-label">Your colour</span>
-            <div className="fpick">
-              {FRIEND_COLOURS.map((colour) => (
-                <button
-                  type="button"
-                  key={colour}
-                  className={'fpick-dot pressable' + (profile.colour === colour ? ' on' : '')}
-                  style={{ '--fc': `var(--fruit-${colour})` } as CSSProperties}
-                  aria-label={`Use ${colour}`}
-                  aria-pressed={profile.colour === colour}
-                  onClick={() => setProfile({ colour })}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Rank 5: will I lose this. Above the sync line because it outranks "is the crew up to
-              date", and directly above it because the restore result is reported on that line. An
-              offline build has nothing to sign in to, so the block is gated exactly as the erasure
-              block below it is. */}
-          {sync.account !== 'off' && (
-            <div className="friends-block">
-              <div className="section-head"><h3 className="t-h2">Keep your passport</h3></div>
-
-              {sync.restore === 'linked' ? (
-                <>
-                  {/* "joins", not "replaces": the merge is a union and never drops a drink logged on
-                      either side. The note names the two things that genuinely go and nothing else;
-                      the crew is not among them, because every direct friend is re-befriended under
-                      the new code on the next pull. */}
-                  <p className="t-body">This Google account already keeps a passport. Bringing it back joins it with the one on this phone, so no drink is lost.</p>
-                  <ConfirmButton
-                    label="Bring that one back"
-                    confirmLabel="Tap again to continue"
-                    note="Your code changes to the one that account already uses, and any group you joined on this phone is left behind."
-                    className="btn btn-wide friends-action"
-                    onConfirm={() => { void startSignIn('fresh') }}
-                  />
-                  <button type="button" className="quiet-action" onClick={keepAsGuest}>Or keep using this phone’s passport as a guest.</button>
-                </>
-              ) : sync.account === 'saved' ? (
-                <p className="t-body">Kept with Google. Sign in on any phone and this passport comes back.</p>
-              ) : (
-                <>
-                  {/* one text, not two that can drift: the privacy note renders the same constant under
-                      "If you do not sign in" */}
-                  <p className="t-body">{GUEST_HONESTY}</p>
-                  {/* A plain button, not coral: sign-in is optional and guest-first, and Crew has
-                      already spent its one filled accent on "Add to your crew". */}
-                  <button type="button" className="btn btn-wide friends-action" disabled={offline} onClick={() => { void startSignIn() }}>
-                    Keep it with Google
-                  </button>
-                  <p className="t-meta friends-hint">{signInHint}</p>
-                </>
-              )}
-            </div>
-          )}
-
-          {statusLine && <p className="t-meta friends-status" role="status">{statusLine}</p>}
-
-          {/* The same row, class and strings as the one on the entry screen, so the note is reached the
-              same way in both places; a third caller would make it a component in features/privacy
-              rather than a third copy. Outside the hasBackend() guard, because the note is worth
-              reading in a build with no server too. Its own wrapper keeps .row:not(:only-child) from
-              squaring the corners of a row that stands alone. */}
-          <div className="friends-block">
-            <button
-              type="button"
-              className="row pressable privacy-open"
-              aria-haspopup="dialog"
-              onClick={() => setPrivacyOpen(true)}
-            >
-              <span className="row-copy">
-                <span className="t-strong">Privacy note</span>
-                <span className="t-meta">{PRIVACY_SUBTITLE}</span>
-              </span>
-            </button>
-          </div>
-
-          {hasBackend() && (
-            <div className="friends-danger">
-              <ConfirmButton
-                label="Delete my data"
-                confirmLabel="Tap again to delete"
-                note="Removes your shared passport, friends and groups from the server. Your phone’s copy stays."
-                className="btn btn-wide"
-                onConfirm={() => { void erase() }}
+        <div className="f-field">
+          <span className="f-label">Your colour</span>
+          <div className="fpick">
+            {FRIEND_COLOURS.map((colour) => (
+              <button
+                type="button"
+                key={colour}
+                className={'fpick-dot pressable' + (profile.colour === colour ? ' on' : '')}
+                style={{ '--fc': `var(--friend-${colour})` } as CSSProperties}
+                aria-label={`Use ${colour}`}
+                aria-pressed={profile.colour === colour}
+                onClick={() => setProfile({ colour })}
               />
-              {status && <p className="t-meta friends-status" role="status">{status}</p>}
-            </div>
-          )}
+            ))}
+          </div>
         </div>
-      </Sheet>
+
+        {/* Rank 5: will I lose this. Above the sync line because it outranks "is the crew up to
+            date", and directly above it because the restore result is reported on that line. An
+            offline build has nothing to sign in to, so the block is gated exactly as the erasure
+            block below it is. */}
+        {sync.account !== 'off' && (
+          <div className="friends-block">
+            <div className="section-head"><h3 className="t-h2">Keep your passport</h3></div>
+
+            {sync.restore === 'linked' ? (
+              <>
+                {/* "joins", not "replaces": the merge is a union and never drops a drink logged on
+                    either side. The note names the two things that genuinely go and nothing else;
+                    the crew is not among them, because every direct friend is re-befriended under
+                    the new code on the next pull. */}
+                <p className="t-body">This Google account already keeps a passport. Bringing it back joins it with the one on this phone, so no drink is lost.</p>
+                <ConfirmButton
+                  label="Bring that one back"
+                  confirmLabel="Tap again to continue"
+                  note="Your code changes to the one that account already uses, and any group you joined on this phone is left behind."
+                  className="friends-action"
+                  onConfirm={() => { void startSignIn('fresh') }}
+                />
+                <button type="button" className="quiet-action" onClick={keepAsGuest}>Or keep using this phone’s passport as a guest.</button>
+              </>
+            ) : sync.account === 'saved' ? (
+              <p className="t-body">Kept with Google. Sign in on any phone and this passport comes back.</p>
+            ) : (
+              <>
+                {/* one text, not two that can drift: the privacy note renders the same constant under
+                    "If you do not sign in" */}
+                <p className="t-body">{GUEST_HONESTY}</p>
+                {/* A plain button, not coral: sign-in is optional and guest-first, and it is not
+                    the thing this sheet is opened for. */}
+                <GlassButton block className="friends-action" disabled={offline} onClick={() => { void startSignIn() }}>
+                  Keep it with Google
+                </GlassButton>
+                <p className="t-meta friends-hint">{signInHint}</p>
+              </>
+            )}
+          </div>
+        )}
+
+        {statusLine && <p className="t-meta friends-status" role="status">{statusLine}</p>}
+
+        {/* The same row, class and strings as the one on the entry screen, so the note is reached the
+            same way in both places; a third caller would make it a component in features/privacy
+            rather than a third copy. Outside the hasBackend() guard, because the note is worth
+            reading in a build with no server too. Its own wrapper keeps .row:not(:only-child) from
+            squaring the corners of a row that stands alone. */}
+        <div className="friends-block">
+          <button
+            type="button"
+            className="row pressable privacy-open"
+            aria-haspopup="dialog"
+            onClick={() => setPrivacyOpen(true)}
+          >
+            <span className="row-copy">
+              <span className="t-strong">Privacy note</span>
+              <span className="t-meta">{PRIVACY_SUBTITLE}</span>
+            </span>
+          </button>
+        </div>
+
+        {hasBackend() && (
+          <div className="friends-danger">
+            <ConfirmButton
+              label="Delete my data"
+              confirmLabel="Tap again to delete"
+              note="Removes your shared passport, friends and groups from the server. Your phone’s copy stays."
+              onConfirm={() => { void erase() }}
+            />
+            {status && <p className="t-meta friends-status" role="status">{status}</p>}
+          </div>
+        )}
+      </div>
+    </Sheet>
   )
 }

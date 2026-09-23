@@ -1,1 +1,17 @@
 .you-head { display: grid; gap: var(--s3); margin-bottom: var(--s5); }
+
+/* C's small case on Stats: the velvet (.case, base.css) with its heading and the earned coins in one
+   line, up to six, highest tier first. Six at 44 with 12 between fill the case's 326 inside at 390;
+   at 320 the line holds four, and the rest wrap onto a second line the case's height hides, so a
+   coin is never cut in half. */
+.case-you { margin-bottom: var(--s6); }
+.case-you-head { display: flex; align-items: center; gap: var(--s3); }
+.case-go { flex: none; color: var(--ink-3); }
+.case-coins {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2) var(--s3);
+  height: 48px;
+  margin-top: var(--s3);
+  overflow: hidden;
+}

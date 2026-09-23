@@ -1,4 +1,4 @@
-/* Log: one section per day on the ground. No day box, no tint. See docs/DESIGN.md. */
+/* Log: one section per day on the room. No day box, no tint. See docs/DESIGN.md. */
 
 /* the segmented control above already sets the gap to the first day */
 .section.log-first { margin-top: 0; }
