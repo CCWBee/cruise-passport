@@ -118,14 +118,25 @@ changes what Delete my data does; the spec has it built to a stated default when
 - **Roll the Cloudflare API token** (pasted in chat 1 September; rotation register in
   `project-management/README.md`).
 
-### Anonymous QA users to purge from the Supabase dashboard (all profile name Alex, zero edges/memberships)
+### Test users: purged 23 September on Charles's go ("purging test users in green lighting you")
 
-- 10 September, all zero edges: sellability shots two (codes not recorded, ~11:00); pass C builder
-  QR9Y-NYC3, QAZ9-2TPD; reviewer HCBC-6FT7, PZQ5-W9FN and one uncaptured (~13:03 to 13:07); fixer
-  3QJT-1FC5, BDHC-KF9X. Pass B one uncaptured ~12:48:44 (the republish seam, polish item 1).
-  Deleted-profile auth rows still present, by uid: `d7ffee51`, `f07921a5`, `4cf630c9`.
-- BYO (17 September) created none: every check was local (fixtures, `node --test`, `?nosync` shots).
-- Never blanket-purge; real users have existed since 3 September.
+- The audit (`docs/audits/2026-09-23-live-readiness.md`) found the old ledger covered a dozen of
+  them: 166 accounts, all anonymous, 124 carrying the `?seed` demo passport (68 "You" from 3
+  September before the seed was renamed, 43 "Alex", 9 "Isabel", 2 "Charles", 2 "A friend").
+- Deleted: 134 auth users (cascading their profiles, passports and backups) chosen by predicate,
+  never by name alone: zero friend edges, memberships and groups, and either the seed passport's
+  entry hash, a `byo-` fixture passport, the name Alex, or no rows at all (7 empty logins). Every
+  row was exported first to `.local/purge-2026-09-23-export.json` (gitignored; 134 users, 127
+  profiles, passports and backups), so it can be put back.
+- Kept: "C" (11 real drinks), "Isabel Gillam" (1 drink, 2 September), and one seeded "Isabel" that
+  holds the only friend edge (to C); ask Charles before touching that pair.
+- 29 zero-entry "A friend" profiles with no edges had the name blanked, not deleted, so find by
+  name no longer returns them (test or a real phone that never logged, impossible to tell).
+- After: 32 auth users, 3 named profiles (C, Isabel, Isabel Gillam), 2 friend edges.
+- The source of the test data is still open: a `?seed` load without `nosync` syncs the demo passport
+  to the live project (the seed marks the store entered). Make `?seed` imply `nosync` in code, and
+  build the Pages preview without Supabase variables. The rule going forward: purge by predicate
+  (seed hash, fixture, empty), with an export first; never by name alone, never blanket.
 
 ### The shaker (branch `shake`), 17 to 18 September: done and live
 
@@ -225,8 +236,36 @@ SVG coin replaces Medallion and three.js). Plan: workflow 1 builds (foundation s
 chrome, medals, then a Brave check; six screen builders in two waves of three; one integration pass
 with all gates green and DESIGN.md merged); workflow 2 verifies in Brave screen set by screen set at
 hours 13, 19 and 23 plus 320 wide, then a refute-by-default gate. Then a Pages preview on branch
-`night-bar` for Charles's iPhone; `main` only after he has opened it. Workflow 1 run id and resume
-handle: see the line below once launched.
+`night-bar` for Charles's iPhone; `main` only after he has opened it. Workflow 1 is run
+`wf_6e0c2ff9-d42`, launched about 09:10 on 23 September. Resume: Workflow with scriptPath
+`C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\night-bar-build-wf_6e0c2ff9-d42.js`
+and resumeFromRunId `wf_6e0c2ff9-d42` (foundation stages commit as they go, so a resumed run picks
+up from the last committed stage; the screen builders do not commit, the integrator does).
+Alongside it, a read-only audit for Charles's question ("what's left to stop this being live? What's
+the online suite and data like for accounts and how are the offline fallback stuff"): run
+`wf_472886c2-538` (accounts, data and sync, offline, go-live blockers; each read then checked),
+scriptPath `C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-live-readiness-wf_472886c2-538.js`.
+It landed; the full record is `docs/audits/2026-09-23-live-readiness.md`.
+
+Charles, the same morning, after trying the prototypes on his phone: "I've tested and am happy with
+new design push. It" (standing go to push night-bar to main once it builds and passes the Brave
+checks; no further phone check asked of him), "I have to sign in or just enable 2fa? Seems hastle for
+users" (answered: only he needs 2SV, once, to create the Google client; recommended instead an
+account-free recovery code, which needs a migration and so his go), and the purge (done, above). The
+broken iPhone icon he spotted (apple-touch-icon.png and pwa-192.png drawn off the canvas) was
+regenerated from pwa-512.png and pushed straight to main as `c1c493a` (live, deploy green).
+
+Queued after the build, before the Brave verification (code only, reversible, in scope): the
+hardening the audit found. Keep one anonymous identity for good (never mint a new user when a
+session refresh fails on patchy Wi-Fi; retry), request timeouts on Supabase calls, an error screen
+with Reload in place of a blank page, the install-first prompt on a phone's first open and
+`navigator.storage.persist()`, an invite link that lands in the Safari copy of an installed app
+saying so, `?seed` never syncing, the delete-my-data race, CI running `npm test` on Node 22, and a
+keep-awake health check copied from Bobble's `health-check.yml`. Needing Charles's go (production
+database): the recovery code migration, and the friends and memberships policies reduced to
+SELECT and DELETE (any session can insert an edge and silently read a guest's passport). Charles's
+console gate: roll the Cloudflare token. Before sailing: a real iPhone in airplane mode, a cut-off
+for deploys, and a freeze from 3 to 17 October.
 
 Earlier the same night, the glass revolution (`docs/specs/2026-09-23-glass-revolution.md`). Charles:
 "isn't ready to go yes or no if not get it working and revolution not tweak". My verdict: not ready

@@ -36,11 +36,13 @@
   stroke-dashoffset: 1;
   animation: tickc-draw var(--t-draw) var(--e-out) var(--t-press) forwards;
 }
-/* the label sits on its own small plate of the same glass, so it reads over a dense list too */
+/* the label sits on its own small plate of glass, so it reads over a dense list too: the sheet's
+   film and a wider blur, as the toast has, because the clear film let a title behind it through */
 .tickc-label {
   padding: var(--s2) var(--s4);
   border-radius: var(--r-tag);
 }
+.tickc-label.glass { --film: var(--sheet-film); --glass-blur: 12px; }
 
 /* In and out on the glass's own layers, never on an ancestor: an opacity on .tickc would make it the
    backdrop root of both plates, and they would fade as flat film. */

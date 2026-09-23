@@ -361,9 +361,10 @@
   --bead: linear-gradient(165deg, rgba(255, 255, 255, .96), rgba(255, 255, 255, .8) 60%, rgba(236, 244, 250, .84));
   --bead-shadow: inset 1.5px 1.5px 0 #FFFFFF, inset -1px -2px 3px rgba(28, 60, 86, .14), 0 0 0 1px rgba(14, 26, 46, .1), 0 2px 8px rgba(16, 32, 48, .18);
   --bead-lift: inset 1.5px 1.5px 0 #FFFFFF, inset -1px -2px 3px rgba(28, 60, 86, .14), 0 0 0 1px rgba(14, 26, 46, .12), 0 6px 16px rgba(16, 32, 48, .22);
-  /* the Log button's coral, heavier by day: white on C's .78 tint over the pale sky is 2:1, on this
-     4.8:1 for the 12px label */
-  --coral-glass: radial-gradient(120% 120% at 30% 18%, rgba(226, 70, 104, .92), rgba(199, 47, 80, .9) 58%, rgba(160, 28, 62, .9));
+  /* the Log button's coral, heavier by day: white on C's .78 tint over the pale sky is 2:1. At .9
+     the saturated teal floor still came through, and the 12px label measured 4.4:1 in Brave; at
+     these it holds 4.5 or more with the floor behind it */
+  --coral-glass: radial-gradient(120% 120% at 30% 18%, rgba(214, 58, 94, .96), rgba(190, 40, 74, .95) 58%, rgba(150, 24, 58, .95));
   --scrim: rgba(12, 28, 44, .2);
   --scrim-solid: rgba(12, 28, 44, .5);
   --sh-sheet: 0 -8px 40px rgba(16, 32, 48, .18), 0 -1px 6px rgba(16, 32, 48, .1);

@@ -158,6 +158,13 @@ h1, h2, h3, p { margin: 0; }
   position: relative;
   color: var(--ink);
 }
+/* The body sits under everything the surface holds, bare text included. A positioned ::before paints
+   over a text node that is not in an element of its own (Home's "Log a drink" and "Sails in 10 days"
+   vanished under the film in Brave, 23 September 2026), so the body is pushed to the back of the
+   surface's own stacking context. Isolation makes that context; unlike opacity, a filter or a mask
+   it does not make a backdrop root, so the body still samples the room. */
+.glass, .glass-live { isolation: isolate; }
+.glass::before, .glass-live::before { z-index: -1; }
 .glass, .glass-live {
   --film: var(--glass-film);
   --rim: 8px;

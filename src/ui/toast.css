@@ -12,6 +12,11 @@
   pointer-events: auto; display: flex; align-items: center; gap: var(--s1);
   min-height: 52px; padding: var(--s1) var(--s1) var(--s1) var(--s4); border-radius: var(--r-tag);
 }
+/* It carries a line of text over whatever the screen has at the top, often a large title. On the
+   engine's clear 20% film that title came through as a pale blur under the toast's words at 3.5:1
+   (Brave, night, over the search's "Log a drink"), so the toast reads on the sheet's film and a
+   wider blur: 6:1 or more over the same title */
+.toast.glass { --film: var(--sheet-film); --glass-blur: 12px; }
 .toast-icon { flex: none; display: grid; place-items: center; width: 20px; height: 20px; margin-right: var(--s1); color: var(--ink-2); }
 .toast.success .toast-icon { color: var(--mint); }
 .toast.warning .toast-icon { color: var(--star); }
