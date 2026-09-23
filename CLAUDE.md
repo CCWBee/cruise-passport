@@ -111,6 +111,14 @@ The same holds for a probe of the page from Brave.
 - `.claude/`: the workflow worktrees (`.claude/worktrees/<run id>`), each a checkout of this repo
   whose branch holds one stream's work. Gitignored, and not the main tree: edit and commit in the
   repo root.
+  **Never `git worktree remove` a worktree that holds a `node_modules` junction.** Symptom (23
+  September 2026): after removing the six declutter worktrees, `node_modules/.bin`, the dot folders
+  and every scoped package sorting before `@rolldown` were gone from the main tree. Cause: each
+  worktree linked the main `node_modules` in as a junction, and git's recursive delete followed it,
+  alphabetically, until it errored with "Invalid argument". Check: before removing a worktree,
+  delete its junction on its own (`[System.IO.Directory]::Delete('<wt>\node_modules', $false)` in
+  PowerShell, which removes the link and never follows it), then delete the folder; if it already
+  happened, `npm install` in the main tree restores everything from the lockfile.
 - `redirect/`: the GitHub Pages redirector for the old address.
 
 ## Operating notes

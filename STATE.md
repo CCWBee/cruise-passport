@@ -216,15 +216,18 @@ sheets returned to after a replacement.
 
 ## Next action
 
-Nothing is in flight. The overhaul is live at `6f54560`. Open from the code review, none blocking:
-an erase can race a sync already in flight (`ProfileSheet.tsx` erase against `sync.ts` runSync:
-hold syncs before the RPC); Shake again lands the prize about 100ms past the 3.0s budget because the
-260ms reverse comes first; dead code (`Filters.venues` and facets' venues group, the store's
-`'again'` toggle, `computeStats().best`). Housekeeping: the six stream worktrees under
-`.claude/worktrees/` can go now `main` carries their work (their branches stay). Charles's: two-step
-verification on the Google account for the OAuth client, the held spec rulings, the Cloudflare
-token roll, the QA-user purge (the polish item 1 live run's two users deleted themselves), and the
-QA harness's leaked Chrome profiles (thread above).
+IN FLIGHT 23 September: the glass revolution (`docs/specs/2026-09-23-glass-revolution.md`). Charles:
+"isn't ready to go yes or no if not get it working and revolution not tweak". My verdict: not ready
+(nothing behind the glass, films 46 to 88% opaque, the blue wave the only liquid moment). Three
+directions (A harbour by day, B open water, C night bar) are being prototyped as clickable pages in
+`prototypes/2026-09-23/<letter>/`, rendered in Brave, judged, then put on a Cloudflare Pages preview
+for Charles to pick on his phone. The pick is his (a taste call); then the chosen direction is built
+into the app. Workflow run id and resume handle go here once launched.
+
+Also open from before, none blocking: the erase and in-flight sync race; Shake again about 100ms past
+the budget; dead code (`Filters.venues`, the `'again'` toggle, `computeStats().best`). Charles's: 2SV
+on the Google account for the OAuth client, the held spec rulings, the Cloudflare token roll, the
+QA-user purge.
 
 ## Gotchas
 

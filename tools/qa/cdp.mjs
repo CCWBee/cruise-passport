@@ -1,7 +1,7 @@
 // Minimal CDP harness: one headless Chrome, N isolated browser contexts (separate storage), each
 // driven as a "user". Node 22 (global WebSocket). Kills only the Chrome it spawned.
 import { spawn } from 'node:child_process'
-import { writeFileSync, mkdirSync } from 'node:fs'
+import { writeFileSync, mkdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
@@ -78,5 +78,14 @@ export async function launch({ width = 500, height = 900 } = {}) {
   }
   // raw protocol events (a screencast's frames, say); returns the function that unsubscribes
   const on = (fn) => { listeners.push(fn); return () => { const i = listeners.indexOf(fn); if (i >= 0) listeners.splice(i, 1) } }
+  // The profile goes with the browser. Until 23 September 2026 close() only killed Chrome and every run
+  // left its profile in %TEMP% (about 1,160 files, 47 MB each): 886 of them by 22 September, and the
+  // Windows logon's User Profile Service slowed from about 40 s to about 7 minutes walking them. The
+  // callers do not await close(), so the removal hangs off Chrome's own exit, which keeps this process
+  // alive until it has run; rmSync retries the few files Chrome's helpers hold for a moment longer.
+  // The profile holds no junction, so a recursive delete cannot reach outside it.
+  child.once('exit', () => setTimeout(() => {
+    try { rmSync(profile, { recursive: true, force: true, maxRetries: 8, retryDelay: 250 }) } catch { /* the temp sweep takes what is left */ }
+  }, 300))
   return { user, send, on, close: () => { try { ws.close() } catch {} ; spawn('taskkill', ['/PID', String(child.pid), '/T', '/F'], { stdio: 'ignore' }) } }
 }
