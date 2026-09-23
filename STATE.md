@@ -216,7 +216,19 @@ sheets returned to after a replacement.
 
 ## Next action
 
-IN FLIGHT 23 September: the glass revolution (`docs/specs/2026-09-23-glass-revolution.md`). Charles:
+IN FLIGHT 23 September: **building C, Night bar, into the app** on branch `night-bar`. Charles: "C is
+go", then "Yeah inclusive of all those fixes from the other two mentioned prior, also there could be
+day evening night modes as a thought". The build spec is `docs/specs/2026-09-23-night-bar-build.md`
+(three rooms by the clock: day 7 to 17 light sky-and-sea room with ink, evening 17 to 21 and night 21
+to 7 as C's dark rooms; every A and B graft and C defect from `prototypes/2026-09-23/JUDGING.md`; the
+SVG coin replaces Medallion and three.js). Plan: workflow 1 builds (foundation serially: system,
+chrome, medals, then a Brave check; six screen builders in two waves of three; one integration pass
+with all gates green and DESIGN.md merged); workflow 2 verifies in Brave screen set by screen set at
+hours 13, 19 and 23 plus 320 wide, then a refute-by-default gate. Then a Pages preview on branch
+`night-bar` for Charles's iPhone; `main` only after he has opened it. Workflow 1 run id and resume
+handle: see the line below once launched.
+
+Earlier the same night, the glass revolution (`docs/specs/2026-09-23-glass-revolution.md`). Charles:
 "isn't ready to go yes or no if not get it working and revolution not tweak". My verdict: not ready
 (nothing behind the glass, films 46 to 88% opaque, the blue wave the only liquid moment). Three
 directions (A harbour by day, B open water, C night bar) are being prototyped as clickable pages in
@@ -235,7 +247,7 @@ agents done. All three judges ranked C (Night bar) first (guest 7.5, glass 7, cr
 between 5 and 7); their reports and the render verdicts are in `prototypes/2026-09-23/JUDGING.md`.
 The three are on a Pages preview (not production): https://glass-prototypes.cruise-passport.pages.dev
 (redeploy: `npx wrangler pages deploy prototypes/2026-09-23 --project-name=cruise-passport
---branch=glass-prototypes --commit-dirty=true`). WAITING ON CHARLES: the pick. Recommended: C, with
+--branch=glass-prototypes --commit-dirty=true`). Charles picked C. Recommended at the time: C, with
 the grafts the judges agree on (A's graded edge lens and droplet easing, Tried at medium height and a
 labelled Log; B's daytime room so C is light glass with ink at noon, Log opening on the bar you are
 in, and the dated medal line), and C's own defects fixed (the hard lens ring, the pools animating
