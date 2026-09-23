@@ -6,8 +6,12 @@
 // synthesises an identity card for those. Live end-to-end needs Charles's project
 // (docs/BACKEND_SETUP.md); the shapes here match the RPCs exactly.
 import type { SharePayload } from './share'
+import { qaDemo, qaNoSync } from '../data/model'
 import { readOAuthError } from './restore'
-import { backendConfigured, getSupabase } from './supabase'
+import { judgeRestore, planSession, type SessionPurpose } from './session'
+import {
+  backendConfigured, forgetSession, getSupabase, isRetired, keptSession, setRetired, storedSession,
+} from './supabase'
 
 export interface FeedRow {
   code: string; name: string; colour: string
@@ -22,6 +26,27 @@ export interface MemberRow { code: string; name: string; colour: string; role: s
 
 export const hasBackend = (): boolean => backendConfigured
 
+/** Google sign-in stays in the code, unreachable, until Charles opens its gates
+ *  (docs/BACKEND_SETUP.md). The "Keep it with Google" block renders only when this is true; the
+ *  recovery code is the way a passport comes back meanwhile. */
+export const googleSignInEnabled = false
+
+// ── what sync.ts lends this file ──
+// sync.ts imports this module, so it cannot be imported back; it hands over the four things the
+// session and the erase need from it when it loads. Until then (and under node --test) every one
+// is a no-op, which is the behaviour of a phone that has never synced.
+export interface SyncBinding {
+  /** Stop starting rounds and wait for the one in flight, its backup included. */
+  pause(): Promise<void>
+  /** Start rounds again. */
+  resume(): void
+  /** The user id this phone's rows were last published under, or ''. */
+  knownUid(): string
+  /** Record the user id a round is about to publish under, when none is recorded yet. */
+  rememberUid(uid: string): void
+}
+let binding: SyncBinding | null = null
+export function bindSync(b: SyncBinding): void { binding = b }
 // ── the OAuth return leg ──
 // Everything the provider hands back on a failure, plus the tokens a successful implicit-flow login
 // leaves lying in the URL. `state` is the OAuth round-trip nonce, not anything of ours.
@@ -62,7 +87,11 @@ export const oauthError = (): { code: string; description: string } | null => oa
 
 // The import itself can fail (a precached chunk gone stale after a deploy), so it is caught here
 // rather than rejecting every adapter call and breaking the never-throws contract above.
+// A load kept off the backend (?nosync, ?seed, ?fixture) gets no client at all. mode() in sync.ts
+// only stops the rounds; a screen's own call (a name search, a group's roster, an invite link)
+// comes straight here, and on a demo it would sign in an anonymous user on the live project.
 async function sb() {
+  if (qaNoSync() || qaDemo()) return null
   try {
     const p = getSupabase()
     return p ? await p : null
@@ -71,19 +100,122 @@ async function sb() {
   }
 }
 
-/** Ensure we have a session; create an invisible anonymous one if needed. Returns the user id. */
-export async function ensureSession(): Promise<string | null> {
+/** What a call may run under: a user id, or why there is none. `held` is a failure that will pass
+ *  (no signal, a refresh the library will retry); `moved` is an identity that is gone for good
+ *  (claimed on another phone, or its user deleted), which the phone reports and stops on; `none` is
+ *  no session where none was wanted (an erase on a phone that never synced). */
+export type SessionAnswer = { uid: string } | 'held' | 'moved' | 'none'
+
+// One attempt at a time to put the kept session back. A round asks for the session from half a dozen
+// calls at once, and two refreshes with the same refresh token is what GoTrue's reuse detection
+// reads as a stolen token, which would end a healthy session.
+let restoring: Promise<{ verdict: 'ok' | 'held' | 'gone'; uid: string | null }> | null = null
+type Client = NonNullable<Awaited<ReturnType<typeof sb>>>
+
+function restoreKept(client: Client): Promise<{ verdict: 'ok' | 'held' | 'gone'; uid: string | null }> {
+  if (!restoring) {
+    restoring = (async () => {
+      const kept = keptSession()
+      if (!kept) return { verdict: 'held' as const, uid: null }
+      try {
+        const { data, error } = await client.auth.setSession(kept)
+        const verdict = judgeRestore(error)
+        return { verdict, uid: verdict === 'ok' ? data.user?.id ?? data.session?.user?.id ?? null : null }
+      } catch { return { verdict: 'held' as const, uid: null } }
+    })().finally(() => { restoring = null })
+  }
+  return restoring
+}
+
+/** A definite answer that this identity no longer exists: forget its session and stop. The
+ *  library's copy goes too (locally; the server has nothing left to sign out), because its access
+ *  token still verifies for up to an hour, and a claim made under it would try to move the passport
+ *  onto a user that no longer exists. */
+async function retire(client: Client): Promise<void> {
+  setRetired(true)
+  await forgetSession(client, 'local')
+}
+
+async function mint(client: Client): Promise<SessionAnswer> {
+  try {
+    const { data, error } = await client.auth.signInAnonymously()
+    return !error && data.user?.id ? { uid: data.user.id } : 'held'
+  } catch { return 'held' }
+}
+
+/** Decide, then act (session.ts has the decision and the reasons). Never throws. */
+export async function resolveSession(purpose: SessionPurpose = 'sync'): Promise<SessionAnswer> {
   const client = await sb()
-  if (!client) return null
+  if (!client) return 'none'
   try {
     const { data } = await client.auth.getSession()
-    if (data.session?.user) return data.session.user.id
-    const { data: anon, error } = await client.auth.signInAnonymously()
-    if (error) return null
-    return anon.user?.id ?? null
+    const live = data.session?.user?.id ?? null
+    const plan = planSession({
+      live: Boolean(live), stored: storedSession(), kept: keptSession() !== null,
+      known: Boolean(binding?.knownUid()), retired: isRetired(),
+    }, purpose)
+    let answer: SessionAnswer
+    if (plan === 'use') answer = { uid: live! }
+    else if (plan === 'wait') answer = 'held'
+    else if (plan === 'moved') {
+      // Marked here as well as in the restore branch below: runSync reads the mark (identityMoved)
+      // to choose between "moved" and "held", and without it a phone that has published before and
+      // now holds no session at all would say "Offline" and retry for ever.
+      if (!isRetired()) setRetired(true)
+      answer = 'moved'
+    }
+    else if (plan === 'nothing') answer = 'none'
+    else if (plan === 'mint') answer = await mint(client)
+    else {
+      const { verdict, uid } = await restoreKept(client)
+      if (verdict === 'ok' && uid) answer = { uid }
+      else if (verdict !== 'gone') answer = 'held'
+      else {
+        await retire(client)
+        // The identity has gone; a claim is about to bring one back into a fresh user, and an
+        // erase has nothing left to reach.
+        answer = purpose === 'claim' ? await mint(client) : purpose === 'erase' ? 'none' : 'moved'
+      }
+    }
+    if (typeof answer === 'object' && purpose === 'sync') binding?.rememberUid(answer.uid)
+    return answer
   } catch {
-    return null
+    return 'held'
   }
+}
+
+/** The user id to sync under, or null (resolveSession says why). Mints an anonymous user only on a
+ *  phone that has never had one. */
+export async function ensureSession(): Promise<string | null> {
+  const answer = await resolveSession('sync')
+  return typeof answer === 'object' ? answer.uid : null
+}
+
+/** The identity this phone synced under has been claimed on another phone or deleted, and nothing
+ *  will sync until the guest brings it back with the recovery code or starts again. */
+export const identityMoved = (): boolean => isRetired()
+
+/** Starting again after a move: the mark goes, so the next Done syncs a new identity. */
+export function clearMoved(): void { setRetired(false) }
+
+/** A profile write refused on the friend code (Postgres 23505: another user's row holds it) or on
+ *  the user (23503, the foreign key to auth.users) is the quickest sign the identity was claimed on
+ *  another phone, because the access token still verifies for up to an hour after its user is
+ *  deleted. Ask the auth server about this session's own token, and retire only on its definite
+ *  answer; with no session to ask about, there is no answer. */
+async function checkStillThere(client: Client): Promise<void> {
+  try {
+    const token = (await client.auth.getSession()).data.session?.access_token
+    if (!token) return
+    const { error } = await client.auth.getUser(token)
+    if (judgeRestore(error) === 'gone') await retire(client)
+  } catch { /* no answer is not an answer */ }
+}
+
+/** Publish steps run under the user the round started with, and stop if the session has since
+ *  become someone else's or no one's. They never create a session. */
+async function signedInAs(uid: string): Promise<boolean> {
+  return (await currentUserId()) === uid
 }
 
 // ── who is signed in ──
@@ -122,9 +254,10 @@ export async function currentUserId(): Promise<string | null> {
   try { return (await client.auth.getSession()).data.session?.user?.id ?? null } catch { return null }
 }
 
+/** Sign out as the app's own decision, so no copy of the session is kept to be put back. */
 export async function signOut(): Promise<void> {
   const client = await sb()
-  if (client) { try { await client.auth.signOut() } catch { /* the caller's rows are its own concern */ } }
+  if (client) await forgetSession(client)
 }
 
 /** Give up this session's own profiles, passports and backups rows, through the own-row policies, so
@@ -178,28 +311,92 @@ export async function signInWithGoogle(redirectTo: string, mode: 'link' | 'fresh
 
 // ── data ──
 
-export async function upsertProfile(code: string, name: string, colour: string): Promise<boolean> {
+// The three publish steps take the user id publishBackend resolved once for the round (sync.ts), and
+// write only while it is still the session's: a round that began before an erase or a claim must
+// not land its rows under whoever holds the session now, and must not mint one to do it.
+export async function upsertProfile(uid: string, code: string, name: string, colour: string): Promise<boolean> {
   const client = await sb()
-  const uid = await ensureSession()
-  if (!client || !uid) return false
+  if (!client || !(await signedInAs(uid))) return false
   const { error } = await client.from('profiles').upsert({ user_id: uid, code, name, colour, updated_at: new Date().toISOString() })
+  if (error?.code === '23503' || error?.code === '23505') await checkStillThere(client)
   return !error
 }
 
-export async function publishPassport(cruiseId: string, payload: SharePayload): Promise<boolean> {
+export async function publishPassport(uid: string, cruiseId: string, payload: SharePayload): Promise<boolean> {
   const client = await sb()
-  const uid = await ensureSession()
-  if (!client || !uid) return false
+  if (!client || !(await signedInAs(uid))) return false
   const { error } = await client.from('passports').upsert({ user_id: uid, cruise_id: cruiseId, payload, updated_at: new Date().toISOString() })
   return !error
 }
 
-export async function publishBackup(cruiseId: string, state: unknown): Promise<boolean> {
+export async function publishBackup(uid: string, cruiseId: string, state: unknown): Promise<boolean> {
   const client = await sb()
-  const uid = await ensureSession()
-  if (!client || !uid) return false
+  if (!client || !(await signedInAs(uid))) return false
   const { error } = await client.from('backups').upsert({ user_id: uid, cruise_id: cruiseId, state, updated_at: new Date().toISOString() })
   return !error
+}
+
+// ── the recovery code (supabase/migrations/0004_recovery.sql) ──
+
+/** Register this identity's recovery hash (recovery.ts, hashSecret). Idempotent; false = not
+ *  confirmed, so the next round asks again. */
+export async function setRecovery(uid: string, hash: string): Promise<boolean> {
+  const client = await sb()
+  if (!client || !(await signedInAs(uid))) return false
+  const { error } = await client.rpc('set_recovery', { p_hash: hash })
+  return !error
+}
+
+export interface ClaimedPassport {
+  /** The session's user, which the identity now belongs to. */
+  uid: string
+  profile: { code: string; name: string; colour: string } | null
+  backups: { cruiseId: string; state: unknown; updatedAt: number }[]
+}
+/** 'wrong' = no passport has that code; 'offline' = the call did not answer (no signal, a timeout,
+ *  a 5xx), so trying again with a signal may work; 'failed' = the server refused for another reason. */
+export type ClaimAnswer = ClaimedPassport | 'wrong' | 'offline' | 'failed'
+
+/** Move the identity that holds this secret onto this phone's session (minting one if the phone has
+ *  none), and hand back its profile and backups. The secret is sent in the clear only here and is
+ *  hashed on the server; nothing else can ask whether a code exists. */
+export async function claimRecovery(secret: string): Promise<ClaimAnswer> {
+  const client = await sb()
+  if (!client) return 'failed'
+  let who = await resolveSession('claim')
+  if (typeof who !== 'object') return 'offline'
+  try {
+    const call = () => client.rpc('claim_recovery', { p_secret: secret })
+    let { data, error, status } = await call()
+    // Refused on the auth.users key: this session's user has been deleted (the passport was claimed
+    // away on another phone within the hour its access token still verifies), so nothing can move
+    // onto it. Confirm that with the auth server, and once it is retired, claim again under a new user.
+    if (error?.code === '23503') {
+      await checkStillThere(client)
+      if (isRetired()) {
+        who = await resolveSession('claim')
+        if (typeof who !== 'object') return 'offline'
+        ;({ data, error, status } = await call())
+      }
+    }
+    if (error) return status === 0 || status >= 500 ? 'offline' : 'failed'
+    if (data === null || typeof data !== 'object') return 'wrong'
+    const raw = data as { profile?: unknown; backups?: unknown }
+    const p = raw.profile && typeof raw.profile === 'object' ? raw.profile as Record<string, unknown> : null
+    const rows = Array.isArray(raw.backups) ? raw.backups as Record<string, unknown>[] : []
+    setRetired(false) // this phone now holds a live identity again
+    return {
+      uid: who.uid,
+      profile: p && typeof p.code === 'string' && p.code
+        ? { code: p.code, name: typeof p.name === 'string' ? p.name : '', colour: typeof p.colour === 'string' ? p.colour : '' }
+        : null,
+      backups: rows.filter((r) => r && typeof r.cruise_id === 'string').map((r) => ({
+        cruiseId: String(r.cruise_id),
+        state: r.state,
+        updatedAt: typeof r.updated_at === 'string' ? new Date(r.updated_at).getTime() : 0,
+      })),
+    }
+  } catch { return 'offline' }
 }
 
 /** 'none' = there is no backup row, so there is nothing to bring back and publishing over it is
@@ -375,12 +572,24 @@ export async function deleteGroup(groupId: string): Promise<boolean> {
 }
 
 /** GDPR erasure. Also drops the anonymous session, so the next sync starts as a fresh user rather
- *  than re-publishing under the identity we just erased. */
+ *  than re-publishing under the identity we just erased.
+ *  Sync is paused first and the round in flight awaited, backup included, so nothing it was about to
+ *  write lands after the erase (docs/audits/2026-09-23-live-readiness.md, the erase race). On
+ *  success the pause stays: the caller then calls resetSocialIdentity(), which sends the phone back
+ *  to the entry screen, and sync.ts lifts the pause when Done is tapped there. On failure it lifts at
+ *  once. The erase never creates a session: a phone with none has nothing on the server, and is
+ *  done as soon as its own copy is reset. */
 export async function deleteMyData(): Promise<boolean> {
   const client = await sb()
-  if (!client || !(await ensureSession())) return false
-  const { error } = await client.rpc('delete_my_data')
-  if (error) return false
-  await signOut() // one way to end a session, so a later sign-in path cannot grow a second
+  if (!client) return false
+  await binding?.pause()
+  const who = await resolveSession('erase')
+  if (who === 'held') { binding?.resume(); return false }
+  if (typeof who === 'object') {
+    const { error } = await client.rpc('delete_my_data')
+    if (error) { binding?.resume(); return false }
+  }
+  await forgetSession(client) // one way to end a session, so a later sign-in path cannot grow a second
+  setRetired(false)
   return true
 }

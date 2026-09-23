@@ -1,0 +1,56 @@
+name: Health check
+
+# Watches the two things most likely to take the passport's sync down without anyone noticing:
+#   1. the live site (Cloudflare Pages) answering, and
+#   2. Supabase answering. The free tier pauses a project after about a week with no traffic, and a
+#      paused project leaves every phone on "Offline" with no alert to anyone.
+# The Supabase read doubles as the keep-awake: a real query through PostgREST, which resets the idle
+# timer, so this also prevents the pause it watches for. On a failure the job goes red and GitHub
+# emails the repo owner; that is the alert. Copied from Bobble's (bobble-repo/.github/workflows/
+# health-check.yml), every two days rather than three.
+#
+# The URL and the publishable key are the repo secrets the deploy already builds with. The key is
+# public (it ships in the bundle), but it is read from the secret rather than written in here, so a
+# rotated key needs changing in one place.
+#
+# Cloudflare may answer a runner with a 403 when the site is perfectly healthy (a request from a data
+# centre looks like a bot), so the site step fails only on a 5xx or no answer at all. Supabase's REST API is
+# not behind that layer, so its check stays strict: a 200 or a failure. The read is of `profiles`
+# with the anon key, which row-level security answers with an empty list: a 200 that returns nobody.
+on:
+  schedule:
+    - cron: '0 8 */2 * *'   # every other day at 08:00 UTC, well inside the seven-day pause window
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Site answers (Cloudflare Pages)
+        run: |
+          UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36"
+          # curl prints 000 through -w when it gets no answer and then exits non-zero, so the status is
+          # taken as printed and the exit ignored; `|| echo 000` would make it 000000 and let it pass.
+          code=$(curl -sL -A "$UA" -o page.html -w '%{http_code}' --max-time 25 https://cruise.charlesbee.org/) || true
+          echo "site / -> $code"
+          case "$code" in
+            5*|000*|'') echo "site down"; exit 1;;
+          esac
+          # public/_redirects answers every path with the shell and a 200, so a 200 proves little on
+          # its own: when the page does come back, it has to be the app's.
+          if [ "$code" = "200" ] && ! grep -q 'id="root"' page.html; then echo "a 200 that is not the app"; exit 1; fi
+          echo "site answering"
+      - name: Supabase answers, and stays awake
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then echo "the Supabase secrets are not set"; exit 1; fi
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 25 \
+            -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY" \
+            "${SUPABASE_URL%/}/rest/v1/profiles?select=user_id&limit=1") || true
+          echo "supabase REST -> $code"
+          test "$code" = "200"

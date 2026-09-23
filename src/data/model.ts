@@ -182,11 +182,22 @@ export function nowHour(): number {
   }
   return new Date().getHours()
 }
+// Both are read from the URL the page was loaded with, not the current one: a tab tap navigates to a
+// bare path and drops the query, and a demo that started syncing on its first tap would be no
+// better than one that synced at load.
+const LOADED_WITH = new URLSearchParams(typeof location !== 'undefined' ? location.search : '')
 /** ?nosync (QA only) keeps a headless run off the backend entirely: no anonymous sign-in, no
  *  publish, no pull. The live project rate-limits anonymous sign-ins per IP, and every seeded
  *  screenshot used to spend one. */
 export function qaNoSync(): boolean {
-  return typeof location !== 'undefined' && new URLSearchParams(location.search).has('nosync')
+  return LOADED_WITH.has('nosync')
+}
+/** A demo (`?seed`) or fixture (`?fixture=`) load never syncs, whatever the store says: both mark
+ *  the store entered, so before this they published a fake passport to the live project, which is
+ *  where 124 of its 166 accounts came from. sync.ts reads it in mode() and reports status 'local',
+ *  and backend.ts hands out no client at all, so no call from a screen can sign in either. */
+export function qaDemo(): boolean {
+  return LOADED_WITH.has('seed') || LOADED_WITH.has('fixture')
 }
 /** ?landing=desktop|phone (QA only) pins which branch of the landing screen renders. `desktop` also
  *  forces the root gate open, because shot.mjs always appends ?seed and a seeded store has already

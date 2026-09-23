@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { Component, StrictMode, useEffect, useRef, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { registerSW } from 'virtual:pwa-register'
 import './styles/tokens.css'
@@ -7,6 +7,68 @@ import './styles/craft.css'
 import './state/sync' // side-effect: attach sync triggers (launch/online/visibility) at startup, not on first Friends open
 import './ui/avatarSpring' // side-effect: avatar-group hover spring on friend-dot stacks (hover-capable devices)
 import App from './app/App'
+import { GlassButton } from './ui/GlassButton'
+import { keepStorageOnceEntered } from './state/keep'
+import { startRoom } from './app/room'
+
+// ── A screen instead of a blank page ──────────────────────────────────────────────────────────
+// With no boundary, any error in a render unmounted the whole app to an empty page. The likeliest
+// one is a lazy chunk that is gone: a deploy lands while a sheet holds the reload (startUpdates,
+// below), the old hashed file has left the precache and the host, Pages answers the missing .js
+// with index.html, and the import rejects. A reload fetches the current build, so a failed chunk
+// reloads the page once; the time of that reload, kept in sessionStorage, stops it becoming a loop:
+// a second chunk failure within five minutes shows the screen instead, however long each failure
+// took to arrive, and a stale chunk after a later deploy may reload once again. Anything else shows
+// one plain screen in the room's own colours (the room is set on <html> before the first paint, so
+// it needs nothing from App) with the one way on. No stack trace is shown: the guest can do nothing
+// with it.
+const CHUNK_RELOAD_KEY = 'spcc-chunk-reload'
+const CHUNK_RELOAD_GAP_MS = 5 * 60_000
+const CHUNK_FAILURE = /dynamically imported module|Importing a module script failed|module script|Unable to preload CSS|ChunkLoadError|Loading chunk/i
+
+function reloadedForChunk(): boolean {
+  try {
+    const at = Number(sessionStorage.getItem(CHUNK_RELOAD_KEY))
+    return at > 0 && Date.now() - at < CHUNK_RELOAD_GAP_MS
+  } catch { return true } // blocked: never loop
+}
+
+// The room behind the screen. Shell mounts it for the tabs, but a fault can be Shell's own, so the
+// screen starts one of its own the way Entry and the landing do; the old `.ground` is gone.
+function FaultRoom() {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => (ref.current ? startRoom(ref.current) : undefined), [])
+  return <div className="room" ref={ref} aria-hidden="true" />
+}
+
+class Fault extends Component<{ children: ReactNode }, { failed: boolean; reloading: boolean }> {
+  state = { failed: false, reloading: false }
+
+  static getDerivedStateFromError(error: unknown) {
+    const chunk = CHUNK_FAILURE.test(error instanceof Error ? error.message : String(error))
+    return { failed: true, reloading: chunk && !reloadedForChunk() }
+  }
+
+  componentDidCatch() {
+    if (!this.state.reloading) return
+    try { sessionStorage.setItem(CHUNK_RELOAD_KEY, String(Date.now())) } catch { /* blocked: reloadedForChunk() already said no */ }
+    window.location.reload()
+  }
+
+  render() {
+    if (!this.state.failed) return this.props.children
+    if (this.state.reloading) return null // the page is about to go; a flash of the screen helps nobody
+    return (
+      <main className="fault wrap">
+        <FaultRoom />
+        <div className="empty-state" role="alert">
+          <h1 className="t-title">Something went wrong.</h1>
+          <GlassButton variant="primary" size="lg" type="button" onClick={() => window.location.reload()}>Reload</GlassButton>
+        </div>
+      </main>
+    )
+  }
+}
 
 // ── The build the guest is looking at ─────────────────────────────────────────────────────────
 // autoUpdate already installs a deploy in the background: vite-plugin-pwa sets skipWaiting and
@@ -67,9 +129,15 @@ function startUpdates() {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <Fault>
+      <App />
+    </Fault>
   </StrictMode>,
 )
+
+// Ask the browser to keep this passport's storage once the guest is past the entry screen
+// (state/keep.ts). Silent, and nothing waits on it.
+try { keepStorageOnceEntered() } catch { /* the app matters more than the request */ }
 
 // Below the render on purpose: an update that cannot arm is a stale build, a throw above the
 // render is a white screen. Nothing is lost by the order. render() returns before React commits,
