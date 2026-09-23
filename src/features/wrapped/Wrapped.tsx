@@ -10,7 +10,7 @@ import { IconClose } from '../../ui/Icon'
 import { useCountUp } from '../../ui/useCountUp'
 import { SHIP } from '../../data/model'
 import { BADGES } from '../../data/badges'
-import { MedalDisc } from '../badges/Badges'
+import { Coin } from '../badges/Coin'
 import {
   certificateRows, deriveWrapped, listJoin, voyageDateRange, wrappedTotal, wrappedUnlocked,
   type WrappedCard, type WrappedFinale,
@@ -221,7 +221,7 @@ function CardBody({ card, total }: { card: WrappedCard; total: number }) {
           <div className="wr-coins">
             {card.earned.slice(0, 6).map((id) => {
               const badge = BADGES.find((b) => b.id === id)
-              return badge ? <MedalDisc key={id} badge={badge} earned /> : null
+              return badge ? <Coin key={id} badge={badge} state="earned" size={72} /> : null
             })}
           </div>
         </div>

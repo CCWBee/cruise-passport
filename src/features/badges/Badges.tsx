@@ -1,61 +1,18 @@
-import { Suspense, lazy, useEffect, useId, useMemo, useState } from 'react'
+import { useEffect, useId, useMemo, useState } from 'react'
 import { BADGES, badgeCount, type BadgeDef, type BadgeStat } from '../../data/badges'
 import { computeStats } from '../../state/stats'
 import { useAllDrinks, useStore } from '../../state/store'
-import { IconTrophy } from '../../ui/Icon'
 import { Sheet } from '../../ui/Sheet'
 import { openLog } from '../search/log'
-import { EMBLEMS } from './emblems-data'
+import { Coin } from './Coin'
 import './badges.css'
 
-const Medallion = lazy(() => import('./Medallion'))
-
-interface MedalDiscProps {
-  badge: BadgeDef
-  earned: boolean
-  large?: boolean
-}
-
-// Bronze, silver and gold are ranks here, not colours: the ladder is four steps of ink, and the
-// rank is said in words in the sheet so the disc is not carrying it alone.
+// The rank is said in words in the sheet, so the metal is not carrying it alone.
 const TIER_NAME: Record<NonNullable<BadgeDef['tier']>, string> = {
   bronze: 'Bronze',
   silver: 'Silver',
   gold: 'Gold',
   special: 'Special',
-}
-
-// A coin, not a rosette: one metal face, a 1px hairline rim, the emblem struck pale into it.
-export function MedalDisc({ badge, earned, large = false }: MedalDiscProps) {
-  const tier = badge.tier ?? 'bronze'
-  const size = large ? 116 : 72
-  const emblem = EMBLEMS[badge.id]
-  const art = large ? 60 : 42
-
-  return (
-    <span
-      className={`medal-disc medal-tier medal-${tier} ${earned ? 'is-earned' : 'is-locked'}`}
-      style={{ width: size, height: size }}
-      aria-hidden="true"
-    >
-      <svg className="medal-art" viewBox="0 0 64 64" width={size} height={size} focusable="false">
-        <circle className="medal-face" cx="32" cy="32" r="31.5" vectorEffect="non-scaling-stroke" />
-      </svg>
-      <span className="medal-emblem">
-        {emblem ? (
-          <svg
-            className="medal-emblem-svg"
-            viewBox="0 0 100 100"
-            width={art}
-            height={art}
-            dangerouslySetInnerHTML={{ __html: emblem }}
-          />
-        ) : (
-          <IconTrophy size={large ? 44 : 26} />
-        )}
-      </span>
-    </span>
-  )
 }
 
 function progressOf(badge: BadgeDef, stat: BadgeStat) {
@@ -117,7 +74,7 @@ export function Badges() {
                 onClick={() => setSelectedBadge(badge)}
                 aria-label={`${badge.name}, earned`}
               >
-                <MedalDisc badge={badge} earned />
+                <Coin badge={badge} state="earned" size={72} />
                 <span className="badge-medal-name t-meta">{badge.name}</span>
               </button>
             ))}
@@ -194,9 +151,13 @@ export function Badges() {
             <p className="sheet-meta">{selectedBadge.hint} · {TIER_NAME[selectedBadge.tier ?? 'bronze']} tier</p>
 
             <div className="medal-mount">
-              <Suspense fallback={<MedalDisc badge={selectedBadge} earned={selectedEarned} large />}>
-                <Medallion badge={selectedBadge} earned={selectedEarned} />
-              </Suspense>
+              <Coin
+                badge={selectedBadge}
+                state={selectedEarned ? 'earned' : selectedProgress && selectedProgress.cur > 0 ? 'reach' : 'locked'}
+                progress={selectedProgress ? selectedProgress.pct / 100 : undefined}
+                size={196}
+                flip={selectedEarned}
+              />
             </div>
 
             <p className="t-body badge-state">

@@ -1,6 +1,7 @@
 // The 18 achievements. Predicates run over a computed BadgeStat snapshot.
 // Each badge's face is the drawn emblem in features/badges/emblems-data.ts (the `emoji` field is a
-// legacy key, not rendered); Medallion.tsx strikes it into a tiered coin, locked = a quiet grey disc.
+// legacy key, not rendered); Coin.tsx strikes it into the tier's metal, and a medal not yet earned is
+// a gunmetal blank. The day a badge was earned is earnedOn.ts, beside this file.
 //
 // SHIP comes from data/model, not from activeCruise(), so the ship's name has one source. It makes
 // this file need localStorage at import, which is why restore.ts must not import it, and does not.

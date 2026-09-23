@@ -48,3 +48,8 @@ features/wrapped/wrapped.css :: wr-drift
 # so keyframes.mjs writes --e-out's and --e-shake's values in literally, read from tokens.css
 features/shake/shake.css :: animation-timing-function: cubic-bezier(.22, .9, .32, 1)
 features/shake/shake.css :: animation-timing-function: cubic-bezier(.77, 0, .175, 1)
+# the medals (DESIGN.md, Material, The medals): a coin is struck metal with a cast shadow, content and
+# not glass, and its edge seen side on is the metal's own gradient; the colours come from Coin.tsx's
+# metal table as custom properties, so the shadow's black is the only literal
+features/badges/coin.css :: colour not a token rgba(0, 0, 0, .5)
+features/badges/coin.css :: linear-gradient(90deg, var(--edge-lo)

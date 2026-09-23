@@ -132,7 +132,33 @@ as glass, and most drinks are logged in a bar after dark.
 - **Row highlight** for tappable rows: none at rest; `--press` on press.
 - **The metals and the family hues are material**, like the sea: they sit outside the one-accent
   rule. The family hues are in Iconography.
-- **The medals.** To be written by the medals stage: the coin, its metals and its relief.
+- **The medals** are struck metal, one SVG coin (`Coin`) wherever a medal appears: Home's new medal
+  and tray, the case, the medal sheet, You and the Wrapped medals slide. It is prototype C's coin
+  with light from the top left, as on the glass: B's turned rim (a conic, lit at two opposite points
+  as metal on a lathe is, drawn as a disc behind the SVG because SVG has no conic), the milled ring,
+  the bevel falling into the field, the field struck down below the rim (its wall shaded top left
+  and lit bottom right, B's inset shadows drawn as two radial rings), then the emblem from
+  `emblems-data.ts` struck three times: a shadow down and right at .8, a highlight up and left, the
+  face. The relief is scaled to the coin, A's 110 / px coin units held between 0.8 and 2.6, so the
+  strike is about a pixel deep on a 44px coin and on the 196px one alike. Each emblem is centred on
+  the field and fitted to one size from its measured extent (C's table).
+  - **Bronze, silver and gold** take A's polished field, a diagonal with a darker mirror band past
+    the middle, in place of C's pale dome: a pale emblem on a pale silver field is what left Gin
+    Explorer faint at 96px, and the band is what puts a darker ground under the frosted emblem.
+    **The Champion** is a gilt rim round a field of deep blue enamel.
+  - **A medal not yet earned is a blank**: the same coin in gunmetal with nothing struck into it,
+    its sheen and glint dimmed. Never a grey copy of the earned coin, which would show the reward
+    before it is won. **In reach**, the blank carries a ring in `--amber` on the room's `--track`,
+    filled to the badge's progress; **locked** is the blank alone.
+  - **The turn.** Home's new medal turns once on entry (1.5s after 350ms, C) and then rests. The
+    large coin in the medal sheet is a button that turns over to its reverse on a tap: the liner in
+    silhouette over the ship's name and the sailing's year, struck the way the emblem is, read from
+    the sailing rather than written in. Both are CSS 3D on transform (two faces and a milled edge of
+    stacked discs). Under reduced motion the coin holds still and a tap shows the reverse at once.
+  - Every coin draws its own gradients under ids made from `useId`, so two coins on one screen, or
+    the two faces of one, never share an id. The metals live in `Coin.tsx`'s table, not in
+    `tokens.css`: they are material, like the sea, and do not change by room. The cast shadow and the
+    side-on edge are the two written exceptions in `design-allow.txt`.
 
 There are no floating cards in the content layer. The two-stop card shadow and the turquoise film on
 content are retired; the specular edge belongs to glass chrome only.
@@ -647,8 +673,8 @@ hero is.
    tried here" and the first untried drink there named; it opens that venue's sheet. With nothing
    logged today it is "Your top bar"; before sailing it is "Where to start", the biggest bar and
    its count. Never a guess from the clock: a wrong bar labelled as yours breaks "Honest".
-5. **A new medal**, when one has been earned since the guest last looked: the 3D coin (the
-   Medallion, spinning once on entry, then still) with "New medal · Gin Explorer" and its hint,
+5. **A new medal**, when one has been earned since the guest last looked: the struck coin (the
+   `Coin`, turning once on entry, then still) with "New medal · Gin Explorer" and its hint,
    tapping to the badge sheet. It is the app's reward moment and the one place Home may be
    spectacular; it shows once per medal (a seen-set in the store) and then folds back into Up next.
 6. **Up next**: the badge nearest to earned as a row with a 3px bar ("2 more gins for Gin
@@ -1075,7 +1101,8 @@ colour, are how that happens again. Read it before any change that renders.
 | `startRattle()` | `src/features/shake/rattle.ts` | the dice in the tin: WebAudio, synthesised, no asset, the whole schedule laid down in one pass at press time, with a low knock at each knock time the sheet passes it from `SHAKER.knocks`. `reveal()` carries the opening, a cork at the cap and the thock `landMs` later as the glass lands, laid down against the same clock rather than on a timer. A silent no-op when the guest chose quiet, under reduced motion, or where there is no `AudioContext` |
 | `haptic('shake')` | `src/ui/haptic.ts` | the third pattern, a rising series mirroring the rattle's acceleration. Its first pulse is the press tap, so the press fires this one and not both. The two knocks from inside are `haptic('tap')`, fired from the sheet's own timer and never under quiet or reduced motion |
 | `DrinkCard` | `src/features/drinks/DrinkCard.tsx` | the drink row everywhere a drink is listed (Drinks, venue sheet, the search): the glass, then name and stars, one meta line, the tried check. `onTried` hears the check, for a caller that says more than the check does (the search's Undo toast) |
-| `Medallion` | `src/features/badges/Medallion.tsx` | the badge disc, grid and sheet |
+| `Coin` (`badge`, `state`, `progress`, `size`, `turn`, `flip`) | `src/features/badges/Coin.tsx`, `coin.css` | the one medal, everywhere a medal appears (Material, The medals). `state` is `earned`, `reach` or `locked`; `progress` (0 to 1) fills the amber ring round a coin in reach; `size` is the outer box in px; `turn` is Home's one turn on entry; `flip` makes the large coin in the medal sheet a button that turns over to its reverse. A screen sizes it by the prop, never by overriding its inner elements |
+| `earnedOn()` | `src/data/earnedOn.ts` | the day a badge was earned: the guest's tried entries and check-ins replayed in date order through the caller's stat computation (`(p) => computeStats(drinks, p).badgeStat`), the first day the test passes. Null when not earned, or when only an undated entry earns it, so the sheet never names a day the record does not hold. Beside `badges.ts`, not in it, because `badges.ts` reads `SHIP` at import and cannot load under `node --test`; tested in `earnedOn.test.ts` |
 | `SeaHero`, `SheetWave`, the hero count-up | `src/features/home/`, `src/ui/SheetWave.tsx` | three of the five authored motions (Motion above; the new-medal coin and the shaker are the other two); do not add a sixth without amending Motion |
 | `You` | `src/features/you/You.tsx` | Stats, Badges and Log render inside it; they carry no page wrapper of their own |
 | `Sailing`, `allSailings()`, `venuesFor()` | `src/data/sailings.ts` | the sailings a guest sets up and every venue they add, in `spcc-sailings` beside `spcc-cruise`. It holds no drinks, entries or visits, so removing a sailing or a venue is two calls, the store's `forgetSailing()` or `forgetVenue()` first. The catalogue is resolved at module load, so a change to it reloads the page, once, from the sheet's own close handler and only when something was saved |
@@ -1089,3 +1116,6 @@ bar; the droplet that replaced it on 23 September is a lens in a glass one, for 
 Navigation). `.stats-empty` and
 `.badge-empty-action` went into `.empty-state`, and the add sheet's and the Shake sheet's own
 spacing for two quiet actions went into `.quiet-action`'s pair rule.
+`Medallion` (the three.js coin, with `emblems.ts`, `three`, `@react-three/fiber`, `@react-three/drei`
+and `@types/three`) and `MedalDisc` (the flat ink disc of the cream system) were retired by the
+night bar build on 23 September 2026: `Coin` replaces both, in SVG, with no WebGL context to load.

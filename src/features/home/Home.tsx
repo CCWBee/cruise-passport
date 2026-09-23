@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { SeaHero } from './SeaHero'
 import { useStore, useAllDrinks } from '../../state/store'
@@ -13,21 +13,14 @@ import { badgeCount } from '../../data/badges'
 import { useCountUp } from '../../ui/useCountUp'
 import { FriendDot } from '../../ui/FriendDot'
 import { IconShaker } from '../../ui/Icon'
-// the flat coin, the Suspense fallback for the 3D one: the same object the Badges grid draws
-import { MedalDisc } from '../badges/Badges'
+// the struck coin, the same one the case and the medal sheet draw
+import { Coin } from '../badges/Coin'
 import { DrinkSheet } from '../drinks/DrinkSheet'
 import { ShakeSheet } from '../shake/ShakeSheet'
 import { VenueSheet } from '../ship/VenueSheet'
 import { WrappedTeaser } from '../wrapped/WrappedTeaser'
 import { openLog } from '../search/log'
-// the coin's own stylesheet: it carries the metal and emblem custom properties Medallion reads off
-// the page, so the sheet's coin and this one are struck from the same tokens
-import '../badges/badges.css'
 import './home.css'
-
-// The 3D coin, loaded only when a new medal is actually being announced: three.js is the heaviest
-// thing in the app and Home opens two hundred times a voyage without one.
-const Medallion = lazy(() => import('../badges/Medallion'))
 
 const drinkVenue = (key: string) => VENUES[key]?.name || key
 
@@ -308,9 +301,7 @@ export function Home() {
             aria-label={`New medal, ${medal.name}. ${moreMedals ? `And ${more} more new ${more === 1 ? 'medal' : 'medals'}.` : `${medal.hint}.`}`}
           >
             <div className="home-coin">
-              <Suspense fallback={<MedalDisc badge={medal} earned />}>
-                <Medallion badge={medal} earned intro />
-              </Suspense>
+              <Coin badge={medal} state="earned" size={96} turn />
             </div>
             <span className="row-copy">
               <span className="t-strong">New medal · {medal.name}</span>

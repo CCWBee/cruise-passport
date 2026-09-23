@@ -1,5 +1,5 @@
 // Per-badge emblem art: badge.id -> inner markup of a 100x100 viewBox SVG (filled shapes only).
-// One cohesive family. No dependencies, so both the 2D grid disc and the lazy 3D coin can use it.
+// One cohesive family. No dependencies; Coin.tsx strikes each one into its coin.
 export const EMBLEMS: Record<string, string> = {
   first: `<circle cx="50" cy="64" r="14"/><path d="M18 68 Q34 60 50 68 Q66 60 82 68 L82 80 L18 80 Z"/>`,
   ten: `<path d="M18 67 Q34 61 50 67 Q66 61 82 67 L82 80 L18 80 Z"/> <circle cx="50" cy="60" r="14"/> <polygon points="46.5,46 53.5,46 50,35"/> <polygon points="60.9,50.54 55.16,46.52 64.34,39.52"/> <polygon points="44.84,46.52 39.1,50.54 35.66,39.52"/>`,
