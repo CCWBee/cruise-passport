@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { activeCruiseId, CRUISES, setActiveCruise } from '../data/cruises'
-import { DRINKS, today, type Drink } from '../data/model'
+import { DEMO_KEY, DRINKS, today, type Drink } from '../data/model'
 import { BADGES } from '../data/badges'
 import { hasBackend, unfriend, type FeedRow, type GroupRow } from './backend'
 import { computeStats, emptyPassport, FRIEND_COLOURS, type Entry, type Passport, type Friend, type Profile, type FriendColour } from './stats'
@@ -416,14 +416,18 @@ export const useStore = create<State>()(
       // Delete my data is one caller and starting again after a move (sync.ts, startAgain) the
       // other; the kept name prefills the entry screen's field. The recovery code and the synced
       // user go too: the server row for the one is erased or belongs to another phone, and a new
-      // identity gets a new code on its first sync.
-      resetSocialIdentity: () => set((s) => ({
-        friends: [], groups: [], pendingInvites: [], pendingUnfriends: [],
-        profile: { ...s.profile, id: ensureMyId({ ...s.profile, id: '' }), code: genCode() },
-        enteredCruise: false,
-        syncUid: '',
-        recovery: noRecovery(),
-      })),
+      // identity gets a new code on its first sync. A demo mark goes as well (model.ts, qaDemo):
+      // coming back through the entry screen is the deliberate start of a real passport.
+      resetSocialIdentity: () => {
+        try { localStorage.removeItem(DEMO_KEY) } catch { /* blocked storage: nothing to clear */ }
+        set((s) => ({
+          friends: [], groups: [], pendingInvites: [], pendingUnfriends: [],
+          profile: { ...s.profile, id: ensureMyId({ ...s.profile, id: '' }), code: genCode() },
+          enteredCruise: false,
+          syncUid: '',
+          recovery: noRecovery(),
+        }))
+      },
 
       setFilters: (f) => set((s) => ({ filters: { ...s.filters, ...f } })),
       replaceFilters: (f) => set({ filters: f }),

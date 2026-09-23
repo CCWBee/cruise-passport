@@ -123,6 +123,7 @@
           if (fixture === 'byo-new') localStorage.removeItem('spcc-cruise')
           else localStorage.setItem('spcc-cruise', SID)
           localStorage.setItem('spcc-sailings', JSON.stringify({ v: 1, sailings: fxSailings, venues: fxVenues }))
+          localStorage.setItem('spcc-demo', '1') // model.ts qaDemo(): this store never syncs, whatever a later URL says
           localStorage.setItem('spcc2', JSON.stringify({ state: {
             me: { entries: fxEntries, visits: fxVisits },
             custom: fxCustom, friends: [], groups: [], pendingInvites: [], pendingUnfriends: [],
@@ -162,6 +163,7 @@
         // Sam and Ravi's entries carry dates too, so Home's crew lines and Log have something to say
         friends.forEach(function (f, fi) { var i = 0; for (var id in f.passport.entries) { if (f.passport.entries[id].tried) f.passport.entries[id].date = DAYS[(i++ + fi) % 5] } })
         var profile = { id: 'me-self', name: 'Alex', colour: 'aqua' }
+        localStorage.setItem('spcc-demo', '1') // model.ts qaDemo(): this store never syncs, whatever a later URL says
         localStorage.setItem('spcc2', JSON.stringify({ state: { me: { entries: entries, visits: visits }, custom: [], friends: friends, profile: profile }, version: 2 }))
       } catch (e) {}
     })()

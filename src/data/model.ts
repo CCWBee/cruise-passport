@@ -197,7 +197,16 @@ export function qaNoSync(): boolean {
  *  where 124 of its 166 accounts came from. sync.ts reads it in mode() and reports status 'local',
  *  and backend.ts hands out no client at all, so no call from a screen can sign in either. */
 export function qaDemo(): boolean {
-  return LOADED_WITH.has('seed') || LOADED_WITH.has('fixture')
+  return LOADED_WITH.has('seed') || LOADED_WITH.has('fixture') || demoStore()
+}
+/** The URL is not enough on its own: a demo store stays in localStorage, and the next load of the
+ *  same origin without the flag used to sync it as a real guest (a stray "Alex" on the live project,
+ *  23 September 2026, from a tab left on a bare path). The seed and the fixture set `spcc-demo`
+ *  when they write the store, and resetSocialIdentity() clears it, so only a deliberate fresh start
+ *  turns a demo into a real passport. */
+export const DEMO_KEY = 'spcc-demo'
+function demoStore(): boolean {
+  try { return typeof localStorage !== 'undefined' && localStorage.getItem(DEMO_KEY) === '1' } catch { return false }
 }
 /** Running as the app on the home screen rather than in a browser tab: the manifest's standalone
  *  display, or iOS's own flag for a page added to the home screen. `?install=app` pins it on and

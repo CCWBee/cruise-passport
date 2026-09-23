@@ -167,8 +167,11 @@ The same holds for a probe of the page from Brave.
   made. `nosync` is still the rule for any other QA load against the dev server. All three flags are
   read from the URL the page was loaded with, since a tab tap drops the query, and on such a load
   `backend.ts` hands out no client at all, so a screen's own call (a name search, a group's roster)
-  cannot sign a user in either. A seeded store is still in localStorage afterwards, so a later load
-  of the same origin without the flag does sync it: use a throwaway browser profile for demos.
+  cannot sign a user in either. A seeded store used to sync on a later load of the same origin
+  without the flag (a stray "Alex" reached the live project that way on 23 September, from a Brave
+  tab left on a bare path of the dev server); since then the seed and the fixture also set
+  `spcc-demo` in localStorage, `qaDemo()` reads it, and only `resetSocialIdentity()` (Delete my data,
+  start again) clears it, so a demo store never syncs until someone deliberately starts afresh.
   **Delete my data no longer replaces the erased user with one you cannot reach.** Until 22 September
   `deleteMyData` signed the session out and `resetSocialIdentity()` minted a new local identity, so
   with sync live the next round trip signed in a *fresh* anonymous user and republished `profiles`,
