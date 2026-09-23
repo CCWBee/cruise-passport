@@ -51,7 +51,8 @@ begin
     (v_b, v_cruise, '{"owner":"b"}', now());
   insert into public.friends (user_id, friend_code) values
     (v_a, v_code_c), (v_c, v_code_a),
-    (v_b, v_code_c), (v_c, v_code_b);
+    (v_b, v_code_c), (v_c, v_code_b),
+    (v_a, v_code_b); -- A had added B's code too: moved as it is, it would be B's edge to itself
   insert into public.groups (name, owner, invite_code, cruise_id)
     values ('QA group A', v_a, 'QA' || v_tag || 'GA', v_cruise) returning id into v_group_a;
   insert into public.groups (name, owner, invite_code, cruise_id)
@@ -117,6 +118,10 @@ begin
     into v_n;
   if v_n <> 0 then raise exception 'FAIL % rows still belong to the old user', v_n; end if;
 
+  -- No edge is left pointing at B's own code, which died with B's profile: C's edge to it went.
+  if exists (select 1 from public.friends where friend_code = v_code_b)
+  then raise exception 'FAIL an edge still points at B''s dead code'; end if;
+
   -- Every table moved to B.
   if (select code from public.profiles where user_id = v_b) is distinct from v_code_a
   then raise exception 'FAIL profiles did not move'; end if;
@@ -159,6 +164,6 @@ begin
   if exists (select 1 from public.profiles where user_id = v_b) then raise exception 'FAIL delete_my_data left the profile'; end if;
 
   v_note := format('A=%s B=%s C=%s code=%s', left(v_a::text, 8), left(v_b::text, 8), left(v_c::text, 8), v_code_a);
-  raise exception 'DRYRUN 0004 OK: 3 users made; wrong code null; own claim moved nothing; B claimed A (profile, passport, 2 backups, friend edge, group owner, membership, recovery moved; A''s auth user deleted; B''s own profile, passport, backup, edge, group and recovery gone); C kept the edge and still reads the passport through friend_feed and group_feed; delete_my_data took the recovery row. Rolled back. %', v_note;
+  raise exception 'DRYRUN 0004 OK: 3 users made; wrong code null; own claim moved nothing; B claimed A (profile, passport, 2 backups, friend edge, group owner, membership, recovery moved; A''s auth user deleted; B''s own profile, passport, backup, edge, group and recovery gone, and every edge to its code); C kept the edge and still reads the passport through friend_feed and group_feed; delete_my_data took the recovery row. Rolled back. %', v_note;
 end
 $test$;

@@ -164,7 +164,11 @@ The same holds for a probe of the page from Brave.
   Since 23 September a load whose URL carries `seed` or `fixture` never syncs, whatever the store
   says (`qaDemo()` in `src/data/model.ts`, read by `mode()` in `sync.ts`; the status reads `'local'`),
   because both mark the store entered and that is how 124 of the live project's 166 accounts were
-  made. `nosync` is still the rule for any other QA load against the dev server.
+  made. `nosync` is still the rule for any other QA load against the dev server. All three flags are
+  read from the URL the page was loaded with, since a tab tap drops the query, and on such a load
+  `backend.ts` hands out no client at all, so a screen's own call (a name search, a group's roster)
+  cannot sign a user in either. A seeded store is still in localStorage afterwards, so a later load
+  of the same origin without the flag does sync it: use a throwaway browser profile for demos.
   **Delete my data no longer replaces the erased user with one you cannot reach.** Until 22 September
   `deleteMyData` signed the session out and `resetSocialIdentity()` minted a new local identity, so
   with sync live the next round trip signed in a *fresh* anonymous user and republished `profiles`,

@@ -15,37 +15,34 @@ import { keepStorageOnceEntered } from './state/keep'
 // one is a lazy chunk that is gone: a deploy lands while a sheet holds the reload (startUpdates,
 // below), the old hashed file has left the precache and the host, Pages answers the missing .js
 // with index.html, and the import rejects. A reload fetches the current build, so a failed chunk
-// reloads the page once; a flag in sessionStorage stops that becoming a loop, and is cleared once
-// the reloaded page has run for a while. Anything else shows one plain screen in the room's own
-// colours (the room is set on <html> before the first paint, so it needs nothing from App) with
-// the one way on. No stack trace is shown: the guest can do nothing with it.
+// reloads the page once; the time of that reload, kept in sessionStorage, stops it becoming a loop:
+// a second chunk failure within five minutes shows the screen instead, however long each failure
+// took to arrive, and a stale chunk after a later deploy may reload once again. Anything else shows
+// one plain screen in the room's own colours (the room is set on <html> before the first paint, so
+// it needs nothing from App) with the one way on. No stack trace is shown: the guest can do nothing
+// with it.
 const CHUNK_RELOAD_KEY = 'spcc-chunk-reload'
+const CHUNK_RELOAD_GAP_MS = 5 * 60_000
 const CHUNK_FAILURE = /dynamically imported module|Importing a module script failed|module script|Unable to preload CSS|ChunkLoadError|Loading chunk/i
 
 function reloadedForChunk(): boolean {
-  try { return sessionStorage.getItem(CHUNK_RELOAD_KEY) === '1' } catch { return true } // blocked: never loop
+  try {
+    const at = Number(sessionStorage.getItem(CHUNK_RELOAD_KEY))
+    return at > 0 && Date.now() - at < CHUNK_RELOAD_GAP_MS
+  } catch { return true } // blocked: never loop
 }
 
 class Fault extends Component<{ children: ReactNode }, { failed: boolean; reloading: boolean }> {
   state = { failed: false, reloading: false }
-  private settled: ReturnType<typeof setTimeout> | undefined
 
   static getDerivedStateFromError(error: unknown) {
     const chunk = CHUNK_FAILURE.test(error instanceof Error ? error.message : String(error))
     return { failed: true, reloading: chunk && !reloadedForChunk() }
   }
 
-  componentDidMount() {
-    // Ten quiet seconds after a reload mean it worked, so a later stale chunk may reload once again.
-    this.settled = setTimeout(() => { try { sessionStorage.removeItem(CHUNK_RELOAD_KEY) } catch { /* blocked */ } }, 10_000)
-  }
-
-  componentWillUnmount() { if (this.settled) clearTimeout(this.settled) }
-
   componentDidCatch() {
     if (!this.state.reloading) return
-    if (this.settled) clearTimeout(this.settled)
-    try { sessionStorage.setItem(CHUNK_RELOAD_KEY, '1') } catch { /* blocked: reloadedForChunk() already said no */ }
+    try { sessionStorage.setItem(CHUNK_RELOAD_KEY, String(Date.now())) } catch { /* blocked: reloadedForChunk() already said no */ }
     window.location.reload()
   }
 

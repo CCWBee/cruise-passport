@@ -188,7 +188,7 @@ Built on `hardening` on 23 September 2026. The screens call these and nothing lo
   in place of the sync line: "A demo. Nothing leaves this phone."
 - `googleSignInEnabled` (`backend.ts`) is `false`: gate the "Keep it with Google" block on it.
 
-Two places the build differs from the text above, both on purpose:
+Where the build differs from the text above, each on purpose:
 
 - `claim_recovery` returns `{ profile: {code, name, colour} | null, backups: [...] }` rather than the
   bare backups array, so the phone takes the friend code from the row that moved, in the same
@@ -202,5 +202,14 @@ Two places the build differs from the text above, both on purpose:
   failures, timeouts, 5xx, 429 and non-JSON answers still hold.
 - The backup write is awaited and counted in the round (it was fire-and-forget), and a failed
   publish is not followed by a pull.
+- `claim_recovery` also deletes every friend edge that points at the claiming phone's own code,
+  which dies with its profile, so no edge is left pointing at nobody (review, 23 September).
+- `?nosync`, `?seed` and `?fixture` are read from the URL the page loaded with, and on such a load
+  `backend.ts` gives out no client, so no screen's own call can sign a user in (review, 23
+  September).
+- A claim over the backup lands on the phone's current sailing, as the Google restore does. A
+  backup for another sailing is only imported with the sailings, so on a fresh phone whose default
+  sailing is not the guest's, "Passport back" can arrive with no drinks until they switch sailing.
+  Not a fault of the UI.
 - `?qa=claim:wrong` (and the other claim states), `?qa=sync:moved`, `?qa=sync:local` and `?qa=code:1`
   put each state on screen for a render on a `nosync` load.

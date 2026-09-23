@@ -61,20 +61,26 @@ declare
   v_me    uuid := auth.uid();
   v_owner uuid;
   v_hash  text;
+  v_old   text;
 begin
   if v_me is null then raise exception 'not authenticated'; end if;
   v_hash := encode(extensions.digest(
     translate(upper(regexp_replace(coalesce(p_secret, ''), '[^0-9A-Za-z]', '', 'g')), 'OIL', '011'),
     'sha256'), 'hex');
-  -- Locked, so two phones claiming the same code at once take turns and the second finds itself
-  -- the owner.
+  -- Locked, so two claims of the same code take turns rather than moving one identity twice at
+  -- once. A second phone waiting on the lock then finds the first as the owner and moves the
+  -- identity on from it: the code is the passport, and the last phone to use it holds it.
   select user_id into v_owner from public.recovery where hash = v_hash for update;
   if v_owner is null then return null; end if;
 
   if v_owner <> v_me then
     -- The caller's own rows first: it is a fresh phone, and every table below is keyed on the user,
     -- so its rows would collide with the ones about to move. Owned groups go as delete_my_data
-    -- takes them, so no group is left with an owner who is not in it.
+    -- takes them, so no group is left with an owner who is not in it. Any edge pointing at the
+    -- caller's own code goes too, whoever holds it: that code dies here, and an edge to it (someone
+    -- the fresh phone had already added, or the owner's own edge to it, about to move) would sit in
+    -- friends pointing at nobody.
+    select code into v_old from public.profiles where user_id = v_me;
     delete from public.memberships where user_id = v_me;
     delete from public.groups      where owner   = v_me;
     delete from public.friends     where user_id = v_me;
@@ -82,6 +88,7 @@ begin
     delete from public.passports   where user_id = v_me;
     delete from public.profiles    where user_id = v_me;
     delete from public.recovery    where user_id = v_me;
+    if v_old is not null then delete from public.friends where friend_code = v_old; end if;
 
     -- Then every row of the owner, re-pointed. groups.owner is `on delete set null`, so it moves
     -- before the auth user goes, or the owner's groups would be left with nobody.

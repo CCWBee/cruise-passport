@@ -6,6 +6,7 @@
 // synthesises an identity card for those. Live end-to-end needs Charles's project
 // (docs/BACKEND_SETUP.md); the shapes here match the RPCs exactly.
 import type { SharePayload } from './share'
+import { qaDemo, qaNoSync } from '../data/model'
 import { readOAuthError } from './restore'
 import { judgeRestore, planSession, type SessionPurpose } from './session'
 import {
@@ -86,7 +87,11 @@ export const oauthError = (): { code: string; description: string } | null => oa
 
 // The import itself can fail (a precached chunk gone stale after a deploy), so it is caught here
 // rather than rejecting every adapter call and breaking the never-throws contract above.
+// A load kept off the backend (?nosync, ?seed, ?fixture) gets no client at all. mode() in sync.ts
+// only stops the rounds; a screen's own call (a name search, a group's roster, an invite link)
+// comes straight here, and on a demo it would sign in an anonymous user on the live project.
 async function sb() {
+  if (qaNoSync() || qaDemo()) return null
   try {
     const p = getSupabase()
     return p ? await p : null
@@ -152,7 +157,13 @@ export async function resolveSession(purpose: SessionPurpose = 'sync'): Promise<
     let answer: SessionAnswer
     if (plan === 'use') answer = { uid: live! }
     else if (plan === 'wait') answer = 'held'
-    else if (plan === 'moved') answer = 'moved'
+    else if (plan === 'moved') {
+      // Marked here as well as in the restore branch below: runSync reads the mark (identityMoved)
+      // to choose between "moved" and "held", and without it a phone that has published before and
+      // now holds no session at all would say "Offline" and retry for ever.
+      if (!isRetired()) setRetired(true)
+      answer = 'moved'
+    }
     else if (plan === 'nothing') answer = 'none'
     else if (plan === 'mint') answer = await mint(client)
     else {
@@ -352,10 +363,22 @@ export type ClaimAnswer = ClaimedPassport | 'wrong' | 'offline' | 'failed'
 export async function claimRecovery(secret: string): Promise<ClaimAnswer> {
   const client = await sb()
   if (!client) return 'failed'
-  const who = await resolveSession('claim')
+  let who = await resolveSession('claim')
   if (typeof who !== 'object') return 'offline'
   try {
-    const { data, error, status } = await client.rpc('claim_recovery', { p_secret: secret })
+    const call = () => client.rpc('claim_recovery', { p_secret: secret })
+    let { data, error, status } = await call()
+    // Refused on the auth.users key: this session's user has been deleted (the passport was claimed
+    // away on another phone within the hour its access token still verifies), so nothing can move
+    // onto it. Confirm that with the auth server, and once it is retired, claim again under a new user.
+    if (error?.code === '23503') {
+      await checkStillThere(client)
+      if (isRetired()) {
+        who = await resolveSession('claim')
+        if (typeof who !== 'object') return 'offline'
+        ;({ data, error, status } = await call())
+      }
+    }
     if (error) return status === 0 || status >= 500 ? 'offline' : 'failed'
     if (data === null || typeof data !== 'object') return 'wrong'
     const raw = data as { profile?: unknown; backups?: unknown }
