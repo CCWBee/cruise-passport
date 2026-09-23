@@ -586,8 +586,10 @@ written exceptions. The unfolded way back reaches 814 and scrolls: the guest has
 field takes focus, so the keyboard is up anyway. The iPhone Safari branch (`&install=safari`) is 742
 and scrolls by 8: Safari's own bars leave about 664 of an 844 phone, so that branch could never meet
 the rule, and the note it adds sits above the name, where it is read before anything is filled in.
-Not measured and owed: the multi-sailing branch, which was about 26 taller on the last headless
-measure, and a real iPhone, whose insets take about 49 (`.app-head` carries `--safe-t`, the body's
+The multi-sailing branch, simulated in the same frame (the header's meta line swapped for the
+`Select`, so the shared demo store was not given a second sailing), is 746 and scrolls by 12 with the
+folded way back, where without it it would be 678: open, and a call between cutting "what this is"
+to one line and leaving the way back off that branch. Not measured and owed: a real iPhone, whose insets take about 49 (`.app-head` carries `--safe-t`, the body's
 bottom padding is `max(var(--s6), var(--safe-b))`), which puts the installed case near 772 and a
 scroll of some 38. If it scrolls, the copy has to come down, not the 24s. Measure `.entry-in`
 against the body, never the document height: `.entry` is `min-height: 100dvh`, so 844 of 844 is what
