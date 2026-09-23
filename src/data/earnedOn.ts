@@ -9,10 +9,12 @@ import type { Passport } from '../state/stats'
  *  that day is put through `statOf` (the app passes `(p) => computeStats(drinks, p).badgeStat`, the
  *  same computation every screen reads) and the first day the badge passes is the answer.
  *
- *  Null when the badge is not earned, and also when it is earned but only by a drink or a visit
+ *  Null when the badge is not earned, and also when it is earned but only with a drink or a visit
  *  that carries no date: then the day cannot be known, and the sheet leaves the dated line out
- *  rather than naming a day the record does not support. Every test is monotonic in what has been
- *  tried, so the first passing day is the day it was earned. */
+ *  rather than naming a day the record does not support. An undated entry is left out of the
+ *  replay altogether, so where the dated record earns the badge by itself the answer is the day it
+ *  did, which may be later than the day the undated drink actually tipped it. Every test is
+ *  monotonic in what has been tried, so the first passing day is the day it was earned. */
 export function earnedOn(
   badge: Pick<BadgeDef, 'test'>,
   passport: Passport,

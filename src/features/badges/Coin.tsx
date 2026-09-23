@@ -282,8 +282,6 @@ export function Coin({ badge, state, progress, size = 56, turn = false, flip = f
         transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         '--thick': `${thick}px`, '--edge-lo': m.edge[0], '--edge-hi': m.edge[1],
       } as CSSProperties}
-      // the entry turn is done: drop its animation, so the flip's transition owns transform
-      onAnimationEnd={() => setTurning(false)}
     >
       <span className="coin-face"><CoinFace badge={badge} metal={metal} size={size} ring={null} /></span>
       {Array.from({ length: layers - 1 }, (_, i) => (
