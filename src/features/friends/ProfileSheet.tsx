@@ -1,10 +1,11 @@
 import { useState, type CSSProperties } from 'react'
-import { deleteMyData, hasBackend } from '../../state/backend'
+import { deleteMyData, googleSignInEnabled, hasBackend } from '../../state/backend'
 import { FRIEND_COLOURS, useStore } from '../../state/store'
-import { keepAsGuest, startSignIn, useSyncStore } from '../../state/sync'
+import { keepAsGuest, startAgain, startSignIn, useRecoveryCode, useSyncStore } from '../../state/sync'
 import { GlassButton } from '../../ui/GlassButton'
 import { Sheet } from '../../ui/Sheet'
 import { GUEST_HONESTY, PrivacySheet, PRIVACY_SUBTITLE } from '../privacy/PrivacySheet'
+import { BringBack } from './BringBack'
 import { ConfirmButton } from './ConfirmButton'
 import '../../ui/field.css'
 import './friends.css'
@@ -18,10 +19,16 @@ export function ProfileSheet({ onClose }: { onClose: () => void }) {
   const setProfile = useStore((s) => s.setProfile)
   const resetSocialIdentity = useStore((s) => s.resetSocialIdentity)
   const sync = useSyncStore()
+  const recoveryCode = useRecoveryCode()
   const [status, setStatus] = useState('')
+  const [codeNote, setCodeNote] = useState('')
   const [privacyOpen, setPrivacyOpen] = useState(false)
+  const moved = sync.status === 'moved'
 
-  const syncLine = sync.status === 'off' ? ''
+  // 'moved' says itself in its own block below, with its two ways on, so the sync line stays out of
+  // it. 'local' is a ?seed or ?fixture load, which never syncs whatever the store says.
+  const syncLine = sync.status === 'off' || moved ? ''
+    : sync.status === 'local' ? 'A demo. Nothing leaves this phone.'
     : sync.status === 'syncing' ? 'Syncing…'
       : sync.status === 'held' ? 'Offline · will sync when you’re back'
         : sync.status === 'error' ? 'Sync failed · will retry'
@@ -55,9 +62,28 @@ export function ProfileSheet({ onClose }: { onClose: () => void }) {
   // line does, because the hint is the line that explains why the button is dead, and it sits
   // against the control it qualifies. Narrow on purpose: under 'unavailable' and 'failed-signin' the
   // hint has switched to saying something else, so the sync line is then the only thing saying it.
-  const hintCarriesOffline = offline && sync.account === 'guest'
+  // Only while the Google block is on the sheet: with it gated off (googleSignInEnabled), the sync
+  // line is the one place that says the phone is offline.
+  const hintCarriesOffline = googleSignInEnabled && offline && sync.account === 'guest'
     && sync.restore !== 'linked' && sync.restore !== 'unavailable' && sync.restore !== 'failed-signin'
   const statusLine = restoreLine || (hintCarriesOffline ? '' : syncLine)
+
+  // Copy and Share answer on the line under the pair, as the add sheet's Copy does, and clear it.
+  const flashCode = (label: string) => {
+    setCodeNote(label)
+    setTimeout(() => setCodeNote((s) => (s === label ? '' : s)), 1400)
+  }
+  const copyCode = async () => {
+    if (!recoveryCode) return
+    try { await navigator.clipboard?.writeText(recoveryCode); flashCode('Code copied') } catch { /* clipboard blocked */ }
+  }
+  // Called straight from the tap, not after an await: iOS opens the share sheet only inside the
+  // gesture that asked for it. The share sheet is how the code reaches Notes or Messages.
+  const shareCode = () => {
+    if (!recoveryCode) return
+    if (navigator.share) void navigator.share({ text: `Cocktail Passport recovery code: ${recoveryCode}` }).catch(() => { /* dismissed */ })
+    else void copyCode()
+  }
 
   // The only promise the app makes about the server. Forgetting the identity when the erasure failed
   // would leave every row on the server under a code no phone can reach again, and say nothing.
@@ -115,10 +141,48 @@ export function ProfileSheet({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Rank 5: will I lose this. Above the sync line because it outranks "is the crew up to
-            date", and directly above it because the restore result is reported on that line. An
-            offline build has nothing to sign in to, so the block is gated exactly as the erasure
-            block below it is. */}
-        {sync.account !== 'off' && (
+            date". A build with no server has nothing to save or bring back, so the whole block is
+            gated as the erasure block below it is. */}
+        {sync.account !== 'off' && (moved ? (
+          <div className="friends-block">
+            {/* sync has stopped: the passport's identity was claimed on another phone, or the auth
+                server refused this copy's session for good (sync.ts, 'moved'). Both ways on are
+                right whichever it was. Start again is two taps, because it replaces this phone's
+                recovery code as well as its friend code. */}
+            <p className="t-body" role="status">This passport moved to another phone or app. Bring it back with your recovery code, or start again.</p>
+            <BringBack label="Bring it back" />
+            <ConfirmButton
+              label="Start again"
+              confirmLabel="Tap again to start again"
+              note="This phone gets a new friend code and a new recovery code. Its drinks stay."
+              className="friends-action"
+              onConfirm={startAgain}
+            />
+          </div>
+        ) : (
+          <>
+            {/* shown once the server holds the code's hash (useRecoveryCode), because before the
+                first sync there is nothing there to bring back */}
+            {recoveryCode && (
+              <div className="friends-block">
+                <div className="section-head"><h3 className="t-h2">Save your passport</h3></div>
+                <p className="tnum recovery-code">{recoveryCode}</p>
+                <div className="addme-actions recovery-actions">
+                  <GlassButton onClick={() => { void copyCode() }}>Copy</GlassButton>
+                  <GlassButton onClick={shareCode}>Share</GlassButton>
+                </div>
+                <p className="t-meta friends-hint">Keep this somewhere safe. On a new phone, or in the app on your home screen, enter it to bring your passport back.</p>
+                <p className={codeNote ? 't-meta friends-status' : 'sr-only'} role="status">{codeNote}</p>
+              </div>
+            )}
+            <BringBack />
+          </>
+        ))}
+
+        {/* Google, kept for later and unreachable while googleSignInEnabled is false (backend.ts): it
+            only ever answered "Sign-in is not available yet". When it comes back it sits here, under
+            the recovery code, and the restore result is reported on the sync line below it. */}
+        {googleSignInEnabled && sync.account !== 'off' && (
           <div className="friends-block">
             <div className="section-head"><h3 className="t-h2">Keep your passport</h3></div>
 

@@ -199,6 +199,28 @@ export function qaNoSync(): boolean {
 export function qaDemo(): boolean {
   return LOADED_WITH.has('seed') || LOADED_WITH.has('fixture')
 }
+/** Running as the app on the home screen rather than in a browser tab: the manifest's standalone
+ *  display, or iOS's own flag for a page added to the home screen. `?install=app` pins it on and
+ *  `?install=safari` off (QA only). The landing's "It is already on your home screen" reads it. */
+export function isInstalled(): boolean {
+  const forced = LOADED_WITH.get('install')
+  if (forced === 'app' || forced === 'safari') return forced === 'app'
+  if (typeof matchMedia !== 'undefined' && matchMedia('(display-mode: standalone)').matches) return true
+  return typeof navigator !== 'undefined' && (navigator as Navigator & { standalone?: boolean }).standalone === true
+}
+/** An iPhone or iPad in its browser, not the home-screen app. iOS keeps the two apart: Safari and
+ *  the app each have their own storage, so each has its own passport, and a tapped link always opens
+ *  in Safari. Android's browser and its installed app share one, so there is nothing to warn about
+ *  there. The entry screen's install note and the note on /add and /join read it. An iPad reports
+ *  itself as a Mac, so a Mac with a touch screen counts. `?install=safari` pins it on for a render
+ *  on a desktop browser, `?install=app` off. */
+export function inIosBrowser(): boolean {
+  const forced = LOADED_WITH.get('install')
+  if (forced === 'app' || forced === 'safari') return forced === 'safari'
+  if (typeof navigator === 'undefined' || isInstalled()) return false
+  return /iPhone|iPad|iPod/.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+}
 /** ?landing=desktop|phone (QA only) pins which branch of the landing screen renders. `desktop` also
  *  forces the root gate open, because shot.mjs always appends ?seed and a seeded store has already
  *  migrated to entered, so the gate could never be reached otherwise. `phone` forces nothing: it

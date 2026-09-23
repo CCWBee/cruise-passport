@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Masthead } from '../../app/Masthead'
 import { startRoom } from '../../app/room'
-import { isDesktopVisitor } from '../../data/model'
+import { isDesktopVisitor, isInstalled } from '../../data/model'
 import { Qr } from '../../ui/Qr'
 import './landing.css'
 
@@ -37,8 +37,9 @@ export function Landing({ onContinue, continueLabel }: { onContinue: () => void;
     const base = import.meta.env.BASE_URL
     return { value: `${location.origin}${base}`, address: location.host + (base === '/' ? '' : base) }
   }, [])
-  // Reachable only through /get inside the installed app, where the manifest declares standalone.
-  const installed = typeof matchMedia !== 'undefined' && matchMedia('(display-mode: standalone)').matches
+  // Reachable only through /get inside the installed app. isInstalled() is the one test for it
+  // (data/model.ts), shared with the entry screen's install note.
+  const installed = isInstalled()
 
   return (
     <>

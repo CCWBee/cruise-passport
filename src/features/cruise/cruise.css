@@ -23,6 +23,16 @@
    same reason. */
 .entry-fields { display: grid; gap: var(--s4); }
 .entry-fields > .f-field { margin-top: 0; }
+/* The same reason for the way back under Done: .quiet-action and the unfolded .bring-back each bring
+   24 of their own, which on a sheet is the gap to the block above, and inside this grid would add to
+   the grid's 24. The field inside the unfolded block keeps a 16 that on a sheet collapses into the
+   block's 24 and here would not, so it goes too. */
+.entry-in > .quiet-action,
+.entry-in > .bring-back,
+.entry-in > .bring-back > .f-field { margin-top: 0; }
+/* a grid item stretches, which would centre the label across the column; everywhere else the quiet
+   action sits at the start of the text, as a block button does */
+.entry-in > .quiet-action { justify-self: start; }
 
 /* ── the sailing sheet: the same shape as the venue form, so the two read alike ── */
 .sailing-submit { margin-top: var(--s5); }

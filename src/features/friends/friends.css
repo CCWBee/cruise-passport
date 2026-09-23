@@ -141,6 +141,19 @@
 /* one action, full width: the share button when Copy has taken the slot beside the code */
 .addme-actions-one { grid-template-columns: 1fr; }
 
+/* ── Save your passport (ProfileSheet): the recovery code, then Copy and Share. The code is read and
+   copied by hand, so it takes the add sheet's code treatment (.addme-code-val): heading size at 600
+   in --ink, tabular, 8 under its heading. The pair is the add sheet's .addme-actions, 16 under the
+   code, with the same trimmed padding so both labels stay on one line at 320. ── */
+.recovery-code {
+  margin-top: var(--s2);
+  font-size: var(--f-heading);
+  font-weight: 600;
+  color: var(--ink);
+}
+.recovery-actions { margin-top: var(--s4); }
+.recovery-actions .gbtn { min-width: 0; padding: 0 var(--s3); }
+
 /* ── Scan their code ── */
 .scan-lead { margin-bottom: var(--s3); }
 /* The frame is dark in every room, because it is where a camera picture will be: --on-light is the

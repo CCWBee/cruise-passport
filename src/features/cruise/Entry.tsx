@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import { Masthead } from '../../app/Masthead'
 import { startRoom } from '../../app/room'
 import { activeCruiseId, CRUISES, cruiseById } from '../../data/cruises'
+import { inIosBrowser } from '../../data/model'
 import { hasBackend } from '../../state/backend'
 import { useStore } from '../../state/store'
 import { GlassButton } from '../../ui/GlassButton'
 import { Select } from '../../ui/Select'
+import { BringBack } from '../friends/BringBack'
 import { PrivacySheet } from '../privacy/PrivacySheet'
 import { NameFields } from '../social/NameFields'
 import { SailingSheet } from './SailingSheet'
@@ -116,6 +118,14 @@ export function Entry({ onDone }: { onDone: () => void }) {
               </button>
             </div>
 
+            {/* An iPhone in Safari, not the home-screen app (inIosBrowser, data/model.ts): Safari and the
+                app keep separate storage, so a passport started here is not the one the app opens.
+                Said before the name, because a name given here would have to be given again there.
+                Android's browser and its installed app share one passport, so nothing is said there. */}
+            {inIosBrowser() && (
+              <p className="t-meta entry-install">Add this to your home screen first (Share, then Add to Home Screen) and use it from there: Safari keeps a separate passport.</p>
+            )}
+
             {/* on the room, not in a panel: the sibling is ProfileSheet, whose identical pair sits
                 flat on the sheet. NameCard keeps its panel on Crew because it sits among other
                 content there; here the form is the screen, and a box around the only thing present is
@@ -126,13 +136,17 @@ export function Entry({ onDone }: { onDone: () => void }) {
 
             <p className="t-body">Tick off, rate and log the cocktails aboard, and see what your crew has found. It works offline.</p>
 
+            {/* Four lines at 390, not five: the 21 it gave up is what lets "Bring back a passport" sit
+                under Done without the screen scrolling (docs/DESIGN.md, Entry). "No sign-in" lost its
+                "needed" when Google went off (googleSignInEnabled): there is no optional sign-in for
+                the word to set against. Every promise is still here. */}
             {/* The region is eu-west-2, which is London, so the line says London: "in the EU" of a
                 London region would be inaccurate, and honest is one of the four qualities. It does not
                 say "nothing is tracked" either, because Cloudflare and Supabase both keep ordinary
                 server logs with IP addresses in them, which the note two taps away says. */}
             <p className="t-meta">
               {hasBackend()
-                ? 'Done turns on sync: your name, colour and the drinks you log go to this app’s own server in London, under your friend code. No sign-in needed, no analytics, no advertising. Delete it all from Your details at any time.'
+                ? 'Done turns on sync: your name, colour and the drinks you log go to this app’s own server in London under your friend code. No sign-in, analytics or advertising. Delete it from Your details.'
                 : 'This version of the app has no server, so nothing leaves this phone.'}
             </p>
 
@@ -160,6 +174,15 @@ export function Entry({ onDone }: { onDone: () => void }) {
                 under a name. The screen's one filled control, C's wide button at the foot, as the
                 add sheet's Add it is; there is no dock here, so no Log to be the coral one instead */}
             <GlassButton variant="primary" size="lg" block type="button" className="entry-done" onClick={done}>Done</GlassButton>
+
+            {/* the way back for a guest who already has a passport, on a new phone or in the app after
+                Safari: the same BringBack as Your details. Under Done, as the landing's way on sits
+                under its answer, and only where there is a server to bring one back from. A claim
+                enters the passport, and App's ClaimTick says "Passport back" over the screen after.
+                Not in iPhone Safari, where the install note above sends the guest to the home-screen
+                app: a passport brought back here would land in the storage the note has just called
+                the wrong one, and would have to be brought back again once installed. */}
+            {hasBackend() && !inIosBrowser() && <BringBack />}
           </div>
         </div>
       </main>

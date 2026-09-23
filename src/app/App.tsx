@@ -4,10 +4,11 @@ import { decodeShare, extractShareCode, parseFriend, type SharePayload } from '.
 import { joinGroupFlow } from '../state/groups'
 import { hasBackend } from '../state/backend'
 import { Confirm } from '../ui/Confirm'
-import { qaFirstOpen, qaLanding, isDesktopVisitor } from '../data/model'
+import { qaFirstOpen, qaLanding, isDesktopVisitor, inIosBrowser } from '../data/model'
 import { useStore } from '../state/store'
 import { Entry } from '../features/cruise/Entry'
 import { Landing } from '../features/landing/Landing'
+import { ClaimTick } from './ClaimTick'
 import { Shell } from './Shell'
 import { Home } from '../features/home/Home'
 import { Drinks } from '../features/drinks/Drinks'
@@ -45,14 +46,26 @@ const atGet = () => path() === base() + '/get'
 // Both invite routes report the same way: on success a short line and an automatic hop to the crew;
 // on failure the screen stops, says why, and offers the way on. A two-sentence instruction shown for
 // a second and a half, to the guest least likely to read fast, is not a message at all.
-function InviteScreen({ msg, failed }: { msg: string; failed: boolean }) {
+function InviteScreen({ msg, failed, app }: { msg: string; failed: boolean; app: string }) {
   return (
     <div className="wrap page">
       <p className="t-body" role="status">{msg}</p>
       {failed && <Link to="/social" className="gbtn gbtn-secondary gbtn-lg gbtn-block page-act">Go to your crew</Link>}
+      <AppNote route={app} />
     </div>
   )
 }
+
+// iOS opens every tapped link in Safari, and Safari keeps a passport of its own, apart from the app on
+// the home screen. So on an iPhone outside the app, both invite routes say once, at the foot of the
+// page, where the guest's real passport is and how to do the same thing there. `route` is the thing
+// to do in the app, which differs between the two. Nothing elsewhere (inIosBrowser, data/model.ts).
+function AppNote({ route }: { route: string }) {
+  if (!inIosBrowser()) return null
+  return <p className="t-meta page-note">If you use the app from your home screen, open it there and {route} instead: iPhone opens links in Safari, which keeps a separate passport.</p>
+}
+const ADD_IN_APP = 'add them by name or code in Crew'
+const JOIN_IN_APP = 'join with the group’s invite code in Crew'
 
 // The name comes first, exactly as it does on /join: `befriend` writes both edges, so adding before
 // there is a name publishes "A friend" to the sender's roster, and it stays there. The card is
@@ -102,12 +115,13 @@ function AddRoute() {
     return (
       <div className="wrap page">
         <NameCard lead={from && from !== 'A friend' ? `${from} is adding you.` : 'Someone is adding you.'} />
+        <AppNote route={ADD_IN_APP} />
       </div>
     )
   }
   return (
     <>
-      {msg ? <InviteScreen msg={msg} failed={failed} /> : <div className="wrap page" />}
+      {msg ? <InviteScreen msg={msg} failed={failed} app={ADD_IN_APP} /> : <div className="wrap page" />}
       {added && <Confirm label={added} onDone={() => navigate('/social')} />}
     </>
   )
@@ -151,12 +165,13 @@ function JoinRoute() {
     return (
       <div className="wrap page">
         <NameCard lead="You are joining a group." />
+        <AppNote route={JOIN_IN_APP} />
       </div>
     )
   }
   return (
     <>
-      {msg ? <InviteScreen msg={msg} failed={failed} /> : <div className="wrap page" />}
+      {msg ? <InviteScreen msg={msg} failed={failed} app={JOIN_IN_APP} /> : <div className="wrap page" />}
       {joined && <Confirm label={joined} onDone={() => navigate('/social')} />}
     </>
   )
@@ -197,9 +212,12 @@ export default function App() {
   // precede the first befriend or join_group, so a tapped invite link on a cold phone sees this
   // first. The URL is not touched, so after Done the router mounts on the original path with its
   // fragment intact and the flow carries on.
-  if (!enteredCruise || forced) return <Entry onDone={() => setForced(false)} />
+  // ClaimTick sits in both branches: a claim on the entry screen enters the passport, and the tick
+  // has to outlive the screen that asked for it.
+  if (!enteredCruise || forced) return <><Entry onDone={() => setForced(false)} /><ClaimTick /></>
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <ClaimTick />
       <Routes>
         <Route element={<Shell />}>
           <Route path="/" element={<Home />} />

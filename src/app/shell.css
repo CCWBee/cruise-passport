@@ -35,6 +35,8 @@
 .page > h1 { margin-bottom: var(--s4); }
 /* the way on under an invite route's line: 16, a group's gap */
 .page-act { margin-top: var(--s4); }
+/* the iPhone note at the foot of /add and /join (App.tsx, AppNote): a group of its own, so 24 */
+.page-note { margin-top: var(--s5); }
 
 /* The foot of the room: its floor laid over the content and faded in towards the tab bar, so a row
    dissolves into the room as it passes under the bar and no fragment of its text shows in the

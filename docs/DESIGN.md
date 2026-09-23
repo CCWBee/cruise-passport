@@ -536,6 +536,13 @@ it carries its own room and its own masthead and has no nav.
    module 2 in either branch, a one-line row in the privacy row's shape and its wrapper, with no
    chevron. It has no second line: "your own sailing" says what it is, and on the single-sailing
    branch there is no list for a second line to point at.
+   **The install note**, on an iPhone in Safari only (`inIosBrowser()`), one `p.t-meta.entry-install`
+   between the sailing and the name: "Add this to your home screen first (Share, then Add to Home
+   Screen) and use it from there: Safari keeps a separate passport." iOS gives Safari and the
+   home-screen app separate storage, so a passport started in Safari is not the one the app opens;
+   it is said before the name because a name given here would have to be given again there. Not on
+   Android, whose browser and installed app share one passport, so the reason would be untrue.
+   `.entry-install` carries no style of its own; it is the hook the measure below reads.
 3. **Name and colour.** `NameFields` inside `div.entry-fields`. On the room, not in a `.panel`: the
    sibling is `ProfileSheet`, whose identical pair sits flat on the sheet. `NameCard` keeps its
    panel
@@ -554,23 +561,37 @@ it carries its own room and its own masthead and has no nav.
 6. **Done**, `GlassButton variant="primary" size="lg" block` with `.entry-done`: the screen's one
    filled accent, C's wide button at the foot of a screen, as the add sheet's "Add it" is. There is
    no dock on this screen, so there is no Log to be the coral control instead.
+7. **Bring back a passport**, `BringBack` (the same component as Your details), a `.quiet-action`
+   under Done that unfolds in place to "Your recovery code" and a plain "Bring it back": the way a
+   guest who already has a passport reaches it on a new phone or in the app after Safari. Only with
+   a server (`hasBackend()`), and not in iPhone Safari: there the install note sends the guest to the
+   home-screen app, and a passport brought back in Safari would land in the storage the note has
+   just called the wrong one. A claim enters the passport, and `ClaimTick` at App's root shows
+   "Passport back" over the screen that follows. `cruise.css` gives the grid back the 24 that
+   `.quiet-action`, the unfolded `.friends-block` and its field each bring, and starts the quiet
+   action at the text's edge rather than stretching it across the column.
 
-24 between every one of modules 2 to 6, one rule with no exception; 8 from a heading to its content;
+24 between every one of modules 2 to 7, one rule with no exception; 8 from a heading to its content;
 16 between the two fields. No new token, no new radius, no shadow and no glass: the entry screen is
 not chrome, and everything on it (the rows, the fields, the Select, the button) takes the room's
 tokens from `src/ui/` and `base.css`.
 
-**The screen must not scroll, and a render is the only check that counts.** The last measure,
-headless at 390×844 on 22 September on the cream type scale (title 22, body 15, meta 13),
-put `.entry-in` at 608 of the 738 the body offers below the masthead on the single-sailing branch
-and 634 on the multi-sailing branch (572 and 598 on a build with no server). The night bar's sizes
-(title 34, body 17, meta 15, and Done at 52) add something like 90 to 100 by arithmetic, most of it
-the consent line and the "what this is" line wrapping to more lines, so those figures are stale and
-the screen is owed a Brave measure at `?entry&seed&nosync` with `?hour=13`, `19` and `23`, on both
-branches. A real iPhone's insets take about 49 of the space: `.app-head` carries `--safe-t`, and
-the body's bottom padding is `max(var(--s6), var(--safe-b))`. If it scrolls, the copy has to come
-down, not the 24s. Measure `.entry-in` against the body, never the document height: `.entry` is
-`min-height: 100dvh`, so 844 of 844 is what an empty screen reads too and proves nothing.
+**The screen must not scroll, and a render is the only check that counts.** Measured in Brave at
+390×844 on 23 September 2026 (night bar sizes, `?entry&seed&nosync`, 13 and 23, single-sailing
+branch): the body offers 734 under the masthead, and `.entry-in` is 723 with the folded "Bring back
+a passport" (`&install=app`), so it fits by 11. It fits only because the consent line came down from
+five lines to four ("No sign-in, analytics or advertising. Delete it from Your details."; "needed"
+went with Google, since there is no optional sign-in left for it to set against). Two cases are
+written exceptions. The unfolded way back reaches 814 and scrolls: the guest has asked for it and the
+field takes focus, so the keyboard is up anyway. The iPhone Safari branch (`&install=safari`) is 742
+and scrolls by 8: Safari's own bars leave about 664 of an 844 phone, so that branch could never meet
+the rule, and the note it adds sits above the name, where it is read before anything is filled in.
+Not measured and owed: the multi-sailing branch, which was about 26 taller on the last headless
+measure, and a real iPhone, whose insets take about 49 (`.app-head` carries `--safe-t`, the body's
+bottom padding is `max(var(--s6), var(--safe-b))`), which puts the installed case near 772 and a
+scroll of some 38. If it scrolls, the copy has to come down, not the 24s. Measure `.entry-in`
+against the body, never the document height: `.entry` is `min-height: 100dvh`, so 844 of 844 is what
+an empty screen reads too and proves nothing.
 
 Nothing has left the phone when this renders, and nothing does until Done: `sync.ts` gates its whole
 transport on `enteredCruise`. That is what makes the consent line true rather than a description of
@@ -1096,6 +1117,29 @@ friend" to the sender's roster; the sixteen "A friend" rows on the live project 
 itself, which still carries `needsEdge`) and never on a pull whose previous roster was empty (first
 sync, a restore, after delete-my-data), where everyone is new.
 
+### Your details
+
+`ProfileSheet`, opened from the profile control on Crew. Read: how my crew sees me, and will I lose
+this. Modules in rank order: (1) the title and one meta line, "How your crew sees you."; (2) the name
+field and (3) the colour picker, flat on the sheet; (4) **Save your passport**, only when
+`useRecoveryCode()` returns a code (the server holds its hash, so there is something to bring back):
+an `h3.t-h2`, the code in `.recovery-code` (heading size at 600 in `--ink`, tabular, 8 under the
+heading, one line at 390), then Copy and Share as two plain `GlassButton`s in `.addme-actions
+.recovery-actions`, 16 under the code, and the line "Keep this somewhere safe. On a new phone, or in
+the app on your home screen, enter it to bring your passport back." Share is `navigator.share` with
+the text, called inside the tap because iOS opens the share sheet only there, and falls back to
+Copy; both answer on one status line under the hint, which clears itself; (5) **Bring back a
+passport**, `BringBack`, the entry screen's quiet action; (6) the sync line (`'local'` reads "A demo.
+Nothing leaves this phone."); (7) the privacy row; (8) Delete my data, the two-tap confirm at the
+foot. A phone whose passport has **moved** (`status === 'moved'`) shows, in place of (4) and (5),
+"This passport moved to another phone or app. Bring it back with your recovery code, or start
+again.", then `BringBack` labelled "Bring it back" and a `ConfirmButton` "Start again"
+(`startAgain()`), two taps because it replaces this phone's friend code and recovery code. The "Keep
+it with Google" block renders only when `googleSignInEnabled`, under the recovery code, and only
+then does its hint carry the offline line in place of the sync line. No filled control: the sheet's
+weightiest action is the two-tap erase, and the dock's Log is the screen's coral. Checked in Brave at
+13 and 23 with `?qa=code:1`, `?qa=claim:wrong`, `?qa=sync:moved` and the plain seed load.
+
 ### You
 
 A segmented control (Stats · Badges · Log) under the title, then the segment. The control changes
@@ -1321,7 +1365,7 @@ colour, are how that happens again. Read it before any change that renders.
 | `.press`, `.pressable` | `base.css` | glass under a thumb swells to 1.04 and settles with one small overshoot (Motion's written exception); a content control gives to .97. Both on `scale` |
 | Type roles `.t-display .t-title .t-h2 .t-body .t-strong .t-meta .eyebrow` | `src/styles/base.css` | never a local `font-size`; `.eyebrow` is a sentence-case label, not caps. The 12px floor is the token `--f-micro`, and only the tab labels sit on it |
 | `.section`, `.section-head` | `base.css` | a section is a plain `h2.t-h2`, 32px above, 8px to its content, count or meta at the right |
-| `.page`, `.page-act` | `src/app/shell.css` | a routed screen's wrapper: `.page > h1` sets 16 under the screen's title, and nothing sits between the title and the first module, since no screen has a lead line. `.page-act` is the one button under an invite route's line, 16 below it, in place of an inline margin. The safe-area inset is on `.view`, because no masthead sits above the tabs |
+| `.page`, `.page-act`, `.page-note` | `src/app/shell.css` | a routed screen's wrapper: `.page > h1` sets 16 under the screen's title, and nothing sits between the title and the first module, since no screen has a lead line. `.page-act` is the one button under an invite route's line, 16 below it, in place of an inline margin. `.page-note` is the iPhone note at the foot of `/add` and `/join` (`AppNote`), a group of its own, 24 above. The safe-area inset is on `.view`, because no masthead sits above the tabs |
 | `.row` (tappable), `.line` (static), `.row-copy` | `base.css` | every list is rows with hairlines on the room; never a box per item |
 | `.panel` | `base.css` | the one container, a quiet film on the room for a bounded interactive module only; never nested |
 | `.case` (the velvet), `--velvet`, `--sh-tray` | `base.css`, `tokens.css` | the cloth the medals lie on: Home's tray, the case on Badges and You's small case, one cloth. Material, so the same plum in every room; the markup sets `data-room="night"` on it, so its ink and rings are night's, and its own focus ring is drawn inside its edge. A screen lays out what sits on it and never restyles the cloth |
@@ -1330,7 +1374,7 @@ colour, are how that happens again. Read it before any change that renders.
 | `Toast`, `useToast()` | `src/ui/Toast.tsx`, `toast.css` | a glass pill at the top of the screen (prototype C), clear of the thumb and the tab bar, sliding down on the drawer curve and back up on transform alone; its action (Undo) sits in the line, in the lamp's colour |
 | `GlassButton` (`.gbtn-*`) | `src/ui/GlassButton.tsx`, `button.css` | 44px and round-ended, in the room's plates; `lg` is C's 52px wide button at body size, the foot action of a sheet or a form. One filled coral control per screen, and on a screen that shows the Log button that control is Log. A disabled control drops its fill to a ghost (transparent, hairline, `--ink-2`) so it never reads as an active one; the fill, the edge and the label colour change on one transition. A link that looks like a button takes the same classes (`gbtn gbtn-secondary gbtn-md`), as the add sheet's and the not-found screen's do |
 | `ConfirmButton` | `src/features/friends/ConfirmButton.tsx` | the one two-tap confirm for anything irreversible (delete my data, leave or delete a group, remove a friend, a venue or a sailing): a `GlassButton` inside, `variant` secondary (wide, at a sheet's foot) or ghost (beside a name), `block` by default, `className` for spacing only. Armed, the label turns `--coral-text` and the edge `--coral`: an outline, never a second fill. It disarms itself after six seconds |
-| `.quiet-action` | `base.css` | the quietest text action on a screen: a block, 44px of target, meta size at weight 600 in `--ink-2`, underlined, 24 above. Swept from `.friends-quiet`; the join and paste paths on the add sheet, the guest line on Your details, the Shake sheet's pair, the landing's way on and Ship's "Change this sailing". Two in a row sit 12 apart, not 24, by one rule here (`.quiet-action + .quiet-action`), because they are one group of rare routes; one that follows anything else keeps its own 24. A screen that sets the pair's spacing locally is the divergence this rule replaced |
+| `.quiet-action` | `base.css` | the quietest text action on a screen: a block, 44px of target, meta size at weight 600 in `--ink-2`, underlined, 24 above. Swept from `.friends-quiet`; the join and paste paths on the add sheet, the guest line on Your details, the Shake sheet's pair, the landing's way on Ship's "Change this sailing" and "Bring back a passport" on the entry screen and Your details. Two in a row sit 12 apart, not 24, by one rule here (`.quiet-action + .quiet-action`), because they are one group of rare routes; one that follows anything else keeps its own 24. A screen that sets the pair's spacing locally is the divergence this rule replaced |
 | `.tag` | `base.css` | small outline tags inside a meta line |
 | `Sheet` (`height`, `wave`) + `.sheet-meta` | `src/ui/Sheet.tsx`, `sheet.css` | title then one meta line, which carries the one fact the controls do not show (Copy); no eyebrow. Two heights (Sheets): large by default, `height="medium"` for a sheet to look at; the SheetWave is its opening when opened by a tap |
 | The dock: `Nav`, `.dock`, `.tabbar`, `.droplet`, `.logbtn`, `.logfield`, `.tab-return`; `TABS`, `tabOf()` | `src/app/Nav.tsx`, `nav.css`, `src/app/tabs.ts` | the capsule, the droplet and Log (Navigation). The morph moves clip-path on the filtered layers and opacity, never width; the droplet is `--bead` on transform with A's per-segment run. `TABS` is the one list of tabs, read by the dock and by `Shell` |
@@ -1351,7 +1395,7 @@ colour, are how that happens again. Read it before any change that renders.
 | `ingredientsOf()` | `src/data/model.ts` | what a drink's ingredients line shows. A drink the guest added before 22 September carries "Ingredients not recorded", which the add sheet used to write in place of nothing; it reads as empty, as a drink added now is. Whatever prints ingredients (the list row, the drink sheet) reads them through it, never `d.ingredients` directly |
 | `badgeCount()`, `TIER_ORDER`, `tierOrder()`, `TIER_WORD`, `BADGE_UNIT` | `src/data/badges.ts` | a badge's progress in words ("58 of 100", or "27% of 50%" for a badge marked `percent`, because everywhere else "n of m" counts drinks); the medal ladder, highest first, which the case, Home's tray, `topMedal()` and Wrapped's medals slide all sort by; the tier in words (Champion for the ship's medal); and what each badge's count counts. One copy each: the case, the tray and Wrapped once kept three ladders |
 | `Masthead` | `src/app/Masthead.tsx` | the app's name above the entry screen and the landing, the two screens a cold visitor meets. Chrome: never part of a screen's rank order. `Shell` does not render it |
-| `Landing` | `src/features/landing/Landing.tsx` | the desktop install path: what this is, the code of the live address, the two steps to a home screen, and the price slot when there is one. Which branch renders is decided by `isDesktopVisitor()`, which lives in `src/data/model.ts` beside the QA overrides (so this file only exports its component) and is the only reader of the media query; the way on's label is a prop, because the caller knows which path it is on |
+| `Landing` | `src/features/landing/Landing.tsx` | the desktop install path: what this is, the code of the live address, the two steps to a home screen, and the price slot when there is one. Which branch renders is decided by `isDesktopVisitor()`, which lives in `src/data/model.ts` beside the QA overrides (so this file only exports its component) and is the only reader of the media query; the way on's label is a prop, because the caller knows which path it is on. "It is already on your home screen" reads `isInstalled()` |
 | `NameFields` | `src/features/social/NameFields.tsx` | the name and colour pair wherever it is asked for (`NameCard`, the entry screen). Its input is `Field`'s `.field-ctrl` (it imports `ui/field.css`), and `friends/friends.css` owns only `.fpick` and `.fpick-dot`. `ProfileSheet` keeps its own copy on purpose: it writes to the store on every keystroke with no draft, so it has nothing to hand `draft` and `onDraft`. A fourth site gets an uncontrolled mode on `NameFields`, never a fourth copy |
 | `PrivacySheet`, `PRIVACY_SUBTITLE`, `GUEST_HONESTY` | `src/features/privacy/PrivacySheet.tsx` | the privacy note, one text, opened by the same `.privacy-open` row from the entry screen and from Your details; `GUEST_HONESTY` is the one wording of what a guest stands to lose |
 | `seenMedals`, `markMedalsSeen()` | `src/state/store.ts` (persist v8) | which badges' "new medal" moment Home has shown; seeded on upgrade with what was already earned |
@@ -1378,6 +1422,10 @@ colour, are how that happens again. Read it before any change that renders.
 | `VenueForm` | `src/features/ship/VenueForm.tsx` | the add-and-edit sheet for a venue, and `SailingSheet` (`src/features/cruise/`) its twin for a sailing. Both are `AddSheet`'s skeleton: `Sheet`, title, one `.sheet-meta` line, the `ui/` fields, one block primary at `lg`. Every inline error is the `Field` primitive's own `error` prop, never a hand-written meta line; a remove or delete is a `ConfirmButton` below a hairline, as `ProfileSheet` places delete-my-data |
 | `Fault`, `.fault` | `src/main.tsx`, `base.css` | the error boundary around the app and the one screen it shows: an `.empty-state` held in the middle of its own room (`startRoom`, as Entry and the landing start theirs), `h1.t-title` "Something went wrong." and a primary `GlassButton` "Reload", nothing else, no stack trace. A failed lazy chunk reloads the page once instead (a sessionStorage flag stops a loop). The only renderer of `.fault` |
 | The recovery code: `useRecoveryCode()`, `claimPassport()`, `startAgain()`, `useSyncStore()` `claim` and `status` (`'moved'`, `'local'`) | `src/state/sync.ts`, with the secret in `src/state/recovery.ts` (`formatSecret()`, `normaliseSecret()`, `isSecret()`) | what the "Save your passport" section and "Bring back a passport" render (their copy is in `docs/specs/2026-09-23-recovery-and-hardening.md`, section 1). The code shows only when `useRecoveryCode()` returns one, grouped as `K7QM-3XPA-9RTC-W2HD-6NBF`; format a typed code with `formatSecret()`, never locally. Each `claim` state has one line: `wrong` "That code does not match a passport.", `offline` "No connection. Try again with a signal.", `done` the `Confirm` tick "Passport back"; `status` `'moved'` says "This passport moved to another phone or app. Bring it back with your recovery code, or start again." |
+| `BringBack` | `src/features/friends/BringBack.tsx` | "Bring back a passport": the one route from a recovery code to a passport, on the entry screen and in Your details, and "Bring it back" on a moved copy (its `label` prop). A `.quiet-action` that unfolds in place, like the add sheet's join path, to a `.friends-block.bring-back` holding "Your recovery code" (a typed code grouped by `formatSecret()` as it is typed) and a plain block `GlassButton`, with each `claim` state's line under it. It never shows success itself: `ClaimTick` does. A fourth place that brings a passport back renders this, never a copy |
+| `ClaimTick` | `src/app/ClaimTick.tsx` | the `Confirm` tick "Passport back" on the change of `claim` into `'done'`, mounted at App's root in both branches (the entry screen and the router), because a claim on the entry screen enters the passport and unmounts the screen that asked |
+| `isInstalled()`, `inIosBrowser()` | `src/data/model.ts` | the one test for running as the home-screen app (the manifest's standalone display or iOS's `navigator.standalone`), and for an iPhone or iPad in its browser, whose storage is apart from the app's. `?install=app` and `?install=safari` pin either for a render. Read by the landing, the entry screen's install note and `AppNote` |
+| `AppNote` | `src/app/App.tsx` | the one line at the foot of `/add` and `/join` in iPhone Safari: if the guest uses the app from the home screen, open it there and add the person by name or code (or join with the invite code) in Crew instead, because iPhone opens links in Safari, which keeps a separate passport |
 | `googleSignInEnabled` | `src/state/backend.ts` | false: the "Keep it with Google" block renders only when it is true. The Google paths stay in the code, unreachable |
 | Seed data | `index.html` (`?seed`) | how every screen is populated for a render |
 
