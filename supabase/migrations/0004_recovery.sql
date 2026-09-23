@@ -34,6 +34,13 @@ create table if not exists public.recovery (
 alter table public.recovery enable row level security;
 -- No policies on purpose: the functions below are the only way in.
 
+-- And no Data API grants either, stated rather than left to the platform. Until 30 October 2026
+-- Supabase grants every new public table to anon and authenticated by itself (RLS would still keep
+-- them out, with no policies); from that date it grants nothing, on a rebuild as much as live. Either
+-- way this table is reached only through the SECURITY DEFINER functions, which run as the owner.
+revoke all on public.recovery from anon, authenticated;
+grant all on public.recovery to service_role;
+
 -- Register (or replace) the caller's recovery hash. Idempotent: the phone calls it until it has
 -- seen it succeed once.
 create or replace function public.set_recovery(p_hash text)
