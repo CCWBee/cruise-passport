@@ -33,6 +33,7 @@
   /* at 600 the D and the s still sat on the rim (the confirm sweep, 23 September 2026), so the bead
      is drawn 14% wider than its slot, 52 on a 46 slot; a neighbour's label is still 5px clear */
   .tabbar > .droplet { scale: 1.14 1; }
+  .dock .tabbar.is-touching > .droplet { scale: 1.2 1.06; } /* above the 1.06 below, which would narrow it */
 }
 
 /* ── the capsule ── */
@@ -204,5 +205,8 @@
     transition-duration: 0s !important;
   }
   .tabbar.is-touching { scale: none; }
-  .tabbar.is-touching > .droplet { scale: none; }
+  .tabbar.is-touching > .droplet, .dock .tabbar.is-touching > .droplet { scale: none; }
+}
+@media (prefers-reduced-motion: reduce) and (max-width: 359px) {
+  .dock .tabbar.is-touching > .droplet { scale: 1.14 1; }
 }

@@ -50,7 +50,7 @@ const METRICS = `(() => {
 
 // Each state: a route (the query is added), steps run after load, and how long to settle. A sheet's
 // wave runs about 2.4s, so a sheet waits 3.2s before its picture.
-const S = (name, route, steps = [], settle = 2600) => ({ name, route, steps, settle })
+const S = (name, route, steps = [], settle = 2600, alone = false) => ({ name, route, steps, settle, alone })
 const STATES = [
   S('home', '/'),
   S('home-aboard', '/?day=2026-10-05'),
@@ -75,8 +75,14 @@ const STATES = [
   S('claim-wrong', '/social?qa=claim:wrong', [[click('.crew-me'), 3200]]),
   // The Confirm tick "Passport back" clears itself after about 1.3s, so the claim is made after the
   // sheet is up and the picture is taken while the tick is still on screen. The store is Vite's own
-  // module instance (the URL the page loaded, with any ?t= stamp), so setting it here is the same change a real claim makes.
-  S('claim-done', '/social', [[click('.crew-me'), 3200], [`import(performance.getEntriesByType('resource').map((e) => e.name).find((n) => n.includes('/src/state/sync.ts')) || '/src/state/sync.ts').then((m) => { m.useSyncStore.setState({ claim: 'done' }); return true })`, 550]]),
+  // module instance (the URL the page loaded, with any ?t= stamp), so setting it here is the same
+  // change a real claim makes. It runs alone, one hour at a time, after the rest: with the hours
+  // side by side the tick never reached the picture, though it was in the page (the confirm stage,
+  // 23 September 2026), and alone it does.
+  S('claim-done', '/social', [[click('.crew-me'), 3200], [`import(performance.getEntriesByType('resource').map((e) => e.name).find((n) => n.includes('/src/state/sync.ts')) || '/src/state/sync.ts').then(async (m) => {
+    m.useSyncStore.setState({ claim: 'done' })
+    return true
+  })`, 500]], 2600, true),
   S('sync-moved', '/social?qa=sync:moved', [[click('.crew-me'), 3200]]),
   S('shake', '/', [[click('.shake-open'), 3000]]),
   S('shake-reveal', '/', [[click('.shake-open'), 3000], [click('.shake-go'), 4200]]),
@@ -117,11 +123,13 @@ try {
   }
   const narrow = STATES.filter((s) => ['home', 'drinks', 'badges', 'crew', 'entry', 'search'].includes(s.name))
   await Promise.all([
-    ...HOURS.map((hr) => run(hr, 390, 844, STATES)),
+    ...HOURS.map((hr) => run(hr, 390, 844, STATES.filter((s) => !s.alone))),
     run(13, 320, 568, narrow, '-320'),
     run(23, 320, 568, narrow, '-320'),
     ...(ONLY && !ONLY.has('landing-desktop') ? [] : HOURS.map((hr) => run(hr, 1280, 800, [S('landing-desktop', '/?landing=desktop')], '-wide'))),
   ])
+  const alone = STATES.filter((s) => s.alone)
+  if (alone.length) for (const hr of HOURS) await run(hr, 390, 844, alone)
 } finally {
   writeFileSync(path.join(DIR, 'manifest.json'), JSON.stringify(manifest, null, 2))
   chrome.close()

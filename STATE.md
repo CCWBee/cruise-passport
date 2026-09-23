@@ -305,7 +305,9 @@ live shell, then delete the hardening worktree (plain node_modules, no junction)
 after 06e3359, "Night bar, the headless review's fixes"). Capped re-sweep `tools/qa/sweeps/202609231505`
 (105 shots, 0 failed; `sweep.mjs` now counts painted glass only, shoots `landing-phone` at `/get`,
 the desktop landing in all three rooms, and claim-done while its tick is up), then
-`202609231513` for the 320 dock and the medal deep link. Every blocker and major reported is gone in
+`202609231513` for the 320 dock and the medal deep link, and `202609231528` for claim-done, which
+now runs alone after the rest (in parallel its tick never reached the picture): the mint tick and
+"Passport back" show in all three rooms, two glass surfaces with the sheet. Every blocker and major reported is gone in
 the renders. Gates: npm test 91 of 91, `tsc -b` 0, lint 0 errors, design:check clean, build 0. Two
 calls for Charles, neither blocking the push: the You segment is now "Diary" (the dock's Log took the
 word; "Days" or "History" are one-word swaps in `SEGMENTS`), and Isabel's `badges.ts` still says
