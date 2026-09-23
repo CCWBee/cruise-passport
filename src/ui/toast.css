@@ -10,7 +10,7 @@
 }
 .toast {
   pointer-events: auto; display: flex; align-items: center; gap: var(--s1);
-  min-height: 52px; padding: var(--s1) var(--s1) var(--s1) var(--s4); border-radius: var(--r-tag);
+  min-height: 52px; padding: var(--s1) var(--s1) var(--s1) var(--s4); border-radius: var(--r-tag); --glass-r: var(--r-tag);
 }
 /* It carries a line of text over whatever the screen has at the top, often a large title. On the
    engine's clear 20% film that title came through as a pale blur under the toast's words at 3.5:1

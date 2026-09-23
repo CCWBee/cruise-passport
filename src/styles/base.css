@@ -158,11 +158,23 @@ h1, h2, h3, p { margin: 0; }
   --film: var(--glass-film);
   --rim: 8px;
   --spec-x: 1.5px; /* set on every surface, so a sheet's 0 never reaches the glass inside it */
+  --glass-r: 0px;
   box-shadow: var(--glass-lift);
 }
 .glass::before, .glass::after {
   content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
 }
+/* Both filtered layers are cut to the surface's shape by a clip-path as well as their radius.
+   Charles's iPhone showed the round Log button with a darker square in it (23 September 2026); the
+   capsule beside it, whose two layers the morph already clip-paths (nav.css), he did not report,
+   and Log's were held by border-radius alone. So every round or pill surface now carries the
+   capsule's clip. The square was not reproduced here (Playwright's Windows WebKit paints no
+   backdrop-filter), so the cure is to be confirmed on the phone. border-radius cannot feed a
+   clip-path, so a round or pill surface sets --glass-r beside its radius (50% for a circle,
+   var(--r-tag) for a pill); small glass is a pill by default. At zero specificity, so the morph's
+   own clip-paths on the capsule and the field win. A surface that sets none gets a rectangle, which
+   takes nothing off its border-radius: it keeps exactly what it had before. */
+:where(.glass)::before, :where(.glass)::after { clip-path: inset(0 round var(--glass-r)); }
 .glass::before {
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)) brightness(var(--glass-bright));
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)) brightness(var(--glass-bright));
@@ -186,8 +198,10 @@ h1, h2, h3, p { margin: 0; }
 /* children paint above the body and under the rim, in tree order; zero specificity, so a child's
    own position (the touch light, a tint, a droplet) wins */
 :where(.glass) > * { position: relative; }
-/* small glass (a chip, a round button, the toast): a narrower rim */
+/* small glass (a chip, a round button, the toast): a narrower rim, and a pill's clip unless the
+   surface sets its own --glass-r */
 .glass-sm { --rim: 6px; }
+:where(.glass-sm) { --glass-r: var(--r-tag); }
 /* glass on something saturated already, the sea window's sky or a cool pool: at 180 and 210% its
    rim went neon cyan and a round button read as a blue one, a tint kept for Log alone. So it bends
    the light and brightens it, and pushes its colour less (C's sky chip and Back) */
@@ -309,9 +323,9 @@ h1, h2, h3, p { margin: 0; }
 .row + .row, .line + .line, .line + .row, .row + .line { border-top: 1px solid var(--line); }
 .row-copy { display: grid; gap: 2px; min-width: 0; flex: 1; }
 /* a row's leading glyph: the glass a drink comes in on any row that names a drink (Drinks, a venue's
-   list, Log, Stats, Crew), and the shaker on Home's row that opens it. --ink-3 for the shaker; a
-   glass takes its family's hue, which is material like the metals, and is the one exception to
-   "never a state colour" (GlassIcon in ui/Icon.tsx sets it) */
+   list, Log, Stats, Crew). --ink-3 is the default; a glass takes its family's hue, which is material
+   like the metals, and is the one exception to "never a state colour" (GlassIcon in ui/Icon.tsx
+   sets it) */
 .row-lead { flex: none; color: var(--ink-3); }
 .row-copy > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 

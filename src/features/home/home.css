@@ -1,8 +1,8 @@
 /* Home: the view from the bar (prototype C's order). The greeting, the window onto the sea, the
    readout, then the medal tray inside the first screen; below it what to try, the bar you are
-   standing in, the crew's day and Wrapped. Three boxes and no more: the sea window, the tray and the
-   For you cards, and the tray dominates by size, by depth and by what it holds, not by brightness
-   alone. Everything else sits flat on the room. */
+   standing in, the crew's day and Wrapped. Four boxes and no more: the sea window, the tray, the
+   For you cards and the shake card, and the tray dominates by size, by depth and by what it holds,
+   not by brightness alone. Everything else sits flat on the room. */
 /* .view carries the safe-area inset (shell.css); var(--s3) is .page's own value, so the greeting sits
    exactly where every other tab's first line does. */
 .home { padding-top: var(--s3); }
@@ -89,3 +89,33 @@
 }
 .rec-meta { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+/* ── the shake card: Home's door onto the shaker, the one thing on the screen that does something
+   for you, so it reads as pressable before it is read. A different shape from the shelf's cards:
+   one plate across the full width, landscape, the tin leading and the words beside it, where the
+   cards are 212 wide, text only and swiped. It is content, so no glass (Material: glass is chrome
+   only, and Home already holds three surfaces) and no shadow (no floating cards); not the velvet,
+   which is the tray's and is what lets the tray dominate. The plate is --plate, a step firmer than
+   the shelf's --plate-quiet, with the same hairline. The press is .pressable's scale and the plate
+   taken 8% toward the ink, firmer at night and greyer by day. ── */
+.shake-card {
+  display: flex; align-items: center; gap: var(--s3); width: 100%;
+  padding: var(--s3) var(--s4); text-align: left; color: var(--ink);
+  background: var(--plate);
+  border: 1px solid var(--line); border-radius: var(--r-surface);
+}
+.shake-card:active { background-color: color-mix(in srgb, var(--plate), var(--ink) 8%); }
+/* the tin in the Shake sheet's steel (shake.css, .shaker) under an --ink-2 line, so the small one
+   is the same object as the one that is shaken. Tipped, as it is at the top of a shake, and taller
+   than the card's padding allows, so it stands a little proud of the plate's top edge. */
+.shake-card-tin {
+  flex: none; color: var(--ink-2); rotate: -14deg;
+  margin: calc(-1 * var(--s5)) 0 calc(-1 * var(--s1)) calc(-1 * var(--s1));
+  fill: color-mix(in srgb, var(--ink) 16%, var(--plate-solid));
+}
+/* with no shelf the card follows the heading. The tin stands up to 12 proud of the plate, so the card
+   sits 24 under the heading (this margin collapses with the head's own 8) rather than 8, and the tin
+   clears the heading by 12 */
+.section-head + .shake-row { margin-top: var(--s5); }
+.shake-card-copy { display: grid; gap: 2px; min-width: 0; flex: 1; }
+/* clickable text never wraps */
+.shake-card-copy > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

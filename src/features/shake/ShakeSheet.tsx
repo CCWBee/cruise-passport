@@ -3,11 +3,11 @@ import { VENUES } from '../../data/model'
 import { pickedForYou, useSources } from '../../state/social'
 import { useAllDrinks, useStore } from '../../state/store'
 import { GlassButton } from '../../ui/GlassButton'
-import { haptic } from '../../ui/haptic'
+import { haptic, pressHaptic, type PressHaptic } from '../../ui/haptic'
 import { Sheet } from '../../ui/Sheet'
 import { DrinkSheet } from '../drinks/DrinkSheet'
 import { RECENT_KEPT, shake, type ShakeResult } from './pick'
-import { startRattle, type Rattle } from './rattle'
+import { primeRattle, startRattle, type Rattle } from './rattle'
 import { Shaker, type ShakePhase } from './Shaker'
 import { SHAKER } from './timing'
 import './shake.css'
@@ -56,6 +56,12 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
   // the knocks' taps, on their own handles so a second shake or a close can clear them
   const knockTimers = useRef<number[]>([])
   const clearKnocks = () => { knockTimers.current.forEach((t) => window.clearTimeout(t)); knockTimers.current = [] }
+  // The iPhone's press haptic, laid over the two controls that shake (ui/haptic.ts says why it has
+  // to be the finger's own tap and cannot be a call). Found by class inside the body rather than by
+  // a ref on GlassButton, which takes none.
+  const bodyRef = useRef<HTMLDivElement>(null)
+  const goTick = useRef<PressHaptic | null>(null)
+  const againTick = useRef<PressHaptic | null>(null)
 
   const picks = useMemo(() => pickedForYou(me, srcs), [me, srcs])
 
@@ -88,16 +94,38 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
     rattle.current?.stop()
   }, [])
 
+  // The overlays go on when the sheet's controls mount, and again when they are mounted afresh on
+  // the way back from the drink sheet, which replaces this subtree (openDrink below).
+  useEffect(() => {
+    if (openDrink) return
+    const body = bodyRef.current
+    goTick.current = pressHaptic(body?.querySelector<HTMLElement>('.shake-go'))
+    againTick.current = pressHaptic(body?.querySelector<HTMLElement>('.shake-again'))
+    return () => {
+      goTick.current?.remove(); goTick.current = null
+      againTick.current?.remove(); againTick.current = null
+    }
+  }, [openDrink])
+
+  // Each ticks only when its press is a shake: the wide button while it reads Shake (not Shaking,
+  // which is disabled, nor Go get it, which opens a drink), Shake again once it is shown.
+  useEffect(() => {
+    goTick.current?.enable(phase === 'idle')
+    againTick.current?.enable(phase === 'revealed')
+  }, [phase, openDrink])
+
   // The shake itself, from a shaker that is already shut.
   const run = (pick: ShakeResult) => {
-    // one pattern, not a tap and then a series: on Android a second vibrate() replaces the first,
-    // and this one opens with the press tap anyway
+    // One pattern, not a tap and then a series: on Android a second vibrate() replaces the first,
+    // and this one opens with the press tap anyway. On an iPhone this is silent and the press's
+    // tick has already come from the overlay under the finger.
     haptic('shake')
     rattle.current = startRattle(quiet, SHAKER.shakeMs, SHAKER.knocks)
     setPhase('shaking')
     const reduced = reducedMotion()
-    // a tap the hand feels on each knock from inside, on the drawing's own times; like the knocks'
-    // sound, nothing under quiet or reduced motion, where the tin does not knock at all
+    // A tap the hand feels on each knock from inside, on the drawing's own times; like the knocks'
+    // sound, nothing under quiet or reduced motion, where the tin does not knock at all. Android
+    // only, as is the landing's: an iPhone gives a web page no haptic that a timer can fire.
     if (!quiet && !reduced) {
       knockTimers.current = SHAKER.knocks.map((ms) => window.setTimeout(() => haptic('tap'), ms))
     }
@@ -125,6 +153,8 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
     window.clearTimeout(timer.current)
     clearKnocks()
     rattle.current?.stop()
+    // the sound is woken here, in the tap, whichever path the shake then takes (primeRattle says why)
+    primeRattle(quiet)
     setAnnounce('')
     setResult(null)
     // the drawing moves again from here, and it has to be released before the reverse below rather
@@ -180,7 +210,7 @@ export function ShakeSheet({ onClose }: { onClose: () => void }) {
         <h2 className="t-h2 sheet-title" id={titleId}>Shake</h2>
         <p className="sheet-meta">The shaker picks one you have not tried.</p>
 
-        <div className="shake-body">
+        <div className="shake-body" ref={bodyRef}>
           <Shaker phase={phase} still={still} drink={drink} />
 
           {/* The answer's place is held from the first frame, empty until a reveal, so the sheet is

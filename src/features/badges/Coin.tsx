@@ -98,22 +98,8 @@ const METALS: Record<MetalName, Metal> = {
   },
 }
 
-// Each emblem's drawn extent in its 100 box (C, measured with getBBox in Brave on 23 September
-// 2026). The emblems were drawn for a badge, not a coin, and several sit low in the box, so on a
-// coin each is centred on the field and scaled to one size.
-const EMBOX: Record<string, [number, number, number, number]> = {
-  champion: [16, 16, 68, 68], coffee: [20, 16, 60, 65.5], everybar: [14, 14, 72, 72], fifty: [20, 22, 60, 58],
-  first: [18, 50, 64, 30], frozen: [16.6, 16, 66.9, 68], gin: [21, 17, 58, 66], hundred: [20, 20, 60, 60],
-  margarita: [23, 18, 54, 66], martini: [22, 14, 56, 65], master: [32, 13.8, 36, 70.2], onefifty: [20, 19.5, 60, 60.5],
-  rum: [10, 10, 80, 80], ten: [18, 35, 64, 45], twentyfive: [18, 30, 64, 50], twohundred: [20, 16, 60, 64],
-  whiskey: [22, 19.5, 56, 61], wine: [29, 15, 39, 65],
-}
-
-function emblemFit(id: string): string {
-  const [x, y, w, h] = EMBOX[id] ?? [16, 16, 68, 68]
-  const s = Math.min(0.78, 50 / Math.max(w, h))
-  return `translate(50 50) scale(${s.toFixed(3)}) translate(${(-(x + w / 2)).toFixed(1)} ${(-(y + h / 2)).toFixed(1)})`
-}
+// The emblems are drawn in place on the field, centred and sized for it (emblems-data.ts), so the
+// face strikes them as they are; only the reverse's liner is fitted here.
 
 // the reverse: the liner in silhouette over the ship's name and the sailing's year
 const SHIP_ART = '<path d="M6 33 H144 L133 47 Q131 49 126 49 H24 Q19 49 17 47 Z"/><path d="M31 33 V24 H119 V33 Z M45 24 V17 H105 V24 Z M74 17 V12 H102 V17 Z"/><path d="M53 17 L56 5 H67 L70 17 Z"/>'
@@ -152,7 +138,7 @@ function CoinFace({ badge, metal, size, ring, reverse = false }: FaceProps) {
   const px = ringed ? (size * 100) / 116 : size
   const k = Math.max(0.8, Math.min(2.6, 110 / px))
   const art = reverse ? SHIP_ART : (EMBLEMS[badge.id] ?? '')
-  const fit = reverse ? SHIP_FIT : emblemFit(badge.id)
+  const fit = reverse ? SHIP_FIT : undefined
   // the rim sits at r 49 of the box; with a ring the box is 116 across, so the rim is inset further
   const rimInset = ringed ? `${((58 - 49) / 116) * 100}%` : '1%'
   const ringW = ringWidth(size)

@@ -91,7 +91,7 @@
   --film: var(--sheet-film);
   display: flex; flex-direction: column; align-items: center; gap: var(--s2);
   width: 100%; max-width: 400px; padding: var(--s5); text-align: center;
-  border-radius: var(--r-surface);
+  border-radius: var(--r-surface); --glass-r: var(--r-surface);
 }
 /* the inner rule, a child rather than ::after, which is the glass's edge lens; absolute over the
    engine's zero-specificity `position: relative` for its children */

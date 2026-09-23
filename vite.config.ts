@@ -14,7 +14,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['icon.svg'],
       manifest: {
         name: 'Sun Princess Cocktail Passport',
         short_name: 'Cocktails',
@@ -23,12 +23,14 @@ export default defineConfig({
         scope: '.',
         display: 'standalone',
         orientation: 'portrait',
-        theme_color: '#FBF3E2',
-        background_color: '#FBF3E2',
+        // the night room's navy, which is the icon's ground too (the launch screen is drawn from these)
+        theme_color: '#0B1222',
+        background_color: '#0B1222',
+        // new names on 23 September 2026 so a phone that kept the old drawing by URL fetches these
         icons: [
-          { src: 'pwa-192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'pwa-512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'pwa-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {

@@ -277,22 +277,27 @@ export function Home() {
               ))}
             </ul>
           )}
-          {/* the playful last item of the section that already exists to suggest drinks, so it
-              borrows that heading and adds none. Ink only: the dock's Log keeps the screen's coral.
-              Its own wrapper, so .row:not(:only-child) leaves a row that stands alone at radius 12.
-              One line: the Shake sheet's meta line says what the shaker does, and a row that
-              opens a sheet does not repeat that sheet's meta line. */}
+          {/* The shake card: the playful last item of the section that already exists to suggest
+              drinks, so it borrows that heading and adds none. It is a card rather than a row
+              because it is the one thing on Home that does something for you, and it should read
+              as pressable at a glance (Charles, 23 September 2026). One plate across the full
+              width with the tin leading, so it is a different shape from the shelf's cards above
+              it. Ink only: the dock's Log keeps the screen's coral. The second line says when you
+              would reach for it; what the shaker does is the sheet's meta line, said there. The
+              wrapper keeps the gap shake.css sets under the shelf. */}
           {drinks.length > 0 && (
             <div className="shake-row">
               <button
                 type="button"
-                className="row pressable shake-open"
+                className="shake-card pressable shake-open"
                 aria-haspopup="dialog"
                 onClick={() => setShakeOpen(true)}
               >
-                <IconShaker className="row-lead" />
-                <span className="row-copy">
+                {/* the cobbler at 52, its stroke near the hero's 2.4 on screen, in the sheet's steel */}
+                <IconShaker className="shake-card-tin" size={52} strokeWidth={1.1} />
+                <span className="shake-card-copy">
                   <span className="t-strong">Shake for a drink</span>
+                  <span className="t-meta">When you cannot decide</span>
                 </span>
               </button>
             </div>

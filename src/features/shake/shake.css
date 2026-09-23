@@ -3,9 +3,9 @@
    it stops. Nothing here loops, nothing here is ambient, and it lives inside a sheet, never on a
    screen. */
 
-/* Home's door onto the shaker, at the foot of "For you". 16 below the shelf, which is the gap
-   between two groups inside one section; with no shelf the row follows the heading and takes the
-   section head's own 8. */
+/* Home's door onto the shaker, the shake card (home.css), at the foot of "For you". 16 below the
+   shelf, the gap between two groups inside one section; with no shelf home.css sets its own 24
+   under the heading. */
 .rec-rail + .shake-row { margin-top: var(--s4); }
 
 /* ── the sheet: title and meta come from the Sheet primitive, then the shaker, the answer, the one
@@ -27,6 +27,8 @@
 }
 /* Shake again keeps its line before a reveal, unseen and out of the focus order */
 .shake-again.is-held { visibility: hidden; }
+/* the positioned box for the iPhone press tick's overlay (pressHaptic in ui/haptic.ts) */
+.shake-again { position: relative; }
 /* the two quiet actions sit 12 apart by base.css's pair rule. The first drops .quiet-action's own 24,
    which the grid above already provides, rather than doubling it to 48. */
 /* a grid, so each button spans the sheet's width and its label centres under the answer; in block flow

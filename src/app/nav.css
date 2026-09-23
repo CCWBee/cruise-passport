@@ -41,7 +41,7 @@
   position: absolute; left: var(--dock-x); bottom: 0;
   width: calc(100% - var(--dock-x) * 2 - var(--dock-h) - var(--dock-gap));
   height: var(--dock-h);
-  border-radius: var(--r-tag);
+  border-radius: var(--r-tag); --glass-r: var(--r-tag);
   touch-action: none;
   -webkit-user-select: none; user-select: none;
   transition: scale var(--t-settle) var(--e-spring), box-shadow var(--t-panel) var(--e-out);
@@ -76,7 +76,8 @@
 
 /* The droplet: the active tab's bead, inside the capsule's glass. It carries no backdrop filter of
    its own (never glass on glass): B's bright bead with its specular and shade, moved on transform
-   alone by Nav.tsx, and it lifts under a thumb on the scale property so the two never fight. */
+   alone by Nav.tsx (its place on the translate property, its stretch on transform), and it lifts
+   under a thumb on the scale property, which never scales its place (Nav.tsx, drawnX). */
 .tabbar > .droplet {
   position: absolute; left: var(--s1); top: var(--s1); bottom: var(--s1); width: 56px;
   border-radius: var(--r-tag);
@@ -94,7 +95,7 @@
 /* ── Log ── */
 .logbtn {
   position: absolute; right: var(--dock-x); bottom: 0;
-  width: var(--dock-h); height: var(--dock-h); border-radius: 50%;
+  width: var(--dock-h); height: var(--dock-h); border-radius: 50%; --glass-r: 50%;
   -webkit-user-select: none; user-select: none;
 }
 .log-face {
@@ -106,7 +107,7 @@
 /* ── the folded capsule: one round button back to where you were ── */
 .tab-return {
   position: absolute; left: var(--dock-x); bottom: 0;
-  width: var(--dock-h); height: var(--dock-h); border-radius: 50%;
+  width: var(--dock-h); height: var(--dock-h); border-radius: 50%; --glass-r: 50%;
   display: grid; place-items: center; color: var(--ink);
 }
 
@@ -114,7 +115,7 @@
 .logfield {
   position: absolute; bottom: 0; right: var(--dock-x);
   left: calc(var(--dock-x) + var(--dock-h) + var(--dock-gap));
-  height: var(--dock-h); border-radius: var(--r-tag);
+  height: var(--dock-h); border-radius: var(--r-tag); --glass-r: var(--r-tag);
   display: flex; align-items: center; gap: var(--s2);
   padding: 0 var(--s1) 0 var(--s5);
   color: var(--ink);

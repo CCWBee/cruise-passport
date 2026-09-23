@@ -44,14 +44,38 @@ const POP_FROM = 1400, POP_TO = 700, POP_DECAY = 0.055, POP_GAIN = 0.18
 // the thock lands on the prize's hang, not on the cap. The default only; the sheet passes the
 // landing time from SHAKER.
 const SETTLE_AT = 0.54
+// how long the context stays awake after its last sound before it is suspended (sleepIn below)
+const SLEEP_AFTER = 1.2
 
 type Ctor = { new(): AudioContext }
 type Win = { AudioContext?: Ctor; webkitAudioContext?: Ctor }
+type Nav = { audioSession?: { type: string } }
 
 // One context for the life of the tab. Making a second on every press is how a page runs out of them
 // on iOS, and this one is created inside the press handler, which is the user gesture Safari wants.
 let ctx: AudioContext | null = null
 let noise: AudioBuffer | null = null
+let sleepTimer = 0
+
+/**
+ * The iPhone's silent switch. Web Audio on iOS plays in the "ambient" audio session unless the page
+ * says otherwise, and the ring/silent switch mutes ambient sound, so with the switch on silent the
+ * shaker made no sound at all. Safari's Audio Session API (iOS 16.4 and later) lets a page ask for
+ * "playback", which WebKit maps to AVAudioSessionCategoryPlayback: the switch no longer mutes it.
+ * It is set once, before the context exists, and never flipped back mid-session.
+ *
+ * The cost of "playback" is that it does not mix: a song or podcast playing from another app pauses
+ * when the rattle starts, as it would for a video. "transient" and "ambient" both map to the ambient
+ * category, which mixes but is muted by the switch, so there is no setting that has both. The context
+ * is put to sleep once its last sound has played (below), so it holds the session only while it sounds.
+ * Where the API is missing (older iOS, every other browser), nothing changes.
+ */
+function askForPlayback(): void {
+  try {
+    const session = (navigator as unknown as Nav).audioSession
+    if (session && session.type !== 'playback') session.type = 'playback'
+  } catch { /* an older WebKit, or a frame the Microphone policy shuts out: the setter is ignored */ }
+}
 
 function context(): AudioContext | null {
   try {
@@ -59,11 +83,24 @@ function context(): AudioContext | null {
     const w = window as unknown as Win
     const Ctx = w.AudioContext || w.webkitAudioContext
     if (!Ctx) return null
+    askForPlayback()
     ctx = new Ctx()
     return ctx
   } catch {
     return null
   }
+}
+
+/** Put the context to sleep `ms` from now, replacing any earlier bedtime. A running context holds
+ *  the playback session even while it plays silence, so it is suspended between shakes, which also
+ *  costs no battery; whether iOS then lets the guest's music carry on by itself has to be heard on a
+ *  phone. The next press resumes it inside its own gesture. A timer is fine here: suspending needs no
+ *  gesture, only waking does. */
+function sleepIn(c: AudioContext, ms: number): void {
+  try {
+    window.clearTimeout(sleepTimer)
+    sleepTimer = window.setTimeout(() => { void c.suspend?.()?.catch(() => { /* already closed */ }) }, ms)
+  } catch { /* a sound is never worth an exception */ }
 }
 
 /** White noise, made once and shared: every burst is a window onto the same 200ms of it. */
@@ -85,10 +122,30 @@ const quietWanted = (): boolean => {
 }
 
 /**
- * Start the rattle. Call it inside the press handler, never on mount: the context is created here so
- * the gesture is still live, which is the only way iOS lets a page make a sound at all.
- * A no-op, silently, when the guest chose quiet, when reduced motion is set, or when there is no
- * AudioContext to build on.
+ * Wake the sound for a press: ask for the playback session, create the context and resume it. Call it
+ * first thing in the press handler, synchronously, because iOS lets a page start or wake audio only
+ * while the guest's tap is being handled. startRattle does the same when it runs in the press, but
+ * Shake again starts its rattle 260ms later from a timer, once the cap is back on, and by then the
+ * gesture is gone; a context asleep since the last shake would stay asleep and the shake be silent.
+ * Nothing at all when the guest chose quiet or reduced motion is set, so a quiet guest's music is
+ * never interrupted either.
+ */
+export function primeRattle(quiet: boolean): void {
+  if (quiet || quietWanted()) return
+  const c = context()
+  if (!c) return
+  try {
+    window.clearTimeout(sleepTimer)
+    // fire and forget, as below
+    void c.resume?.()?.catch(() => { /* stays asleep: the shake is silent, nothing else changes */ })
+  } catch { /* a sound is never worth an exception */ }
+}
+
+/**
+ * Start the rattle. Call it inside the press handler (after primeRattle), never on mount: the context
+ * is created in the press so the gesture is still live, which is the only way iOS lets a page make a
+ * sound at all. A no-op, silently, when the guest chose quiet, when reduced motion is set, or when
+ * there is no AudioContext to build on.
  */
 export function startRattle(quiet: boolean, shakeMs = STOP_AT * 1000, knocks: number[] = []): Rattle {
   if (quiet || quietWanted()) return SILENT
@@ -97,8 +154,11 @@ export function startRattle(quiet: boolean, shakeMs = STOP_AT * 1000, knocks: nu
 
   try {
     // resume() is fire and forget: a context that stays suspended plays nothing, which is the same
-    // outcome as the guest choosing quiet and needs no branch of its own.
-    void c.resume?.()
+    // outcome as the guest choosing quiet and needs no branch of its own. The schedule below is laid
+    // against currentTime, which stands still while the context wakes, so a late wake starts the
+    // whole rattle a little late rather than cutting its head off.
+    window.clearTimeout(sleepTimer)
+    void c.resume?.()?.catch(() => { /* stays asleep: silent, as above */ })
 
     const master = c.createGain()
     master.gain.value = MASTER
@@ -175,6 +235,10 @@ export function startRattle(quiet: boolean, shakeMs = STOP_AT * 1000, knocks: nu
     // The knocks are laid on the same clock, at the times the drawing hops (SHAKER.knocks, ms from
     // the press), so the ear and the eye get them together whatever the main thread is doing.
     knocks.forEach((ms, i) => burst(t0 + ms / 1000, KNOCK_GAIN[Math.min(i, KNOCK_GAIN.length - 1)], KNOCK_HZ, KNOCK_DECAY, KNOCK_Q))
+    // Asleep a while after the last sound laid down here, unless reveal() comes first and moves the
+    // bedtime past the thock. The margin is generous: the context may have started a little late.
+    const last = Math.max(STOP_AT * k, ...knocks.map((ms) => ms / 1000)) + CLACK_DECAY
+    sleepIn(c, (last + SLEEP_AFTER) * 1000)
 
     const hush = () => {
       try {
@@ -183,6 +247,8 @@ export function startRattle(quiet: boolean, shakeMs = STOP_AT * 1000, knocks: nu
         for (const s of sources) { try { s.stop() } catch { /* already stopped, or never started */ } }
         sources.length = 0
       } catch { /* a sound is never worth an exception */ }
+      // a press that follows at once (Shake again) wakes it in its own gesture
+      sleepIn(c, SLEEP_AFTER * 1000)
     }
 
     return {
@@ -196,6 +262,7 @@ export function startRattle(quiet: boolean, shakeMs = STOP_AT * 1000, knocks: nu
           const at = c.currentTime
           pop(at)
           thock(at + landMs / 1000)
+          sleepIn(c, (landMs / 1000 + THOCK_MS + SLEEP_AFTER) * 1000)
         } catch { /* a sound is never worth an exception */ }
       },
     }

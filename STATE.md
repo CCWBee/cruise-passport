@@ -22,6 +22,23 @@ architecture in `docs/specs/2026-09-10-product-brief.md`, one spec per workstrea
   medal name "Twenty Five" gains its hyphen); one look on a real iPhone at the dock's foot over the
   home indicator (checked by arithmetic only). `tools/qa/erase-live.mjs` needs rewriting on the
   `recovery-live.mjs` pattern before it is next run. Deploy freeze from 3 to 17 October.
+- **Polish two COMMITTED on night-bar, NOT PUSHED** (`docs/specs/2026-09-23-polish-two.md`,
+  Charles's six asks; workflow `wf_c9df5f12-ad9`). Medal emblems redrawn (numbers on the count
+  medals, the drink's own glass on the drink medals; generator `tools/emblems.py`); the iPhone press
+  tick on Shake and Shake again (`pressHaptic()`, the finger's own tap on a switch overlay: the only
+  web haptic iOS 26.5 allows; knocks and landing are Android only); the rattle asks for the
+  `playback` audio session so the silent switch does not mute it; every round or pill glass layer
+  clip-pathed to its shape (the Log square, inferred from the capsule, never reproduced here:
+  Windows WebKit paints no blur); the icon redrawn as a whole glass under new file names
+  (generator `tools/icon/`); Home's shake card. Also fixed: the droplet at 320 sat 28px right of
+  "You", half under Log (live since `7b0f3b8`), now placed on `translate`. Gates green, capped
+  sweeps `tools/qa/sweeps/202609231717` and WebKit shots `tools/qa/sweeps/webkit-integrator`.
+  Open for Charles before the push: the taste call on `playback` (the rattle plays with the silent
+  switch on, but pauses his music; the one-line revert is deleting `askForPlayback()` in
+  `rattle.ts` `context()`). After the push, on his iPhone: one light tick on Shake and on Shake
+  again and none on Go get it; the rattle heard with the switch on silent, and whether his music
+  resumes afterwards; the Log button with no darker square (and the sheet, toast, sky chip); the
+  new icon (remove the web app and add it again if the old "7" persists).
 
 - **LIVE 23 September at `6f54560`** (deploy run 35797903930 green, shell `index-B8nC17Lm.js`), on
   Charles's "verify and push it" and "continue ... sexy up, declutter": the shaker second pass (a

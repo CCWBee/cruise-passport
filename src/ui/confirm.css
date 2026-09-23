@@ -23,7 +23,7 @@
   color: var(--on-mint);
   width: 96px;
   height: 96px;
-  border-radius: var(--r-tag);
+  border-radius: var(--r-tag); --glass-r: var(--r-tag);
   display: grid;
   place-items: center;
   animation: tickc-pop var(--t-press) var(--e-out);

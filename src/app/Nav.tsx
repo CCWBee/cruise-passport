@@ -23,11 +23,18 @@ const DRAWER_MS = 440
 
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-// Where the bead is drawn now, mid-run or mid-drag: the x of its computed transform. Read before a
+// Where the bead is drawn now, mid-run or mid-drag: the x of its computed translate. Read before a
 // run is cancelled, so the next one starts from where the eye last saw it rather than jumping.
+//
+// The bead's place is the `translate` property and its stretch is `transform`, never one transform
+// that carries both. The CSS `scale` property (the compact dock's wider bead, the lift under a
+// thumb) applies after `transform` and before `translate`, so a translateX inside `transform` was
+// scaled with the bead: at 320 the 1.14 put the bead on "You" 28px to the right, half under Log (the
+// polish-two sweep, 23 September 2026). `translate` is outside the scale, so the bead lands on its tab.
 function drawnX(el: HTMLElement): number {
-  const t = getComputedStyle(el).transform
-  return !t || t === 'none' ? 0 : new DOMMatrixReadOnly(t).m41
+  const t = getComputedStyle(el).translate
+  const x = !t || t === 'none' ? 0 : parseFloat(t)
+  return Number.isFinite(x) ? x : 0
 }
 
 // The touch light follows the finger (base.css, .spec)
@@ -53,7 +60,7 @@ export function Nav({ down }: { down: boolean }) {
   const tabsRef = useRef<HTMLDivElement>(null)
   const beadRef = useRef<HTMLElement>(null)
   const fieldRef = useRef<HTMLInputElement>(null)
-  // where the bead comes to rest, as its style transform says; the route effect skips a run to the
+  // where the bead comes to rest, as its style translate says; the route effect skips a run to the
   // place a drag has already sent it
   const restX = useRef<number | null>(null)
   const activeRef = useRef(active)
@@ -81,7 +88,8 @@ export function Nav({ down }: { down: boolean }) {
     const to = s.x
     restX.current = to
     bead.style.width = `${s.w}px`
-    bead.style.transform = `translateX(${to}px)`
+    bead.style.translate = `${to}px 0`
+    bead.style.transform = ''
     if (!animate || Math.abs(to - from) < 1) return
     if (reducedMotion()) {
       bead.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: 'ease-out' })
@@ -89,10 +97,10 @@ export function Nav({ down }: { down: boolean }) {
     }
     const mid = (from + to) / 2
     bead.animate([
-      { transform: `translateX(${from}px) scale(1, 1)`, easing: 'cubic-bezier(.3, .5, .5, 1)' },
-      { transform: `translateX(${mid}px) scale(1.22, 1.08)`, offset: 0.45, easing: 'cubic-bezier(.2, .7, .3, 1)' },
-      { transform: `translateX(${to - (to - from) * -0.04}px) scale(.97, 1.02)`, offset: 0.8, easing: 'ease-out' },
-      { transform: `translateX(${to}px) scale(1, 1)` },
+      { translate: `${from}px 0`, transform: 'scale(1, 1)', easing: 'cubic-bezier(.3, .5, .5, 1)' },
+      { translate: `${mid}px 0`, transform: 'scale(1.22, 1.08)', offset: 0.45, easing: 'cubic-bezier(.2, .7, .3, 1)' },
+      { translate: `${to - (to - from) * -0.04}px 0`, transform: 'scale(.97, 1.02)', offset: 0.8, easing: 'ease-out' },
+      { translate: `${to}px 0`, transform: 'scale(1, 1)' },
     ], { duration: RUN_MS, easing: 'linear' })
   }, [slot])
 
@@ -156,7 +164,8 @@ export function Nav({ down }: { down: boolean }) {
       }
       const last = slot(TABS.length - 1)?.x ?? 0
       g.x = Math.max(0, Math.min(last, g.start + dx))
-      bead.style.transform = `translateX(${g.x}px) scale(1.16, 1.08)`
+      bead.style.translate = `${g.x}px 0`
+      bead.style.transform = 'scale(1.16, 1.08)'
       setUnder(nearest(g.x))
     }
     const up = (e: PointerEvent) => {

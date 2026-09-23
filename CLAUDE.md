@@ -258,4 +258,11 @@ The same holds for a probe of the page from Brave.
   `CDP_GPU=1`. Brave paints WebGL on the real GPU, but the sea's motion does not advance between the
   extension's calls, so the sea hero still needs a real phone for a final look. Everything else is
   what a phone renders.
+- **The iPhone press tick** (`pressHaptic()` in `src/ui/haptic.ts`, 23 September 2026). Symptom: the
+  Shake press never ticks on an iPhone even with the switch overlay. Cause: the overlay was turned
+  off by disabling the switch, and React commits Shake to Shaking (disabled) before WebKit forwards
+  the same tap to the switch, so the disabled switch swallows the tick; `enable()` now changes only
+  the label's pointer events. Check: a Playwright WebKit run (`tools/qa/webkit-shots.mjs` has the
+  install) that taps `.shake-go` and reads `.shake-go input[switch]`: `checked` must flip. Also,
+  since iOS 26.5 a `label.click()` from script plays nothing, so no timer can ever tick.
 - Copy: British English, no em dashes, sentence case, dry. See `docs/DESIGN.md` Copy.

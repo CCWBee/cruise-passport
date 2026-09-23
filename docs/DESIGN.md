@@ -115,16 +115,24 @@ as glass, and most drinks are logged in a bar after dark.
 - **Tuning a surface.** Only through custom properties on the surface itself: `--film`, `--rim`,
   `--glass-blur`, `--glass-sat`, `--glass-bright`, `--lens-blur`, `--lens-sat`, `--lens-bright`,
   `--spec-x`, `--solid`. `--spec-x` is how far the specular reaches in from the left edge; the sheet
-  sets it to 0, because down a pane that tall it drew a white line from head to foot. Never its own `backdrop-filter` or `::before` background, which is what lets the
-  fallbacks below win everywhere. The variants: `.glass-sm` (a narrower rim), `.glass-calm`
-  (saturate 130% and 120%, for glass on the sea's sky or a cool pool, where the full numbers painted
-  a neon rim and a round button read as a blue one), `.glass-tint` (coral, the Log button's, the one
-  tinted glass). The tab bar and Log keep their bodies inside the brief's 160 to 190% saturation.
-  The dock reads its optics from the room (`--dock-sat`, `--dock-field-sat`, `--dock-bright`,
-  `--dock-lens-sat`, `--dock-lens-bright`): the engine's own numbers in the evening and at night, and
-  by day the capsule's body at 160% with no brightening and its lens and the search pair at
-  `.glass-calm`'s numbers, because over day's aqua floor the full numbers lit the capsule into a cyan
-  pill brighter than the sea it sat on (the night-bar sweep, 23 September 2026).
+  sets it to 0, because down a pane that tall it drew a white line from head to foot. Never its own
+  `backdrop-filter` or `::before` background, which is what lets the fallbacks below win everywhere.
+  The variants: `.glass-sm` (a narrower rim), `.glass-calm` (saturate 130% and 120%, for glass on
+  the sea's sky or a cool pool, where the full numbers painted a neon rim and a round button read as
+  a blue one), `.glass-tint` (coral, the Log button's, the one tinted glass). The tab bar and Log
+  keep their bodies inside the brief's 160 to 190% saturation. The dock reads its optics from the
+  room (`--dock-sat`, `--dock-field-sat`, `--dock-bright`, `--dock-lens-sat`, `--dock-lens-bright`):
+  the engine's own numbers in the evening and at night, and by day the capsule's body at 160% with
+  no brightening and its lens and the search pair at `.glass-calm`'s numbers, because over day's
+  aqua floor the full numbers lit the capsule into a cyan pill brighter than the sea it sat on (the
+  night-bar sweep, 23 September 2026). Both filtered layers also carry `clip-path: inset(0 round
+  var(--glass-r))`, at zero specificity so the morph's own clips on the capsule and the field win.
+  On Charles's iPhone the round Log button, whose layers were held by border-radius alone, showed a
+  darker square in it (23 September 2026), while the capsule, which the morph already clip-paths,
+  did not. border-radius cannot feed a clip-path, so a round or pill surface sets `--glass-r` beside
+  its radius (50% for a circle, `var(--r-tag)` for a pill, `var(--r-surface)` for the Wrapped
+  certificate). `.glass-sm` is a pill by default. A surface that sets none gets a rectangle and
+  keeps exactly what it had before.
 - **The budget.** At most four backdrop-filtered surfaces on screen. A surface that is covered or
   scrolled away drops its filters with `.glass-off`, on the surface or on any ancestor (prototype A's
   `.hero-off`), so the count holds while a screen is pushed over another or a sheet is up. Chrome
@@ -156,8 +164,18 @@ as glass, and most drinks are logged in a bar after dark.
   and lit bottom right, B's inset shadows drawn as two radial rings), then the emblem from
   `emblems-data.ts` struck three times: a shadow down and right at .8, a highlight up and left, the
   face. The relief is scaled to the coin, A's 110 / px coin units held between 0.8 and 2.6, so the
-  strike is about a pixel deep on a 44px coin and on the 196px one alike. Each emblem is centred on
-  the field and fitted to one size from its measured extent (C's table).
+  strike is about a pixel deep on a 44px coin and on the 196px one alike. Each emblem is drawn in
+  place on the field, centred and sized for it, so the coin fits nothing but the reverse's liner.
+  Every medal's face says what it rewards at 44px. A count medal carries its number, struck as a
+  monoline figure with flat terminals (1, 10, 25, 50, 100, 150, 200). A drink medal carries the
+  drink's own glass from the glass family in `src/ui/Icon.tsx`, both sides of the bowl, its stroke
+  outlined and the bowl filled: the cocktail glass with an olive for Martini Club, the margarita
+  glass and its lime for Margarita Queen, the wine glass with wine in the lower bowl for Wine
+  Connoisseur, the rocks glass with its ice for Whiskey Lover, the cup on its saucer for Coffee
+  Expert. The shaker (`IconShaker`) is Cocktail Master; a snowflake is Brain Freeze, a juniper sprig
+  Gin Explorer, a ship's wheel Rum Captain, a map pin on its spot Every Bar, and a laurel round the
+  liner the Champion. The emblems are generated paths (`tools/emblems.py`, shapely): redraw by
+  regenerating, never by hand.
   - **Bronze, silver and gold** take A's polished field, a diagonal with a darker mirror band past
     the middle, in place of C's pale dome: a pale emblem on a pale silver field is what left Gin
     Explorer faint at 96px, and the band is what puts a darker ground under the frosted emblem.
@@ -315,21 +333,32 @@ icon appears beside text only when it adds recognition the word lacks (tried, fa
 glass a drink is served in). The nav uses icon plus label at all times.
 
 The set holds a glass for each of the nine families in `src/data/glass.ts` (`IconGlassCocktail` and
-the rest, chosen by `GlassIcon`), every bowl drawn whole, both sides, and `IconShaker`, the cobbler at
-icon size. Either one leads a row in the `.row-lead` slot: the glass on every row that names a drink
-(Drinks, a venue's list, Log, Stats' rated rows, Crew's Discover together), the shaker on Home's row
-that opens the Shake sheet. `IconDrinks` is the brand's
-funnel and draws one side of a glass, which is right for the tab and wrong for a drink. The glass
-leads the drink row (`DrinkCard`, on Drinks and in the venue sheet) and says what kind of drink it is
-before a word is read.
+the rest, chosen by `GlassIcon`), every bowl drawn whole, both sides, and `IconShaker`, the cobbler
+at icon size. The glass leads a row in the `.row-lead` slot on every row that names a drink (Drinks,
+a venue's list, Log, Stats' rated rows, Crew's Discover together); the shaker leads Home's shake
+card at 52, in the Shake sheet's steel under an `--ink-2` line, its stroke scaled to the hero's 2.4.
+`IconDrinks` is the brand's funnel and draws one side of a glass, which is right for the tab and
+wrong for a drink. The glass leads the drink row (`DrinkCard`, on Drinks and in the venue sheet) and
+says what kind of drink it is before a word is read.
+
+**The app icon** (`public/icon.svg` and `icon-32`, `-180`, `-192`, `-512` and `-maskable-512.png`,
+redrawn 23 September 2026) is a cocktail glass drawn whole, both sides of the bowl, a stem and a
+foot, in the lamp's line (#FFE2B8) with coral (#FF6B84) in the bowl, on the night room's navy. The
+180 and larger carry the room's coral and amber pools and a soft glow round the line, and are
+opaque, because iOS fills transparency with black. The favicon (`icon.svg` and the 32) is a plain
+navy tile with a heavier line, because pools are mud at 16px. The maskable 512 scales the glass into
+the 40% safe circle. The manifest's `theme_color` and `background_color` are the night navy #0B1222.
+The files carry new names so an iPhone that kept the old drawing by URL fetches them fresh; a later
+redraw takes new names again. The drawings are generated (`tools/icon/`: `make_svgs.py` writes them,
+`render.mjs` renders the PNGs inside `capped.ps1`, `contact.py` lays out the check sheet).
 
 The glass is drawn as a lit line in its family's hue (prototype A's family hues on C's lit line):
 `GlassIcon` draws the family's icon twice, the line over a halo of the same path at 4.4 wide and 22%
 (`.gicon-halo`), which costs a stroke rather than a filter on a list of two hundred, in
 `--fam-<family>`, tuned per room to 3:1 against the worst point of the room (3.5:1 or more by day,
 4.0:1 or more in the evening and at night). The hue is material, like the metals, and it is the one
-exception to "a row's glyph is never a state colour": C's all-amber lines made a list slower to scan.
-The shaker on Home's row stays in `--ink-3`.
+exception to "a row's glyph is never a state colour": C's all-amber lines made a list slower to
+scan.
 
 The shaker (`Shaker`, `Glass`) is drawn in the same idiom but is not in the set, and it takes the one
 hero stroke: 2.4 on screen for the tin and every glass, whatever the drawing is scaled to. The cap's
@@ -435,10 +464,12 @@ the state colour, not a background tint.
 
 **Confirmation.** A completed action the guest cannot otherwise see (a friend added, a group joined,
 a code accepted) is confirmed once, the same way everywhere: the `Confirm` primitive, a filled-green
-liquid-glass disc (`.glass-mint`) with a white tick that draws in, a one-line label ("Sam added") on a solid plate, and a haptic where the platform
-gives one (`haptic()`: the Vibration API on Android, the switch-toggle trick on iOS Safari, nothing
-the feature depends on). It holds for about a second and clears itself. Actions whose result is
-already visible (tried, rated, favourite) stay silent; the glyph is the confirmation.
+liquid-glass disc (`.glass-mint`) with a white tick that draws in, a one-line label ("Sam added") on
+a solid plate, and a haptic on Android (`haptic()`, the Vibration API). An iPhone gives a page no
+haptic it can call, only the tick of a switch under the finger (`pressHaptic()`), and this
+confirmation arrives after the action, not under a finger, so on an iPhone it is silent. Nothing
+depends on it. It holds for about a second and clears itself. Actions whose result is already
+visible (tried, rated, favourite) stay silent; the glyph is the confirmation.
 
 ## Copy
 
@@ -449,8 +480,10 @@ no exclamation marks. "Tried" not "sipped".
 Each thing is said once. These rules come from the 22 September declutter
 (`docs/specs/2026-09-22-declutter.md`) and bind every screen and sheet:
 
-- **A row that opens a sheet does not repeat that sheet's meta line.** Home's "Shake for a drink"
-  and Crew's "Set up a group" are one line each; the sheet they open says what it is for.
+- **A row that opens a sheet does not repeat that sheet's meta line.** Crew's "Set up a group" is
+  one line; the sheet it opens says what it is for. Home's shake card is the written exception: it
+  carries a second line, because a card that must invite a tap needs one, and that line says when
+  you would use it ("When you cannot decide"), never what the sheet's meta says.
 - **A sheet's meta line carries the one fact its controls do not show**, never a list of the fields
   below it: "Only the deck and name are needed.", "Your logged drinks stay where they are.", "How
   your crew sees you.". Every sheet keeps its one meta line; this rule chooses its wording.
@@ -499,7 +532,11 @@ Chrome).
   the tab by 4% and settles, and a run already going is cancelled from where it is drawn before the
   next one starts, so quick taps never stack. Dragged along the capsule it follows the finger,
   stretched to 1.16 by 1.08, and lands on the nearest tab. Under a thumb the capsule swells to 1.02
-  and the bead to 1.06. Under reduced motion it fades in at its new tab over 200ms.
+  and the bead to 1.06. Under reduced motion it fades in at its new tab over 200ms. Its place is the
+  `translate` property and its stretch `transform`, never one transform carrying both: the `scale`
+  property (the compact dock's 1.14, the lift under a thumb) applies after `transform`, so a
+  translateX inside it was scaled too, and at 320 the bead on "You" sat 28px right, half under Log
+  (23 September 2026).
 - **Log** carries a magnifier and the word "Log" (A and B; C's bare plus said "add", and what it
   opens is a search), in white on the one tinted glass (`.glass-tint`). Tapped, the field takes focus
   inside the tap, so iOS raises the keyboard, and C's morph runs: Log becomes the search field and
@@ -705,9 +742,10 @@ summary; every module either answers one of those or leads to the screen that do
 prototype C's (the night bar build, 23 September 2026). Nothing sits above it: the greeting, when
 the guest has a name, is the screen's first line, and otherwise the sea window is.
 
-Three boxes and no more: the sea window, the medal tray and the For you cards. The tray dominates by
-size, by depth (a sunk velvet) and by what it holds, never by brightness alone; the cards are a
-quiet film with a hairline. Everything else sits flat on the room.
+Four boxes and no more: the sea window, the medal tray, the For you cards and the shake card. The
+tray dominates by size, by depth (a sunk velvet) and by what it holds, never by brightness alone;
+the cards are a quiet film with a hairline, and the shake card is one plate across the full width, a
+different shape from the cards. Everything else sits flat on the room.
 
 1. **The greeting**, only with a name: "Evening, Isabel" (`greetingWord(dayPart())`), with the
    date as its meta, so the screen says who and when before it says what. The sky chip says the day
@@ -756,14 +794,21 @@ quiet film with a hairline. Everything else sits flat on the room.
    palate matches yours who loved it ("Sam matches your taste" / "Loved by Sam and Ravi", from
    `pickedForYou` over `recommendedForYou`), or the spirit you rate highest ("Because you love
    whiskey", three-plus of your own fives). The shelf renders only when there is a real personal
-   basis, never a generic "you might like". At the foot of the section, after the shelf, one
-   `button.row.pressable.shake-open` in its own wrapper, no chevron, `aria-haspopup="dialog"`, led
-   by
-   `IconShaker` in the `.row-lead` slot, reading "Shake for a drink" on one line, which opens the
-   Shake sheet; what the shaker does is that sheet's meta line, and the row does not repeat it
-   (Copy). It borrows this heading and adds none, and it is ink only: the dock's Log keeps the
-   screen's coral. When there is no shelf the section still renders, the heading and this one row;
-   with no catalogue at all the section goes.
+   basis, never a generic "you might like". At the foot of the section, after the shelf, the shake
+   card: one `button.shake-card.pressable.shake-open` in its own `div.shake-row`,
+   `aria-haspopup="dialog"`, which opens the Shake sheet. It is a card because it is the one thing
+   on Home that does something for you and must read as pressable at a glance (Charles, 23 September
+   2026). One `--plate` across the full width with a 1px `--line` hairline at `--r-surface`:
+   landscape, where the shelf's cards are 212 wide, text only, on `--plate-quiet` and swiped. No
+   glass (it is content), no shadow and no velvet, which is the tray's. It is led by `IconShaker` at
+   52, tipped 14 degrees as at the top of a shake and standing up to 12 proud of the plate, in the
+   sheet's steel under an `--ink-2` line, and it reads "Shake for a drink" and, beneath it in meta,
+   "When you cannot decide", each on one line. The second line says when you would reach for it;
+   what the shaker does stays the sheet's meta line (Copy). The press is `.pressable`'s scale and
+   the plate taken 8% towards the ink. With no shelf it sits 24 under the heading, so the tin clears
+   it. It borrows this heading and adds none, and it is ink only: the dock's Log keeps the screen's
+   coral. When there is no shelf the section still renders, the heading and this one card; with no
+   catalogue at all the section goes.
 6. **Last bar** (aboard): one row for the venue of the last drink logged today (`currentBar()`, the
    selector the search's "Still to try at" reads), with "12 of 44 tried here" and the first untried
    drink there named; it opens that venue's sheet. With nothing logged today it is "Your top bar";
@@ -854,25 +899,39 @@ no business at a height where it cannot.
    the
    glass hanging, not to Home.
 5. **The quiet actions**, `.quiet-action`: "Shake again" on a reveal, fading in with the card's last
-   line and holding its line before then, and the sound toggle always,
-   "Shake quietly" when sound is on and "Shake with sound" when it is off, persisted in
-   `spcc-shake-quiet`. The label states the action, not the state, as every other quiet action does.
-   The two sit in a grid, so each spans the sheet and its label centres under the answer.
+   line and holding its line before then, and the sound toggle always, "Shake quietly" when sound is
+   on and "Shake with sound" when it is off, persisted in `spcc-shake-quiet`. The label states the
+   action, not the state, as every other quiet action does. The two sit in a grid, so each spans the
+   sheet and its label centres under the answer. The wide button (while it reads Shake) and Shake
+   again carry `pressHaptic()`, the iPhone press tick (Haptics, below).
 
 24 between modules 2 to 5, 12 between the two quiet actions (`.quiet-action`'s pair rule). The
 button at `--r-control`, none on the shaker, no glass on the drawing: it sits in the content layer
 on the sheet's glass. No pill, no dot, no rule, no emoji.
 
-Sound is `startRattle` (Motion above, and the registry): synthesised, no asset, created inside the
-press handler so iOS allows it, and silent when the guest chose quiet or reduced motion is set. The
-held beat and the opening have sounds of their own, all laid on the same clock as the rattle: a low
-knock on each of the two knocks from inside, the second harder, a cork as the cap goes and a thock
-as the glass lands. Each knock also fires `haptic('tap')` from the sheet's own timer; the knocks and
-their taps are silent under quiet and reduced motion alike. The landing
-fires `haptic('success')` and no `Confirm` tick: the answer is on the screen, which is this
-document's own test for when a confirmation is owed. An `aria-live="polite"` region says what the
-card beneath the shaker says, as one sentence ("Try THE MIX's Red Stripe, Deck 17"), once, when the
-card shows it.
+Sound is `startRattle` (Motion above, and the registry): synthesised, no asset, on by default, and
+silent when the guest chose quiet or reduced motion is set. The press wakes it first (`primeRattle`)
+inside the tap, because iOS starts or wakes audio only while a tap is being handled, and Shake again
+starts its rattle 260ms later from a timer. Before the one `AudioContext` is created, the page sets
+`navigator.audioSession.type` to `playback` (Safari 16.4 and later), so the iPhone's silent switch
+does not mute it. The cost is that playback does not mix with other audio: music playing from
+another app pauses when the rattle starts. The context is suspended 1.2s after its last sound, so it
+holds the session only while it makes sound. The held beat and the opening have sounds of their own,
+all laid on the same clock as the rattle: a low knock on each of the two knocks from inside, the
+second harder, a cork as the cap goes and a thock as the glass lands.
+
+**Haptics** differ by platform. On Android the press fires `haptic('shake')`, each knock fires
+`haptic('tap')` from the sheet's own timer, and the landing fires `haptic('success')`, all through
+the Vibration API. On an iPhone the only haptic a page can have is the system tick WebKit plays when
+a native switch is toggled by a real tap. Since iOS 26.5 a click from script plays nothing, and no
+version has let a timer do it. So Shake and Shake again each carry `pressHaptic()`, and the finger's
+own tap ticks. The overlay is on only while the control's press is a shake: not while the button
+reads Shaking, and not on Go get it. On an iPhone the knocks and the landing cannot be felt. The
+knocks' taps are silent under quiet and reduced motion alike; the press tick is not, on either
+platform. The landing has no `Confirm` tick: the answer is on the screen, which is this document's
+own test for when a confirmation is owed. An `aria-live="polite"` region says what the card beneath
+the shaker says, as one sentence ("Try THE MIX's Red Stripe, Deck 17"), once, when the card shows
+it.
 
 **The sheet must not scroll after a reveal.** The last measure, headless at 390×844 on 22 September
 on the cream scale, put the sheet at 709 of the 742 (88svh) it could then take, with
@@ -1347,6 +1406,13 @@ frame), and `gestures.mjs` drives the sheet's gesture contract with real touch e
 `shake-live.mjs`, `first-open.mjs` and `update.mjs` assert the shaker's reveal and return, the
 first-open sync gate and the deploy reload.
 
+**The glass on WebKit.** `tools/qa/webkit-shots.mjs` renders Home, Log, the dock, the sky chip, a
+drink sheet at medium and large, and a toast in Playwright's WebKit, inside `capped.ps1`, from a
+Playwright installed in a scratch folder, never the project (its header has the steps). The Windows
+build reports backdrop-filter as supported and paints none of it, so on Windows the script proves
+layout, radii and the computed clip-paths, never the blur. It prints which case it is in first. The
+blur itself is checked on an iPhone.
+
 ## Working on this design
 
 This section exists because the app once drifted into the default bundle (see `DESIGN-AUDIT.md`)
@@ -1398,7 +1464,7 @@ colour, are how that happens again. Read it before any change that renders.
 | `.panel` | `base.css` | the one container, a quiet film on the room for a bounded interactive module only; never nested |
 | `.case` (the velvet), `--velvet`, `--sh-tray` | `base.css`, `tokens.css` | the cloth the medals lie on: Home's tray, the case on Badges and You's small case, one cloth. Material, so the same plum in every room; the markup sets `data-room="night"` on it, so its ink and rings are night's, and its own focus ring is drawn inside its edge. A screen lays out what sits on it and never restyles the cloth |
 | `.qr-plate` | `base.css` | the white plate under any `Qr`, because a code has to read under a camera whatever the ground is: the add sheet, the group sheet and the landing. It hides itself when empty, which is how `Qr` returning null for a value it cannot encode is caught at every call site at once |
-| `Confirm`, `haptic()` | `src/ui/Confirm.tsx`, `src/ui/haptic.ts` | the one success confirmation (a mint glass disc with the tick, the label on a solid `--plate-solid` plate, a haptic); silent where the result is already visible. The disc fades on the glass's own layers, never on an ancestor, so the glass stays glass as it goes. The label is not glass: as glass it was a second filtered surface, and over a scrolled tab screen (capsule, Log, top bar) the tick made five |
+| `Confirm`, `haptic()` | `src/ui/Confirm.tsx`, `src/ui/haptic.ts` | the one success confirmation (a mint glass disc with the tick, the label on a solid `--plate-solid` plate, a haptic on Android); silent where the result is already visible. The disc fades on the glass's own layers, never on an ancestor, so the glass stays glass as it goes. The label is not glass: as glass it was a second filtered surface, and over a scrolled tab screen (capsule, Log, top bar) the tick made five |
 | `Toast`, `useToast()` | `src/ui/Toast.tsx`, `toast.css` | a glass pill at the top of the screen (prototype C), clear of the thumb and the tab bar, sliding down on the drawer curve and back up on transform alone; its action (Undo) sits in the line, in the lamp's colour |
 | `GlassButton` (`.gbtn-*`) | `src/ui/GlassButton.tsx`, `button.css` | 44px and round-ended, in the room's plates; `lg` is C's 52px wide button at body size, the foot action of a sheet or a form. One filled coral control per screen, and on a screen that shows the Log button that control is Log. A disabled control drops its fill to a ghost (transparent, the fainter hairline `--line-2`, `--ink-3`) so it never reads as an active one: by day the secondary plate sits on a white sheet at 1.07:1, so the fill alone could not tell a disabled Create from a working one (the night-bar sweep, 23 September 2026); the fill, the edge and the label colour change on one transition. A link that looks like a button takes the same classes (`gbtn gbtn-secondary gbtn-md`), as the add sheet's and the not-found screen's do |
 | `ConfirmButton` | `src/features/friends/ConfirmButton.tsx` | the one two-tap confirm for anything irreversible (delete my data, leave or delete a group, remove a friend, a venue or a sailing): a `GlassButton` inside, `variant` secondary (wide, at a sheet's foot) or ghost (beside a name), `block` by default, `className` for spacing only. Armed, the label turns `--coral-text` and the edge `--coral`: an outline, never a second fill. It disarms itself after six seconds |
@@ -1414,7 +1480,7 @@ colour, are how that happens again. Read it before any change that renders.
 | `Field`, `SearchField`, `Select`, `Switch`, `Segmented`, `Chip`, `FriendDot` | `src/ui/` | the controls, in the room's tokens (a field is a well with the room's `--edge`, as a select is; a selected segment a bounded plate with its label at 700; a chip that is on the room's fill, 36 tall with a 44 hit area; a switch mint when on and edged in `--edge` when off; a friend dot's initial keeps `--fdot-hue` of their hue); restyle them there, never locally |
 | Icons (`Icon.tsx`: `IconStar`, `IconCheck`, `IconChevron`, ...) | `src/ui/Icon.tsx` | the only icon system; no glyph characters, no emoji; add to the set, do not draw inline |
 | `GlassIcon` (`IconGlassCocktail` and the other eight), `IconShaker`, `--fam-*`, `.gicon`, `.gicon-halo` | `src/ui/Icon.tsx`, `tokens.css`, `base.css` | the glass a drink is served in, one per family of `src/data/glass.ts`, on the icon grid with both sides of every bowl drawn. `GlassIcon` picks by family and draws it as a lit line in the family's hue over a halo of the same path (Iconography); it renders a `span.gicon` round two drawings. The shaker's prize is the same families drawn large (`Glass`) |
-| `.row-lead` | `base.css` | a row's leading glyph: the glass on every row that names a drink (`DrinkCard`, Log, Stats' rated rows, Crew's Discover together), in its family's hue, and `IconShaker` on Home's shake row in `--ink-3`. Never a state colour. A new row that names a drink takes it |
+| `.row-lead` | `base.css` | a row's leading glyph: the glass on every row that names a drink (`DrinkCard`, Log, Stats' rated rows, Crew's Discover together), in its family's hue. Never a state colour. A new row that names a drink takes it |
 | `.sr-only` | `base.css` | visually hidden, still announced |
 | `.empty-state` | `base.css` | an empty list: one short `p.t-body` and the one action that fills it, a secondary `GlassButton` flush to the leading edge, 16 apart. It is not filled, because the dock's Log is the screen's coral and opens the same search. Stats, Badges and Log use it, and the venue sheet with its one filled "Add a drink", since the dock steps down under a sheet; a new empty list on another screen reuses it |
 | `.meter` | `base.css` | the 3px measure under a count out of a total: a Ship venue row once something there is tried, and each deck's completion in Stats. Never an empty track: with nothing to fill it, it is not drawn. The medal rows carry no meter, because the ring on the blank is the measure |
@@ -1429,6 +1495,7 @@ colour, are how that happens again. Read it before any change that renders.
 | `seenMedals`, `markMedalsSeen()` | `src/state/store.ts` (persist v8) | which badges' "new medal" moment Home has shown; seeded on upgrade with what was already earned |
 | `SeaHero` (`level`, `hour`, `children`) | `src/features/home/SeaHero.tsx` | the sea window; the sky follows `hour`, the window carries `data-sky` (light or dark, from the sky's part of the day, which the sky chip reads) and `.glass-off` while it is off screen or under a sheet, and the liner rides the swell (Motion): `swell()` in the script is the shader's function term for term, so change one and change both. The shader draws no lens: the sky chip laid over it as a child is the glass engine. The CSS bob in `sea.css` is the fallback where there is no shader |
 | `pickedForYou()` | `src/state/social.ts` | the "For you" shelf: honest picks (taste-matched crew, or your top spirit); empty when there is no personal basis |
+| `.shake-card` | `src/features/home/home.css` | Home's door onto the Shake sheet (Screens, Home, item 5): one `--plate` across the full width with a hairline, `IconShaker` at 52 tipped and standing proud of it in the sheet's steel, and two lines. No glass, no shadow, no velvet |
 | `Shaker` | `src/features/shake/Shaker.tsx` | the cobbler shaker, drawn on an 88 by 220 grid in `Icon.tsx`'s idiom, shown at 0.9 on a 300 by 275 stage at the hero stroke (Iconography), in the room's ink over `--steel` (a mix `.shaker` sets from `--ink` and `--plate-solid`), its light and shade the glass engine's rims, the burst in `--lamp`. It is not in the icon set because it is not an icon: it is the one object on its screen, and an icon there would be a 24px glyph blown up. One SVG, painted back to front in one rig: the burst, the prize glass inside the tin, the tin over it, the cap. The file exports only the component (and its types), so it keeps fast refresh; its timings are `SHAKER`. It has no window, and adding one back would be drawing a shaker that does not exist |
 | `SHAKER` | `src/features/shake/timing.ts` | the shaker's timings (the shake, the knocks, the pop, the landing, the reverse), in a module of their own beside the drawing, because a component file that exports anything else loses fast refresh. The sheet runs its phases on them and hands the rattle its times, and `Shaker` sets the CSS durations from them, so a timing changes in one place |
 | `keyframes.mjs` | `src/features/shake/keyframes.mjs` | writes the computed keyframes at the foot of `shake.css` (the shake and the held beat as one timeline, and the cap's flight and the glass's rise and sink sampled every 20ms) from `SHAKER` and its own tables, and prints whether the cap clears the glass and whether anything leaves the top of the stage. Edit `SHAKER` in `timing.ts` or a table here, then run `node src/features/shake/keyframes.mjs`; never edit the computed block by hand. Node only, not imported by the app; it refuses to run on a shake other than 1800ms, which its stroke table is drawn against |
@@ -1437,8 +1504,9 @@ colour, are how that happens again. Read it before any change that renders.
 | `GLASS_BY_DRINK` | `src/data/glassByDrink.ts` | generated, never edited: the published catalogue's glass for every drink, keyed by name, written by `tools/glass-classify.mjs`. Wines and beers are decided in code there (sparkling wine and Champagne a flute); each cocktail was put to Jev (TypeSafe, `jev-1.13.0`) as one choice among the nine glasses over its name, category, spirits, ingredients, flavours, frozen flag and menu note. A person's rulings, where Jev was unsure or wrong, live in `tools/glass-classify.overrides.json` and are applied last; each answer's probability is in `tools/glass-classify.report.json`. A changed glass is a ruling in that file, not an edit here; it takes effect when the script next runs, which asks Jev again |
 | `ShakeSheet` | `src/features/shake/ShakeSheet.tsx` | the Shake sheet and its five phases, opened by `.shake-open` on Home and from nowhere else, timed by `SHAKER`. The card's lines carry their own start as `--at`, so a card without a reason closes up. It returns `DrinkSheet` on "Go get it" rather than stacking one, the same replacement `ProfileSheet` and `VenueSheet` use, and it comes back from it as a fresh mount that `still` holds at the reveal (Sheets, Coming back) |
 | `shake()` | `src/features/shake/pick.ts` | what the shaker surfaces: untried only, never one of this sitting's last six, weight 4 for a drink the "For you" shelf already vouches for, 2 for the guest's top spirit, 1 for the rest, each weight carrying the line that explains it. Pure, with `random` injected, tested in `pick.test.ts` |
-| `startRattle()` | `src/features/shake/rattle.ts` | the dice in the tin: WebAudio, synthesised, no asset, the whole schedule laid down in one pass at press time, with a low knock at each knock time the sheet passes it from `SHAKER.knocks`. `reveal()` carries the opening, a cork at the cap and the thock `landMs` later as the glass lands, laid down against the same clock rather than on a timer. A silent no-op when the guest chose quiet, under reduced motion, or where there is no `AudioContext` |
-| `haptic('shake')` | `src/ui/haptic.ts` | the third pattern, a rising series mirroring the rattle's acceleration. Its first pulse is the press tap, so the press fires this one and not both. The two knocks from inside are `haptic('tap')`, fired from the sheet's own timer and never under quiet or reduced motion |
+| `startRattle()`, `primeRattle()` | `src/features/shake/rattle.ts` | the dice in the tin: WebAudio, synthesised, no asset, the whole schedule laid down in one pass at press time, with a low knock at each knock time the sheet passes it from `SHAKER.knocks`. `reveal()` carries the opening, a cork at the cap and the thock `landMs` later as the glass lands, laid down against the same clock rather than on a timer. `primeRattle()` wakes it inside the tap. The first sounding press sets `navigator.audioSession.type` to `playback`, once, before the context is made, so the silent switch does not mute it (music from another app pauses). The context is suspended 1.2s after its last sound. A silent no-op, with no session and no context, when the guest chose quiet, under reduced motion, or where there is no `AudioContext` |
+| `haptic('shake')` | `src/ui/haptic.ts` | the third pattern, a rising series mirroring the rattle's acceleration, through the Vibration API (Android). Its first pulse is the press tap, so the press fires this one and not both. The two knocks from inside are `haptic('tap')` and the landing is `haptic('success')`, fired from the sheet's own timers and never under quiet or reduced motion. On an iPhone all three are silent, because no API a page can call makes one buzz |
+| `pressHaptic()` | `src/ui/haptic.ts` | the iPhone press tick, and the only haptic a page can have on iOS: a transparent `<label>` (aria-hidden, out of the tab order) laid over one control and wired to a 1 by 1 native `<input type=checkbox switch>` inside it, visible to no one. The finger's own tap on the label reaches the switch as a trusted click and WebKit plays the system tick. A click from script is untrusted since iOS 26.5 and plays nothing, and a timer never could, so it fires for the press and for nothing else. The switch's forwarded click is stopped at the switch, so the control's handler runs once. `enable(false)` turns the label's pointer events off and never disables the switch, because the commit a press causes would otherwise disable it before WebKit forwards that same tap. A no-op off iOS. On `.shake-go` while it reads Shake and on `.shake-again` once shown. A `<label>` inside a `<button>` breaks the button's content model; it is accepted for the tick and hidden from assistive tech |
 | `DrinkCard` | `src/features/drinks/DrinkCard.tsx` | the drink row everywhere a drink is listed (Drinks, venue sheet, the search), edge to edge with the 16 inset inside it: the glass at 30, then name and stars, one meta line with the price first, and C's drawn tried mark (a ring, then a `--mint-fill` disc under an `--on-mint` tick), not `IconCheck`. `onTried` hears the check, for a caller that says more than the check does (the search's Undo toast) |
 | `Coin` (`badge`, `state`, `progress`, `size`, `turn`, `flip`) | `src/features/badges/Coin.tsx`, `coin.css` | the one medal, everywhere a medal appears (Material, The medals). `state` is `earned`, `reach` or `locked`; `progress` (0 to 1) fills the amber ring round a coin in reach; `size` is the outer box in px; `turn` is Home's one turn on entry; `flip` makes the large coin in the medal sheet a button that turns over to its reverse. A screen sizes it by the prop, never by overriding its inner elements |
 | `earnedOn()` | `src/data/earnedOn.ts` | the day a badge was earned: the guest's tried entries and check-ins replayed in date order through the caller's stat computation (`(p) => computeStats(drinks, p).badgeStat`), the first day the test passes. Null when not earned, or when only an undated entry earns it, so the sheet never names a day the record does not hold. Beside `badges.ts`, not in it, because `badges.ts` reads `SHIP` at import and cannot load under `node --test`; tested in `earnedOn.test.ts` |
