@@ -58,13 +58,21 @@ export type RestoreVerdict = 'ok' | 'held' | 'gone'
 const GONE_CODES: readonly string[] = ['refresh_token_not_found', 'user_not_found', 'session_not_found']
 
 /** What an attempt to put the kept session back means. A network failure, a timeout, a 5xx, a rate
- *  limit or a non-JSON answer is `held`: keep the copy and try again next round. Only a definite
- *  answer that the token, the user or the session is gone, or a 401 from the API, is `gone`. */
+ *  limit (429), a request timeout (408), a non-JSON answer (a captive portal) or a refresh discarded
+ *  mid-flight is `held`: keep the copy and try again next round. `gone` is a definite answer from the
+ *  auth server itself: the three codes above, and any other JSON 4xx it gives about this token
+ *  (AuthApiError), which is the "equivalent" answer: a refresh token reused outside the reuse window
+ *  (`refresh_token_already_used`) or a session past its time limit (`session_expired`) is refused the
+ *  same way on every later attempt, and holding on it would leave the phone saying "Offline" for
+ *  good, with no way for the recovery code or an erase to get past it. An AuthApiError is only ever
+ *  the server's answer: a portal cannot answer for supabase.co over HTTPS, so its page fails the
+ *  fetch or arrives as non-JSON. */
 export function judgeRestore(error: AuthErrorLike | null | undefined): RestoreVerdict {
   if (!error) return 'ok'
   if (error.name === 'AuthRetryableFetchError') return 'held'
   if (error.code && GONE_CODES.includes(error.code)) return 'gone'
   if (error.name === 'AuthSessionMissingError') return 'gone'
-  if (error.name === 'AuthApiError' && error.status === 401) return 'gone'
+  if (error.name === 'AuthApiError' && typeof error.status === 'number'
+    && error.status >= 400 && error.status < 500 && error.status !== 408 && error.status !== 429) return 'gone'
   return 'held'
 }

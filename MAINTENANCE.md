@@ -86,7 +86,7 @@ code, not Google. What each guest does, ashore, before boarding:
    from then on open it only from the icon. On an iPhone the Safari tab and the home-screen app
    keep separate passports, and Safari clears a site's storage after seven days of use without a
    visit; the home-screen app does not.
-2. Tap Done in the app from the icon, log one drink, and wait until Your details shows the recovery
+2. Tap Done in the app from the icon, with a signal, and wait until Your details shows the recovery
    code (it appears after the first sync).
 3. Save the code: Share it to Notes or Messages, or copy it out. On a new phone, or if the passport
    was started in a Safari tab, "Bring back a passport" with that code brings it back, friend code

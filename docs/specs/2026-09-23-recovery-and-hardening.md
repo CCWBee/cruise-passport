@@ -178,12 +178,29 @@ Built on `hardening` on 23 September 2026. The screens call these and nothing lo
     sign-in hint's wording. It covers a refusal by the server and a load kept off it (`?nosync`,
     `?seed`, `?fixture`, or a build with no backend).
 - `useSyncStore().status === 'moved'`: this copy's identity was claimed on another phone or its user
-  deleted, and sync has stopped. Your details says "This passport moved to another phone or app.
+  deleted, or the auth server has refused its session for good (a refresh token revoked for reuse, a
+  session past its limit), and sync has stopped. The copy below states the likeliest cause; the two
+  actions are right whichever it was. Your details says "This passport moved to another phone or app.
   Bring it back with your recovery code, or start again." "Bring it back" is the same field and
   `claimPassport`; "start again" calls `startAgain(): void`, which gives this copy a new friend code
   and returns it to the entry screen, keeping its drinks.
 - `useSyncStore().status === 'local'`: a `?seed` or `?fixture` load, which never syncs. Proposed line
   in place of the sync line: "A demo. Nothing leaves this phone."
 - `googleSignInEnabled` (`backend.ts`) is `false`: gate the "Keep it with Google" block on it.
+
+Two places the build differs from the text above, both on purpose:
+
+- `claim_recovery` returns `{ profile: {code, name, colour} | null, backups: [...] }` rather than the
+  bare backups array, so the phone takes the friend code from the row that moved, in the same
+  transaction, and never publishes its old code over it. It also deletes groups the caller owned
+  (their other members' memberships cascade), as `delete_my_data` does, so no group is left owned by
+  someone who is not in it; a fresh phone owns none.
+- Section 2's "gone" is wider than its three codes: any JSON 4xx the auth server gives about the
+  token, except 408 and 429, retires the identity (`session.ts`, `judgeRestore`). A refresh token
+  revoked for reuse (`refresh_token_already_used`) is refused the same way for ever, and holding on
+  it left the phone "Offline" for good with no way for the recovery code or an erase past it. Network
+  failures, timeouts, 5xx, 429 and non-JSON answers still hold.
+- The backup write is awaited and counted in the round (it was fire-and-forget), and a failed
+  publish is not followed by a pull.
 - `?qa=claim:wrong` (and the other claim states), `?qa=sync:moved`, `?qa=sync:local` and `?qa=code:1`
   put each state on screen for a render on a `nosync` load.

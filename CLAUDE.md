@@ -218,11 +218,12 @@ The same holds for a probe of the page from Brave.
   out (`forgetSession()`), and `backend.ts`'s `resolveSession()` acts on the pure, tested decision in
   `src/state/session.ts`: use a live session; hold while the library still stores one; put the kept
   copy back with `setSession`; mint only on a phone that never had a user (the store's `syncUid`).
-  Only a definite "gone" (`refresh_token_not_found`, `user_not_found`, `session_not_found`, a 401,
-  or a profile write refused on the friend code or the auth.users foreign key and confirmed by
-  `getUser()` on the session's own token) retires the
-  identity: sync stops with status `'moved'` and nothing new is minted until the guest claims the
-  code back or calls `startAgain()`. A failed publish is no longer followed by a pull, so a lost
+  Only a definite "gone" (`refresh_token_not_found`, `user_not_found`, `session_not_found`, or any
+  other JSON 4xx from the auth server bar 408 and 429, such as `refresh_token_already_used`, which is
+  refused the same way for ever; or a profile write refused on the friend code or the auth.users
+  foreign key and confirmed by `getUser()` on the session's own token) retires the identity: sync
+  stops with status `'moved'` and nothing new is minted until the guest claims the code back or
+  calls `startAgain()`. A failed publish is no longer followed by a pull, so a lost
   identity cannot empty the crew list.
 - **Timeouts and the erase.** Every Supabase request has a time limit (`src/state/timeout.ts`, 15 s,
   20 s for the claim), so a stalled request fails into the backoff instead of holding every later

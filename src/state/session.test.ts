@@ -60,7 +60,7 @@ test('a network failure, a timeout, a 5xx or a captive portal holds', () => {
   assert.equal(judgeRestore({ name: 'AuthUnknownError' }), 'held') // non-JSON 4xx
   assert.equal(judgeRestore({ name: 'AuthApiError', status: 429, code: 'over_request_rate_limit' }), 'held')
   assert.equal(judgeRestore({ name: 'AuthRefreshDiscardedError', status: 409 }), 'held')
-  assert.equal(judgeRestore({ name: 'AuthApiError', status: 400, code: 'refresh_token_already_used' }), 'held')
+  assert.equal(judgeRestore({ name: 'AuthApiError', status: 408, code: 'request_timeout' }), 'held')
   assert.equal(judgeRestore({ name: 'Error' }), 'held')
 })
 
@@ -70,4 +70,12 @@ test('only a definite answer that the identity is gone retires it', () => {
   assert.equal(judgeRestore({ name: 'AuthApiError', status: 403, code: 'session_not_found' }), 'gone')
   assert.equal(judgeRestore({ name: 'AuthSessionMissingError', status: 400 }), 'gone')
   assert.equal(judgeRestore({ name: 'AuthApiError', status: 401, code: 'bad_jwt' }), 'gone')
+})
+
+test('a refresh token refused for good is gone too, or the phone would hold for ever', () => {
+  assert.equal(judgeRestore({ name: 'AuthApiError', status: 400, code: 'refresh_token_already_used' }), 'gone')
+  assert.equal(judgeRestore({ name: 'AuthApiError', status: 403, code: 'session_expired' }), 'gone')
+  assert.equal(judgeRestore({ name: 'AuthApiError', status: 403, code: 'user_banned' }), 'gone')
+  // but not a rate limit, whatever it is called
+  assert.equal(judgeRestore({ name: 'AuthApiError', status: 429 }), 'held')
 })
