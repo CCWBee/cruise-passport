@@ -729,6 +729,18 @@ Experience mode; the story format stays. Headings roman, no uppercase tracked la
 because it is a certificate, "Save my Wrapped" is the one coral button. Backdrop drift stays as this
 mode's one ambient motion and stops under reduced motion.
 
+The medals slide shows the coins won, up to six, highest tier first, three to a row under the count:
+the one slide with a disc on it, because Charles asked on 23 September 2026 for the medals to be good
+looking and prominent. With a crew, the crew slide is followed by up to four more, each made only when
+the synced passports fill it honestly (`src/features/wrapped/crewCards.ts`, tested): the crew's
+favourite (the highest average from three raters, or two in a crew of two, four stars or over), the
+one that split you (your rating and one friend's two stars or more apart, the friend named), your
+find (loved by you, had by nobody else), and next time (the crew's pick you have not had, the same
+ranking as Home's Picked for you, with the first thing one of them wrote about it). Insight, never a
+ranking: nobody is placed above anybody. The story root carries `wr-<kind>` as its modifier class, so
+a card's inner classes must not reuse a kind's name (`.wr-medals` once capped the whole story at
+240px; the coin row is `.wr-coins`).
+
 ## Verification
 
 A screen is done when a render in Brave at 390×844 from the running dev server (`?seed&nosync`)

@@ -1,7 +1,11 @@
 import { BADGES } from '../../data/badges'
 import { DRINK_BY_ID, END, START, VENUES, type Drink } from '../../data/model'
 import { computeStats, type Passport, type Stats } from '../../state/stats'
-import { groupReach, tasteTwin, type Source } from '../../state/social'
+import { groupReach, recommendedForYou, tasteTwin, type Source } from '../../state/social'
+import {
+  crewFavourite, nextTime, splitDecision, yourFind,
+  type CrewFavourite, type NextTime, type SplitDecision, type YourFind,
+} from './crewCards'
 
 /** Every drink on this sailing, the guest's own included. A user sailing has no published catalogue,
  *  so the total is the catalogue they built, and a hard-coded 214 would be 0 for ever there. Zero
@@ -23,7 +27,7 @@ export type WrappedCard =
   | { kind: 'bigday'; date: string; count: number }
   | { kind: 'decks'; count: number; venues: number; decks: number[] }
   | { kind: 'archetype'; archetype: WrappedArchetype }
-  | { kind: 'medals'; count: number; total: number }
+  | { kind: 'medals'; count: number; total: number; earned: string[] }
   | {
       kind: 'crew'
       count: number
@@ -31,6 +35,10 @@ export type WrappedCard =
       triedTogether: number
       shared: string[]
     }
+  | ({ kind: 'crewfav' } & CrewFavourite)
+  | ({ kind: 'split' } & SplitDecision)
+  | ({ kind: 'find' } & YourFind)
+  | ({ kind: 'nexttime' } & NextTime)
   | {
       kind: 'finale'
       count: number
@@ -161,7 +169,8 @@ export function deriveWrapped(drinks: Drink[], passport: Passport, srcs: Source[
     .sort(([a, aDrinks], [b, bDrinks]) => bDrinks.length - aDrinks.length || a.localeCompare(b))[0]
   const decks = visitedDecks(stats, passport)
   const archetype = deriveArchetype(stats)
-  const medals = BADGES.filter((badge) => badge.test(stats.badgeStat)).length
+  const earned = BADGES.filter((badge) => badge.test(stats.badgeStat))
+  const medals = earned.length
 
   if (stats.n > 0) cards.push({ kind: 'tried', count: stats.n })
   if (stats.favVenue && stats.favVenueN > 0) {
@@ -176,9 +185,25 @@ export function deriveWrapped(drinks: Drink[], passport: Passport, srcs: Source[
   if (biggestDay?.[1].length) cards.push({ kind: 'bigday', date: formatDay(biggestDay[0]), count: biggestDay[1].length })
   if (decks.length) cards.push({ kind: 'decks', count: decks.length, venues: stats.venues, decks })
   if (archetype) cards.push({ kind: 'archetype', archetype })
-  if (medals > 0) cards.push({ kind: 'medals', count: medals, total: BADGES.length })
+  if (medals > 0) {
+    // the coins themselves, highest tier first, so the slide shows what was won and not only a count
+    const rank = { special: 0, gold: 1, silver: 2, bronze: 3 }
+    const shown = [...earned].sort((a, b) => rank[a.tier ?? 'bronze'] - rank[b.tier ?? 'bronze']).map((b) => b.id)
+    cards.push({ kind: 'medals', count: medals, total: BADGES.length, earned: shown })
+  }
   const crew = crewCard(passport, srcs)
-  if (crew) cards.push(crew)
+  if (crew) {
+    cards.push(crew)
+    // The crew's own run of slides, each made only when the passports can fill it honestly.
+    const fav = crewFavourite(srcs, DRINK_BY_ID)
+    if (fav) cards.push({ kind: 'crewfav', ...fav })
+    const split = splitDecision(srcs, DRINK_BY_ID)
+    if (split) cards.push({ kind: 'split', ...split })
+    const find = yourFind(srcs, DRINK_BY_ID)
+    if (find) cards.push({ kind: 'find', ...find })
+    const next = nextTime(recommendedForYou(passport, srcs, 1)[0])
+    if (next) cards.push({ kind: 'nexttime', ...next })
+  }
   cards.push({
     kind: 'finale', count: stats.n, pct, archetype,
     topBar: stats.favVenue ? VENUES[stats.favVenue]?.name || stats.favVenue : null,

@@ -9,6 +9,8 @@ import { useSources } from '../../state/social'
 import { IconClose } from '../../ui/Icon'
 import { useCountUp } from '../../ui/useCountUp'
 import { SHIP } from '../../data/model'
+import { BADGES } from '../../data/badges'
+import { MedalDisc } from '../badges/Badges'
 import {
   certificateRows, deriveWrapped, listJoin, voyageDateRange, wrappedTotal, wrappedUnlocked,
   type WrappedCard, type WrappedFinale,
@@ -145,7 +147,9 @@ function SaveWrapped({ card }: { card: WrappedFinale }) {
 }
 
 // Every card is the same skeleton: a quiet label, one thing that is big (a numeral or a name),
-// then the plain lines that qualify it. No plates, no rings, no medal disc. The count-up belongs to
+// then the plain lines that qualify it. No plates and no rings. The medals slide is the one place a
+// disc appears: it shows the coins won beneath the count, because Charles asked on 23 September 2026
+// for the medals to be good looking and prominent, and a bare numeral hides them. The count-up belongs to
 // the display numeral and nowhere else: digits twitching inside a 13px sentence cost more legibility
 // than they buy, and a card whose big thing is a name has no numeral to count.
 function CardBody({ card, total }: { card: WrappedCard; total: number }) {
@@ -214,6 +218,12 @@ function CardBody({ card, total }: { card: WrappedCard; total: number }) {
           <p className="t-meta">Medals</p>
           <p className="t-display tnum"><AnimatedNumber value={card.count} /></p>
           <p className="t-meta tnum">of {card.total} earned</p>
+          <div className="wr-coins">
+            {card.earned.slice(0, 6).map((id) => {
+              const badge = BADGES.find((b) => b.id === id)
+              return badge ? <MedalDisc key={id} badge={badge} earned /> : null
+            })}
+          </div>
         </div>
       )
     case 'crew':
@@ -227,6 +237,46 @@ function CardBody({ card, total }: { card: WrappedCard; total: number }) {
             <p className="t-meta">Together you found {card.triedTogether} of {total}</p>
             {card.shared.length > 0 && <p className="t-meta">Both loved: {listJoin(card.shared)}</p>}
           </div>
+        </div>
+      )
+    case 'crewfav':
+      return (
+        <div className="wr-content">
+          <p className="t-meta">The crew's favourite</p>
+          <h2 className="t-title wr-lead">{card.name}</h2>
+          <p className="t-meta tnum">{card.avg.toFixed(1)} stars from {card.raters} of you</p>
+        </div>
+      )
+    case 'split':
+      return (
+        <div className="wr-content">
+          <p className="t-meta">The one that split you</p>
+          <h2 className="t-title wr-lead">{card.name}</h2>
+          <p className="t-meta tnum">You gave it {card.mine} out of 5, {card.friend} gave it {card.theirs}</p>
+        </div>
+      )
+    case 'find':
+      return (
+        <div className="wr-content">
+          <p className="t-meta">Your find</p>
+          <h2 className="t-title wr-lead">{card.name}</h2>
+          <p className="t-meta tnum">
+            Nobody else in the crew tried it. {card.rating ? `You gave it ${card.rating} out of 5.` : 'You recommended it.'}
+          </p>
+        </div>
+      )
+    case 'nexttime':
+      return (
+        <div className="wr-content">
+          <p className="t-meta">Next time</p>
+          <h2 className="t-title wr-lead">{card.name}</h2>
+          <p className="t-meta">{listJoin(card.by)} loved it. You have not had one yet.</p>
+          {/* the name only when more than one loved it; with one, the line above has said who */}
+          {card.note && (
+            <p className="t-body wr-blurb">
+              ‘{card.note.text}’{card.by.length > 1 ? ` (${card.note.name})` : ''}
+            </p>
+          )}
         </div>
       )
     case 'finale':

@@ -222,7 +222,15 @@ IN FLIGHT 23 September: the glass revolution (`docs/specs/2026-09-23-glass-revol
 directions (A harbour by day, B open water, C night bar) are being prototyped as clickable pages in
 `prototypes/2026-09-23/<letter>/`, rendered in Brave, judged, then put on a Cloudflare Pages preview
 for Charles to pick on his phone. The pick is his (a taste call); then the chosen direction is built
-into the app. Workflow run id and resume handle go here once launched.
+into the app. Charles added mid-flight: "Make sure the medals work are good looking and prominent
+enough" (the medals are grey ink discs two taps deep; the brief now carries a medals section and
+`?screen=medals|medal` states) and "may as well use social data in the roundup too" (Wrapped crew
+slides, being written into `src/features/wrapped/` in the current look while the prototypes build).
+Workflow run `wf_2e371d47-f6d` (the first launch, `wf_b934f643-55a`, was stopped before anything was
+written, to add the medals). Resume: Workflow with scriptPath
+`C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-glass-revolution-prototypes-wf_b934f643-55a.js`
+and resumeFromRunId `wf_2e371d47-f6d`. It needs `python -m http.server 8791 --bind 127.0.0.1` running
+in `prototypes/2026-09-23` for the render stage.
 
 Also open from before, none blocking: the erase and in-flight sync race; Shake again about 100ms past
 the budget; dead code (`Filters.venues`, the `'again'` toggle, `computeStats().best`). Charles's: 2SV

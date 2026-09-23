@@ -23,6 +23,11 @@ the Liquid Glass it was meant to have is not there in any way a guest would see:
    no specular highlight, no droplet that moves between tabs, no control that swells when pressed.
 5. **Not fun.** Nothing in the chrome responds to a thumb beyond a 0.97 press scale; the delight is
    confined to the shaker and the sea.
+6. **The medals are grey and buried.** The design audit made the tier ladder "four steps of ink"
+   (`badges.css`: a tier is an ordinal, so no gold enters badge art), so every medal is a flat slate
+   disc with a small pale emblem. They live two taps deep (You, then the Badges segment), and Home
+   shows one only once, in the new-medal moment. Charles, the same night: "Make sure the medals work
+   are good looking and prominent enough".
 
 ## What every direction must do
 
@@ -57,6 +62,26 @@ the Liquid Glass it was meant to have is not there in any way a guest would see:
   to about 1.04) and its specular brightens, and it settles on release on a short spring-like ease;
   the droplet slides; the blue wave stays as the sheet's signature opening and hands over to a sheet
   that is still glass when it ends; the shaker stays.
+- **Medals that look like medals, and are in view.** The medals are the app's reward, so they get
+  the one exemption from restraint:
+  - **Struck metal in its real colour**: bronze, silver and gold, and a fourth finish for the
+    special (the Champion). The metals are material, as the sea is, not an accent, so they sit
+    outside the one-accent rule; that is the written reason for the divergence. Relief: a raised
+    rim (milled or bevelled), the emblem struck in and catching the same top-left light as the
+    glass, a highlight that reads as metal rather than a flat fill. The emblems are the drawn ones
+    in `src/features/badges/emblems-data.ts` (SVG strings keyed by badge id); reuse them. A locked
+    medal is the same coin shape, unstruck and quiet, never a grey version of an earned one.
+  - **Prominent**: the medals are visible on Home without hunting, and never more than one tap from
+    it: the case (earned coins, the count, and the next one in reach with its progress) sits in
+    Home's rank order where a guest sees it, and opens the full case. The full case is a screen a
+    guest wants to open: earned coins large in tier order, then the ones in reach with progress,
+    then the locked blanks with what earns them. No grey grid, and not a wall of identical boxes.
+  - The new-medal moment stays as the app's one spectacular moment: the coin turns once on entry,
+    then rests.
+  - Real seed state: 6 of 18 earned (First Sip, Ten Down, Twenty Five, Fifty, Martini Club, Gin
+    Explorer); close: Whiskey Lover 9 of 10, Wine Connoisseur 8 of 12, Rum Captain 7 of 12, One
+    Hundred 58 of 100, Cocktail Master 27% of 50%, Every Bar 15 of 28; locked: Margarita Queen,
+    Brain Freeze. Tiers and hints are in `src/data/badges.ts`.
 - **Keep what is right.** The data, the flows and the copy the declutter settled; British English,
   no em dashes, sentence case; the four banned tells (no pill or dot eyebrow, no rule along a heading
   or box, no emoji as UI, no wall of identical rounded boxes); 44px targets; WCAG contrast on every
@@ -95,10 +120,21 @@ at 390 by 844 and full screen on a phone, centred on a desktop. Real content fro
 (`src/data/raw.ts`: real drink names, bars, decks, the seed's 58 of 214), not lorem ipsum. It shows,
 and lets a thumb move between: Home (the hero, For you, the shake row), Drinks (search, a venue
 group of rows with their glass icons, tried checks), a drink sheet opened from a row (medium, then
-dragged or tapped to large, then closed), the Log button opening search, and the tab bar moving
-between tabs. The other tabs can be a single honest screen each. A short `README.md` beside it says
+dragged or tapped to large, then closed), the Log button opening search, the tab bar moving
+between tabs, the medals on Home, the full medal case, and one medal opened (the coin large, its
+name, tier and what earned it). The other tabs can be a single honest screen each. A short `README.md` beside it says
 what the direction is, the glass recipe it uses and its measured contrast pairs.
 
 Checked in Brave (never headless Chrome) at 390 wide in an iframe, and on a phone through a
 Cloudflare Pages preview. The choice between the three is Charles's; the prototypes exist so he can
 make it with a thumb rather than from a description.
+
+## Alongside, in the app: the crew in the roundup
+
+Charles, 23 September: "may as well use social data in the roundup too". Wrapped (the roundup) has
+one crew slide today (how many friends, the taste twin, what the group found together, drinks you
+both loved). The crew's data says more than that, so the roundup gains crew slides built from what
+the synced passports already hold, each insight and never a ranking (DESIGN.md, Social): the
+crew's favourite drink, the drink that split you, your find nobody else tried, and one the crew
+loved that you missed, to try next time. That is data and copy, so it goes into the app now, in the
+current look; the chosen direction restyles Wrapped with everything else.
