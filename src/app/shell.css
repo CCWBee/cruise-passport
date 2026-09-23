@@ -3,7 +3,26 @@
 .view {
   min-height: 100dvh;
   padding-top: calc(var(--s3) + var(--safe-t));
-  padding-bottom: calc(var(--nav-h) + var(--s5) + var(--safe-b));
+  padding-bottom: calc(var(--bar-h) + var(--bar-b) + var(--s5));
+  transition: opacity var(--t-screen) var(--e-out);
+}
+/* under the search (features/search): hidden rather than unmounted, so it comes back as it was */
+.view.is-covered {
+  opacity: 0; visibility: hidden;
+  transition: opacity 160ms var(--e-out), visibility 0s linear 160ms;
+}
+
+/* A screen fades in over 240ms with a 10px rise (C). The rise is on the screen alone, never on the
+   view or the root, which would lift the fixed room and the dock with it. Only the from-state is
+   held (backwards), so nothing is left on the screen afterwards: a lingering translate would make
+   the screen the containing block of anything fixed inside it. While it runs, the opacity makes the
+   screen a backdrop root, so glass inside it (the sea window's chips) samples the screen alone for
+   those 240ms; the sea is inside the screen, so it still has something to bend. */
+.screen { animation: screen-in var(--t-screen) var(--e-out) backwards; }
+@keyframes screen-in { from { opacity: 0; translate: 0 10px; } }
+@media (prefers-reduced-motion: reduce) {
+  .screen { animation-name: screen-fade; }
+  @keyframes screen-fade { from { opacity: 0; } }
 }
 .app-head {
   padding: calc(var(--s3) + var(--safe-t)) 0 var(--s2);
@@ -30,4 +49,43 @@
   background: linear-gradient(180deg, var(--room-mid), var(--room-1));
   -webkit-mask-image: linear-gradient(180deg, transparent, rgba(0, 0, 0, .86) calc(100% - var(--safe-b) - 40px), #000 calc(100% - var(--safe-b) - 10px));
   mask-image: linear-gradient(180deg, transparent, rgba(0, 0, 0, .86) calc(100% - var(--safe-b) - 40px), #000 calc(100% - var(--safe-b) - 10px));
+}
+
+/* ── the top bar ────────────────────────────────────────────────────────────────────────────────
+   A screen's large title folds into C's scroll edge glass once it is 46px under (TopBar.tsx). It is
+   the glass engine at C's numbers for this strip: blur 16, so the Home readout's 64px figures do not
+   ghost through it; saturate 170%; brightness .92; and the top of the room as its film, .8 falling to
+   .66 by the title line (--bar-film). Built as B's (prototype B, b.css 537 to 541): the filter lives on
+   ::before and only that fades, with the title fading on its own; the element carries no mask and is
+   never faded, so no backdrop root forms half way through the fade. The lens is off: it is a strip,
+   not an object. The one mask is on the filtered layer itself, the last 14px fading out below the
+   title, so the strip has no hard lower edge and needs no rule along it. */
+.topbar.glass {
+  --film: var(--bar-film);
+  --solid: var(--room-0);
+  --glass-blur: 16px; --glass-sat: 170%; --glass-bright: .92;
+  position: fixed; z-index: 45; left: 0; right: 0; top: 0;
+  height: calc(var(--safe-t) + 60px);
+  display: flex; align-items: flex-end; justify-content: center;
+  padding: 0 calc(var(--s6) * 2) var(--s4);
+  box-shadow: none; pointer-events: none;
+}
+.topbar.glass::after { display: none; }
+.topbar::before {
+  opacity: 0; visibility: hidden;
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 14px), transparent);
+  mask-image: linear-gradient(180deg, #000 calc(100% - 14px), transparent);
+  transition: opacity var(--t-panel) var(--e-out), visibility 0s linear var(--t-panel);
+}
+.topbar.is-shown::before { opacity: 1; visibility: visible; transition: opacity var(--t-panel) var(--e-out), visibility 0s; }
+.topbar-title {
+  max-width: 100%;
+  font-size: var(--f-body); font-weight: 700; line-height: 1.3;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  opacity: 0; translate: 0 6px;
+  transition: opacity var(--t-panel) var(--e-out), translate var(--t-panel) var(--e-out);
+}
+.topbar.is-shown .topbar-title { opacity: 1; translate: none; }
+@media (prefers-reduced-motion: reduce) {
+  .topbar-title { translate: none; }
 }

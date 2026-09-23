@@ -25,11 +25,9 @@ app/shell.css :: linear-gradient(180deg, var(--room-mid)
 app/shell.css :: mask-image: linear-gradient(180deg, transparent
 app/shell.css :: colour not a token #000
 app/shell.css :: colour not a token rgba(0, 0, 0, .86)
-# the sheet layers over content (the sheet stage moves it onto the glass engine)
-ui/sheet.css :: backdrop-filter
-# the sheet is liquid glass: the specular edge and the top-40% highlight
-ui/sheet.css :: inset 0 1px 0 var(--glass-rim)
-ui/sheet.css :: linear-gradient(to bottom, var(--glass-highlight-film)
+# the top bar's glass fades out over its last 14px below the title (C's scroll edge), a mask on the
+# filtered layer itself, so the strip needs no rule along its foot; a mask reads alpha, so black is its ink
+app/shell.css :: linear-gradient(180deg, #000 calc(100% - 14px)
 # the segmented thumb and the select option sit 3-4px inside a 12px control
 ui/segmented.css :: calc(var(--r-control) - 3px)
 ui/select.css :: calc(var(--r-control) - 4px)

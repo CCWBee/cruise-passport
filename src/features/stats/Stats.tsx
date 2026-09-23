@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { DAYS, DECKS, VENUES, VENUE_KEYS, deckLabel, menuFor, type Drink } from '../../data/model'
 import { useAllDrinks, useStore } from '../../state/store'
 import { bestRatedBars, useSources } from '../../state/social'
@@ -7,6 +6,7 @@ import { computeStats } from '../../state/stats'
 import { glassFamily } from '../../data/glass'
 import { GlassIcon, IconStar } from '../../ui/Icon'
 import { DrinkSheet } from '../drinks/DrinkSheet'
+import { openLog } from '../search/log'
 import './stats.css'
 
 const dayLabel = (iso: string) =>
@@ -184,7 +184,7 @@ export function Stats() {
     return (
       <div className="empty-state">
         <p className="t-body">Your stats appear once you log a drink.</p>
-        <Link className="btn btn-coral" to="/drinks">Log a drink</Link>
+        <button type="button" className="btn btn-coral" onClick={openLog}>Log a drink</button>
       </div>
     )
   }

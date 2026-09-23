@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { SeaHero } from './SeaHero'
 import { useStore, useAllDrinks } from '../../state/store'
 import {
-  computeStats, nextBadge, countOn, lastVenueOn, venueProgress, biggestBar,
+  computeStats, nextBadge, countOn, currentBar, venueProgress, biggestBar,
   dayPart, greetingWord, firstName, newMedals, topMedal, crewToday, syncedAgo,
   type NextBadge,
 } from '../../state/stats'
@@ -19,6 +19,7 @@ import { DrinkSheet } from '../drinks/DrinkSheet'
 import { ShakeSheet } from '../shake/ShakeSheet'
 import { VenueSheet } from '../ship/VenueSheet'
 import { WrappedTeaser } from '../wrapped/WrappedTeaser'
+import { openLog } from '../search/log'
 // the coin's own stylesheet: it carries the metal and emblem custom properties Medallion reads off
 // the page, so the sheet's coin and this one are struck from the same tokens
 import '../badges/badges.css'
@@ -103,7 +104,7 @@ export function Home() {
   // ── the bar module. Aboard it is the venue of the last drink written today; with nothing
   // written today it falls back to the bar with most logged, and before sailing to the longest
   // list. Nothing here is inferred from the clock: a wrong bar called yours is a lie.
-  const lastVenue = aboard ? lastVenueOn(drinks, me, day) : null
+  const lastVenue = currentBar(drinks, me, day)
   const barKey = lastVenue || (aboard ? s.favVenue : null) || biggestBar(drinks)
   const barHead = lastVenue ? 'Last bar' : aboard && s.favVenue ? 'Your top bar' : 'Where to start'
   const bar = useMemo(
@@ -184,9 +185,9 @@ export function Home() {
           <p className="sea-sub">{s.total ? <>{s.n} of {s.total}<br />tried</> : <>no drinks<br />yet</>}</p>
         </div>
         {/* the one primary action on the app, floating on the water where the thumb rests */}
-        <Link to="/drinks?log=1" className="sea-log glass-live glass-sm glass-edge glass-coral pressable" viewTransition>
+        <button type="button" className="sea-log glass-live glass-sm glass-edge glass-coral pressable" onClick={openLog}>
           Log a drink
-        </Link>
+        </button>
       </div>
 
       {/* Module 2. Aboard it is Today, three numbers that move by the day. Before sailing there is

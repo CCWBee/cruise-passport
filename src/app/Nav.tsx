@@ -1,32 +1,330 @@
-import { NavLink, useLocation } from 'react-router-dom'
-import { IconHome, IconDrinks, IconShip, IconSocial, IconStats } from '../ui/Icon'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { IconClose, IconSearch } from '../ui/Icon'
+import { openLog, registerLogField, useLogSearch } from '../features/search/log'
+import { TABS, tabOf } from './tabs'
 import './nav.css'
 
-// Five destinations. Stats, Badges and Log live behind "You" (a segmented control on that page);
-// their routes still resolve, so every old link lands, and any of them lights this tab.
-const TABS = [
-  { to: '/', label: 'Home', Icon: IconHome, match: (p: string) => p === '/' },
-  { to: '/drinks', label: 'Drinks', Icon: IconDrinks, match: (p: string) => p.startsWith('/drinks') },
-  { to: '/ship', label: 'Ship', Icon: IconShip, match: (p: string) => p.startsWith('/ship') },
-  { to: '/social', label: 'Crew', Icon: IconSocial, match: (p: string) => p.startsWith('/social') },
-  { to: '/stats', label: 'You', Icon: IconStats, match: (p: string) => /^\/(you|stats|badges|log)/.test(p) },
-]
+// The dock: prototype C's floating capsule of the five tabs, the droplet that marks the one you are
+// on, and Log at the trailing end, which opens the search and becomes its field (docs/DESIGN.md,
+// Navigation). Every piece is the glass engine's; what moves, moves on transform, clip-path on the
+// filtered layers, or opacity on a child, never width on a backdrop-filtered element.
 
-export function Nav() {
+// A drag along the capsule commits after 6px across (C), so a tap that shifts a pixel is still a tap.
+const DRAG_START = 6
+// A's run: 480ms on a linear timeline, each segment eased on its own (below)
+const RUN_MS = 480
+// how long after a drag the click it would fire is swallowed (Sheet.tsx uses the same)
+const SWALLOW_MS = 250
+
+const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+// Where the bead is drawn now, mid-run or mid-drag: the x of its computed transform. Read before a
+// run is cancelled, so the next one starts from where the eye last saw it rather than jumping.
+function drawnX(el: HTMLElement): number {
+  const t = getComputedStyle(el).transform
+  return !t || t === 'none' ? 0 : new DOMMatrixReadOnly(t).m41
+}
+
+// The touch light follows the finger (base.css, .spec)
+function lightAt(el: HTMLElement, e: PointerEvent) {
+  const r = el.getBoundingClientRect()
+  el.style.setProperty('--lx', `${(((e.clientX - r.left) / r.width) * 100).toFixed(1)}%`)
+  el.style.setProperty('--ly', `${(((e.clientY - r.top) / r.height) * 100).toFixed(1)}%`)
+}
+
+export function Nav({ down }: { down: boolean }) {
   const { pathname } = useLocation()
-  // /add, /join and /wrapped are not tabs: nothing lights
-  const active = TABS.findIndex((t) => t.match(pathname))
+  const navigate = useNavigate()
+  const open = useLogSearch((s) => s.open)
+  const q = useLogSearch((s) => s.q)
+  const setQ = useLogSearch((s) => s.setQ)
+  const close = useLogSearch((s) => s.close)
+  const active = tabOf(pathname)
+  // the tab whose label sits on the bead: the active one, or the one under a dragged bead
+  const [under, setUnder] = useState(-1)
+  const lit = under > -1 ? under : active
+
+  const barRef = useRef<HTMLElement>(null)
+  const tabsRef = useRef<HTMLDivElement>(null)
+  const beadRef = useRef<HTMLElement>(null)
+  const fieldRef = useRef<HTMLInputElement>(null)
+  // where the bead comes to rest, as its style transform says; the route effect skips a run to the
+  // place a drag has already sent it
+  const restX = useRef<number | null>(null)
+  const activeRef = useRef(active)
+  activeRef.current = active
+  const downRef = useRef(down)
+  downRef.current = down
+
+  const slot = useCallback((i: number) => {
+    const t = tabsRef.current?.children[i] as HTMLElement | undefined
+    return t ? { x: t.offsetLeft, w: t.offsetWidth } : null
+  }, [])
+
+  // ── the droplet ─────────────────────────────────────────────────────────────────────────────
+  // It slides to the tab and swells on the way (A's liquid morph, prototype A, a.js 956 to 966): the
+  // keyframes are eased segment by segment on a linear timeline, because one easing over the whole
+  // run squeezed the swell into its first 60ms, where no thumb sees it; this way the 1.22 by 1.08
+  // stretch peaks at 45% of the run, overshoots the tab by 4% and settles. Any run already going is
+  // cancelled first, from where it is, so quick taps never stack.
+  const place = useCallback((i: number, animate: boolean, fromX?: number) => {
+    const bead = beadRef.current
+    const s = slot(i)
+    if (!bead || !s) return
+    const from = fromX ?? drawnX(bead)
+    bead.getAnimations().forEach((a) => a.cancel())
+    const to = s.x
+    restX.current = to
+    bead.style.width = `${s.w}px`
+    bead.style.transform = `translateX(${to}px)`
+    if (!animate || Math.abs(to - from) < 1) return
+    if (reducedMotion()) {
+      bead.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: 'ease-out' })
+      return
+    }
+    const mid = (from + to) / 2
+    bead.animate([
+      { transform: `translateX(${from}px) scale(1, 1)`, easing: 'cubic-bezier(.3, .5, .5, 1)' },
+      { transform: `translateX(${mid}px) scale(1.22, 1.08)`, offset: 0.45, easing: 'cubic-bezier(.2, .7, .3, 1)' },
+      { transform: `translateX(${to - (to - from) * -0.04}px) scale(.97, 1.02)`, offset: 0.8, easing: 'ease-out' },
+      { transform: `translateX(${to}px) scale(1, 1)` },
+    ], { duration: RUN_MS, easing: 'linear' })
+  }, [slot])
+
+  // the route moves it: a tap on a tab, a link from a screen, the back button
+  const placed = useRef(false)
+  useLayoutEffect(() => {
+    if (active < 0) return
+    const s = slot(active)
+    if (placed.current && s && restX.current !== null && Math.abs(restX.current - s.x) < 1) return
+    place(active, placed.current)
+    placed.current = true
+  }, [active, place, slot])
+
+  // a new width (a rotation, the compact dock) re-measures the slots and puts the bead back, still
+  useEffect(() => {
+    const tabs = tabsRef.current
+    if (!tabs || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(() => { if (activeRef.current > -1) place(activeRef.current, false) })
+    ro.observe(tabs)
+    return () => ro.disconnect()
+  }, [place])
+
+  // ── dragging along the capsule ──────────────────────────────────────────────────────────────
+  // The bead follows the finger, stretched a little, and lands on the nearest tab when it lets go
+  // (C). A tap is left to the link under it, and the route moves the bead; only a drag navigates
+  // from here, and the click it would fire is swallowed.
+  useEffect(() => {
+    const bar = barRef.current, bead = beadRef.current
+    if (!bar || !bead) return
+    let g: { id: number; x0: number; start: number; x: number; moved: boolean } | null = null
+    let endedAt = -1000
+
+    const nearest = (x: number) => {
+      let best = 0, gap = Infinity
+      for (let i = 0; i < TABS.length; i++) {
+        const s = slot(i)
+        if (s && Math.abs(s.x - x) < gap) { gap = Math.abs(s.x - x); best = i }
+      }
+      return best
+    }
+    const end = () => { bar.classList.remove('is-touching', 'is-dragging'); setUnder(-1) }
+
+    const down = (e: PointerEvent) => {
+      if (g || useLogSearch.getState().open) return
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      const x = drawnX(bead)
+      g = { id: e.pointerId, x0: e.clientX, start: x, x, moved: false }
+      bar.classList.add('is-touching')
+      lightAt(bar, e)
+    }
+    const move = (e: PointerEvent) => {
+      if (!g || e.pointerId !== g.id) return
+      lightAt(bar, e)
+      const dx = e.clientX - g.x0
+      if (!g.moved) {
+        if (Math.abs(dx) < DRAG_START || activeRef.current < 0) return
+        g.moved = true
+        bead.getAnimations().forEach((a) => a.cancel())
+        bar.classList.add('is-dragging')
+        try { bar.setPointerCapture(g.id) } catch { /* capture is a nicety, not the mechanism */ }
+      }
+      const last = slot(TABS.length - 1)?.x ?? 0
+      g.x = Math.max(0, Math.min(last, g.start + dx))
+      bead.style.transform = `translateX(${g.x}px) scale(1.16, 1.08)`
+      setUnder(nearest(g.x))
+    }
+    const up = (e: PointerEvent) => {
+      if (!g || e.pointerId !== g.id) return
+      const was = g
+      g = null
+      end()
+      if (!was.moved) return
+      endedAt = performance.now()
+      const i = e.type === 'pointercancel' ? activeRef.current : nearest(was.x)
+      place(i, true, was.x)
+      if (i !== activeRef.current) navigate(TABS[i].to)
+    }
+    const swallow = (e: MouseEvent) => {
+      if (performance.now() - endedAt < SWALLOW_MS) { e.preventDefault(); e.stopPropagation(); endedAt = -1000 }
+    }
+
+    bar.addEventListener('pointerdown', down)
+    bar.addEventListener('pointermove', move)
+    bar.addEventListener('pointerup', up)
+    bar.addEventListener('pointercancel', up)
+    bar.addEventListener('click', swallow, true)
+    return () => {
+      bar.removeEventListener('pointerdown', down)
+      bar.removeEventListener('pointermove', move)
+      bar.removeEventListener('pointerup', up)
+      bar.removeEventListener('pointercancel', up)
+      bar.removeEventListener('click', swallow, true)
+    }
+  }, [navigate, place, slot])
+
+  // ── the search field ────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    registerLogField(fieldRef.current)
+    return () => registerLogField(null)
+  }, [])
+
+  const shut = useCallback(() => {
+    fieldRef.current?.blur()
+    close()
+  }, [close])
+
+  // a route change (a tab, a link in a result's sheet) ends the search; so does Escape, when no
+  // sheet is above it to take the key first
+  useEffect(() => { if (useLogSearch.getState().open) shut() }, [pathname, shut])
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: globalThis.KeyboardEvent) => { if (e.key === 'Escape' && !downRef.current) shut() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, shut])
+
+  // The field and the return button ride above the keyboard (C): the layout viewport does not shrink
+  // for it on iOS, so the height it takes is read off visualViewport and handed to the dock (and to the
+  // search's scroller, so its last row can scroll clear) as --kb.
+  useEffect(() => {
+    const vv = window.visualViewport
+    const root = document.documentElement
+    if (!open || !vv) return
+    const lift = () => {
+      const kb = window.innerHeight - vv.height - vv.offsetTop
+      if (kb > 80) root.style.setProperty('--kb', `${Math.round(kb)}px`)
+      else root.style.removeProperty('--kb')
+    }
+    vv.addEventListener('resize', lift)
+    vv.addEventListener('scroll', lift)
+    lift()
+    return () => {
+      vv.removeEventListener('resize', lift)
+      vv.removeEventListener('scroll', lift)
+      root.style.removeProperty('--kb')
+    }
+  }, [open])
+
+  const onFieldKey = (e: KeyboardEvent<HTMLInputElement>) => {
+    // Search on the keyboard puts it away, so the results can be read
+    if (e.key === 'Enter') e.currentTarget.blur()
+  }
+
+  const from = active > -1 ? TABS[active] : null
+  const Back = from?.Icon
+
   return (
-    <nav className="nav glass-live glass-edge" aria-label="Sections">
-      {TABS.map(({ to, label, Icon }, i) => {
-        const on = i === active
-        return (
-          <NavLink key={to} to={to} viewTransition className={'nav-btn' + (on ? ' on' : '')} aria-current={on ? 'page' : undefined}>
-            <Icon size={24} />
-            <span>{label}</span>
-          </NavLink>
-        )
-      })}
-    </nav>
+    <div className={'dock' + (open ? ' is-search' : '') + (down ? ' is-down' : '')}>
+      <nav
+        className={'tabbar glass' + (active < 0 ? ' no-tab' : '')}
+        ref={barRef}
+        aria-label="Sections"
+        aria-hidden={open || undefined}
+      >
+        <i className="spec" aria-hidden />
+        <i className="droplet" ref={beadRef} aria-hidden />
+        <div className="tabs" ref={tabsRef}>
+          {TABS.map(({ to, label, Icon }, i) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={'tab' + (i === lit ? ' is-under' : '')}
+              aria-current={i === active ? 'page' : undefined}
+              tabIndex={open ? -1 : undefined}
+              onClick={() => {
+                // the tab you are on, tapped again, goes back to its top
+                if (i === activeRef.current) window.scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' })
+              }}
+            >
+              <Icon size={25} />
+              <span>{label}</span>
+            </NavLink>
+          ))}
+        </div>
+      </nav>
+
+      {/* the capsule folded: one round button, the tab you came from, that closes the search */}
+      <button
+        type="button"
+        className="tab-return glass press"
+        aria-label={from ? `Close search and go back to ${from.label}` : 'Close search'}
+        aria-hidden={!open || undefined}
+        tabIndex={open ? 0 : -1}
+        onClick={shut}
+      >
+        <i className="spec" aria-hidden />
+        {Back ? <Back size={25} /> : <IconClose size={22} />}
+      </button>
+
+      {/* Log: the one tinted glass, a magnifier and the word, because what it opens is a search (A
+          and B; C's bare plus said "add"). The tap focuses the field inside itself (openLog). */}
+      <button
+        type="button"
+        className="logbtn glass glass-tint press"
+        aria-label="Log a drink"
+        aria-hidden={open || undefined}
+        tabIndex={open ? -1 : 0}
+        onClick={openLog}
+      >
+        <i className="spec" aria-hidden />
+        <span className="log-face">
+          <IconSearch size={24} />
+          <span>Log</span>
+        </span>
+      </button>
+
+      {/* The field Log becomes. It is always in the page and focusable, only transparent and
+          untouchable while closed, because a field that is hidden cannot take focus inside the tap. */}
+      <div className="logfield glass" aria-hidden={!open || undefined}>
+        <IconSearch size={20} className="logfield-icon" />
+        <input
+          ref={fieldRef}
+          className="logfield-input"
+          type="search"
+          enterKeyHint="search"
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
+          placeholder="Drink, bar or spirit"
+          aria-label="Search drinks to log"
+          tabIndex={open ? 0 : -1}
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          onKeyDown={onFieldKey}
+        />
+        {q && (
+          <button
+            type="button"
+            className="logfield-clear pressable"
+            aria-label="Clear search"
+            onClick={() => { setQ(''); fieldRef.current?.focus() }}
+          >
+            <IconClose size={18} />
+          </button>
+        )}
+      </div>
+    </div>
   )
 }

@@ -78,6 +78,7 @@
   --t-screen: 240ms;   /* a screen fades in */
   --t-sheet: 280ms;
   --t-room: 600ms;     /* the room cross-fades at a boundary of the day */
+  --t-drawer: 440ms;   /* the sheet between its heights, and the dock folding for search (C's drawer) */
   --t-spring: var(--t-settle);
   --t-fill: 600ms;
 
@@ -201,6 +202,15 @@
   --glass-lens: rgba(255, 255, 255, .24);
   --glass-lift: 0 14px 30px -8px rgba(0, 0, 0, .6), 0 2px 6px rgba(0, 0, 0, .35);
   --glass-solid: #1A2238;
+  /* the sheet (ui/sheet.css): C's navy film at medium, where the screen reads through it, and the
+  second film its opacity brings in at large, for reading (.40, then .66 laid over it) */
+  --sheet-film: rgba(14, 20, 36, .40);
+  --sheet-film-large: rgba(12, 17, 32, .66);
+  /* the droplet (app/nav.css): B's bead, bright and clearly visible over dark glass, with ink on
+  it (13:1). C's white .26 to .10 was too faint to find at a glance */
+  --bead: linear-gradient(165deg, rgba(255, 255, 255, .96), rgba(255, 255, 255, .8) 60%, rgba(236, 244, 250, .84));
+  --bead-shadow: inset 1.5px 1.5px 0 #FFFFFF, inset -1px -2px 3px rgba(28, 60, 86, .14), 0 2px 8px rgba(2, 10, 20, .3);
+  --bead-lift: inset 1.5px 1.5px 0 #FFFFFF, inset -1px -2px 3px rgba(28, 60, 86, .14), 0 6px 16px rgba(2, 10, 20, .34), 0 0 0 1px rgba(255, 255, 255, .6);
   --scrim: rgba(3, 6, 12, .6);
   --scrim-solid: rgba(3, 6, 12, .78);
   --sh-sheet: 0 -8px 40px rgba(0, 0, 0, .5), 0 -1px 6px rgba(0, 0, 0, .3);
@@ -263,6 +273,15 @@
   --glass-lens: rgba(255, 255, 255, .24);
   --glass-lift: 0 14px 30px -8px rgba(0, 0, 0, .6), 0 2px 6px rgba(0, 0, 0, .35);
   --glass-solid: #221B35;
+  /* the sheet (ui/sheet.css): C's navy film at medium, where the screen reads through it, and the
+  second film its opacity brings in at large, for reading (.40, then .66 laid over it) */
+  --sheet-film: rgba(14, 20, 36, .40);
+  --sheet-film-large: rgba(12, 17, 32, .66);
+  /* the droplet (app/nav.css): B's bead, bright and clearly visible over dark glass, with ink on
+  it (13:1). C's white .26 to .10 was too faint to find at a glance */
+  --bead: linear-gradient(165deg, rgba(255, 255, 255, .96), rgba(255, 255, 255, .8) 60%, rgba(236, 244, 250, .84));
+  --bead-shadow: inset 1.5px 1.5px 0 #FFFFFF, inset -1px -2px 3px rgba(28, 60, 86, .14), 0 2px 8px rgba(2, 10, 20, .3);
+  --bead-lift: inset 1.5px 1.5px 0 #FFFFFF, inset -1px -2px 3px rgba(28, 60, 86, .14), 0 6px 16px rgba(2, 10, 20, .34), 0 0 0 1px rgba(255, 255, 255, .6);
   --scrim: rgba(3, 6, 12, .6);
   --scrim-solid: rgba(3, 6, 12, .78);
   --sh-sheet: 0 -8px 40px rgba(0, 0, 0, .5), 0 -1px 6px rgba(0, 0, 0, .3);
@@ -334,6 +353,14 @@
   --glass-lens: rgba(255, 255, 255, .3);
   --glass-lift: 0 1px 2px rgba(16, 32, 48, .10), 0 10px 28px rgba(16, 32, 48, .16);
   --glass-solid: #F2F7FA;
+  /* the sheet by day: B's white films, .64 at medium and .62 over it at large (.86 in all) */
+  --sheet-film: rgba(255, 255, 255, .64);
+  --sheet-film-large: rgba(255, 255, 255, .62);
+  /* the droplet by day: the same clear bead, ringed in a faint ink line so it holds its edge on
+  the light capsule */
+  --bead: linear-gradient(165deg, rgba(255, 255, 255, .96), rgba(255, 255, 255, .8) 60%, rgba(236, 244, 250, .84));
+  --bead-shadow: inset 1.5px 1.5px 0 #FFFFFF, inset -1px -2px 3px rgba(28, 60, 86, .14), 0 0 0 1px rgba(14, 26, 46, .1), 0 2px 8px rgba(16, 32, 48, .18);
+  --bead-lift: inset 1.5px 1.5px 0 #FFFFFF, inset -1px -2px 3px rgba(28, 60, 86, .14), 0 0 0 1px rgba(14, 26, 46, .12), 0 6px 16px rgba(16, 32, 48, .22);
   /* the Log button's coral, heavier by day: white on C's .78 tint over the pale sky is 2:1, on this
      4.8:1 for the 12px label */
   --coral-glass: radial-gradient(120% 120% at 30% 18%, rgba(226, 70, 104, .92), rgba(199, 47, 80, .9) 58%, rgba(160, 28, 62, .9));
@@ -372,6 +399,16 @@
   --coral-film-blur: rgba(199, 47, 80, .86);
   --mint-film: color-mix(in srgb, var(--mint-fill) 88%, transparent);
   --mint-film-blur: color-mix(in srgb, var(--mint-fill) 88%, transparent);
+}
+
+/* ── chrome built from the room ─────────────────────────────────────────────────────────────────
+   On the same selector list as the rooms, so each resolves against the element's own room. */
+:root, [data-room] {
+  /* the top bar (app/shell.css): C's scroll edge film, the top of the room at .8 falling to .66 by
+  the title line, so the title holds 5.6:1 with the sun passing under it; solid, the room's top */
+  --bar-film: linear-gradient(180deg, rgba(var(--room-0-rgb), .8), rgba(var(--room-0-rgb), .66));
+  /* ink on the droplet's bead, in every room: the bead is bright in all three */
+  --on-bead: #0E1A2E;
 }
 
 /* wide-gamut sea and brand mark on P3 screens; the UI accents stay sRGB so their contrast holds */

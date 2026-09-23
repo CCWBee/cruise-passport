@@ -1,0 +1,35 @@
+/* The search Log opens (docs/DESIGN.md, Search): a page of its own over the current screen, which
+   stays mounted under it, hidden (shell.css, .view.is-covered). It sits under the room's foot (40),
+   so its rows dissolve into the room under the dock exactly as a screen's do, and under the dock (50)
+   whose field it answers to. */
+.search-layer {
+  position: fixed; inset: 0; z-index: 35;
+  animation: screen-in var(--t-screen) var(--e-out) backwards;
+}
+/* its own scroller, so the screen beneath keeps its place; it keeps its overscroll to itself, and is
+   always a pixel taller than the screen so a pull on a short list still has somewhere to go that is
+   not the page behind */
+.search-scroll {
+  position: absolute; inset: 0;
+  overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+.search-scroll::-webkit-scrollbar { display: none; }
+.search-page {
+  min-height: calc(100% + 1px);
+  padding-top: calc(var(--s3) + var(--safe-t) + var(--s3));
+  /* the dock, and the keyboard while it is up (--kb, Nav.tsx), so the last row scrolls clear of both */
+  padding-bottom: calc(var(--bar-h) + var(--bar-b) + var(--s5) + var(--kb, 0px));
+}
+/* the first list sits 24 under the title, not a section's 32: nothing precedes it to separate from */
+.search-page > h1 + .section, .search-page > h1 + .search-count { margin-top: var(--s5); }
+.search-page > h1 + .search-none { margin-top: var(--s4); }
+.search-count + .section { margin-top: var(--s5); }
+/* a wishlist run under its bar's name: a label line, then the rows */
+.search-run + .search-run { margin-top: var(--s4); }
+.search-where { margin-bottom: var(--s1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .search-layer { animation-name: screen-fade; }
+}

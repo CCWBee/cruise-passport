@@ -1,10 +1,10 @@
 import { Suspense, lazy, useEffect, useId, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { BADGES, badgeCount, type BadgeDef, type BadgeStat } from '../../data/badges'
 import { computeStats } from '../../state/stats'
 import { useAllDrinks, useStore } from '../../state/store'
 import { IconTrophy } from '../../ui/Icon'
 import { Sheet } from '../../ui/Sheet'
+import { openLog } from '../search/log'
 import { EMBLEMS } from './emblems-data'
 import './badges.css'
 
@@ -125,7 +125,7 @@ export function Badges() {
         ) : (
           <div className="empty-state">
             <p className="t-body">Badges arrive as you log drinks.</p>
-            <Link className="btn btn-coral" to="/drinks">Log a drink</Link>
+            <button type="button" className="btn btn-coral" onClick={openLog}>Log a drink</button>
           </div>
         )}
       </section>

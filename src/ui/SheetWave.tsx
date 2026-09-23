@@ -1,6 +1,8 @@
 // The signature wash: a WebGL wave of tinted Liquid Glass washes the sheet's content up onto a bare
-// pane, then recedes to the clear glass. The overlay is per-pixel alpha, so the content ghosts through
-// the tint (the glassy "underwater" read) with no per-element filter. One-shot on open.
+// pane, then recedes and leaves the sheet as it is, glass. The overlay is per-pixel alpha, so the
+// content ghosts through the tint (the glassy "underwater" read) with no per-element filter. The bare
+// pane it washes off is the room's solid glass (--glass-solid, read off the sheet as it opens): navy
+// at night, pale by day, never the cream it once was. One-shot on open.
 // Reduced-motion / no-WebGL fall back to content appearing at once (never breaks).
 import { useEffect, useRef, useState } from 'react'
 
@@ -13,12 +15,12 @@ precision highp float;
 uniform vec2  iRes;
 uniform float iP;     // 0..1 progress
 uniform float iTime;
+uniform vec3  iPane;  // the bare sheet before content is washed in: the room's --glass-solid
 
 // the sea's own palette (tokens --sea-hi / --sea-lo), so the wash is the water from the hero, not
-// the retired turquoise card film; PANE is the sheet's glass fallback
+// the retired turquoise card film
 const vec3 SEA      = vec3(0.157, 0.667, 0.639);
 const vec3 SEA_DEEP = vec3(0.035, 0.216, 0.333);
-const vec3 PANE     = vec3(1.0, 0.992, 0.980); // bare sheet before content is washed in
 
 void main(){
   vec2 uv = gl_FragCoord.xy / iRes;
@@ -34,7 +36,7 @@ void main(){
   float depositY = mix(-0.26, 1.26, up)  + waves;
   float crestY   = mix(-0.26, 1.26, tri) + waves;
 
-  if (uv.y > depositY) { gl_FragColor = vec4(PANE, 1.0); return; }  // not yet washed in -> bare pane
+  if (uv.y > depositY) { gl_FragColor = vec4(iPane, 1.0); return; } // not yet washed in -> bare pane
   if (uv.y > crestY)   { gl_FragColor = vec4(0.0); return; }        // deposited, above water -> clear
 
   float depth = crestY - uv.y;
@@ -48,6 +50,15 @@ void main(){
   float a = clamp(tint + foam*0.95 + edge*0.25, 0.0, 1.0); // content ghosts through the tint
   gl_FragColor = vec4(col, a);
 }`
+
+// #RGB or #RRGGBB to 0..1 channels; anything else (a token not yet resolved) falls back to night's pane
+const NIGHT_PANE: [number, number, number] = [0.102, 0.133, 0.22]
+function paneOf(el: Element): [number, number, number] {
+  const hex = getComputedStyle(el).getPropertyValue('--glass-solid').trim().replace('#', '')
+  const full = hex.length === 3 ? hex.split('').map((c) => c + c).join('') : hex
+  if (!/^[0-9a-f]{6}$/i.test(full)) return NIGHT_PANE
+  return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16) / 255) as [number, number, number]
+}
 
 function compile(gl: WebGLRenderingContext, type: number, src: string) {
   const s = gl.createShader(type)!
@@ -86,6 +97,8 @@ export function SheetWave() {
     const uRes = gl.getUniformLocation(prog, 'iRes')
     const uP = gl.getUniformLocation(prog, 'iP')
     const uTime = gl.getUniformLocation(prog, 'iTime')
+    const pane = paneOf(sheet)
+    gl.uniform3f(gl.getUniformLocation(prog, 'iPane'), pane[0], pane[1], pane[2])
 
     const t0 = performance.now()
     const draw = (now: number) => {

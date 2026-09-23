@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { DAYS, prettyDay } from '../../data/model'
 import { useAllDrinks, useStore } from '../../state/store'
 import { computeStats } from '../../state/stats'
 import { glassFamily } from '../../data/glass'
 import { GlassIcon, IconStar } from '../../ui/Icon'
 import { DrinkSheet } from '../drinks/DrinkSheet'
+import { openLog } from '../search/log'
 import './log.css'
 
 // The log renders inside the You page, so it adds no wrapper of its own: one plain section per day,
@@ -29,7 +29,7 @@ export function Log() {
       {lastLogged < 0 ? (
         <div className="empty-state">
           <p className="t-body">Nothing logged yet.</p>
-          <Link className="btn btn-coral" to="/drinks">Log a drink</Link>
+          <button type="button" className="btn btn-coral" onClick={openLog}>Log a drink</button>
         </div>
       ) : null}
 

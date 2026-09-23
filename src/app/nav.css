@@ -1,18 +1,194 @@
-/* Five tabs, icon and label, on a liquid-glass bar: the page scrolls beneath it, the top edge is the
-   specular line. The active tab is coral icon and label. */
-.nav {
-  --nav-px: max(var(--s2), env(safe-area-inset-left));
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
-  display: flex; justify-content: space-around;
-  padding: var(--s2) var(--nav-px) calc(var(--s2) + var(--safe-b));
-  border: 0; border-top: 1px solid var(--line);
+/* The dock (docs/DESIGN.md, Navigation): prototype C's floating capsule of the five tabs, 64 tall,
+   radius 32, 16 in from each side and 10 above the safe area, with Log round at its trailing end.
+   Both are the glass engine (base.css), at its own numbers: saturate 180% and 210%, inside the
+   brief's 160 to 190 for the body, because the coral pool moved off the bar rather than the glass
+   losing its colour (tokens.css, Night). The dock is one fixed strip that holds them, so stepping
+   down under a sheet is one translate on the strip and never fights the morph on the pieces. */
+.dock {
+  --dock-x: var(--s4);
+  --dock-h: var(--bar-h);
+  --dock-gap: 10px;
+  position: fixed; z-index: 50; left: 0; right: 0;
+  /* above the keyboard while the search has it up (Nav.tsx sets --kb from visualViewport) */
+  bottom: max(var(--bar-b), calc(var(--kb, 0px) + var(--s2)));
+  height: var(--dock-h);
+  max-width: 560px; margin: 0 auto;
+  pointer-events: none;
+  transition: translate var(--t-drawer) var(--e-drawer);
 }
-.nav-btn {
-  flex: 1; min-width: 0;
-  display: flex; flex-direction: column; align-items: center; gap: var(--s1);
-  min-height: var(--ctl); padding: var(--s1) 0;
-  font-size: var(--f-micro); font-weight: 400; color: var(--ink-2);
+.dock > * { pointer-events: auto; }
+/* while a sheet is up the chrome steps down under it (C): fewer glass surfaces, and nothing to tap
+   behind a modal */
+.dock.is-down { translate: 0 calc(100% + var(--bar-b) + 20px); }
+.dock.is-down > * { pointer-events: none; }
+/* Under 360 wide five 44px tabs and a 64px Log do not fit: A's compact dock, 8 in from the sides and
+   56 tall, puts the last tab's edge clear of Log at 320 (prototype A, a.css 377) */
+@media (max-width: 359px) {
+  .dock { --dock-x: var(--s2); --dock-h: 56px; }
+}
+
+/* ── the capsule ── */
+.tabbar {
+  position: absolute; left: var(--dock-x); bottom: 0;
+  width: calc(100% - var(--dock-x) * 2 - var(--dock-h) - var(--dock-gap));
+  height: var(--dock-h);
+  border-radius: var(--r-tag);
+  touch-action: none;
+  -webkit-user-select: none; user-select: none;
+  transition: scale var(--t-settle) var(--e-spring), box-shadow var(--t-panel) var(--e-out);
+}
+/* under a thumb the capsule swells a little and the droplet lifts (C) */
+.tabbar.is-touching { scale: 1.02; transition: scale var(--t-press) var(--e-out); }
+.tabbar.is-touching > .spec { opacity: 1; transition-duration: 80ms; }
+.tabs {
+  position: absolute; inset: var(--s1); display: flex;
+  transition: opacity var(--t-panel) var(--e-out);
+}
+.tab {
+  flex: 1 1 0; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  border-radius: var(--r-tag);
+  color: var(--ink);
+  font-size: var(--f-micro); font-weight: 600; line-height: 1.15;
+  -webkit-touch-callout: none;
   transition: color var(--t-panel) var(--e-out);
 }
-.nav-btn span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nav-btn.on { color: var(--coral-ink); font-weight: 600; }
+.tab span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* The tab on the bead reads in ink, bold. It turns once the bead is most of the way there (the run
+   peaks at 45%), so a label never sits dark on the dark glass it has just left; leaving is at once. */
+.tab.is-under { color: var(--on-bead); font-weight: 700; transition-delay: 160ms; }
+.tabbar.is-dragging .tab.is-under { transition-delay: 0s; }
+
+/* The droplet: the active tab's bead, inside the capsule's glass. It carries no backdrop filter of
+   its own (never glass on glass): B's bright bead with its specular and shade, moved on transform
+   alone by Nav.tsx, and it lifts under a thumb on the scale property so the two never fight. */
+.tabbar > .droplet {
+  position: absolute; left: var(--s1); top: var(--s1); bottom: var(--s1); width: 56px;
+  border-radius: var(--r-tag);
+  background: var(--bead);
+  box-shadow: var(--bead-shadow);
+  pointer-events: none;
+  will-change: transform;
+  transition: opacity var(--t-panel) var(--e-out), scale var(--t-panel) var(--e-out), box-shadow var(--t-panel) var(--e-out);
+}
+.tabbar.is-touching > .droplet { scale: 1.06; }
+.tabbar.is-dragging > .droplet { box-shadow: var(--bead-lift); }
+/* /add and /join are not tabs: nothing is marked */
+.tabbar.no-tab > .droplet { opacity: 0; }
+
+/* ── Log ── */
+.logbtn {
+  position: absolute; right: var(--dock-x); bottom: 0;
+  width: var(--dock-h); height: var(--dock-h); border-radius: 50%;
+  -webkit-user-select: none; user-select: none;
+}
+.log-face {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  width: 100%; height: 100%;
+  font-size: var(--f-micro); font-weight: 700; line-height: 1.1;
+}
+
+/* ── the folded capsule: one round button back to where you were ── */
+.tab-return {
+  position: absolute; left: var(--dock-x); bottom: 0;
+  width: var(--dock-h); height: var(--dock-h); border-radius: 50%;
+  display: grid; place-items: center; color: var(--ink);
+}
+
+/* ── the field Log becomes ── */
+.logfield {
+  position: absolute; bottom: 0; right: var(--dock-x);
+  left: calc(var(--dock-x) + var(--dock-h) + var(--dock-gap));
+  height: var(--dock-h); border-radius: var(--r-tag);
+  display: flex; align-items: center; gap: var(--s2);
+  padding: 0 var(--s1) 0 var(--s5);
+  color: var(--ink);
+}
+.logfield-icon { flex: none; color: var(--ink-2); }
+.logfield-input {
+  flex: 1; min-width: 0; height: 100%;
+  font-size: var(--f-body); color: var(--ink); background: none;
+  -webkit-appearance: none; appearance: none;
+  -webkit-user-select: text; user-select: text;
+}
+.logfield-input::placeholder { color: var(--ink-2); }
+.logfield-input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.logfield-input:focus-visible { outline: none; } /* the field is the focused thing: its caret says so */
+.logfield-clear {
+  flex: none; width: var(--ctl); height: var(--ctl); border-radius: 50%;
+  display: grid; place-items: center; color: var(--ink-2);
+}
+
+/* ── the morph ─────────────────────────────────────────────────────────────────────────────────
+   Log, tapped, becomes the search field and the capsule folds to the round button back (C's
+   morph). Width is never animated on a backdrop-filtered element, where it would re-lay out and
+   re-blur every frame: each shape stays the size it rests at, and what moves is a clip-path on its
+   two filtered layers, which are the glass, and the opacity of its children and of those layers.
+   Neither lands on the element or an ancestor, where either would make a backdrop root and the glass
+   would sample nothing. The field grows out of Log's circle over the drawer's 440ms while Log fades
+   under it; the capsule shrinks into the circle at its leading end and hands over, three fifths of
+   the way in, to the round button, whose rim is whole where the clipped capsule's is not. Closing
+   runs the same backwards. The lift is the element's own shadow, so it fades rather than clips. */
+.tabbar::before, .tabbar::after {
+  clip-path: inset(0 0 0 0 round var(--r-tag));
+  transition: clip-path var(--t-drawer) var(--e-drawer), opacity var(--t-press) var(--e-out), visibility 0s;
+}
+.dock.is-search .tabbar { box-shadow: none; }
+.dock.is-search .tabbar::before, .dock.is-search .tabbar::after {
+  clip-path: inset(0 calc(100% - var(--dock-h)) 0 0 round var(--r-tag));
+  opacity: 0; visibility: hidden;
+  transition: clip-path var(--t-drawer) var(--e-drawer), opacity var(--t-panel) var(--e-out) 240ms, visibility 0s linear var(--t-drawer);
+}
+.dock.is-search .tabs, .dock.is-search .droplet { opacity: 0; pointer-events: none; }
+
+.dock .tab-return {
+  box-shadow: none; visibility: hidden; pointer-events: none;
+  transition: box-shadow var(--t-panel) var(--e-out), visibility 0s linear var(--t-panel);
+}
+.tab-return::before, .tab-return::after, .tab-return > svg {
+  opacity: 0; transition: opacity 160ms var(--e-out);
+}
+.dock.is-search .tab-return {
+  box-shadow: var(--glass-lift); visibility: visible; pointer-events: auto;
+  transition: box-shadow var(--t-panel) var(--e-out) 240ms, visibility 0s;
+}
+.dock.is-search .tab-return::before, .dock.is-search .tab-return::after, .dock.is-search .tab-return > svg {
+  opacity: 1; transition: opacity var(--t-panel) var(--e-out) 240ms;
+}
+
+.logbtn::before, .logbtn::after, .log-face {
+  transition: opacity var(--t-panel) var(--e-out) 240ms;
+}
+.logbtn { transition: scale var(--t-settle) var(--e-spring), visibility 0s; }
+.dock.is-search .logbtn {
+  box-shadow: none; visibility: hidden; pointer-events: none;
+  transition: scale var(--t-settle) var(--e-spring), visibility 0s linear var(--t-panel);
+}
+.dock.is-search .logbtn::before, .dock.is-search .logbtn::after, .dock.is-search .log-face {
+  opacity: 0; transition: opacity 160ms var(--e-out);
+}
+
+.dock .logfield { box-shadow: none; pointer-events: none; transition: box-shadow var(--t-panel) var(--e-out); }
+.logfield::before, .logfield::after {
+  clip-path: inset(0 0 0 calc(100% - var(--dock-h)) round var(--r-tag));
+  opacity: 0; visibility: hidden;
+  transition: clip-path var(--t-drawer) var(--e-drawer), opacity var(--t-panel) var(--e-out) 240ms, visibility 0s linear var(--t-drawer);
+}
+.logfield > * { opacity: 0; transition: opacity 120ms var(--e-out); }
+.dock.is-search .logfield { box-shadow: var(--glass-lift); pointer-events: auto; }
+.dock.is-search .logfield::before, .dock.is-search .logfield::after {
+  clip-path: inset(0 0 0 0 round var(--r-tag));
+  opacity: 1; visibility: visible;
+  transition: clip-path var(--t-drawer) var(--e-drawer), opacity var(--t-press) var(--e-out), visibility 0s;
+}
+.dock.is-search .logfield > * { opacity: 1; transition: opacity var(--t-panel) var(--e-out) 140ms; }
+
+/* Reduced motion: the pieces change places at once and only fade; the droplet fades rather than
+   slides (Nav.tsx). The step down under a sheet is a fade of nothing, so it is instant too. */
+@media (prefers-reduced-motion: reduce) {
+  .dock, .tabbar, .tabbar::before, .tabbar::after, .logfield::before, .logfield::after {
+    transition-duration: 0s !important;
+  }
+  .tabbar.is-touching { scale: none; }
+  .tabbar.is-touching > .droplet { scale: none; }
+}

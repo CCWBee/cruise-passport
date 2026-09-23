@@ -46,7 +46,7 @@ One system, used everywhere. If a value is not on this list it is not used.
 | Radius, control (button, field, chip, toggle, row highlight) | 12 |
 | Radius, tag (small tags 24px tall or less, dots, avatars) | 999 |
 | Border | 1px `--line` everywhere a border exists |
-| Shadow | sheet only (`--sh-sheet`); nav has a top hairline; content has none |
+| Shadow | the sheet (`--sh-sheet`) and the glass chrome's lift (`--glass-lift`); content has none |
 
 Rule for containers: **one level.** Content sits on the ground as headings, rows and hairlines. A
 `.panel` exists only for a discrete interactive module with its own boundary (a form, a QR block, a
@@ -140,21 +140,50 @@ content are retired; the specular edge belongs to glass chrome only.
 ### Sheets
 
 A sheet is the one place content is covered, so it is the most-used glass surface and the gesture
-has to be right:
+has to be right. Rebuilt on 23 September 2026 with the night bar (the build spec's Chrome section):
+C's two heights on the glass engine, B's calm rim, and every rule this section already held.
 
-- **Look.** Glass film 88% (a sheet opens over the sea hero and over anything else; only a film this
-  heavy keeps 13px `--ink-2` at 4.5:1 over the water, and the arithmetic sits beside the token), blur
-  22, the specular edge, the sheet shadow; the scrim behind it is ink at 22% with an 8px blur, so the
-  page is visibly still there. The SheetWave wash is its opening.
-- **Dismiss.** Drag down from the grab bar or the header, or from anywhere when the sheet's own
-  scroller is at its top. The drag must be vertical in intent (more down than across in the first
-  10px) and it follows the finger. It dismisses only past 35% of the sheet's height (never under
-  140px), or on a fast flick (over 1.1px/ms after at least 70px); otherwise it settles back over
-  200ms. Escape and a tap on the scrim also close it.
+- **Two heights** (prototype C). **Medium**: the sheet's top at 47% of the screen and the pane
+  scaled to .955 from its foot, so the screen it came from reads through it and beside it; its
+  content does not scroll, and a drag anywhere on it moves the sheet. **Large**: full width, from
+  10 below the status bar, with a second film (`--sheet-film-large`) brought in by opacity for
+  reading; its content scrolls. The transform, that film and the scrim all follow one number, the
+  sheet's offset, so a drag carries all three and nothing animates a filter. `Sheet` opens at
+  `height="large"` by default, because a form needs its fields and the keyboard; a sheet to look at
+  (a drink, a venue) passes `height="medium"`. A tap on the grabber, a 44px button, moves between
+  the two; with a mouse, the wheel does.
+- **Look.** The glass engine (`.sheet.glass`) at C's numbers for a sheet: blur 8, saturate 160%,
+  brightness 1.04, over the room's `--sheet-film` (navy at .40 in the evening and at night, white at
+  .64 by day). At a 26% film and 180% a mint tick in the list behind came through under the meta
+  text at 3.7:1; at these it is 5:1. The rim is B's calm one (saturate 130%, brightness 1.12, 8px),
+  because C's 200% over 10px lit the room into a band down both sides, a rule along the box by
+  another name. Radius 30 all round and the sheet shadow. The scrim is the room's `--scrim` with no
+  blur (the old 8px blur was a fifth filter pass), at .7 of itself at medium and all of it at large.
+  The pane is never faded and has no faded ancestor, which would cut its glass off from the screen:
+  it enters on transform from below the screen, on the drawer curve over 440ms (`--t-drawer`). The
+  SheetWave wash is its opening when it is opened by a tap (`wave`, on by default): the sea washes
+  the content up over the room's solid glass (`--glass-solid`, never the cream it once was) and
+  recedes, and hands over to a sheet that is still glass.
+- **Dismiss and settle** (C's thresholds, which replace the 35%-of-height rule). The drag must be
+  vertical in intent (more down than across in the first 10px) and then follows the finger from
+  where the sheet is, with no jump for the 10px. Velocity is the last 80ms of movement, anchored at
+  release, so a drag that slows to a stop cannot read as a flick. A flick down (over 0.9px/ms)
+  closes it, or from large above the medium line takes it to medium; a flick up (over 0.6px/ms)
+  takes it to large. Otherwise where it is let go decides: past the medium line by more than a third
+  of the way to closed (never under 120px) it closes, above half the medium line it goes large, and
+  between it settles at medium. Pulled above large it gives the square root of the pull, times four,
+  and comes back. Escape, the X and a tap on the scrim also close it, and every close the sheet
+  starts goes down first; a sheet its owner closes (a form's Save) unmounts at once.
 - **Nothing else moves.** While a sheet is open the page behind is locked (position-fixed body on
   iOS, restored on close), the sheet's scroller contains its overscroll so a pull at its top never
   reaches the page (no pull-to-refresh), `touchmove` is prevented during a drag, and the scroller
-  never scrolls sideways.
+  never scrolls sideways. At large a drag starts from the head always and from the scroller only at
+  its top and only downward; at medium it starts anywhere but a field, the X, a canvas or
+  `[data-noswipe]`, and a drag that moves never becomes the click of the row it started on. The dock
+  steps down under the sheet and the top bar leaves, so the sheet is the glass on screen.
+- **Reduced motion and transparency.** Under reduced motion the layer fades in and out over 200ms
+  and the sheet stands at its height; for those 200ms the fade flattens the glass, which is the
+  cost. Under reduced transparency the body goes solid and the reading film is always in.
 - **Coming back.** A sheet returned to after a replacement is a fresh mount, so any phase it comes
   back to must be a still state, its end values held with nothing left to replay: ShakeSheet's
   `is-still`, which returns from the drink sheet to the reveal with the cap off and the glass hanging
@@ -398,8 +427,53 @@ Each thing is said once. These rules come from the 22 September declutter
 
 Five tabs, icon and label: **Home · Drinks · Ship · Crew · You**. "You" holds Stats, Badges and Log
 behind a segmented control at the top of the page. The routes `/stats`, `/badges` and `/log` keep
-resolving (they open You on that segment) so every existing link still lands. Active tab is coral
-icon and label; there is no indicator pill and no icon lift.
+resolving (they open You on that segment) so every existing link still lands. Rebuilt on 23
+September 2026 as prototype C's chrome, with A's and B's fixes (`docs/specs/2026-09-23-night-bar-build.md`,
+Chrome).
+
+- **The dock** (`src/app/Nav.tsx`, `nav.css`): C's floating capsule of the five tabs, 64 tall,
+  radius 32, 16 in from each side and 10 above the safe area, and Log, round and 64, 10 along at its
+  trailing end. Both are the glass engine at its own numbers. Tab labels are 12px at 600 in ink; the
+  tab you are on is 700, in ink on the droplet. Under 360 wide it is A's compact dock, 56 tall and 8
+  in from the sides, so five tabs of at least 44 clear Log at 320. While a sheet is up the dock steps
+  down under it, one translate on the strip, so the sheet is the glass on screen and nothing behind a
+  modal can be tapped. The tab you are on, tapped again, scrolls its screen to the top.
+- **The droplet** marks the tab you are on. It retires this section's old "no indicator pill": the
+  brief (`docs/specs/2026-09-23-glass-revolution.md`) asks for iOS 26's tab bar, whose selected tab
+  is a lens inside the glass, and the plate the 22 September declutter removed was a pill on a flat
+  bar, not that. It is B's bead, bright and clearly visible in every room (`--bead`, `--bead-shadow`,
+  with ink on it, `--on-bead`; C's white at .26 was too faint to find), inside the capsule's glass
+  with no filter of its own. It slides on transform with A's liquid morph: 480ms on a linear timeline
+  with each segment eased on its own, so the 1.22 by 1.08 swell peaks at 45% of the run, overshoots
+  the tab by 4% and settles, and a run already going is cancelled from where it is drawn before the
+  next one starts, so quick taps never stack. Dragged along the capsule it follows the finger,
+  stretched to 1.16 by 1.08, and lands on the nearest tab. Under a thumb the capsule swells to 1.02
+  and the bead to 1.06. Under reduced motion it fades in at its new tab over 200ms.
+- **Log** carries a magnifier and the word "Log" (A and B; C's bare plus said "add", and what it
+  opens is a search), in white on the one tinted glass (`.glass-tint`). Tapped, the field takes focus
+  inside the tap, so iOS raises the keyboard, and C's morph runs: Log becomes the search field and
+  the capsule folds into one round button showing the tab you came from, which closes the search.
+  It is done with clip-path on the glass's two filtered layers and opacity on the pieces, never by
+  animating width on a backdrop-filtered element, and nothing lands on an element carrying glass or
+  on its ancestor (Material). The field and the round button ride above the keyboard, read off
+  `visualViewport` (`--kb`). The round button, Escape and a route change close the search. Every
+  other "Log a drink" in the app (Home's hero button, the empty states of Stats, Badges and Log)
+  calls `openLog()` and opens the same search (Screens, Search).
+- **The top bar** (`TopBar`, `shell.css`): a screen's large title folds into C's scroll edge glass
+  once the page is 46px down. The glass engine at blur 16 (at 10 the Home readout's 64px figures
+  ghosted through), saturate 170%, brightness .92, with the top of the room as its film, .8 falling
+  to .66 by the title line (`--bar-film`), and the title again at body size, 700. Built as B's: the
+  filter lives on `::before` and only that fades, the title fading on its own; the element carries no
+  mask and is never faded, so no backdrop root forms half way through. Its last 14px fade out by a
+  mask on the filtered layer itself, so there is no rule along its foot. A screen names it with
+  `useScreenTitle('…')` (`src/app/screenTitle.ts`), in the words its large title prints; one that
+  does not gets its tab's name. It leaves while a sheet is up. It is the budget's third surface after
+  the capsule and Log, so a screen with glass of its own (Home's sea chips) drops that glass with
+  `.glass-off` while the bar is in.
+- **A screen** fades in over 240ms with a 10px rise (`.screen`, `shell.css`), on the screen alone,
+  never on the view or the root, which would lift the fixed room and the dock with it. It is keyed
+  by tab, so You's three segments change in place. The tabs navigate without a view transition: a
+  root snapshot would show the droplet twice for the length of the fade.
 
 ## Screens
 
@@ -533,8 +607,8 @@ hero is.
 
 1. **The sea hero** (the poster, kept): countdown or day chip top right, the percentage readout
    bottom left, and bottom right the one primary action on the app, **"Log a drink"**, a
-   coral-tinted glass button floating on the water. It opens Drinks with the search focused, so
-   logging at a bar is two taps from cold. The sea is alive in two honest ways: **the sky follows
+   coral-tinted glass button floating on the water. It opens the search (Screens, Search) with the
+   field focused inside the tap, so logging at a bar is two taps from cold. The sea is alive in two honest ways: **the sky follows
    the real clock** (dawn, day, golden hour, dusk, night palettes in the shader and the CSS
    fallback, so the app at breakfast and the app at midnight look like breakfast and midnight), and
    **the chips are refractive liquid glass**: inside the sea shader, the readout and countdown
@@ -591,9 +665,9 @@ hero is.
 Fold: the greeting, the hero, and Today aboard or For you before sailing. The seed data is
 pre-sailing, so both states are verified by rendering the aboard branch with the date pinned
 (`?day=2026-10-05`, a QA override in `today()`). "Log a drink" is the only control with that
-intent: the Drinks page's catalogue action is "Add a missing drink". Opening Drinks from it focuses
-the search field and shows the ring; the keyboard is the platform's to raise, and it will not from a
-route change on iOS.
+intent: the Drinks page's catalogue action is "Add a missing drink". It opens the search over Home,
+and the field takes its focus inside the tap, so iOS raises the keyboard; it no longer routes to
+Drinks, which iOS will not raise a keyboard for.
 
 ### Shake sheet
 
@@ -718,6 +792,34 @@ rating, Tried, Favourite, Wishlist, date and notes, and nothing else: `share.ts`
 drink to the crew, so Recommend and the crew comment would promise sharing that does not happen, and
 its sweetness and strength are defaults nobody measured.
 
+### Search
+
+Read: find it, tick it. What Log opens, from any screen and over it (`src/features/search/`); the
+Drinks page keeps its own search, which is for browsing the catalogue with its filters. The screen
+underneath stays mounted and hidden (`.view.is-covered`), so closing the search puts the guest back
+where they were, scrolled where they were. The field is the dock's: Log, become the field
+(Navigation); this is the page under it, with its own scroller and its own top bar.
+
+1. **The large title**, "Log a drink", with no lead line.
+2. **With nothing typed**: "Still to try at Crooners", the untried drinks on the menu of the bar the
+   guest is in (prototype B's list), which is Home's Last bar: `currentBar()`, the venue of the last
+   drink logged today, aboard only, one selector both screens read. Then "Your wishlist", untried,
+   bar by bar, each run under the bar's name and deck as a meta line, because the wishlist spans bars
+   and its rows do not say where they are; a drink already in the first list is left out of the
+   second. With nothing logged today it is the wishlist alone; with neither list, one line, "Nothing
+   on your wishlist yet."
+3. **Typed**: the count line ("3 matches", "The first 60 of 140 matches", "Nothing on board matches
+   that."), then the matches grouped under their bars as Drinks groups them ("Good Spirits at Sea ·
+   Deck 7"), the bar with the best match first. They are found by Drinks' own matcher (`matchQuery`
+   in `facets.ts`), names that start with what was typed come first, and sixty are drawn at most.
+
+Every row is `DrinkCard`, by import. Its tick logs the drink and says so once, in a toast, "Logged
+Mykonos Press", with Undo in the line; a row opens the drink sheet over the search. The reason a
+list is there is said once, in its heading, never on every row: "Sam matches your taste" on three
+rows running was a judged defect. The empty field's lists are taken as the search opens and then
+held, so a drink ticked off "Still to try" keeps its row, ticked, under the thumb that ticked it,
+and a tick at another bar does not swap the heading for that bar's list mid-search.
+
 ### Ship
 
 Read: which bars, what is done, where next. A plain section per deck: heading "Deck 17", then one row
@@ -817,7 +919,7 @@ rows with the hint, which is the only statement there of what earns the badge. N
 Log: a section per day, heading "Day 1 · Sat 3 Oct" with the count at the right, rows with
 hairlines, each row the drink and its rating on one line (the bar is the drink sheet's meta line, one
 tap away). Empty, each of the three segments is the same `.empty-state`: one short line and a filled
-"Log a drink".
+"Log a drink", which opens the search.
 
 ### Wrapped
 
@@ -920,7 +1022,7 @@ colour, are how that happens again. Read it before any change that renders.
 
 | Primitive | Home | Rule |
 | --- | --- | --- |
-| Tokens (`--ink*`, `--line*`, `--press`, `--well`, `--plate*`, `--track`, `--fill`, `--coral*`, `--mint*`, `--star`, `--gold*`, `--lamp`, `--amber`, `--focus`, `--fam-*`, `--sea-ink`, `--room-*`, `--pool-*`, `--glass-*`, `--lens-*`, `--s1..6`, `--r-*`, `--f-*`, `--e-out`, `--e-spring`, `--e-drawer`, `--e-drift`, `--e-shake`, `--t-*`, `--bar-h`, `--bar-b`) | `src/styles/tokens.css` | every colour, space, radius, size and easing is a token; a literal in feature CSS is a defect. Everything that differs by room is defined three times, on `[data-room="day\|evening\|night"]`, with night also the `:root` default; a feature file never branches on the room. The one written exception: the shaker's computed keyframes carry `--e-out`'s and `--e-shake`'s values written in, read from this file by `keyframes.mjs`, because a `var()` in a keyframe's timing function does not resolve; `design-allow.txt` carries both with that reason |
+| Tokens (`--ink*`, `--line*`, `--press`, `--well`, `--plate*`, `--track`, `--fill`, `--coral*`, `--mint*`, `--star`, `--gold*`, `--lamp`, `--amber`, `--focus`, `--fam-*`, `--sea-ink`, `--room-*`, `--pool-*`, `--glass-*`, `--lens-*`, `--sheet-film*`, `--bead*`, `--on-bead`, `--bar-film`, `--s1..6`, `--r-*`, `--f-*`, `--e-out`, `--e-spring`, `--e-drawer`, `--e-drift`, `--e-shake`, `--t-*`, `--bar-h`, `--bar-b`) | `src/styles/tokens.css` | every colour, space, radius, size and easing is a token; a literal in feature CSS is a defect. Everything that differs by room is defined three times, on `[data-room="day\|evening\|night"]`, with night also the `:root` default; a feature file never branches on the room. The one written exception: the shaker's computed keyframes carry `--e-out`'s and `--e-shake`'s values written in, read from this file by `keyframes.mjs`, because a `var()` in a keyframe's timing function does not resolve; `design-allow.txt` carries both with that reason |
 | Retiring token aliases: `--cream`, `--wash-*`, `--panel-solid`, `--glass-film-sheet`, `--glass-film-chip`, `--glass-live-film`, `--glass-film-light`, `--glass-highlight-film`, `--glass-highlight`, `--glass-border`, `--glass-fallback`, `--glass-blur-strong`, `--glass-blur-sm`, `--coral-film`, `--coral-film-blur`, `--mint-film-blur`, `--coral-deep`, `--ink-line`, `--lilac`, `--aqua`, `--fruit-*`, `--r-xs` to `--r-xl`, `--r-pill`, `--s7`, `--sh-1`, `--sh-2`, `--f-hero`, `--e-io`, `--spring`, `--spring-soft`, `--t-spring`, `--nav-h` | `src/styles/tokens.css` | kept only so unconverted CSS lands in the room rather than on cream: each resolves to the room's value. A screen builder moves its uses to the room tokens; the integrator deletes the alias once nothing reads it. `--ship-deck` is new and not retiring: the liner's white deck is paint, and `sea.css` should read it rather than `--cream` |
 | The room: `roomFor()`, `msToNextRoom()`, `applyRoom()`, `startRoom()`, `.room`, `.room-light`, `.pool`, `.room-foot` | `src/app/room.ts`, `base.css`, `src/app/shell.css`, the inline script in `index.html` | the light by the clock (Material). `roomFor()` is over `dayPart()`, and the inline script repeats its boundaries (7, 17, 21) because it runs before any module: change them together. `Shell` mounts the layer and the foot; the pools drift only while the guest is here. `.ground` is the same room painted once and still, retiring: Entry and Landing still render it, and move to the layer |
 | `.glass`, `.glass-sm`, `.glass-calm`, `.glass-tint`, `.spec`, `.glass-off` | `base.css` | the glass engine, prototype C's recipe with A's graded lens (Material). A surface tunes it through `--film`, `--rim`, `--glass-*`, `--lens-*` and `--solid` on itself, never with its own `backdrop-filter`; `.glass-off` on a covered surface or its ancestor drops the filters, for the four-surface budget |
@@ -931,13 +1033,19 @@ colour, are how that happens again. Read it before any change that renders.
 | `.row` (tappable), `.line` (static), `.row-copy` | `base.css` | every list is rows with hairlines on the ground; never a box per item |
 | `.panel` | `base.css` | the one container, a quiet film on the room for a bounded interactive module only; never nested |
 | `.qr-plate` | `base.css` | the white plate under any `Qr`, because a code has to read under a camera whatever the ground is: the add sheet, the group sheet and the landing. It hides itself when empty, which is how `Qr` returning null for a value it cannot encode is caught at every call site at once |
-| Retiring: `.glass-live`, `.glass-edge`, `.glass-sm` on old markup, `.glass-coral`, `.glass-mint` | `base.css` | aliases of the glass engine kept so unconverted markup lands on it: `.glass-live` is `.glass`, `.glass-edge` does nothing (the lens is the edge), `.glass-coral` and `.glass-mint` are tinted films. Still used by `Nav.tsx` and Home's sea chips; the tab bar and Home builders move to `.glass`, `.glass-sm`, `.glass-calm` and `.glass-tint`, and the integrator deletes the aliases |
+| Retiring: `.glass-live`, `.glass-edge`, `.glass-sm` on old markup, `.glass-coral`, `.glass-mint` | `base.css` | aliases of the glass engine kept so unconverted markup lands on it: `.glass-live` is `.glass`, `.glass-edge` does nothing (the lens is the edge), `.glass-coral` and `.glass-mint` are tinted films. Still used by Home's sea chips (the dock is on `.glass` and `.glass-tint`); the Home builder moves to `.glass`, `.glass-sm`, `.glass-calm` and `.glass-tint`, and the integrator deletes the aliases |
 | `Confirm`, `haptic()` | `src/ui/Confirm.tsx`, `src/ui/haptic.ts` | the one success confirmation (a mint glass disc with the tick, the label on its own glass plate, a haptic); silent where the result is already visible. It fades on the glass's own layers, never on an ancestor, so the glass stays glass as it goes |
 | `Toast`, `useToast()` | `src/ui/Toast.tsx`, `toast.css` | a glass pill at the top of the screen (prototype C), clear of the thumb and the tab bar, sliding down on the drawer curve and back up on transform alone; its action (Undo) sits in the line, in the lamp's colour |
 | `GlassButton` (`.gbtn-*`); retiring `.btn .btn-coral .btn-mint .btn-wide .mini` | `src/ui/GlassButton.tsx`, `button.css`, `base.css` | 44px and round-ended, in the room's plates; `lg` is C's 52px wide button at body size. One filled coral control per screen, and on a screen that shows the Log button that control is Log. A disabled control drops its fill to a ghost (transparent, hairline, `--ink-2`) so it never reads as an active one; the fill, the edge and the label colour change on one transition. The `.btn` family in `base.css` is kept as an alias in the same look while the screens move to `GlassButton` |
 | `.quiet-action` | `base.css` | the quietest text action on a screen: a block, 44px of target, meta size at weight 600 in `--ink-2`, underlined, 24 above. Swept from `.friends-quiet`; the join and paste paths on the add sheet, the guest line on Your details, the Shake sheet's pair, the landing's way on and Ship's "Change this sailing". Two in a row sit 12 apart, not 24, by one rule here (`.quiet-action + .quiet-action`), because they are one group of rare routes; one that follows anything else keeps its own 24. A screen that sets the pair's spacing locally is the divergence this rule replaced |
 | `.tag`, `.mini` | `base.css` | small outline tags inside a meta line; compact 36px secondary control |
-| `Sheet` + `.sheet-meta` | `src/ui/Sheet.tsx`, `sheet.css` | title then one meta line, which carries the one fact the controls do not show (Copy); no eyebrow; the SheetWave is its opening |
+| `Sheet` (`height`, `wave`) + `.sheet-meta` | `src/ui/Sheet.tsx`, `sheet.css` | title then one meta line, which carries the one fact the controls do not show (Copy); no eyebrow. Two heights (Sheets): large by default, `height="medium"` for a sheet to look at; the SheetWave is its opening when opened by a tap |
+| The dock: `Nav`, `.dock`, `.tabbar`, `.droplet`, `.logbtn`, `.logfield`, `.tab-return`; `TABS`, `tabOf()` | `src/app/Nav.tsx`, `nav.css`, `src/app/tabs.ts` | the capsule, the droplet and Log (Navigation). The morph moves clip-path on the filtered layers and opacity, never width; the droplet is `--bead` on transform with A's per-segment run. `TABS` is the one list of tabs, read by the dock and by `Shell` |
+| `TopBar`, `useScreenTitle()` | `src/app/TopBar.tsx`, `src/app/screenTitle.ts`, `shell.css` | the scroll edge a screen's large title folds into past 46px (Navigation). A screen names it with `useScreenTitle`, or it takes the tab's name; the search mounts its own on its own scroller |
+| `.screen`, `.view.is-covered` | `src/app/shell.css` | a screen's 240ms fade and 10px rise, keyed by tab in `Shell`; the view hidden, never unmounted, under the search |
+| `SearchOverlay`, `useLogSearch`, `openLog()`, `registerLogField()` | `src/features/search/` | the search Log opens (Screens, Search). Anything that means "log a drink" calls `openLog()`, which focuses the dock's field inside the tap and then opens the overlay; never a route to Drinks |
+| `emptyLists()`, `rankMatches()`, `byVenue()` | `src/features/search/lists.ts` | what the search shows, pure over plain shapes and tested in `lists.test.ts` |
+| `currentBar()` | `src/state/stats.ts` | the bar the guest is in: aboard, the venue of the last drink logged today; otherwise none. Home's Last bar and the search's "Still to try at" both read it, so they cannot name two bars |
 | `Field`, `SearchField`, `Select`, `Switch`, `Segmented`, `Chip`, `FriendDot` | `src/ui/` | the controls, in the room's tokens (a field is a well, a selected segment a plate, a chip that is on the room's fill, a switch mint when on); restyle them there, never locally |
 | Icons (`Icon.tsx`: `IconStar`, `IconCheck`, `IconChevron`, ...) | `src/ui/Icon.tsx` | the only icon system; no glyph characters, no emoji; add to the set, do not draw inline |
 | `GlassIcon` (`IconGlassCocktail` and the other eight), `IconShaker`, `--fam-*`, `.gicon`, `.gicon-halo` | `src/ui/Icon.tsx`, `tokens.css`, `base.css` | the glass a drink is served in, one per family of `src/data/glass.ts`, on the icon grid with both sides of every bowl drawn. `GlassIcon` picks by family and draws it as a lit line in the family's hue over a halo of the same path (Iconography); it renders a `span.gicon` round two drawings. The shaker's prize is the same families drawn large (`Glass`) |
@@ -966,7 +1074,7 @@ colour, are how that happens again. Read it before any change that renders.
 | `shake()` | `src/features/shake/pick.ts` | what the shaker surfaces: untried only, never one of this sitting's last six, weight 4 for a drink the "For you" shelf already vouches for, 2 for the guest's top spirit, 1 for the rest, each weight carrying the line that explains it. Pure, with `random` injected, tested in `pick.test.ts` |
 | `startRattle()` | `src/features/shake/rattle.ts` | the dice in the tin: WebAudio, synthesised, no asset, the whole schedule laid down in one pass at press time, with a low knock at each knock time the sheet passes it from `SHAKER.knocks`. `reveal()` carries the opening, a cork at the cap and the thock `landMs` later as the glass lands, laid down against the same clock rather than on a timer. A silent no-op when the guest chose quiet, under reduced motion, or where there is no `AudioContext` |
 | `haptic('shake')` | `src/ui/haptic.ts` | the third pattern, a rising series mirroring the rattle's acceleration. Its first pulse is the press tap, so the press fires this one and not both. The two knocks from inside are `haptic('tap')`, fired from the sheet's own timer and never under quiet or reduced motion |
-| `DrinkCard` | `src/features/drinks/DrinkCard.tsx` | the drink row everywhere a drink is listed (Drinks, venue sheet): the glass, then name and stars, one meta line, the tried check |
+| `DrinkCard` | `src/features/drinks/DrinkCard.tsx` | the drink row everywhere a drink is listed (Drinks, venue sheet, the search): the glass, then name and stars, one meta line, the tried check. `onTried` hears the check, for a caller that says more than the check does (the search's Undo toast) |
 | `Medallion` | `src/features/badges/Medallion.tsx` | the badge disc, grid and sheet |
 | `SeaHero`, `SheetWave`, the hero count-up | `src/features/home/`, `src/ui/SheetWave.tsx` | three of the five authored motions (Motion above; the new-medal coin and the shaker are the other two); do not add a sixth without amending Motion |
 | `You` | `src/features/you/You.tsx` | Stats, Badges and Log render inside it; they carry no page wrapper of their own |
@@ -976,7 +1084,8 @@ colour, are how that happens again. Read it before any change that renders.
 
 Retired by the 22 September declutter, and not to be rebuilt: `.page-lead` (a lead line under a
 screen's title; Ship had the only one), `.center` and `.card` (the box round the invite route's
-line, the fourth banned tell), and the nav's sliding indicator plate (`.nav-lens`, the indicator
-pill Navigation already rules out, and a sixth motion outside the five). `.stats-empty` and
+line, the fourth banned tell), and the nav's sliding indicator plate (`.nav-lens`, a pill on a flat
+bar; the droplet that replaced it on 23 September is a lens in a glass one, for the reason written in
+Navigation). `.stats-empty` and
 `.badge-empty-action` went into `.empty-state`, and the add sheet's and the Shake sheet's own
 spacing for two quiet actions went into `.quiet-action`'s pair rule.

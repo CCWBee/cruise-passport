@@ -191,6 +191,13 @@ export function lastVenueOn(drinks: Drink[], p: Passport, iso: string): string |
   return list.length ? list[list.length - 1].venue : null
 }
 
+/** The bar the guest is in: aboard, the venue of the last drink logged on `iso`; before sailing, or
+ *  with nothing logged that day, none. One selector for Home's Last bar and the search's "Still to
+ *  try at", so the two can never name different bars. */
+export function currentBar(drinks: Drink[], p: Passport, iso: string = today()): string | null {
+  return DAYS.indexOf(iso) > -1 ? lastVenueOn(drinks, p, iso) : null
+}
+
 export interface VenueProgress { key: string; total: number; done: number; next: Drink | null }
 
 /** One venue's own list: tried, total, and the first drink on it still untried. */

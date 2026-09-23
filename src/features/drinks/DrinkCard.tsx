@@ -8,7 +8,13 @@ import { GlassIcon, IconCheck, IconStar } from '../../ui/Icon'
 // one meta line, and a tried target at the right edge. The glass says what kind of drink it is
 // before a word is read (a pint, a flute, a cup), which the category on the row used to try to say in
 // a word nobody needed repeated. The venue lives in the heading above the group, so it leaves the row.
-export const DrinkCard = memo(function DrinkCard({ d, onOpen }: { d: Drink; onOpen: (id: string) => void }) {
+// onTried hears the check's answer, for a caller that says more than the check does (the search's
+// Undo toast); the check itself is the confirmation everywhere else.
+export const DrinkCard = memo(function DrinkCard({ d, onOpen, onTried }: {
+  d: Drink
+  onOpen: (id: string) => void
+  onTried?: (d: Drink, tried: boolean) => void
+}) {
   const e = useStore((s) => s.me.entries[d.id]) || {}
   const toggleTried = useStore((s) => s.toggleTried)
   // The price as plain text at the end of the meta line, never a pill. The category stays in the
@@ -43,7 +49,7 @@ export const DrinkCard = memo(function DrinkCard({ d, onOpen }: { d: Drink; onOp
         className={'d-try' + (e.tried ? ' on' : '')}
         aria-pressed={!!e.tried}
         aria-label="Tried"
-        onClick={() => toggleTried(d.id)}
+        onClick={() => { const on = toggleTried(d.id); onTried?.(d, on) }}
       >
         <IconCheck size={22} filled={!!e.tried} />
       </button>
