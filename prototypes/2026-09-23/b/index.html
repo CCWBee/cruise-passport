@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- the page draws its own day and night from the sky; no browser or extension may repaint it -->
+  <meta name="color-scheme" content="only light">
+  <meta name="darkreader-lock">
+  <meta name="theme-color" content="#0E141A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Cocktail Passport · Open water</title>
+  <link rel="stylesheet" href="b.css">
+</head>
+<body>
+  <!-- the shared drawings: the emblems (filled in by b.js from data.js) and the metal for their faces -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs id="defs">
+      <linearGradient id="emb-bronze" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FAD5AB"/><stop offset=".55" stop-color="#D08A4C"/><stop offset="1" stop-color="#9C5A24"/></linearGradient>
+      <linearGradient id="emb-silver" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#C2CBD3"/><stop offset="1" stop-color="#6F7C89"/></linearGradient>
+      <linearGradient id="emb-gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF6CC"/><stop offset=".55" stop-color="#EDC55A"/><stop offset="1" stop-color="#B9870F"/></linearGradient>
+      <linearGradient id="emb-special" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#E3E8EC"/><stop offset="1" stop-color="#A3AEB8"/></linearGradient>
+    </defs>
+  </svg>
+
+  <div id="app" data-sky="light">
+    <!-- the backdrop: the sky and the sea by the hour, the liner on the tide line -->
+    <div id="sky" aria-hidden="true">
+      <div class="sky-floor"></div>
+      <canvas id="sea"></canvas>
+      <svg class="ship" viewBox="0 0 150 52" preserveAspectRatio="xMidYMax meet">
+        <path class="ship-hull" d="M6 33 H144 L133 47 Q131 49 126 49 H24 Q19 49 17 47 Z"/>
+        <path class="ship-deck" d="M31 33 V24 H119 V33 Z M45 24 V17 H105 V24 Z M74 17 V12 H102 V17 Z"/>
+        <path class="ship-window" d="M39 27h4v3h-4z M49 27h4v3h-4z M59 27h4v3h-4z M69 27h4v3h-4z M79 27h4v3h-4z M89 27h4v3h-4z M99 27h4v3h-4z"/>
+        <path class="ship-funnel" d="M53 17 L56 5 H67 L70 17 Z"/>
+        <line class="ship-mast" x1="88" y1="12" x2="88" y2="3"/>
+      </svg>
+    </div>
+
+    <!-- the screens: each its own scroller; b.js renders them -->
+    <main id="s-home" class="screen" aria-label="Home"></main>
+    <main id="s-drinks" class="screen" aria-label="Drinks"></main>
+    <main id="s-ship" class="screen" aria-label="Ship"></main>
+    <main id="s-crew" class="screen" aria-label="Crew"></main>
+    <main id="s-you" class="screen" aria-label="You"></main>
+    <main id="s-medals" class="screen is-pushed" aria-label="Medals"></main>
+    <main id="s-search" class="screen searchv" aria-label="Log a drink"></main>
+
+    <!-- chrome: the top bar, the tab bar and its droplet, the Log button -->
+    <header class="topbar lg" id="topbar">
+      <button type="button" class="tb-back" data-act="back" aria-label="Back to Home"></button>
+      <span class="tb-title" id="tb-title"></span>
+    </header>
+
+    <nav class="tabbar lg" id="tabbar" aria-label="Tabs">
+      <span class="droplet" id="droplet" aria-hidden="true"></span>
+      <div class="tabs" id="tabs"></div>
+      <button type="button" class="tab-back" data-act="search-close" aria-label="Close search"></button>
+    </nav>
+
+    <div class="logbtn lg is-round swell" id="logbtn">
+      <button type="button" class="logbtn-face" data-act="search" aria-label="Log a drink"></button>
+      <label class="sfield">
+        <span class="sr-only">Log a drink: name, bar or ingredient</span>
+        <input id="q" type="search" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Drink, bar or spirit">
+        <button type="button" class="clear" data-act="q-clear" aria-label="Clear"></button>
+      </label>
+    </div>
+
+    <!-- one sheet at a time: glass at two heights over a light scrim -->
+    <div class="scrim" data-act="sheet-close"></div>
+    <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-title" hidden>
+      <div class="sh-body"></div>
+      <div class="sh-large"></div>
+      <div class="sh-lens"></div>
+      <div class="sh-head" id="sh-head">
+        <button type="button" class="grab" data-act="sheet-cycle" aria-label="Change the sheet's height"></button>
+        <button type="button" class="sh-close" data-act="sheet-close" aria-label="Close"><span></span></button>
+      </div>
+      <div class="sh-scroll" id="sh-scroll"></div>
+    </section>
+    <p class="sr-only" aria-live="polite" id="live"></p>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="b.js"></script>
+</body>
+</html>

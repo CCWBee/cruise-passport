@@ -227,7 +227,10 @@ enough" (the medals are grey ink discs two taps deep; the brief now carries a me
 `?screen=medals|medal` states) and "may as well use social data in the roundup too" (Wrapped crew
 slides, being written into `src/features/wrapped/` in the current look while the prototypes build).
 Workflow run `wf_2e371d47-f6d` (the first launch, `wf_b934f643-55a`, was stopped before anything was
-written, to add the medals). Resume: Workflow with scriptPath
+written, to add the medals). Its first pass ended at about 03:25 on 23 September: all three builders
+done, Brave passes for A and B done (13 shots each in `<letter>/shots/`, verdicts in the journal),
+C's pass cut off by the monthly spend limit after saving its shots, and the three judges never ran.
+Resumed at 08:05 the same morning to finish C's pass and the judges. Resume: Workflow with scriptPath
 `C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-glass-revolution-prototypes-wf_b934f643-55a.js`
 and resumeFromRunId `wf_2e371d47-f6d`. It needs `python -m http.server 8791 --bind 127.0.0.1` running
 in `prototypes/2026-09-23` for the render stage.

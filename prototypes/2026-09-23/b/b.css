@@ -1,0 +1,690 @@
+/* Cocktail Passport, prototype B: Open water.
+   The sky and sea by the hour are the backdrop of every screen, fixed behind scrolling content.
+   Content sits on platters over it (a film, no live blur); the chrome floats on it as Liquid Glass
+   (a clear body, an edge lens, one light from the top left). README.md has every number and why. */
+
+/* ── tokens ─────────────────────────────────────────────────────────────────────────────────── */
+:root {
+  color-scheme: only light;
+  --font: ui-rounded, 'SF Pro Rounded', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  /* the one geometry: 4 8 12 16 24 32, radius 20 surface, 12 control, 999 tag */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px;
+  --r-surface: 20px; --r-control: 12px; --r-tag: 999px;
+
+  /* type: display, large title, title, heading, body, meta. 12px is the floor */
+  --f-display: 96px; --f-large: 34px; --f-title: 22px; --f-heading: 17px; --f-body: 15px;
+  --f-meta: 13px; --f-micro: 12px;
+
+  /* motion */
+  --e-out: cubic-bezier(.22, .9, .32, 1);
+  --e-drawer: cubic-bezier(.32, .72, 0, 1);
+  /* the settle after a press: one small overshoot, then rest (a spring with little bounce) */
+  --e-settle: cubic-bezier(.3, 1.45, .5, 1);
+
+  /* ink that never changes with the sky */
+  --ink: #1C3C56;
+  --white: #FFFFFF;
+  --coral-ink: #C72F50;
+  --focus: #6F5BD6;
+
+  /* friend identity dots */
+  --friend-aqua: #22C0D6; --friend-melon: #FF5B78; --friend-lime: #59CF6B;
+
+  /* Liquid Glass, the chrome recipe (README, "The glass recipe") */
+  --lg-blur: 6px;            /* clear body: small */
+  --lg-sat: 185%;
+  --lens-w: 10px;            /* the edge lens ring */
+  --lens-blur: 14px;
+  --lens-bri: 1.22;
+  --lens-sat: 200%;
+  --spec-hi: rgba(255, 255, 255, .78);   /* the top-left rim */
+  --spec-lo: rgba(0, 0, 0, .16);         /* the faint shade along the foot */
+  --sheen: rgba(255, 255, 255, .26);     /* the top third */
+  --lift: 0 10px 28px rgba(4, 18, 32, .26), 0 1px 3px rgba(4, 18, 32, .18);
+
+  /* dark glass (tab bar, the search field, every chrome surface at dusk and night): the backdrop is
+     dimmed rather than filmed white, so white type holds over a light platter scrolled under it */
+  --dg-film: rgba(255, 255, 255, .06);
+  --dg-bri: .5;
+  --dg-fallback: rgba(12, 30, 46, .88);
+
+  /* the one tinted glass: Log a drink */
+  --coral-film: rgba(199, 47, 80, .84);
+  --coral-fallback: #C72F50;
+}
+
+/* the sky's theme. Light by day (dawn, morning, afternoon, golden hour): ink on light platters.
+   Dark at dusk and night: white on dark platters. Chosen by measuring the sky, not by the clock. */
+#app[data-sky="light"] {
+  --tx: #1C3C56;             /* 5.56:1 on a light platter over the darkest day water */
+  --tx2: #2B4960;            /* 4.60:1 there: the secondary line never goes paler than this */
+  --tx3: rgba(28, 60, 86, .78); /* glyphs only (the glass icons): 3.4:1 */
+  --sky-tx: #1C3C56;         /* type straight on the sky: 4.65:1 at its thinnest (13:30, the top line) */
+  --plat: rgba(255, 255, 255, .64);
+  --plat-edge: rgba(255, 255, 255, .45);
+  --hair: rgba(28, 60, 86, .14);
+  --press: rgba(28, 60, 86, .08);
+  --mint: #0B5E42;           /* tried: 3.9:1 as a glyph, 8.8:1 under white type */
+  --gold: #7A4D00;           /* rating stars: 3.4:1 */
+  --fill: #1C3C56;           /* a selected control's fill, white type on it */
+  --on-fill: #FFFFFF;
+  --blank-hi: rgba(255, 255, 255, .62);
+  --blank-lo: rgba(255, 255, 255, .16);
+  --blank-rim: rgba(28, 60, 86, .22);
+  /* light glass: the top bar and the sheet by day */
+  --bar-film: rgba(255, 255, 255, .20);
+  --bar-bri: 1.1;
+  --bar-tx: #1C3C56;
+  --bar-fallback: rgba(246, 250, 252, .92);
+  --sheet-film: rgba(255, 255, 255, .64);   /* medium: the screen shows through */
+  --sheet-film-large: rgba(255, 255, 255, .62); /* laid over it at large: 1-(.36*.38) = .86 */
+  --sheet-bri: 1.08;
+  --sheet-tx: #1C3C56;
+  --sheet-tx2: #24445C;      /* 4.9:1 on the medium film over the darkest water under the scrim */
+  --sheet-fallback: rgba(248, 251, 253, .95);
+  --scrim: rgba(12, 28, 44, .20);
+}
+#app[data-sky="dark"] {
+  --tx: #FFFFFF;             /* 4.9:1 on a dark platter even over the moon; 8.7:1 over the dusk band */
+  --tx2: #C3CFDA;            /* 6.2:1 over the brightest dusk band */
+  --tx3: rgba(255, 255, 255, .78);
+  --sky-tx: #FFFFFF;         /* 5.5:1 at its thinnest (dusk, the facts line) */
+  --plat: rgba(6, 18, 34, .56);
+  --plat-edge: rgba(255, 255, 255, .12);
+  --hair: rgba(255, 255, 255, .16);
+  --press: rgba(255, 255, 255, .10);
+  --mint: #4ADBA2;
+  --gold: #F5C451;
+  --fill: #FFFFFF;
+  --on-fill: #1C3C56;
+  --blank-hi: rgba(255, 255, 255, .22);
+  --blank-lo: rgba(255, 255, 255, .04);
+  --blank-rim: rgba(255, 255, 255, .26);
+  --bar-film: rgba(8, 20, 36, .34);
+  --bar-bri: .78;
+  --bar-tx: #FFFFFF;
+  --bar-fallback: rgba(10, 24, 40, .92);
+  --sheet-film: rgba(10, 22, 38, .60);
+  --sheet-film-large: rgba(10, 22, 38, .70);
+  --sheet-bri: .85;
+  --sheet-tx: #FFFFFF;
+  --sheet-tx2: #C9D4DE;
+  --sheet-fallback: rgba(12, 26, 42, .96);
+  --scrim: rgba(0, 8, 16, .30);
+}
+
+/* ── page and phone frame ──────────────────────────────────────────────────────────────────── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font); font-size: var(--f-body); line-height: 1.45;
+  background: #0E141A; color: var(--ink);
+  -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+}
+button, input, textarea { font: inherit; color: inherit; background: none; border: 0; }
+input[type="search"] { -webkit-appearance: none; appearance: none; border-radius: 0; }
+input[type="search"]::-webkit-search-cancel-button, input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; display: none; }
+button { cursor: pointer; text-align: inherit; touch-action: manipulation; }
+svg { display: block; }
+.tnum { font-variant-numeric: tabular-nums; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* A phone: full screen on a phone, a 390 by 844 frame centred on a desktop. Everything that would
+   be fixed on a phone is absolute inside the frame, so the frame is the viewport either way. */
+#app {
+  position: relative; overflow: hidden;
+  width: 100vw; height: 100vh; height: 100dvh;
+  --safe-t: max(env(safe-area-inset-top), 20px);
+  --safe-b: max(env(safe-area-inset-bottom), 10px);
+  --tab-h: 62px;
+  --chrome-b: calc(var(--safe-b) + 6px);
+  color: var(--tx);
+}
+@media (min-width: 520px) and (min-height: 700px) {
+  body { display: grid; place-items: center; }
+  #app { width: 390px; height: 844px; border-radius: 48px; box-shadow: 0 0 0 10px #1B232B, 0 30px 80px rgba(0, 0, 0, .55); }
+}
+
+/* ── the backdrop: sky and sea by the hour, fixed behind everything ────────────────────────── */
+#sky { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.sky-floor { position: absolute; inset: 0; }
+#sea { position: absolute; inset: 0; width: 100%; height: 100%; }
+#sea.nogl { display: none; }
+.ship {
+  position: absolute; left: 60%; width: 104px; height: auto;
+  transform: translateY(-86%); transform-origin: 50% 90%;
+  filter: drop-shadow(0 3px 4px rgba(4, 18, 32, .3));
+}
+.ship-hull { fill: var(--hull, #093755); }
+.ship-deck { fill: #FBF3E2; }
+.ship-window { fill: #1C3C56; fill-opacity: .8; }
+.ship-funnel { fill: #FF5B78; }
+.ship-mast { stroke: var(--hull, #093755); stroke-width: 1.4; stroke-linecap: round; }
+
+/* ── screens: each is its own scroller over the fixed sky ──────────────────────────────────── */
+.screen {
+  position: absolute; inset: 0; z-index: 1;
+  overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  padding: calc(var(--safe-t) + var(--s2)) var(--s4) calc(var(--chrome-b) + var(--tab-h) + var(--s6));
+  opacity: 0; visibility: hidden;
+  transition: opacity 180ms var(--e-out), visibility 0s linear 180ms, transform 320ms var(--e-drawer);
+}
+.screen::-webkit-scrollbar { display: none; }
+.screen.is-on { opacity: 1; visibility: visible; transition: opacity 180ms var(--e-out), visibility 0s, transform 320ms var(--e-drawer); }
+/* a pushed screen (the medal case) slides in over its tab */
+.screen.is-pushed { transform: translateX(100%); opacity: 1; padding-top: calc(var(--safe-t) + 48px); transition: transform 320ms var(--e-drawer), visibility 0s linear 320ms; }
+.screen.is-pushed.is-on { transform: none; transition: transform 320ms var(--e-drawer), visibility 0s; }
+.screen.is-under { transform: translateX(-24%); opacity: 0; }
+
+/* the large title, straight on the sky */
+.large {
+  font-size: var(--f-large); font-weight: 700; line-height: 1.15; letter-spacing: -.01em;
+  color: var(--sky-tx); padding: var(--s3) 0 var(--s3);
+}
+.large-meta { font-size: var(--f-heading); font-weight: 600; color: var(--sky-tx); margin: calc(var(--s2) * -1) 0 var(--s3); }
+
+/* ── Home's hero: the readout on the open sky ──────────────────────────────────────────────── */
+.hero { color: var(--sky-tx); padding-top: var(--s3); min-height: calc(var(--hz-y, 432px) + 20px - var(--safe-t) - var(--s2)); }
+.hero-greet { font-size: var(--f-title); font-weight: 600; line-height: 1.2; }
+.hero-day { font-size: var(--f-heading); font-weight: 600; line-height: 1.35; margin-top: var(--s1); }
+.hero-pct { font-size: var(--f-display); font-weight: 700; line-height: .95; letter-spacing: -.035em; margin-top: var(--s3); }
+.hero-pct small { font-size: 44px; font-weight: 600; letter-spacing: 0; margin-left: 2px; }
+.hero-sub { font-size: 20px; font-weight: 600; line-height: 1.3; margin-top: var(--s2); }
+.hero-facts { display: flex; gap: var(--s5); margin-top: var(--s5); }
+.fact-v { font-size: var(--f-title); font-weight: 600; line-height: 1.1; }
+.fact-l { font-size: var(--f-body); font-weight: 400; line-height: 1.3; }
+
+/* ── platters: content on a film over the sky, no live blur (README, "Platters") ──────────── */
+.plat {
+  position: relative; background: var(--plat); border-radius: var(--r-surface);
+  box-shadow: inset 0 0 0 1px var(--plat-edge);
+  padding: var(--s3) var(--s4); color: var(--tx);
+}
+.plat + .plat { margin-top: var(--s3); }
+.plat-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s3); padding: var(--s1) 0 var(--s2); }
+.plat-head h2, .plat-head h3 { font-size: var(--f-heading); font-weight: 600; line-height: 1.3; }
+.meta { font-size: var(--f-meta); line-height: 1.4; color: var(--tx2); }
+.strong { font-size: var(--f-body); font-weight: 600; line-height: 1.35; }
+
+/* a row: 48 minimum, a hairline between siblings, a press tint that bleeds to the platter's edge */
+.row {
+  display: flex; align-items: center; gap: var(--s3);
+  width: calc(100% + var(--s4) * 2); margin: 0 calc(var(--s4) * -1);
+  min-height: 48px; padding: var(--s2) var(--s4); position: relative;
+  color: var(--tx); transition: background-color 160ms var(--e-out);
+}
+.row + .row::before { content: ''; position: absolute; top: 0; left: var(--s4); right: 0; height: 1px; background: var(--hair); }
+.row-lead + .row-copy { min-width: 0; }
+button.row:active, .row.is-press { background: var(--press); }
+.plat > .row:last-child { margin-bottom: calc(var(--s1) * -1); border-radius: 0 0 var(--r-surface) var(--r-surface); }
+.row-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.row-copy > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row-lead { flex: none; color: var(--tx3); }
+.chev { flex: none; color: var(--tx3); margin-right: calc(var(--s1) * -1); }
+
+/* ── Home's medal case ─────────────────────────────────────────────────────────────────────── */
+/* The case is the one module on Home with metal in it. It takes the platter the others do, and is
+   told apart by what is on it: the new coin at 88, the fan of the rest, the next one in reach. */
+.case-new { align-items: center; gap: var(--s4); padding-top: var(--s1); padding-bottom: var(--s3); }
+.case-new .row-copy .name { font-size: var(--f-title); font-weight: 600; line-height: 1.2; }
+.case-fan { gap: var(--s3); }
+.fan { display: flex; flex: 1; align-items: center; padding-left: 4px; }
+.fan > .coin, .fan > .coin3d { margin-left: -10px; }
+.fan > :first-child { margin-left: 0; }
+.fan-more { font-size: var(--f-meta); font-weight: 600; color: var(--tx2); white-space: nowrap; }
+
+/* a meter: 3px, ink, no empty track */
+.meter { display: block; height: 3px; border-radius: var(--r-tag); background: var(--hair); margin-top: 6px; overflow: hidden; }
+.meter > i { display: block; height: 100%; background: var(--tx); border-radius: inherit; }
+
+/* ── the coins: struck metal (README, "The medals") ─────────────────────────────────────────── */
+/* One element per coin. 1em is 1% of its diameter, so every shadow, bead and bevel scales with it.
+   Light from the top left, as on the glass. */
+.coin {
+  --d: 88px;
+  position: relative; flex: none; display: block;
+  width: var(--d); height: var(--d); font-size: calc(var(--d) / 100); border-radius: 50%;
+  /* the rim: turned metal, lit from the top left */
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, .55), rgba(255, 255, 255, 0) 46%),
+    conic-gradient(from 205deg, var(--m-hi), var(--m-mid) 12%, var(--m-lo) 26%, var(--m-mid) 40%,
+      var(--m-hi) 52%, var(--m-mid) 64%, var(--m-lo) 78%, var(--m-mid) 90%, var(--m-hi));
+  box-shadow:
+    0 0 0 1px rgba(20, 36, 52, .16),                  /* a hairline, so a white rim holds on a light platter */
+    .7em 1.1em 0 -.2em var(--m-deep),                  /* the edge: the coin has a thickness */
+    1.6em 3.4em 6em rgba(2, 10, 20, .34),               /* its shadow on the platter */
+    inset .6em .8em .6em -.2em rgba(255, 255, 255, .7), /* the rim catches the light top left */
+    inset -.7em -.9em 1em -.2em rgba(0, 0, 0, .28);     /* and falls away bottom right */
+}
+/* the field, struck down inside the rim: its wall is in shade top left and lit bottom right */
+.coin::before {
+  content: ''; position: absolute; inset: 11.5em; border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 28%, var(--f-hi), var(--f-lo) 78%);
+  box-shadow:
+    inset 1.6em 2em 2.2em -.4em rgba(0, 0, 0, .34),
+    inset -1.2em -1.4em 1.4em -.6em rgba(255, 255, 255, .7);
+}
+/* the sheen: one soft highlight top left and a narrow glint across the face */
+.coin::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  background:
+    radial-gradient(ellipse 58% 40% at 30% 20%, rgba(255, 255, 255, .5), rgba(255, 255, 255, 0) 70%),
+    linear-gradient(128deg, rgba(255, 255, 255, 0) 42%, rgba(255, 255, 255, .22) 49%, rgba(255, 255, 255, 0) 56%);
+}
+/* the beaded border inside the rim, drawn only where it can be seen */
+.coin-beads {
+  position: absolute; inset: 7.5em; border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, var(--m-lo) 0 1.4deg, transparent 1.4deg 5deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 90%, #000 91%, #000 98%, transparent 99%);
+  mask: radial-gradient(closest-side, transparent 90%, #000 91%, #000 98%, transparent 99%);
+  opacity: .75;
+}
+.coin[data-small] .coin-beads { display: none; }
+/* the emblem: the app's drawn emblems, struck in relief. A shadow bottom right, a highlight top
+   left, the face in a lighter pull of the same metal. */
+.coin-emb { position: absolute; inset: 22em; width: 56em; height: 56em; overflow: visible; }
+.coin-emb .e-sh { fill: var(--m-deep); opacity: .8; }
+.coin-emb .e-hi { fill: #FFFFFF; opacity: .72; }
+
+.t-bronze { --m-hi: #F6C99A; --m-mid: #C47C40; --m-lo: #7B4419; --m-deep: #4D290D; --f-hi: #D99A62; --f-lo: #93541F; }
+.t-silver { --m-hi: #FFFFFF; --m-mid: #B9C3CC; --m-lo: #6E7B87; --m-deep: #3E4955; --f-hi: #E4E9ED; --f-lo: #8C98A4; }
+.t-gold   { --m-hi: #FFF4C2; --m-mid: #E2B23E; --m-lo: #9A6A12; --m-deep: #5C3D06; --f-hi: #F4D46E; --f-lo: #B5830E; }
+/* the Champion: platinum with a field of sea enamel, the fourth finish */
+.t-special { --m-hi: #FFFFFF; --m-mid: #DCE2E7; --m-lo: #8D99A5; --m-deep: #505C68; --f-hi: #22A3A6; --f-lo: #0A3656; }
+.coin.t-special::before {
+  background:
+    radial-gradient(ellipse 60% 36% at 36% 26%, rgba(255, 255, 255, .45), rgba(255, 255, 255, 0) 70%),
+    radial-gradient(circle at 40% 34%, var(--f-hi), var(--f-lo) 80%);
+}
+
+/* A medal not yet earned: the same coin, unstruck. A blank of clear glass with a raised rim and an
+   empty field: quiet, and never a grey copy of a struck one. */
+.blank {
+  --d: 44px;
+  position: relative; flex: none; display: block;
+  width: var(--d); height: var(--d); font-size: calc(var(--d) / 100); border-radius: 50%;
+  background: radial-gradient(circle at 32% 26%, var(--blank-hi), var(--blank-lo) 72%);
+  box-shadow:
+    inset 0 0 0 1px var(--blank-rim),
+    inset 1.4em 2em 2em -1em rgba(255, 255, 255, .5),
+    0 .8em 2em rgba(2, 10, 20, .12);
+}
+.blank::before {
+  content: ''; position: absolute; inset: 11em; border-radius: 50%;
+  box-shadow: inset 1em 1.4em 1.6em -.6em rgba(0, 0, 0, .12), inset -1em -1.2em 1.4em -.6em rgba(255, 255, 255, .55),
+    0 0 0 1px var(--blank-rim);
+}
+/* progress round a blank in reach: ink on a faint track, the fraction the count says */
+.ring { position: absolute; inset: -5px; width: calc(100% + 10px); height: calc(100% + 10px); transform: rotate(-90deg); }
+.ring circle { fill: none; stroke-width: 3; }
+.ring .trk { stroke: var(--hair); }
+.ring .val { stroke: var(--tx); stroke-linecap: round; }
+
+/* the coin that turns: once, on entry, then rests. Edge layers give it a thickness side on. */
+.coin3d { position: relative; flex: none; display: block; perspective: 600px; }
+.coin3d .spinner { position: relative; display: block; transform-style: preserve-3d; }
+.coin3d .coin { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.coin3d .edge {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: linear-gradient(90deg, var(--m-lo), var(--m-hi) 45%, var(--m-mid) 60%, var(--m-lo));
+}
+.coin3d .back { position: absolute; inset: 0; transform: rotateY(180deg) translateZ(var(--thick)); }
+.coin3d .back .coin-rev { position: absolute; left: 24em; top: 41em; width: 52em; height: 18em; }
+.coin3d .back .coin-rev path { filter: drop-shadow(-.6px -.6px 0 rgba(255, 255, 255, .7)) drop-shadow(.8px 1px 0 rgba(0, 0, 0, .35)); }
+.coin3d.is-turning .spinner { animation: coin-turn 1.5s var(--e-out) .35s both; }
+@keyframes coin-turn {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(360deg); }
+}
+/* the large coin in the medal sheet follows the finger a little */
+.coin3d.is-tilting .spinner { transition: transform 120ms linear; }
+
+/* ── the drink list ────────────────────────────────────────────────────────────────────────── */
+.find { display: flex; gap: var(--s2); }
+.field {
+  flex: 1; display: flex; align-items: center; gap: var(--s2); min-width: 0;
+  height: 44px; padding: 0 var(--s3); border-radius: var(--r-control);
+  background: var(--plat); box-shadow: inset 0 0 0 1px var(--plat-edge); color: var(--tx);
+}
+.field input { flex: 1; min-width: 0; height: 100%; outline: 0; font-size: 16px; color: var(--tx); }
+.field input::placeholder { color: var(--tx2); opacity: 1; }
+.seg {
+  display: flex; gap: 2px; padding: 2px; border-radius: var(--r-control);
+  background: var(--plat); box-shadow: inset 0 0 0 1px var(--plat-edge); margin-top: var(--s3);
+}
+.seg button {
+  flex: 1; min-height: 40px; border-radius: 10px; font-size: var(--f-meta); font-weight: 600;
+  color: var(--tx); text-align: center; transition: background-color 180ms var(--e-out), color 180ms var(--e-out);
+}
+.seg button[aria-pressed="true"] { background: var(--fill); color: var(--on-fill); }
+.count { font-size: var(--f-heading); font-weight: 600; color: var(--sky-tx); padding: var(--s3) 0 var(--s3); }
+
+.drow { display: flex; align-items: center; position: relative; margin: 0 calc(var(--s4) * -1); }
+.drow + .drow::before { content: ''; position: absolute; top: 0; left: 52px; right: 0; height: 1px; background: var(--hair); }
+.drow-open {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--s3);
+  min-height: 56px; padding: var(--s2) 0 var(--s2) var(--s4); transition: background-color 160ms var(--e-out);
+}
+.drow-open:active { background: var(--press); }
+.drow-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.drow-l1 { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.drow-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stars { display: inline-flex; gap: 1px; color: var(--gold); flex: none; }
+.drow-meta { display: flex; gap: var(--s2); font-size: var(--f-meta); color: var(--tx2); min-width: 0; }
+.drow-meta .ing { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.drow-meta .price { flex: none; }
+.try {
+  flex: none; width: 52px; height: 56px; display: grid; place-items: center; color: var(--tx3);
+  transition: transform 180ms var(--e-settle), color 160ms var(--e-out);
+}
+.try[aria-pressed="true"] { color: var(--mint); }
+.try:active { transform: scale(.9); transition-duration: 90ms; }
+.try.just { animation: tried-pop 360ms var(--e-settle); }
+@keyframes tried-pop { 40% { transform: scale(1.18); } }
+.empty { padding: var(--s3) 0; }
+
+/* the For you shelf: drinks side by side, swiped, each opened on its own. No box round each. */
+.shelf {
+  list-style: none; display: flex; gap: var(--s5); overflow-x: auto; scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--s4); /* the first pick snaps to the platter's padding, not its edge */
+  margin: 0 calc(var(--s4) * -1); padding: var(--s1) var(--s4) var(--s3); scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.shelf::-webkit-scrollbar { display: none; }
+.pick { flex: none; width: 128px; scroll-snap-align: start; display: flex; flex-direction: column; gap: 2px; color: var(--tx); }
+.pick .row-lead { margin-bottom: var(--s1); }
+.pick-why { font-size: var(--f-meta); font-weight: 600; color: var(--tx2); }
+.pick-name { font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pick-where { font-size: var(--f-meta); color: var(--tx2); }
+.shaker.is-shaking { animation: shake-icon 520ms var(--e-out); }
+@keyframes shake-icon {
+  15% { transform: translateY(-3px) rotate(-14deg); } 35% { transform: translateY(2px) rotate(12deg); }
+  55% { transform: translateY(-3px) rotate(-10deg); } 75% { transform: translateY(1px) rotate(6deg); }
+}
+
+.dot { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: var(--f-meta); font-weight: 600; color: #1C3C56; }
+
+/* the crew rows, the ship rows and the stats bars */
+.bar { display: block; height: 6px; border-radius: var(--r-tag); background: var(--tx); }
+.visited { color: var(--mint); flex: none; }
+
+/* ── Liquid Glass: the chrome ──────────────────────────────────────────────────────────────── */
+/* Body and lens are two sibling pseudo-elements of an element that carries no filter, opacity or
+   mask itself: a backdrop filter nested inside another one sees only its parent, never the sea. */
+.lg { position: absolute; z-index: 30; }
+.lg::before, .lg::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
+/* the clear body: a little blur, a lot of colour, a film */
+.lg::before {
+  z-index: 0;
+  background: linear-gradient(162deg, var(--sheen), rgba(255, 255, 255, 0) 36%), var(--lg-film-c, var(--dg-film));
+  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat)) brightness(var(--lg-b, var(--dg-bri)));
+  backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat)) brightness(var(--lg-b, var(--dg-bri)));
+}
+/* the edge lens: a heavier blur and a brighter pull, masked to a soft ring round the shape, so the
+   rim bends and lights what is under it while the centre stays clear. The specular rides on it:
+   the top-left rim lit, the foot in faint shade, a hairline. */
+.lg::after {
+  z-index: 1;
+  -webkit-backdrop-filter: blur(var(--lens-blur)) saturate(var(--lens-sat)) brightness(var(--lens-bri));
+  backdrop-filter: blur(var(--lens-blur)) saturate(var(--lens-sat)) brightness(var(--lens-bri));
+  -webkit-mask-image:
+    linear-gradient(to bottom, #000, rgba(0, 0, 0, 0) var(--lens-w), rgba(0, 0, 0, 0) calc(100% - var(--lens-w)), #000),
+    linear-gradient(to right, #000, rgba(0, 0, 0, 0) var(--lens-w), rgba(0, 0, 0, 0) calc(100% - var(--lens-w)), #000);
+  mask-image:
+    linear-gradient(to bottom, #000, rgba(0, 0, 0, 0) var(--lens-w), rgba(0, 0, 0, 0) calc(100% - var(--lens-w)), #000),
+    linear-gradient(to right, #000, rgba(0, 0, 0, 0) var(--lens-w), rgba(0, 0, 0, 0) calc(100% - var(--lens-w)), #000);
+  box-shadow:
+    inset 1.5px 1.5px 0 var(--spec-hi),
+    inset -1px -1.5px 0 var(--spec-lo),
+    inset 0 0 0 1px rgba(255, 255, 255, .22);
+  transition: box-shadow 160ms var(--e-out);
+}
+.lg > * { position: relative; z-index: 2; }
+/* round glass: the lens is a true ring */
+.lg.is-round::after {
+  -webkit-mask-image: radial-gradient(closest-side, rgba(0, 0, 0, 0) 64%, #000 100%);
+  mask-image: radial-gradient(closest-side, rgba(0, 0, 0, 0) 64%, #000 100%);
+}
+
+/* a pressed glass control swells and its rim brightens, then settles on release */
+.swell { transition: transform 260ms var(--e-settle); }
+.swell.is-pressed, .swell:active { transform: scale(1.04); transition: transform 110ms var(--e-out); }
+.swell.is-pressed::after, .swell:active::after {
+  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, .95), inset -1px -1.5px 0 var(--spec-lo), inset 0 0 0 1px rgba(255, 255, 255, .4),
+    inset 0 0 14px rgba(255, 255, 255, .28);
+}
+
+/* ── the tab bar: a floating capsule, a droplet, and the Log button at its trailing end ───── */
+.tabbar {
+  left: var(--s4); bottom: var(--chrome-b);
+  width: calc(100% - var(--s4) * 3 - var(--tab-h) + var(--s2));
+  height: var(--tab-h); border-radius: 31px;
+  box-shadow: var(--lift);
+  transition: transform 320ms var(--e-drawer), width 380ms var(--e-drawer);
+  touch-action: none;
+}
+.tabs { display: flex; height: 100%; padding: 4px; }
+.tab {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  color: #FFFFFF; font-size: var(--f-micro); font-weight: 400; line-height: 1.1;
+  transition: color 180ms var(--e-out), opacity 200ms var(--e-out);
+}
+.tab svg { transition: transform 220ms var(--e-settle); }
+.tab.is-under { color: #1C3C56; font-weight: 600; }
+.tabbar.is-dragging .tab.is-under svg { transform: scale(1.12); }
+/* the droplet: a bead of light glass under the active tab. It is not a second backdrop filter
+   (glass on glass): a bright film, a specular and a shade, inside the bar's own glass. */
+.droplet {
+  position: absolute; z-index: 1 !important; top: 4px; left: 4px; height: calc(100% - 8px);
+  width: var(--tab-w, 56px); border-radius: 27px;
+  background: linear-gradient(165deg, rgba(255, 255, 255, .96), rgba(255, 255, 255, .80) 60%, rgba(236, 244, 250, .84));
+  box-shadow: inset 1.5px 1.5px 0 #FFFFFF, inset -1px -2px 3px rgba(28, 60, 86, .14), 0 2px 8px rgba(2, 10, 20, .24);
+  will-change: transform;
+}
+.tabbar.is-dragging .droplet { box-shadow: inset 1.5px 1.5px 0 #FFFFFF, inset -1px -2px 3px rgba(28, 60, 86, .14), 0 6px 16px rgba(2, 10, 20, .3), 0 0 0 1px rgba(255, 255, 255, .6); }
+/* under search the capsule folds to one round button that closes it */
+.tabbar .tab-back { position: absolute; inset: 0; display: grid; place-items: center; color: #FFFFFF; opacity: 0; pointer-events: none; transition: opacity 200ms var(--e-out); }
+.is-search .tabbar { width: var(--tab-h); }
+.is-search .tabbar .tabs, .is-search .tabbar .droplet { opacity: 0; pointer-events: none; }
+.is-search .tabbar .tab-back { opacity: 1; pointer-events: auto; }
+.tabbar .tabs, .tabbar .droplet { transition: opacity 180ms var(--e-out); }
+
+/* Log a drink: the one tinted glass, and the one filled accent on every screen */
+.logbtn {
+  right: var(--s4); bottom: var(--chrome-b); height: var(--tab-h); width: var(--tab-h);
+  border-radius: 31px; box-shadow: var(--lift);
+  --lg-film-c: var(--coral-film); --lg-b: .85;
+  color: #FFFFFF;
+  transition: transform 260ms var(--e-settle), width 380ms var(--e-drawer);
+}
+.logbtn-face {
+  position: absolute !important; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  font-size: var(--f-micro); font-weight: 600; line-height: 1.1; transition: opacity 160ms var(--e-out);
+}
+/* the morph: Log swells into the search field (iOS 26's search tab), the capsule folds away */
+.is-search .logbtn { width: calc(100% - var(--s4) * 2 - var(--tab-h) - var(--s2)); --lg-film-c: rgba(8, 22, 38, .30); --lg-b: var(--dg-bri); }
+.is-search .logbtn-face { opacity: 0; pointer-events: none; }
+/* the field is a capsule, so its lens is the capsule's two-band ring, not the round button's */
+.is-search .logbtn::after {
+  -webkit-mask-image:
+    linear-gradient(to bottom, #000, rgba(0, 0, 0, 0) var(--lens-w), rgba(0, 0, 0, 0) calc(100% - var(--lens-w)), #000),
+    linear-gradient(to right, #000, rgba(0, 0, 0, 0) var(--lens-w), rgba(0, 0, 0, 0) calc(100% - var(--lens-w)), #000);
+  mask-image:
+    linear-gradient(to bottom, #000, rgba(0, 0, 0, 0) var(--lens-w), rgba(0, 0, 0, 0) calc(100% - var(--lens-w)), #000),
+    linear-gradient(to right, #000, rgba(0, 0, 0, 0) var(--lens-w), rgba(0, 0, 0, 0) calc(100% - var(--lens-w)), #000);
+}
+.logbtn .sfield { position: absolute !important; inset: 0; display: flex; align-items: center; gap: var(--s2); padding: 0 var(--s2) 0 var(--s4); opacity: 0; pointer-events: none; transition: opacity 200ms var(--e-out) 120ms; }
+.is-search .logbtn .sfield { opacity: 1; pointer-events: auto; }
+.sfield input { flex: 1; min-width: 0; height: 100%; outline: 0; font-size: 17px; color: #FFFFFF; caret-color: #FFFFFF; }
+.sfield input::placeholder { color: #D5DEE6; opacity: 1; }
+.sfield .clear { width: 44px; height: 44px; display: grid; place-items: center; color: #FFFFFF; visibility: hidden; }
+.logbtn.has-q .sfield .clear { visibility: visible; }
+.sheet-open .tabbar, .sheet-open .logbtn { transform: translateY(calc(100% + var(--chrome-b) + 12px)); }
+
+/* ── the top bar: large titles collapse into it on scroll (the scroll edge effect) ────────── */
+.topbar {
+  left: 0; right: 0; top: 0; height: calc(var(--safe-t) + 48px); z-index: 20;
+  --lg-film-c: var(--bar-film); --lg-b: var(--bar-bri); --lg-blur: 8px;
+  display: flex; align-items: flex-end; justify-content: center; padding: 0 var(--s2) 6px;
+  color: var(--bar-tx); pointer-events: none;
+}
+/* the bar's glass fades on its own layers, never through the element: opacity on a parent would
+   cut its backdrop filter off from the sea for the length of the fade */
+.topbar::before { transition: opacity 200ms var(--e-out); opacity: 0; box-shadow: inset 0 -1px 0 var(--hair); }
+.topbar::after { display: none; }
+.topbar .tb-title { font-size: var(--f-heading); font-weight: 600; line-height: 36px; opacity: 0; transform: translateY(6px); transition: opacity 200ms var(--e-out), transform 200ms var(--e-out); }
+.topbar.is-on::before { opacity: 1; }
+.topbar.is-on .tb-title { opacity: 1; transform: none; }
+.topbar .tb-back {
+  position: absolute; left: var(--s2); bottom: 2px; height: 44px; display: flex; align-items: center; gap: 2px;
+  padding: 0 var(--s3) 0 var(--s1); border-radius: 22px; font-weight: 600; color: var(--bar-tx); pointer-events: auto;
+  opacity: 0; visibility: hidden;
+}
+.topbar.has-back::before { opacity: 1; }
+.topbar.has-back .tb-back { opacity: 1; visibility: visible; }
+
+/* ── the search layer (Log a drink) ────────────────────────────────────────────────────────── */
+.searchv { z-index: 4; }
+.searchv .large { padding-bottom: var(--s2); }
+
+/* ── sheets: glass at two heights ──────────────────────────────────────────────────────────── */
+.scrim { position: absolute; inset: 0; z-index: 40; background: var(--scrim); opacity: 0; pointer-events: none; transition: opacity 280ms var(--e-out); }
+.sheet-open .scrim { opacity: 1; pointer-events: auto; }
+.sheet {
+  position: absolute; z-index: 41; left: 0; right: 0; bottom: 0;
+  top: calc(var(--safe-t) + 8px);
+  border-radius: 28px 28px 0 0;
+  transform: translateY(105%);
+  transition: transform 420ms var(--e-drawer);
+  color: var(--sheet-tx); touch-action: none;
+  box-shadow: 0 -10px 36px rgba(2, 10, 20, .22);
+}
+.sheet.is-dragging { transition: none; }
+.sheet > .sh-body, .sheet > .sh-large, .sheet > .sh-lens { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
+.sh-body {
+  background: linear-gradient(170deg, var(--sheen), rgba(255, 255, 255, 0) 30%), var(--sheet-film);
+  -webkit-backdrop-filter: blur(14px) saturate(180%) brightness(var(--sheet-bri));
+  backdrop-filter: blur(14px) saturate(180%) brightness(var(--sheet-bri));
+}
+/* laid over the body as the sheet rises to large, so reading gets a heavier film; its opacity is
+   the sheet's position, and it carries no filter of its own */
+.sh-large { background: var(--sheet-film-large); opacity: var(--sheet-t, 0); }
+/* the sheet's rim: calmer than the chrome's (saturate 130, brightness 1.12, 8px at the sides), because
+   a full-height edge over the sea at 200% saturation reads as a cyan stain rather than a lens */
+.sh-lens {
+  -webkit-backdrop-filter: blur(var(--lens-blur)) saturate(130%) brightness(1.12);
+  backdrop-filter: blur(var(--lens-blur)) saturate(130%) brightness(1.12);
+  -webkit-mask-image: linear-gradient(to bottom, #000, rgba(0, 0, 0, 0) 12px), linear-gradient(to right, #000, rgba(0, 0, 0, 0) 8px, rgba(0, 0, 0, 0) calc(100% - 8px), #000);
+  mask-image: linear-gradient(to bottom, #000, rgba(0, 0, 0, 0) 12px), linear-gradient(to right, #000, rgba(0, 0, 0, 0) 8px, rgba(0, 0, 0, 0) calc(100% - 8px), #000);
+  box-shadow: inset 1.5px 1.5px 0 var(--spec-hi), inset 0 0 0 1px rgba(255, 255, 255, .24);
+}
+.sh-head { position: relative; z-index: 2; height: 52px; display: flex; justify-content: center; }
+.grab { width: 120px; height: 44px; display: grid; place-items: start center; padding-top: 8px; }
+.grab::before { content: ''; width: 38px; height: 5px; border-radius: var(--r-tag); background: var(--hair); background: color-mix(in srgb, var(--sheet-tx) 30%, transparent); }
+.sh-close {
+  position: absolute; right: var(--s2); top: var(--s1); width: 44px; height: 44px; display: grid; place-items: center; color: var(--sheet-tx);
+}
+.sh-close span { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--hair); }
+.sh-scroll {
+  position: absolute; z-index: 2; left: 0; right: 0; top: 52px; bottom: 0;
+  overflow-y: hidden; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+  padding: 0 var(--s4) calc(var(--safe-b) + var(--s6));
+}
+.sheet.is-large .sh-scroll { overflow-y: auto; touch-action: pan-y; }
+.sh-scroll { scrollbar-width: none; }
+.sh-scroll::-webkit-scrollbar { display: none; }
+.sheet:not(.is-large) .sh-scroll { touch-action: none; }
+.sheet .wave { position: absolute; z-index: 3; inset: 0; width: 100%; height: 100%; border-radius: inherit; pointer-events: none; }
+
+.sh-title { font-size: var(--f-title); font-weight: 600; line-height: 1.2; letter-spacing: -.01em; padding-right: 36px; }
+.sh-meta { font-size: var(--f-meta); color: var(--sheet-tx2); margin-top: var(--s1); }
+.sh-p { margin-top: var(--s3); }
+.sh-p.meta, .sheet .meta { color: var(--sheet-tx2); }
+.sh-group { margin-top: var(--s5); }
+.dots-row { display: flex; gap: var(--s5); margin-top: var(--s5); }
+.dmeter { display: flex; flex-direction: column; gap: 6px; }
+.dmeter-l { font-size: var(--f-meta); font-weight: 600; color: var(--sheet-tx2); }
+.dots { display: flex; gap: 5px; }
+.dots i { width: 10px; height: 10px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--sheet-tx); }
+.dots i.on { background: var(--sheet-tx); }
+.rate-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s3); }
+.rate-head .l { font-size: var(--f-meta); font-weight: 600; color: var(--sheet-tx2); }
+.stars-in { display: flex; margin: var(--s1) calc(var(--s2) * -1) 0; }
+.star { width: 44px; height: 44px; display: grid; place-items: center; color: var(--sheet-tx); transition: transform 220ms var(--e-settle); }
+.star.on { color: var(--gold); }
+.star:active { transform: scale(.88); transition-duration: 90ms; }
+.recby { display: flex; align-items: center; gap: var(--s2); margin-top: var(--s2); font-size: var(--f-meta); color: var(--sheet-tx2); }
+.chips { display: flex; gap: 6px; margin-top: var(--s5); }
+.chip {
+  flex: 1; min-height: 36px; padding: 0 var(--s2); border-radius: var(--r-control);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sheet-tx) 30%, transparent);
+  font-size: var(--f-meta); font-weight: 600; color: var(--sheet-tx); text-align: center; position: relative;
+  transition: background-color 180ms var(--e-out), color 180ms var(--e-out), transform 220ms var(--e-settle);
+}
+.chip::after { content: ''; position: absolute; inset: -4px 0; }
+.chip[aria-pressed="true"] { background: var(--sheet-tx); color: var(--on-fill); box-shadow: none; }
+#app[data-sky="light"] .chip[aria-pressed="true"] { color: #FFFFFF; }
+.chip.mint[aria-pressed="true"] { background: var(--mint); color: #FFFFFF; }
+#app[data-sky="dark"] .chip.mint[aria-pressed="true"] { color: #0A2A1E; }
+.chip:active { transform: scale(.96); transition-duration: 90ms; }
+.f-label { display: block; font-size: var(--f-meta); font-weight: 600; color: var(--sheet-tx2); margin-bottom: var(--s1); }
+.textarea {
+  width: 100%; min-height: 72px; resize: vertical; padding: var(--s3); border-radius: var(--r-control);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sheet-tx) 26%, transparent); color: var(--sheet-tx); font-size: 16px; outline: 0;
+  background: color-mix(in srgb, var(--sheet-tx) 4%, transparent);
+}
+.said { display: flex; gap: var(--s3); padding: var(--s3) 0; }
+.said + .said { box-shadow: inset 0 1px 0 var(--hair); }
+
+/* the medal sheet */
+.medal-stage { display: grid; place-items: center; padding: var(--s3) 0 var(--s4); }
+.medal-name { text-align: center; font-size: 28px; font-weight: 700; letter-spacing: -.01em; line-height: 1.15; }
+.medal-tier { text-align: center; font-size: var(--f-heading); font-weight: 600; color: var(--sheet-tx2); margin-top: var(--s1); }
+.medal-why { text-align: center; margin: var(--s4) auto 0; max-width: 32ch; text-wrap: balance; }
+
+/* the full case */
+.feature { display: grid; justify-items: center; text-align: center; gap: var(--s1); padding: var(--s3) 0 var(--s4); }
+.feature .coin3d, .feature .coin { margin-bottom: var(--s3); }
+.feature .name { font-size: var(--f-title); font-weight: 600; line-height: 1.2; }
+.struck { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s4) var(--s2); padding: var(--s2) 0 var(--s3); }
+.struck > button { display: grid; justify-items: center; gap: var(--s2); text-align: center; padding: var(--s1) 0; border-radius: var(--r-control); }
+.struck > button:active { background: var(--press); }
+.struck .nm { font-size: var(--f-meta); font-weight: 600; line-height: 1.25; }
+.struck .tr { font-size: var(--f-micro); color: var(--tx2); margin-top: -6px; }
+
+/* ── fallbacks ─────────────────────────────────────────────────────────────────────────────── */
+/* no backdrop filter: the glass becomes a near-solid film of the same tone, and holds contrast */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .lg::before { background: var(--dg-fallback); }
+  .logbtn::before { background: var(--coral-fallback); }
+  .is-search .logbtn::before { background: var(--dg-fallback); }
+  .topbar::before { background: var(--bar-fallback); }
+  .sh-body { background: var(--sheet-fallback); }
+  .sh-large { display: none; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .lg::before, .lg::after, .sh-body, .sh-lens { -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .lg::before { background: var(--dg-fallback); }
+  .logbtn::before { background: var(--coral-fallback); }
+  .is-search .logbtn::before { background: var(--dg-fallback); }
+  .topbar::before { background: var(--bar-fallback); }
+  .sh-body { background: var(--sheet-fallback); }
+  .sh-large { display: none; }
+  #app[data-sky="light"] { --plat: rgba(250, 252, 253, .94); }
+  #app[data-sky="dark"] { --plat: rgba(8, 20, 34, .94); }
+}
+/* reduced motion: every change of state is a fade; nothing slides, swells, spins or washes */
+@media (prefers-reduced-motion: reduce) {
+  .screen, .screen.is-pushed, .screen.is-under { transform: none !important; }
+  .sheet { transition: opacity 200ms linear; }
+  .coin3d.is-turning .spinner { animation: none; }
+  .swell.is-pressed, .swell:active, .try:active, .chip:active, .star:active { transform: none; }
+  .try.just, .shaker.is-shaking { animation: none; }
+  .tabbar, .logbtn { transition: opacity 200ms linear; }
+}

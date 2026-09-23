@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- the page is dark by design; these two stop a browser's forced dark mode and the Dark Reader
+       extension (which the verifying Brave runs) from rewriting its colours -->
+  <meta name="color-scheme" content="dark">
+  <meta name="darkreader-lock">
+  <meta name="theme-color" content="#0B1222">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Cocktail Passport · Night bar</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Shared metal for every coin: referenced by id from the coins drawn in app.js. Not display:none,
+     because a gradient inside a display:none svg does not paint in Chromium. -->
+<svg class="defs" width="0" height="0" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- a: the rim, lit from the top left. b: the same metal reversed, for the bevel falling into
+         the field. f: the field, a soft dome of light. e: the struck emblem's face. -->
+    <linearGradient id="gold-a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF4C8"/><stop offset=".35" stop-color="#F2C35A"/><stop offset=".7" stop-color="#B98423"/><stop offset="1" stop-color="#6E4A0C"/></linearGradient>
+    <linearGradient id="gold-b" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#FFE9A6"/><stop offset=".5" stop-color="#D19A33"/><stop offset="1" stop-color="#7A520F"/></linearGradient>
+    <radialGradient id="gold-f" cx=".36" cy=".3" r=".85"><stop offset="0" stop-color="#FFE7A0"/><stop offset=".55" stop-color="#E2AE42"/><stop offset="1" stop-color="#A5721A"/></radialGradient>
+    <linearGradient id="gold-e" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF7D6"/><stop offset=".6" stop-color="#F0C458"/><stop offset="1" stop-color="#C08A28"/></linearGradient>
+
+    <linearGradient id="silver-a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".35" stop-color="#D9E0E8"/><stop offset=".7" stop-color="#8E99A8"/><stop offset="1" stop-color="#525C6B"/></linearGradient>
+    <linearGradient id="silver-b" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#F4F7FA"/><stop offset=".5" stop-color="#A9B3C0"/><stop offset="1" stop-color="#5D6776"/></linearGradient>
+    <radialGradient id="silver-f" cx=".36" cy=".3" r=".85"><stop offset="0" stop-color="#F3F6F9"/><stop offset=".55" stop-color="#C3CBD5"/><stop offset="1" stop-color="#8A95A3"/></radialGradient>
+    <linearGradient id="silver-e" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".6" stop-color="#D5DCE4"/><stop offset="1" stop-color="#9AA5B2"/></linearGradient>
+
+    <linearGradient id="bronze-a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD9B3"/><stop offset=".35" stop-color="#D48C52"/><stop offset=".7" stop-color="#94532A"/><stop offset="1" stop-color="#552C12"/></linearGradient>
+    <linearGradient id="bronze-b" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#F6C69A"/><stop offset=".5" stop-color="#B26A36"/><stop offset="1" stop-color="#5E3216"/></linearGradient>
+    <radialGradient id="bronze-f" cx=".36" cy=".3" r=".85"><stop offset="0" stop-color="#F3C193"/><stop offset=".55" stop-color="#C47A42"/><stop offset="1" stop-color="#8A4B22"/></radialGradient>
+    <linearGradient id="bronze-e" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE2C4"/><stop offset=".6" stop-color="#DC9660"/><stop offset="1" stop-color="#A05E30"/></linearGradient>
+
+    <!-- the Champion: a gilt rim round a field of deep blue enamel, a naval decoration -->
+    <radialGradient id="special-f" cx=".36" cy=".3" r=".9"><stop offset="0" stop-color="#3D63D6"/><stop offset=".55" stop-color="#1D3C9A"/><stop offset="1" stop-color="#0E2263"/></radialGradient>
+
+    <!-- the unstruck blank: gunmetal, no emblem -->
+    <linearGradient id="blank-a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6A7488"/><stop offset=".45" stop-color="#3A4356"/><stop offset="1" stop-color="#1A202D"/></linearGradient>
+    <linearGradient id="blank-b" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#4E586C"/><stop offset="1" stop-color="#1C2230"/></linearGradient>
+    <radialGradient id="blank-f" cx=".36" cy=".3" r=".85"><stop offset="0" stop-color="#3C4558"/><stop offset="1" stop-color="#232A38"/></radialGradient>
+
+    <radialGradient id="coin-spec" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  </defs>
+</svg>
+
+<div class="phone" id="phone" data-part="night">
+
+  <!-- The room: a ship's bar after dark. Deep navy with warm light pooling in it, the colour every
+       glass surface bends. It follows the clock (data-part), and it is the one thing behind all of it. -->
+  <div class="room" aria-hidden="true">
+    <div class="pool pool-a"></div>
+    <div class="pool pool-b"></div>
+    <div class="pool pool-c"></div>
+    <div class="grain"></div>
+  </div>
+
+  <main class="screens" id="screens">
+    <section class="screen" id="scr-home" data-screen="home" aria-label="Home"><div class="scroller"><div class="page" id="page-home"></div></div></section>
+    <section class="screen" id="scr-drinks" data-screen="drinks" aria-label="Drinks"><div class="scroller"><div class="page" id="page-drinks"></div></div></section>
+    <section class="screen" id="scr-ship" data-screen="ship" aria-label="Ship"><div class="scroller"><div class="page" id="page-ship"></div></div></section>
+    <section class="screen" id="scr-crew" data-screen="crew" aria-label="Crew"><div class="scroller"><div class="page" id="page-crew"></div></div></section>
+    <section class="screen" id="scr-you" data-screen="you" aria-label="You"><div class="scroller"><div class="page" id="page-you"></div></div></section>
+    <section class="screen" id="scr-medals" data-screen="medals" aria-label="Medals"><div class="scroller"><div class="page page-pushed" id="page-medals"></div></div></section>
+    <section class="screen" id="scr-search" data-screen="search" aria-label="Log a drink"><div class="scroller"><div class="page" id="page-search"></div></div></section>
+  </main>
+
+  <!-- the scroll edge effect at the foot: content dims as it passes under the tab bar, so the
+       labels always have a calm field, and the glass still shows the colour through it -->
+  <div class="edge-foot" aria-hidden="true"></div>
+
+  <!-- the collapsed title: a scroll edge effect of blurred glass that the large title folds into -->
+  <header class="topbar" id="topbar" aria-hidden="true"><span class="topbar-title" id="topbarTitle"></span></header>
+
+  <button type="button" class="back glass glass-round press" id="back" aria-label="Back to Home">
+    <i class="spec" aria-hidden="true"></i>
+    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6.8-5.2 5.2 5.2 5.2"/></svg>
+  </button>
+
+  <!-- The floating capsule of the five tabs. The droplet is the active tab's lens; it slides, and
+       swells on the way. With search open the capsule folds to one round button back. -->
+  <nav class="tabbar glass" id="tabbar" aria-label="Sections">
+    <i class="spec" aria-hidden="true"></i>
+    <i class="droplet" id="droplet" aria-hidden="true"></i>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <button type="button" class="tab-return" id="tabReturn" aria-label="Close search"></button>
+  </nav>
+
+  <!-- The one primary action, one tap from every screen: a round coral glass button that opens
+       search to log a drink, and becomes the search field. -->
+  <div class="logbtn glass press" id="logbtn">
+    <i class="spec" aria-hidden="true"></i>
+    <i class="tint" aria-hidden="true"></i>
+    <button type="button" class="log-open" id="logOpen" aria-label="Log a drink">
+      <svg class="ic ic-plus" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <label class="log-field" for="logInput">
+      <svg class="ic ic-search" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.2"/><path d="M20 20l-4.5-4.5"/></svg>
+      <span class="sr-only">Search drinks to log</span>
+      <input id="logInput" type="search" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Drink, bar or spirit" tabindex="-1">
+      <button type="button" class="log-clear" id="logClear" aria-label="Clear search" hidden>
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>
+      </button>
+    </label>
+  </div>
+
+  <div class="toast glass" id="toast" role="status" aria-live="polite"><i class="spec" aria-hidden="true"></i><span class="toast-text" id="toastText"></span><button type="button" class="toast-undo" id="toastUndo">Undo</button></div>
+
+  <!-- One sheet at a time, glass at two heights: medium shows the screen through it, large goes
+       nearly opaque for reading. -->
+  <div class="sheet-layer" id="sheetLayer" hidden>
+    <div class="scrim" id="scrim"></div>
+    <div class="sheet glass" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <i class="sheet-film" id="sheetFilm" aria-hidden="true"></i>
+      <div class="sheet-head" id="sheetHead">
+        <button type="button" class="grabber" id="grabber" aria-label="Expand"><i aria-hidden="true"></i></button>
+        <button type="button" class="sheet-close" id="sheetClose" aria-label="Close">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>
+        </button>
+      </div>
+      <div class="sheet-scroll" id="sheetScroll"><div class="sheet-body" id="sheetBody"></div></div>
+    </div>
+  </div>
+
+  <p class="sr-only" id="live" aria-live="polite"></p>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
