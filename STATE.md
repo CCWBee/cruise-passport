@@ -241,6 +241,37 @@ hours 13, 19 and 23 plus 320 wide, then a refute-by-default gate. Then a Pages p
 `C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\night-bar-build-wf_6e0c2ff9-d42.js`
 and resumeFromRunId `wf_6e0c2ff9-d42` (foundation stages commit as they go, so a resumed run picks
 up from the last committed stage; the screen builders do not commit, the integrator does).
+First pass: the three foundation stages committed (1b94e7d, 6d63228, f92d6bb, c938657); the Brave
+check, all six screen builders and the integrator failed at about 12:20 on the usage limit (session
+reset 1pm). The Brave check's partial fixes were committed as c438d06, and the run was resumed at
+13:02 (the foundation replays from cache).
+
+In parallel from 13:10, Charles's yes to the recovery code ("Sure sounds good and get it pushed
+plz"): branch `hardening` in its own worktree `E:\claude-projects\cruise-passport-hardening` (a real
+`npm ci`, no node_modules junction, so it can be removed safely), spec
+`docs/specs/2026-09-23-recovery-and-hardening.md` there (bdafd9f). Workflow `wf_0bd7f460-530`,
+scriptPath `C:\Users\Charles\.claude\projects\E--claude-projects-cruise-passport-hardening\10468e48-0258-48b8-84c7-deaaceda11ba\workflows\scripts\cruise-recovery-hardening-wf_0bd7f460-530.js`:
+build then adversarial review, no UI files, migrations 0004 (recovery) and 0005 (tighter policies)
+dry-run only. Then: merge `hardening` into `night-bar` after the build's integration, apply 0004 to
+live (his yes), 0005 as well (his yes, 13:05: "Apply privacy fix too I want to see this new ui
+love"), add the recovery UI to Your details and the entry screen, the Brave pass at 13, 19 and 23,
+then push `main` (his standing go). He wants to see it early: as soon as the build's integration
+commits, deploy a Pages preview of `night-bar` built WITHOUT the Supabase variables (guest only, so a
+`?seed` look cannot sync to live) and send him the `?seed` link, before the final checks.
+Before applying the migrations (Supabase email, 23 September: from 30 October new public tables get
+no automatic Data API grants): add `revoke all on public.recovery from anon, authenticated` (and an
+explicit service_role grant) to `0004_recovery.sql`, and write `0006_explicit_grants.sql` restating
+the six existing tables' live grants (all privileges to anon, authenticated and service_role, read
+from `information_schema.role_table_grants` on 23 September), a no-op on live that makes a fresh
+setup match. Dry-run both with the rest. Memory note `reference_supabase_data_api_grants`.
+DONE about 14:05: the hardening workflow finished (build a5fcb36, ac0421e; review 4d0edf7 fixed six
+defects; 90 tests, all gates green), the grants were added (6bc41ac), all three dry-ran clean, and
+0004, 0005 and 0006 were APPLIED to live and verified read-only: public.recovery exists and is closed
+to anon and authenticated, claim_recovery and set_recovery execute for authenticated only,
+delete_my_data takes the recovery row, friends and memberships have SELECT and DELETE policies only
+with INSERT refused, the C and Isabel edge intact. The live app (main) is compatible: it never wrote
+those tables directly. Left: merge `hardening` into `night-bar` after the build's integration, then
+the recovery UI (the wiring list is at the end of the hardening spec).
 Alongside it, a read-only audit for Charles's question ("what's left to stop this being live? What's
 the online suite and data like for accounts and how are the offline fallback stuff"): run
 `wf_472886c2-538` (accounts, data and sync, offline, go-live blockers; each read then checked),
