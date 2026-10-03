@@ -4,7 +4,7 @@ import { befriend, findProfiles, hasBackend, type FoundProfile } from '../../sta
 import { joinGroupFlow } from '../../state/groups'
 import { buildCard, buildPayload, encodeShare, normaliseCode } from '../../state/share'
 import { useStore } from '../../state/store'
-import { refreshNow } from '../../state/sync'
+import { refreshNow, useSyncStore } from '../../state/sync'
 import { FriendDot } from '../../ui/FriendDot'
 import { GlassButton } from '../../ui/GlassButton'
 import { IconCamera } from '../../ui/Icon'
@@ -155,8 +155,15 @@ export function AddCrewSheet({ onClose, onDone }: {
   // are the answer, so the line becomes the count and hides itself rather than repeating in ink what
   // the list already shows.
   const rows = found.length
+  // A search that did not answer is not always the network. When the server has refused this phone's
+  // identity for good (sync.ts, 'moved': claimed on another phone, or the account deleted, as every
+  // account was on 3 October 2026), no call can answer until the guest starts again, so the line
+  // says that and where, rather than blaming a connection that is fine.
+  const moved = useSyncStore((st) => st.status === 'moved')
   const note = find === 'searching' ? 'Searching…'
-    : find === 'offline' ? 'No connection. Send your link instead.'
+    : find === 'offline' ? (moved
+      ? 'This passport moved to another phone or app. Tap your name at the top of Crew to start again.'
+      : 'No connection. Send your link instead.')
     : find === 'ready' && rows === 0 ? 'Nobody by that name yet. They may not have set a name.'
     : rows > 0 ? (rows === 1 ? '1 person found' : `${rows} people found`)
     : 'Their code is at the top of their Crew page.'
