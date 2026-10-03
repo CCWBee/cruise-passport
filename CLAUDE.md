@@ -265,4 +265,9 @@ The same holds for a probe of the page from Brave.
   the label's pointer events. Check: a Playwright WebKit run (`tools/qa/webkit-shots.mjs` has the
   install) that taps `.shake-go` and reads `.shake-go input[switch]`: `checked` must flip. Also,
   since iOS 26.5 a `label.click()` from script plays nothing, so no timer can ever tick.
+- **Never wipe accounts without a rejoin path.** Symptom (3 October 2026): after every auth user was
+  deleted, nobody could find anyone in the crew search, which said "No connection". Cause: a phone
+  whose user is gone is retired as "moved" and mints nothing until the guest finds Start again. Check:
+  before deleting users, ship (or confirm) the rejoin path in `backend.ts` for their creation window,
+  then watch `auth.users` fill back up as phones open the app.
 - Copy: British English, no em dashes, sentence case, dry. See `docs/DESIGN.md` Copy.

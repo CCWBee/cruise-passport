@@ -4,7 +4,28 @@ Open work for the Cocktail Passport. One-line status lives in `E:\claude-project
 agent context in `CLAUDE.md`; the reconciled checklist in `docs/PRODUCTIONISATION.md`; the product
 architecture in `docs/specs/2026-09-10-product-brief.md`, one spec per workstream beside it.
 
-## Where it stands (23 September 2026)
+## Where it stands (3 October 2026)
+
+- **Every account wiped, 3 October 2026, on Charles's instruction**, about 12:40 UTC: all tables 0,
+  no copy kept. It stranded every phone set up before it: the app read the deleted user as "claimed
+  on another phone", stopped syncing and minted nothing, so nobody could be found by name (Charles:
+  "No connection" in the crew search with a working connection; the auth log showed three other
+  phones refused that afternoon and none starting again).
+- **LIVE 3 October about 22:50 UTC at `5afb599`** (deploy run 37159558950 green, shell
+  `index-CJp3RHFk.js`), on Charles's "push change centrally": a phone whose user was created before
+  12:46 UTC on 3 October (`WIPED_BEFORE`, `src/state/session.ts`), or which holds the old builds'
+  retired mark '1', signs in afresh as the same guest (name, colour, friend code, drinks), registers
+  its recovery code again and asks for each friend again (`rejoin()` in `backend.ts`,
+  `rejoinAfterWipe()` in the store). One sync session lookup at a time; a friend code refused while
+  our user is alive marks the passport moved; new retirements write 'moved'. The crew search says
+  "moved" rather than "No connection" when that is the cause. Gates green (93 tests, tsc, lint 0
+  errors, build); an adversarial review found four defects, all fixed before the push. Not run end
+  to end on a phone: the live test was stopped half way at Charles's word; it starts working as each
+  phone next opens the app.
+- **Branch `motion-haptics`** (physical shake, haptics, `/haptics-test.html`) is NOT live and is
+  behind `main` by these commits; merge `main` into it before it ships.
+
+## Where it stood (23 September 2026)
 
 - **LIVE 23 September about 16:10 at `d16ded8`** (deploy green, shell `index-BQ-BYNVL.js`): the
   night-bar redesign (prototype C with every A and B graft; day, evening and night rooms by the
