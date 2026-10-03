@@ -144,9 +144,10 @@ async function retire(client: Client): Promise<void> {
  *  session and the mark, and let the store forget the user id, so the plan that follows mints a
  *  user for the same guest instead of stopping on "moved". */
 async function rejoin(client: Client): Promise<void> {
+  // the user id first, so no call that slips in between reads a known user with no session as "moved"
+  binding?.rejoin()
   setRetired(false)
   await forgetSession(client, 'local')
-  binding?.rejoin()
 }
 
 async function mint(client: Client): Promise<SessionAnswer> {
@@ -156,8 +157,20 @@ async function mint(client: Client): Promise<SessionAnswer> {
   } catch { return 'held' }
 }
 
+// One sync resolution at a time. A round asks for the session from several calls at once, and two
+// of them that both found the identity gone would both rejoin and both mint, leaving two users for
+// one guest, the second refused on the friend code for ever. The claim and the erase pause sync and
+// wait for the round in flight before they ask, so they keep their own path.
+let resolvingSync: Promise<SessionAnswer> | null = null
+
 /** Decide, then act (session.ts has the decision and the reasons). Never throws. */
-export async function resolveSession(purpose: SessionPurpose = 'sync'): Promise<SessionAnswer> {
+export function resolveSession(purpose: SessionPurpose = 'sync'): Promise<SessionAnswer> {
+  if (purpose !== 'sync') return resolveOnce(purpose)
+  if (!resolvingSync) resolvingSync = resolveOnce('sync').finally(() => { resolvingSync = null })
+  return resolvingSync
+}
+
+async function resolveOnce(purpose: SessionPurpose): Promise<SessionAnswer> {
   const client = await sb()
   if (!client) return 'none'
   try {
@@ -185,12 +198,14 @@ export async function resolveSession(purpose: SessionPurpose = 'sync'): Promise<
     else {
       const { verdict, uid } = await restoreKept(client)
       // read before anything drops the kept copy, which is the only record of when its user was made
-      const wiped = purpose === 'sync' && wipedIdentity(keptCreatedAt())
+      const wiped = wipedIdentity(keptCreatedAt())
       if (verdict === 'ok' && uid) answer = { uid }
       else if (verdict !== 'gone') answer = 'held'
       else if (wiped) {
+        // the same guest under a new user, whatever asked: a sync carries on, a claim moves the
+        // passport it names into the new user, and an erase has nothing left on the server to reach
         await rejoin(client)
-        answer = await mint(client)
+        answer = purpose === 'erase' ? 'none' : await mint(client)
       }
       else {
         await retire(client)
@@ -357,7 +372,14 @@ export async function upsertProfile(uid: string, code: string, name: string, col
   const client = await sb()
   if (!client || !(await signedInAs(uid))) return false
   const { error } = await client.from('profiles').upsert({ user_id: uid, code, name, colour, updated_at: new Date().toISOString() })
-  if (error?.code === '23503' || error?.code === '23505') await checkStillThere(client)
+  if (error?.code === '23503' || error?.code === '23505') {
+    await checkStillThere(client)
+    // Our user is alive and another holds the friend code: two copies of one passport (a Safari tab
+    // and the home-screen app keep separate storage) came back after the wipe under the same code,
+    // and this one lost. Retrying would fail the same way for ever and read as "Offline"; marked as
+    // moved, the guest is offered the recovery code and Start again instead.
+    if (error.code === '23505' && !isRetired() && (await client.auth.getSession()).data.session) setRetired(true)
+  }
   return !error
 }
 

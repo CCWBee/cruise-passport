@@ -87,8 +87,10 @@ export function judgeRestore(error: AuthErrorLike | null | undefined): RestoreVe
 // answer is to sign in afresh and carry on as the same guest: same name, colour, friend code and
 // drinks, its friends asked for again, which only works because the wipe freed every friend code.
 
-/** Every user created before this instant was deleted by the wipe. */
-export const WIPED_BEFORE = Date.parse('2026-10-03T00:00:00Z')
+/** Every user created before this instant was deleted by the wipe. The auth log's first refusal of
+ *  a deleted user's token is at 12:46 UTC on 3 October and the first user made after the wipe at
+ *  12:50; the newest user the wipe deleted was made at 20:52 the evening before. */
+export const WIPED_BEFORE = Date.parse('2026-10-03T12:46:00Z')
 
 /** Whether a user created at `createdAt` (the auth user's `created_at`) was deleted by the wipe
  *  rather than claimed on another phone. Unknown or unreadable is not: it keeps the old rule. */
