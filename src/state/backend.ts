@@ -8,9 +8,10 @@
 import type { SharePayload } from './share'
 import { qaDemo, qaNoSync } from '../data/model'
 import { readOAuthError } from './restore'
-import { judgeRestore, planSession, type SessionPurpose } from './session'
+import { judgeRestore, planSession, wipedIdentity, type SessionPurpose } from './session'
 import {
-  backendConfigured, forgetSession, getSupabase, isRetired, keptSession, setRetired, storedSession,
+  backendConfigured, forgetSession, getSupabase, isRetired, keptCreatedAt, keptSession, retiredMark, setRetired,
+  storedSession,
 } from './supabase'
 
 export interface FeedRow {
@@ -44,6 +45,9 @@ export interface SyncBinding {
   knownUid(): string
   /** Record the user id a round is about to publish under, when none is recorded yet. */
   rememberUid(uid: string): void
+  /** The 3 October wipe deleted this phone's user (session.ts): forget the user id, owe the recovery
+   *  code's registration again and ask for every direct friend again, keeping everything else. */
+  rejoin(): void
 }
 let binding: SyncBinding | null = null
 export function bindSync(b: SyncBinding): void { binding = b }
@@ -136,6 +140,15 @@ async function retire(client: Client): Promise<void> {
   await forgetSession(client, 'local')
 }
 
+/** The user was deleted by the 3 October wipe, not claimed (session.ts, wipedIdentity): drop its
+ *  session and the mark, and let the store forget the user id, so the plan that follows mints a
+ *  user for the same guest instead of stopping on "moved". */
+async function rejoin(client: Client): Promise<void> {
+  setRetired(false)
+  await forgetSession(client, 'local')
+  binding?.rejoin()
+}
+
 async function mint(client: Client): Promise<SessionAnswer> {
   try {
     const { data, error } = await client.auth.signInAnonymously()
@@ -148,6 +161,9 @@ export async function resolveSession(purpose: SessionPurpose = 'sync'): Promise<
   const client = await sb()
   if (!client) return 'none'
   try {
+    // A mark the builds before 3 October wrote was the wipe's (session.ts, readRetiredMark): the
+    // phone comes back as the same guest under a new user rather than staying "moved".
+    if (purpose === 'sync' && retiredMark() === 'legacy') await rejoin(client)
     const { data } = await client.auth.getSession()
     const live = data.session?.user?.id ?? null
     const plan = planSession({
@@ -168,8 +184,14 @@ export async function resolveSession(purpose: SessionPurpose = 'sync'): Promise<
     else if (plan === 'mint') answer = await mint(client)
     else {
       const { verdict, uid } = await restoreKept(client)
+      // read before anything drops the kept copy, which is the only record of when its user was made
+      const wiped = purpose === 'sync' && wipedIdentity(keptCreatedAt())
       if (verdict === 'ok' && uid) answer = { uid }
       else if (verdict !== 'gone') answer = 'held'
+      else if (wiped) {
+        await rejoin(client)
+        answer = await mint(client)
+      }
       else {
         await retire(client)
         // The identity has gone; a claim is about to bring one back into a fresh user, and an
@@ -193,7 +215,9 @@ export async function ensureSession(): Promise<string | null> {
 
 /** The identity this phone synced under has been claimed on another phone or deleted, and nothing
  *  will sync until the guest brings it back with the recovery code or starts again. */
-export const identityMoved = (): boolean => isRetired()
+// Only a mark this build wrote: the old builds' mark is the wipe's, and the round has to go on to
+// resolveSession, which brings the phone back (rejoin), rather than stop here on "moved".
+export const identityMoved = (): boolean => retiredMark() === 'moved'
 
 /** Starting again after a move: the mark goes, so the next Done syncs a new identity. */
 export function clearMoved(): void { setRetired(false) }
@@ -205,10 +229,14 @@ export function clearMoved(): void { setRetired(false) }
  *  answer; with no session to ask about, there is no answer. */
 async function checkStillThere(client: Client): Promise<void> {
   try {
-    const token = (await client.auth.getSession()).data.session?.access_token
+    const session = (await client.auth.getSession()).data.session
+    const token = session?.access_token
     if (!token) return
     const { error } = await client.auth.getUser(token)
-    if (judgeRestore(error) === 'gone') await retire(client)
+    if (judgeRestore(error) !== 'gone') return
+    // deleted by the wipe, not claimed: the next round signs in afresh as the same guest
+    if (wipedIdentity(session?.user?.created_at)) await rejoin(client)
+    else await retire(client)
   } catch { /* no answer is not an answer */ }
 }
 
@@ -384,7 +412,9 @@ export async function claimRecovery(secret: string): Promise<ClaimAnswer> {
     // onto it. Confirm that with the auth server, and once it is retired, claim again under a new user.
     if (error?.code === '23503') {
       await checkStillThere(client)
-      if (isRetired()) {
+      // retired, or rejoined after the wipe (which drops the session without a mark): either way
+      // there is no user to move the passport onto, so claim again under a new one
+      if (isRetired() || !(await client.auth.getSession()).data.session) {
         who = await resolveSession('claim')
         if (typeof who !== 'object') return 'offline'
         ;({ data, error, status } = await call())

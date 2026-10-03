@@ -616,6 +616,7 @@ bindSync({
   resume: resumeSync,
   knownUid: () => useStore.getState().syncUid,
   rememberUid: (uid) => { if (!useStore.getState().syncUid) useStore.getState().setSyncUid(uid) },
+  rejoin: () => useStore.getState().rejoinAfterWipe(),
 })
 
 // Work the server has not seen yet: a friend added by QR, link or paste needs an edge, and a queued

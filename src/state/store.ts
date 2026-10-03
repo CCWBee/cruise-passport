@@ -91,6 +91,8 @@ interface State {
   applyFeed: (direct: FeedRow[], group: FeedRow[]) => void
   applyRestore: (r: RestoreResult) => void
   resetSocialIdentity: () => void
+  /** After the 3 October wipe (session.ts): the same guest under a new user. */
+  rejoinAfterWipe: () => void
 
   // filters
   setFilters: (f: Partial<Filters>) => void
@@ -175,6 +177,17 @@ export const useStore = create<State>()(
 
       setGroups: (g) => set({ groups: g }),
       setSyncUid: (uid) => set({ syncUid: uid }),
+      // The wipe deleted this phone's user and with it every row the server held: its profile, its
+      // friend edges and its recovery code's hash. Everything on the phone stays, the friend code
+      // included (the wipe freed every code), and three things are owed again: a user id (cleared,
+      // so the next session is recorded), the recovery code's registration (the same secret, so a
+      // code the guest saved still works) and an edge to each direct friend, which also keeps them
+      // on the list until the server confirms them (applyFeed leaves a friend that owes an edge).
+      rejoinAfterWipe: () => set((s) => ({
+        syncUid: '',
+        recovery: { ...s.recovery, confirmed: false },
+        friends: s.friends.map((f) => (f.groupOnly || !f.code ? f : { ...f, needsEdge: true })),
+      })),
       setRecovery: (r) => set((s) => ({ recovery: { ...s.recovery, ...r } })),
       markMedalsSeen: (ids) => set((s) => {
         const add = ids.filter((id) => !s.seenMedals.includes(id))

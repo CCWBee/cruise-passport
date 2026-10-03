@@ -2,7 +2,7 @@
 // The session decision, run for real under `node --test` (see restore.test.ts for the two lines).
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { judgeRestore, planSession, type SessionFacts } from './session.ts'
+import { judgeRestore, planSession, readRetiredMark, wipedIdentity, type SessionFacts } from './session.ts'
 
 const facts = (o: Partial<SessionFacts> = {}): SessionFacts => ({
   live: false, stored: false, kept: false, known: false, retired: false, ...o,
@@ -78,4 +78,19 @@ test('a refresh token refused for good is gone too, or the phone would hold for 
   assert.equal(judgeRestore({ name: 'AuthApiError', status: 403, code: 'user_banned' }), 'gone')
   // but not a rate limit, whatever it is called
   assert.equal(judgeRestore({ name: 'AuthApiError', status: 429 }), 'held')
+})
+
+test('a user created before the wipe was deleted by it; one created after, or of unknown age, was not', () => {
+  assert.equal(wipedIdentity('2026-10-02T20:52:21.91622+00:00'), true)
+  assert.equal(wipedIdentity('2026-09-01T21:25:44Z'), true)
+  assert.equal(wipedIdentity('2026-10-03T12:50:23.907168+00:00'), false)
+  assert.equal(wipedIdentity(undefined), false)
+  assert.equal(wipedIdentity(null), false)
+  assert.equal(wipedIdentity('not a date'), false)
+})
+
+test('the old builds wrote 1 as the mark; this one writes a word, so the two are told apart', () => {
+  assert.equal(readRetiredMark(null), 'none')
+  assert.equal(readRetiredMark('1'), 'legacy')
+  assert.equal(readRetiredMark('moved'), 'moved')
 })

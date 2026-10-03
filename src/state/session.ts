@@ -76,3 +76,34 @@ export function judgeRestore(error: AuthErrorLike | null | undefined): RestoreVe
     && error.status >= 400 && error.status < 500 && error.status !== 408 && error.status !== 429) return 'gone'
   return 'held'
 }
+
+// ── the wipe of 3 October 2026 ───────────────────────────────────────────────────────────────────
+// Every account on the live project was deleted on 3 October 2026, on Charles's instruction, the day
+// the cruise sailed. A phone set up before then holds a session for a user that no longer exists, and
+// the rules above read that as "claimed on another phone": it stops and waits for the guest to find
+// Start again, which nobody did (the auth log that afternoon shows three phones refused and none
+// starting again). A user created before the wipe cannot have been claimed anywhere since, because
+// claims move an identity into a user created at the time of the claim. So for those phones the
+// answer is to sign in afresh and carry on as the same guest: same name, colour, friend code and
+// drinks, its friends asked for again, which only works because the wipe freed every friend code.
+
+/** Every user created before this instant was deleted by the wipe. */
+export const WIPED_BEFORE = Date.parse('2026-10-03T00:00:00Z')
+
+/** Whether a user created at `createdAt` (the auth user's `created_at`) was deleted by the wipe
+ *  rather than claimed on another phone. Unknown or unreadable is not: it keeps the old rule. */
+export function wipedIdentity(createdAt: string | null | undefined): boolean {
+  if (!createdAt) return false
+  const t = Date.parse(createdAt)
+  return Number.isFinite(t) && t < WIPED_BEFORE
+}
+
+/** The retirement mark this phone holds. `legacy` is the mark the builds before this one wrote ('1'),
+ *  and every such mark on a phone now was written by the wipe: no passport was claimed between the
+ *  wipe and the build that tells the two apart. `moved` is a mark this build wrote for a real move. */
+export type RetiredMark = 'none' | 'legacy' | 'moved'
+
+export function readRetiredMark(raw: string | null): RetiredMark {
+  if (raw === null) return 'none'
+  return raw === '1' ? 'legacy' : 'moved'
+}

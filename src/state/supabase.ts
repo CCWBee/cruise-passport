@@ -4,6 +4,7 @@
 // The anon key is public by design; RLS does the protecting. See docs/BACKEND_SETUP.md.
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { withTimeout } from './timeout'
+import { readRetiredMark, type RetiredMark } from './session'
 
 const URL = import.meta.env.VITE_SUPABASE_URL?.trim()
 const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim()
@@ -70,9 +71,25 @@ export function keptSession(): { access_token: string; refresh_token: string } |
   } catch { return null }
 }
 
+/** When the kept session's user was created (the auth user's `created_at`), or null. Read before a
+ *  retirement, which drops the copy, to tell a user the 3 October wipe deleted from one claimed on
+ *  another phone (session.ts, wipedIdentity). */
+export function keptCreatedAt(): string | null {
+  const raw = read(KEPT_KEY)
+  if (!raw) return null
+  try {
+    const s = JSON.parse(raw) as { user?: { created_at?: unknown } }
+    return typeof s.user?.created_at === 'string' ? s.user.created_at : null
+  } catch { return null }
+}
+
 export function dropKeptSession(): void { remove(KEPT_KEY) }
-export function isRetired(): boolean { return read(RETIRED_KEY) === '1' }
-export function setRetired(on: boolean): void { if (on) write(RETIRED_KEY, '1'); else remove(RETIRED_KEY) }
+/** Which retirement mark this phone holds (session.ts, readRetiredMark). */
+export function retiredMark(): RetiredMark { return readRetiredMark(read(RETIRED_KEY)) }
+export function isRetired(): boolean { return retiredMark() !== 'none' }
+// 'moved', not the '1' the builds before 3 October 2026 wrote: those marks were all the wipe's, and
+// the word is how this build tells a real move from them.
+export function setRetired(on: boolean): void { if (on) write(RETIRED_KEY, 'moved'); else remove(RETIRED_KEY) }
 
 /** Sign out as the app's own decision: the library's session and the kept copy both go, so the
  *  next session this phone gets is a new one and nothing tries to put the old one back. 'local'
