@@ -51,3 +51,6 @@ tools/qa/profile-*/
 
 # headless sweeps (tools/qa/sweep.mjs): regenerated on demand, never committed
 tools/qa/sweeps/
+
+# cold-storage export of the live database (personal data, never committed)
+archive/
