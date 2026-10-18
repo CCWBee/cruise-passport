@@ -285,6 +285,29 @@ window.runPosters = async (codes, show = false) => {
 }
 
 const post = (name, blob) => fetch(`http://127.0.0.1:8792/save?name=${name}`, { method: 'POST', body: blob })
+
+// ── the email's hero banner: the evening room and the menu's nine glasses, no words (the words in an
+// email stay live text, so they can be read, searched and translated) ─────────────────────────────
+window.runHero = async () => {
+  const HW = 1200, HH = 520
+  const c = document.createElement('canvas'); c.width = HW; c.height = HH
+  const ctx = c.getContext('2d')
+  const g = ctx.createLinearGradient(0, 0, 0, HH); ['#1A1830', '#18132A', '#140E22'].forEach((col, i) => g.addColorStop(i / 2, col))
+  ctx.fillStyle = g; ctx.fillRect(0, 0, HW, HH)
+  for (const [hex, a, x, y, r] of [['#FF5B78', .5, .1, .9, .55], ['#FFA640', .42, .92, .2, .5], ['#9B7BFF', .3, .55, -.1, .45], ['#4A63FF', .22, .02, .05, .4]]) {
+    const gr = ctx.createRadialGradient(x * HW, y * HH, 0, x * HW, y * HH, r * HW)
+    gr.addColorStop(0, `rgba(${rgb(hex)}, ${a})`); gr.addColorStop(1, `rgba(${rgb(hex)}, 0)`); ctx.fillStyle = gr; ctx.fillRect(0, 0, HW, HH)
+  }
+  const fams = ['cocktail', 'margarita', 'flute', 'highball', 'hurricane', 'wine', 'rocks', 'pint', 'cup']
+  const px = 104, gap = (HW - 2 * 80 - px * 9) / 8
+  for (let i = 0; i < 9; i++) {
+    const y = HH / 2 - px / 2 + (i % 2 ? 34 : -34)
+    for (const img of await glassImage(fams[i], px)) ctx.drawImage(img, 80 + i * (px + gap), y, px, px)
+  }
+  const blob = await new Promise((r) => c.toBlob(r, 'image/jpeg', .9))
+  await post('hero', blob)
+  return 'hero'
+}
 window.runAll = async (codes, show = false) => {
   await document.fonts.load('900 100px Nunito'); await document.fonts.load('600 40px Nunito'); await document.fonts.ready
   const all = await Promise.all(codes.map(async (c) => (await fetch(`/archive/summaries/${c}.json`)).json()))
