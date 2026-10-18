@@ -9,7 +9,13 @@ import { readRetiredMark, type RetiredMark } from './session'
 const URL = import.meta.env.VITE_SUPABASE_URL?.trim()
 const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim()
 
-export const backendConfigured: boolean = Boolean(URL && KEY)
+// Docked, 18 October 2026: the sailing is over, every guest has their voyage by email, and the
+// Supabase project is being deleted (cold storage; the export is in archive/, never committed). The
+// app runs as a build with no server, which it has always supported: crew, backup and recovery hide
+// themselves, nothing is sent anywhere, and every drink stays on the phone. To wake it, restore a
+// project from the export and set this back to false.
+const DOCKED = true
+export const backendConfigured: boolean = !DOCKED && Boolean(URL && KEY)
 
 // ── the session, kept ──
 // The library's own key, computed exactly as supabase-js computes its default
