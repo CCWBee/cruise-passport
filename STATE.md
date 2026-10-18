@@ -4,7 +4,27 @@ Open work for the Cocktail Passport. One-line status lives in `E:\claude-project
 agent context in `CLAUDE.md`; the reconciled checklist in `docs/PRODUCTIONISATION.md`; the product
 architecture in `docs/specs/2026-09-10-product-brief.md`, one spec per workstream beside it.
 
-## Where it stands (3 October 2026)
+## Where it stands (18 October 2026): cold storage
+
+- **Docked, LIVE at `ce32514`** (deploy green, shell `index-B8H-l9Yi.js`): `DOCKED = true` in
+  `src/state/supabase.ts` makes `backendConfigured` false, the no-server build the app always
+  supported. Checked on the production build: a fresh guest entered and ticked a drink with no request
+  to Supabase and no session stored; the entry screen says nothing leaves the phone. To wake it,
+  restore a project from the export and set `DOCKED` back to false.
+- **Every guest emailed their voyage**, 18 October ~12:37 UTC, from `passport@bobbledesigns.com`
+  through Resend (Bobble's send-only key), all four delivered: Isabel, Sophia, Anastacia, Preston.
+  Built by `tools/coldstorage/` (summaries.ts with Wrapped's own logic, slides.html for the poster
+  and hero, render.mjs for the email, send.mjs to send); the structure follows recap emails studied
+  on reallygoodemails.com. Recipients, quips, the rendered emails and the send log are in
+  `archive/` (gitignored, personal data).
+- **The data:** `archive/2026-10-18-export.json` and `archive/2026-10-18-final-export.json` (every
+  table; gitignored, never committed).
+- **Open for Charles:** delete the Supabase project `qpmrfoglxohmjhjtvkac` ("cruise-passport", NOT
+  "CCWBee's Project", which is Bobble): `npx supabase projects delete qpmrfoglxohmjhjtvkac`, which
+  asks to confirm; the CLI cancels a piped yes. Branch `motion-haptics` (shake, haptics) was never
+  shipped and stays parked.
+
+## Where it stood (3 October 2026)
 
 - **Every account wiped, 3 October 2026, on Charles's instruction**, about 12:40 UTC: all tables 0,
   no copy kept. It stranded every phone set up before it: the app read the deleted user as "claimed
