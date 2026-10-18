@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="darkreader-lock">
+<title>Cold storage pictures</title>
+<!--
+  Draws the email pictures with the app's own code, in the browser, and posts each PNG to
+  tools/coldstorage/receiver.mjs: every guest's Wrapped certificate (wrappedImage.ts, the poster the
+  app saves to share) and the nine glass icons. Load through the dev server with ?hour=23 for the
+  night room (/tools/coldstorage/render.html?hour=23), then call runAll with the guests' codes.
+-->
+</head>
+<body style="background:#130F1F;color:#F6F1E9;font-family:system-ui">
+<p id="out">ready</p>
+<script type="module">
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { renderWrappedImage } from '/src/features/wrapped/wrappedImage.ts'
+import { GlassIcon } from '/src/ui/Icon.tsx'
+import { GLASS_FAMILIES } from '/src/data/glass.ts'
+
+const post = (name, blob) => fetch(`http://127.0.0.1:8792/save?name=${name}`, { method: 'POST', body: blob })
+const out = document.getElementById('out')
+
+// The night room's family hues (tokens.css --fam-*), and the halo base.css draws under each line
+// (.gicon-halo: stroke 4.4 at .22), so the picture is the icon as a row shows it.
+const HUE = { cocktail: '#FF8FB0', margarita: '#B5E07A', wine: '#F29AB6', flute: '#F2D675', pint: '#FFBE73',
+  cup: '#E6BFA3', hurricane: '#FF9F73', highball: '#6FE3DA', rocks: '#F0B884' }
+
+async function glassPng(family, px) {
+  const html = renderToStaticMarkup(createElement(GlassIcon, { family, size: px }))
+  const svgs = [...new DOMParser().parseFromString(html, 'text/html').querySelectorAll('svg')]
+  const c = document.createElement('canvas')
+  c.width = px; c.height = px
+  const ctx = c.getContext('2d')
+  for (const el of svgs) {
+    el.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    el.setAttribute('color', HUE[family])
+    el.removeAttribute('style')
+    if (el.getAttribute('class')?.includes('gicon-halo')) { el.setAttribute('stroke-width', '4.4'); el.setAttribute('opacity', '.22') }
+    const img = new Image()
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(el.outerHTML)
+    await img.decode()
+    ctx.drawImage(img, 0, 0, px, px)
+  }
+  return new Promise((r) => c.toBlob(r, 'image/png'))
+}
+
+window.runAll = async (codes, icons = true) => {
+  const done = []
+  for (const code of codes) {
+    const s = await (await fetch(`/archive/summaries/${code}.json`)).json()
+    const finale = s.cards.find((c) => c.kind === 'finale')
+    await post(`cert-${code}`, await renderWrappedImage(finale))
+    done.push(`cert-${code}`)
+  }
+  for (const f of icons ? GLASS_FAMILIES : []) {
+    await post(`glass-${f}`, await glassPng(f, 144))
+    done.push(`glass-${f}`)
+  }
+  out.textContent = done.join(', ')
+  return done
+}
+</script>
+</body>
+</html>

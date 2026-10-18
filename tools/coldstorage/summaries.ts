@@ -18,6 +18,7 @@ const mem = new Map<string, string>()
 const { DRINKS, DRINK_BY_ID, VENUES } = await import('../../src/data/model')
 const { deriveWrapped, certificateRows } = await import('../../src/features/wrapped/wrappedData')
 const { BADGES } = await import('../../src/data/badges')
+const { glassFamily } = await import('../../src/data/glass')
 
 const file = process.argv[2]
 const dump = JSON.parse(readFileSync(file, 'utf8')).rows[0].dump
@@ -55,7 +56,7 @@ for (const p of profiles) {
   const tried = Object.entries(st.me.entries ?? {}).filter(([, e]: any) => e.tried)
     .map(([id, e]: any) => {
       const d = find(id)
-      return { id, name: d?.name ?? id, venue: d ? (VENUES[d.venue]?.name ?? d.category) : '', date: e.date ?? '', rating: e.rating ?? null, fav: !!e.fav, notes: e.notes ?? '' }
+      return { id, glass: d ? glassFamily(d) : 'cocktail', name: d?.name ?? id, venue: d ? (VENUES[d.venue]?.name ?? d.category) : '', date: e.date ?? '', rating: e.rating ?? null, fav: !!e.fav, notes: e.notes ?? '' }
     })
     .sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name))
   const out = {
@@ -63,6 +64,9 @@ for (const p of profiles) {
     total: drinks.length, cards, certificate: finale ? certificateRows(finale) : [],
     medals: (cards.find((c: any) => c.kind === 'medals') as any)?.earned?.map((id: string) => BADGES.find((b) => b.id === id)?.name ?? id) ?? [],
     crew: crew.map((c) => c.name), tried,
+    // the glass of every drink a crew line names, so the email can show it beside the line
+    crewGlass: Object.fromEntries(cards.flatMap((c: any) => [c.name, ...(c.shared ?? [])]).filter(Boolean)
+      .map((n: string) => [n, glassFamily(drinks.find((d: any) => d.name === n) ?? { name: n, category: '' })])),
   }
   writeFileSync(`archive/summaries/${p.code}.json`, JSON.stringify(out, null, 2))
   console.log(p.name, p.code, 'tried', tried.length, 'cards', cards.map((c: any) => c.kind).join(','))
