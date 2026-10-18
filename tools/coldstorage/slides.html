@@ -155,6 +155,135 @@ function specs(s, party) {
   return out
 }
 
+// ── the summary poster: the whole voyage on one page, as the last card of a Wrapped is ──────────
+function stamp(ctx, cx, cy, lines) {
+  // a passport stamp in coral ink: a double-ruled frame, slightly turned, the sailing inside
+  ctx.save(); ctx.translate(cx, cy); ctx.rotate(-8 * Math.PI / 180)
+  const w = 430, h = 170, ink = 'rgba(255, 107, 132, .92)'
+  ctx.strokeStyle = ink; ctx.fillStyle = ink
+  ctx.lineWidth = 7; ctx.beginPath(); ctx.roundRect(-w / 2, -h / 2, w, h, 26); ctx.stroke()
+  ctx.lineWidth = 2.5; ctx.beginPath(); ctx.roundRect(-w / 2 + 14, -h / 2 + 14, w - 28, h - 28, 16); ctx.stroke()
+  ctx.textAlign = 'center'
+  font(ctx, 900, 38); ctx.letterSpacing = '4px'; ctx.fillText(lines[0], 0, -4)
+  font(ctx, 800, 28); ctx.letterSpacing = '3px'; ctx.fillText(lines[1], 0, 40)
+  ctx.letterSpacing = '0px'; ctx.textAlign = 'left'
+  // worn ink: a fixed scatter of small gaps, so it reads as stamped rather than drawn
+  ctx.globalCompositeOperation = 'destination-out'
+  let seed = 7
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647
+  for (let i = 0; i < 140; i++) { ctx.globalAlpha = .2 + rnd() * .4; ctx.beginPath(); ctx.arc((rnd() - .5) * w, (rnd() - .5) * h, .8 + rnd() * 2.2, 0, Math.PI * 2); ctx.fill() }
+  ctx.restore()
+}
+
+async function poster(s, party) {
+  const PH = 3200
+  const c = document.createElement('canvas'); c.width = W; c.height = PH
+  const ctx = c.getContext('2d'); ctx.textBaseline = 'alphabetic'
+  // the evening room, painted over the whole height
+  const room = ROOMS.evening
+  const g = ctx.createLinearGradient(0, 0, 0, PH); room.base.forEach((col, i) => g.addColorStop(i / 2, col))
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, PH)
+  for (const [hex, a, x, y, r] of [['#FF5B78', .40, .02, .30, .85], ['#FFA640', .32, 1, .12, .7], ['#9B7BFF', .26, .95, .62, .8], ['#4A63FF', .22, .05, .9, .75]]) {
+    const gr = ctx.createRadialGradient(x * W, y * PH, 0, x * W, y * PH, r * W)
+    gr.addColorStop(0, `rgba(${rgb(hex)}, ${a})`); gr.addColorStop(1, `rgba(${rgb(hex)}, 0)`); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, PH)
+  }
+  const n = s.tried.length, colW = (W - M * 2 - 60) / 2
+  font(ctx, 800, 34); ctx.fillStyle = BRAND; ctx.fillText('Cocktail Passport', M, M + 30)
+  stamp(ctx, W - M - 190, M + 130, ['SUN PRINCESS', '3 TO 17 OCT 2026'])
+
+  // the name
+  let y = M + 330
+  const head = `${first(s.name)}'s voyage`
+  const hp = fit(ctx, 900, head, W - M * 2, 132, 80, 2); font(ctx, 900, hp); ctx.fillStyle = INK; ctx.letterSpacing = `${-.02 * hp}px`
+  for (const l of wrap(ctx, head, W - M * 2)) { ctx.fillText(l, M, y); y += hp * 1.02 }
+  ctx.letterSpacing = '0px'
+
+  // the count
+  y += 210
+  font(ctx, 900, 300); ctx.fillStyle = INK; ctx.letterSpacing = '-12px'; ctx.fillText(String(n), M - 8, y); const nw = ctx.measureText(String(n)).width; ctx.letterSpacing = '0px'
+  font(ctx, 800, 52); ctx.fillStyle = INK; ctx.fillText(n === 1 ? 'drink tried' : 'drinks tried', M + nw + 40, y - 92)
+  font(ctx, 600, 38); ctx.fillStyle = INK2; ctx.fillText(`${Math.round(n / s.total * 100)}% of the ${s.total} on board`, M + nw + 40, y - 36)
+
+  // two columns: top drinks, top bars
+  y += 120
+  const eyebrow = (t, x, yy, colour = CORAL) => { font(ctx, 800, 36); ctx.fillStyle = colour; ctx.fillText(t, x, yy) }
+  const xR = M + colW + 60
+  eyebrow('Top drinks', M, y); eyebrow('Top bars', xR, y)
+  let yl = y + 30, yr = y + 30
+  const top = [...s.tried].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0) || Number(b.fav) - Number(a.fav) || b.date.localeCompare(a.date)).slice(0, 5)
+  if (!top.length) { font(ctx, 600, 38); ctx.fillStyle = INK2; for (const l of wrap(ctx, 'Nothing logged. The menu remains a mystery.', colW)) { yl += 52; ctx.fillText(l, M, yl) } }
+  for (const t of top) {
+    yl += 26
+    for (const img of await glassImage(t.glass, 64)) ctx.drawImage(img, M, yl, 64, 64)
+    const tx = M + 88, tw = colW - 88
+    let px = 38; font(ctx, 800, px); while (ctx.measureText(t.name).width > tw && px > 26) { px -= 2; font(ctx, 800, px) }
+    ctx.fillStyle = INK; ctx.fillText(t.name, tx, yl + 30)
+    font(ctx, 700, 28); ctx.fillStyle = CORAL; ctx.letterSpacing = '3px'
+    ctx.fillText(t.rating ? '★'.repeat(t.rating) + '☆'.repeat(5 - t.rating) : 'not rated', tx, yl + 68); ctx.letterSpacing = '0px'
+    yl += 76
+  }
+  const bars = Object.entries(s.tried.reduce((m, t) => (m[t.venue] = (m[t.venue] ?? 0) + 1, m), {})).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 4)
+  if (!bars.length) { font(ctx, 600, 38); ctx.fillStyle = INK2; for (const l of wrap(ctx, 'None visited, on paper.', colW)) { yr += 52; ctx.fillText(l, xR, yr) } }
+  bars.forEach(([v, k], i) => {
+    yr += 26
+    font(ctx, 900, 44); ctx.fillStyle = i ? INK3 : CORAL; ctx.fillText(String(i + 1), xR, yr + 46)
+    const tx = xR + 56, tw = colW - 56
+    font(ctx, 800, 38); const lines = wrap(ctx, v, tw).slice(0, 2)
+    ctx.fillStyle = INK; lines.forEach((l, j) => ctx.fillText(l, tx, yr + 30 + j * 42))
+    font(ctx, 600, 28); ctx.fillStyle = INK2; ctx.fillText(`${k} ${k === 1 ? 'drink' : 'drinks'}`, tx, yr + 30 + lines.length * 42)
+    yr += 30 + lines.length * 42
+  })
+
+  // three facts across
+  y = Math.max(yl, yr) + 110
+  const bd = card(s, 'bigday'), a = card(s, 'archetype'), m = card(s, 'medals')
+  const short = (d) => { const p = d.split(' '); return p.length === 3 ? `${p[0].slice(0, 3)} ${p[1]} ${p[2].slice(0, 3)}` : d }
+  const facts = [
+    ['Biggest day', bd ? short(bd.date) : 'None yet', bd ? `${bd.count} ${bd.count === 1 ? 'drink' : 'drinks'}` : ''],
+    ['Your taste', a ? a.archetype.name.replace(/^The /, '') : 'Undeclared', ''],
+    ['Medals', `${m ? m.count : 0} of 18`, s.medals.join(', ')],
+  ]
+  const fw = (W - M * 2) / 3
+  facts.forEach(([k, v, sub], i) => {
+    const x = M + i * fw
+    eyebrow(k, x, y, INK3)
+    let px = 50; font(ctx, 900, px); while (ctx.measureText(v).width > fw - 24 && px > 30) { px -= 2; font(ctx, 900, px) }
+    ctx.fillStyle = INK; ctx.fillText(v, x, y + 64)
+    if (sub) { font(ctx, 600, 30); ctx.fillStyle = INK2; ctx.fillText(sub, x, y + 108) }
+  })
+
+  // the party
+  y += 230
+  eyebrow('The party', M, y, '#8FF0E6')
+  const max = Math.max(1, ...party.map((p) => p.n))
+  party.forEach((p, i) => {
+    const yy = y + 50 + i * 86, me = p.code === s.code
+    font(ctx, 800, 38); ctx.fillStyle = me ? CORAL : INK; ctx.fillText(first(p.name), M, yy + 38)
+    const bx = M + 250, bwMax = W - M * 2 - 250 - 100
+    ctx.fillStyle = me ? CORAL : 'rgba(246,241,233,.24)'; ctx.beginPath(); ctx.roundRect(bx, yy + 10, Math.max(20, bwMax * p.n / max), 34, 17); ctx.fill()
+    font(ctx, 900, 48); ctx.fillStyle = me ? CORAL : INK; ctx.textAlign = 'right'; ctx.fillText(String(p.n), W - M, yy + 44); ctx.textAlign = 'left'
+  })
+  y += 50 + party.length * 86 + 70
+  font(ctx, 700, 30); ctx.fillStyle = INK3; ctx.fillText('cruise.charlesbee.org', M, y)
+  const out = document.createElement('canvas'); out.width = W; out.height = y + M
+  out.getContext('2d').drawImage(c, 0, 0)
+  return new Promise((r) => out.toBlob(r, 'image/jpeg', .92))
+}
+
+window.runPosters = async (codes, show = false) => {
+  await document.fonts.load('900 100px Nunito'); await document.fonts.load('600 40px Nunito'); await document.fonts.load('800 40px Nunito'); await document.fonts.ready
+  const all = await Promise.all(codes.map(async (c) => (await fetch(`/archive/summaries/${c}.json`)).json()))
+  const party = all.map((s) => ({ code: s.code, name: s.name, n: s.tried.length })).sort((a, b) => b.n - a.n)
+  const done = []
+  for (const s of all) {
+    const blob = await poster(s, party)
+    if (show) { const im = new Image(); im.src = URL.createObjectURL(blob); im.style.width = '360px'; document.getElementById('show').append(im) }
+    else await post(`poster-${s.code}`, blob)
+    done.push(s.code)
+  }
+  return done
+}
+
 const post = (name, blob) => fetch(`http://127.0.0.1:8792/save?name=${name}`, { method: 'POST', body: blob })
 window.runAll = async (codes, show = false) => {
   await document.fonts.load('900 100px Nunito'); await document.fonts.load('600 40px Nunito'); await document.fonts.ready

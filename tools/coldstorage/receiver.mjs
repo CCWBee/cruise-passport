@@ -10,5 +10,5 @@ createServer((req, res) => {
   if (req.method !== 'POST' || !/^[\w-]+$/.test(name)) { res.statusCode = 400; res.end(); return }
   const parts = []
   req.on('data', (c) => parts.push(c))
-  req.on('end', () => { writeFileSync(`archive/emails/img/${name}.${name.startsWith("slide-") ? "jpg" : "png"}`, Buffer.concat(parts)); res.end('ok'); console.log('saved', name) })
+  req.on('end', () => { writeFileSync(`archive/emails/img/${name}.${(name.startsWith("slide-") || name.startsWith("poster-")) ? "jpg" : "png"}`, Buffer.concat(parts)); res.end('ok'); console.log('saved', name) })
 }).listen(8792, '127.0.0.1', () => console.log('receiver on 8792'))
