@@ -23,10 +23,10 @@ architecture in `docs/specs/2026-09-10-product-brief.md`, one spec per workstrea
   Supabase project stopped answering (GitHub emailed each failure). Health check and Deploy are now
   disabled in GitHub, so nothing runs on a schedule or on push; `MAINTENANCE.md`, Monitoring, says
   how to switch them back on.
-- **Open for Charles:** delete the Supabase project `qpmrfoglxohmjhjtvkac` ("cruise-passport", NOT
-  "CCWBee's Project", which is Bobble): `npx supabase projects delete qpmrfoglxohmjhjtvkac`, which
-  asks to confirm; the CLI cancels a piped yes. Branch `motion-haptics` (shake, haptics) was never
-  shipped and stays parked.
+- **Supabase project deleted 1 November 2026** (`qpmrfoglxohmjhjtvkac`, by Charles with
+  `npx supabase projects delete <ref> --yes`; without `--yes` the CLI cancels). The data survives
+  only in the `archive/` exports. Branch `motion-haptics` (shake, haptics) was never shipped and
+  stays parked.
 
 ## Where it stood (3 October 2026)
 
