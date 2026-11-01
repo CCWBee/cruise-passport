@@ -19,6 +19,10 @@ architecture in `docs/specs/2026-09-10-product-brief.md`, one spec per workstrea
   `archive/` (gitignored, personal data).
 - **The data:** `archive/2026-10-18-export.json` and `archive/2026-10-18-final-export.json` (every
   table; gitignored, never committed).
+- **Mothballed 1 November 2026:** the Health check workflow had failed every run since the paused
+  Supabase project stopped answering (GitHub emailed each failure). Health check and Deploy are now
+  disabled in GitHub, so nothing runs on a schedule or on push; `MAINTENANCE.md`, Monitoring, says
+  how to switch them back on.
 - **Open for Charles:** delete the Supabase project `qpmrfoglxohmjhjtvkac` ("cruise-passport", NOT
   "CCWBee's Project", which is Bobble): `npx supabase projects delete qpmrfoglxohmjhjtvkac`, which
   asks to confirm; the CLI cancels a piped yes. Branch `motion-haptics` (shake, haptics) was never

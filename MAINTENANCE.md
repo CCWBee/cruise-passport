@@ -54,6 +54,12 @@ needs raising before sailing, because a ship puts every passenger behind a handf
 
 ## Monitoring
 
+**Mothballed 1 November 2026.** The Supabase project is paused (`INACTIVE`) since docking, so this
+check failed every run and emailed the owner. Both workflows, Health check and Deploy, are disabled
+in GitHub (`gh workflow list --all` shows `disabled_manually`); the files are kept. To wake the
+project: restore the Supabase project, set `DOCKED` back to false, then
+`gh workflow enable "Deploy" -R CCWBee/cruise-passport` and the same for "Health check".
+
 `.github/workflows/health-check.yml`, every other day at 08:00 UTC and by hand
 (`gh workflow run "Health check" -R CCWBee/cruise-passport`). It fails when the site gives a 5xx or
 no answer, or a 200 that is not the app's page (a Cloudflare 403 to a runner is not a failure), and
