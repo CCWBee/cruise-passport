@@ -18,7 +18,7 @@ export async function launch({ width = 500, height = 900 } = {}) {
   // profile's thousands of files reload-storm the dev server
   const profile = path.join(tmpdir(), 'cruise-qa-profile-' + process.pid + '-' + Date.now())
   const child = spawn(CHROME, [
-    '--headless=new', '--no-sandbox', '--hide-scrollbars', '--force-color-profile=srgb',
+    '--headless=new', '--hide-scrollbars', '--force-color-profile=srgb',
     `--remote-debugging-port=${PORT}`, `--user-data-dir=${profile}`, `--window-size=${width},${height}`,
     // CDP_GPU=1 keeps WebGL (SwiftShader) so the live sea renders; default is the cheap CSS fallback
     ...(process.env.CDP_GPU ? ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-webgl'] : ['--disable-gpu']),
